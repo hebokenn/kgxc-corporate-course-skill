@@ -1,0 +1,105 @@
+{
+  "skill_version": "3.4.0",
+  "source": "Published quickstart scene-graph-v1 example and approved KGXC R5/R8 bookends",
+  "scope": "technical demonstrations; not full-course business or listening acceptance",
+  "files": {
+    "course-demo.mp4": {
+      "bytes": 362860,
+      "sha256": "3d79dc9e0339475b944daba4c344a37aba1b34717ab66cb314cdccfdcff4949a",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "9.033333"
+        }
+      }
+    },
+    "course-demo.srt": {
+      "bytes": 222,
+      "sha256": "425c6cb9419c60b221b5b2fbead022c97f9858672e019a8fe7e8873e14ef9e82"
+    },
+    "intro-poster.png": {
+      "bytes": 740586,
+      "sha256": "1c18e677851d94f0afae0026d3baaf8c2f32411330eab608034cb75aab8004b8"
+    },
+    "intro-preview.mp4": {
+      "bytes": 3502615,
+      "sha256": "fb40d80ce9cc34cb86adf4ff862b24a179f9f78eca05971106d41033f572f616",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1280,
+            "height": 720,
+            "r_frame_rate": "24/1"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "10.500000"
+        }
+      }
+    },
+    "outro-poster.png": {
+      "bytes": 259227,
+      "sha256": "a57aa438e6c7ad6f3c33fc39f0b644f08dcdee3b04a303b6ba6b230f6710942c"
+    },
+    "outro-preview.mp4": {
+      "bytes": 1367276,
+      "sha256": "472f2c7f439c3f4f13efe75613318e1fc13905c9002a35a5adb4a8370c0decf4",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1280,
+            "height": 720,
+            "r_frame_rate": "24/1"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "7.000000"
+        }
+      }
+    },
+    "workbench-cut.png": {
+      "bytes": 177762,
+      "sha256": "bd7f7c29c7b734d5343f331f965cebb99eef0195506b4767d0ff57095c0480a5"
+    },
+    "workbench-overview.png": {
+      "bytes": 179378,
+      "sha256": "f1183f4666881e5315fa79a6993b5afe08578c7c23c543748629c4e81a8b0d19"
+    }
+  }
+}
