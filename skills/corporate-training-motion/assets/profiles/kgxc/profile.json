@@ -1,0 +1,86 @@
+{
+  "id": "kgxc",
+  "scope": "user_internal_only",
+  "greeting": "欢迎来到酷果星创企业培训课堂",
+  "closing": "本节课程到此结束，感谢大家观看",
+  "voice_preference": {
+    "provider": "qwen3_tts",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
+    "voice_id": "Aiden",
+    "description": "清亮中音，美式英语男声",
+    "language": "auto",
+    "instruct": null,
+    "speed": 1.0,
+    "temperature": 0.65,
+    "top_p": 0.9,
+    "repetition_penalty": 1.05,
+    "seed": 20261019,
+    "stream": false,
+    "cloud_generation_authorized": false
+  },
+  "characters": {
+    "default_presenter": "M1-repaired.png",
+    "default_presenter_clothes": "black KG polo; original KG at character left chest / viewer right; no 店长 text",
+    "staff": "blue-cast.png",
+    "manager": "blue-cast.png: approved existing blue identity; do not silently recolor frozen courses",
+    "mycoach": "MyCoach-reference-2D.png: chestnut-haired 2D woman; black collared shirt with MyCoach text; not KG"
+  },
+  "brand_version": "R5-intro-R8-outro",
+  "intro_seconds": 10.5,
+  "outro_seconds": 7,
+  "bookends_kind": "immutable approved 1080p30 adaptation; baked course text, not editable title master",
+  "new_course_title_editing": "use packaged scripts/bookends.py and assets/bookends approved R5/R8 backgrounds; do not alter historical baked course frames",
+  "assets": {
+    "kg-original.png": {
+      "path": "kg-original.png",
+      "sha256": "fd088e5b6b5d8b35d4a73ed0ada69afbc6a56aecd9e483123add67a4257e73a9"
+    },
+    "M1-blink.png": {
+      "path": "M1-blink.png",
+      "sha256": "fc80229302a5de57c9aeb394d56307163ce8374c74a7479d44db3e31bffd79fa"
+    },
+    "outro-1080p30.mp4": {
+      "path": "outro-1080p30.mp4",
+      "sha256": "4baddd1361ff7e4f994d496955377693e5a88aec7f238e5752aada9b0b6cbe8d"
+    },
+    "M1-repaired.png": {
+      "path": "M1-repaired.png",
+      "sha256": "3097490102ce597f146450018988c70f014804e69919cde874f9ae4a6dce8b0a"
+    },
+    "blue-cast.png": {
+      "path": "blue-cast.png",
+      "sha256": "26be92c31b94be2bfd8f37a4fb456f35c677895e244aa8a4cb04fbf1949827e5"
+    },
+    "kgxc-logo.png": {
+      "path": "kgxc-logo.png",
+      "sha256": "e3af5f28d205ba05c96c72379430f7eef42885229301a7474436e8827dd12179"
+    },
+    "intro-1080p30.mp4": {
+      "path": "intro-1080p30.mp4",
+      "sha256": "6d06d0bea91699c7e10c5e2194c19cf68795d0d8fd758c94c9f6ff1807d88533"
+    },
+    "MyCoach-reference-2D.png": {
+      "path": "MyCoach-reference-2D.png",
+      "sha256": "d1cab1af60e20441e1cf9405556292e7b39abf970daf1b7300ff3afffcb91095"
+    },
+    "M1-speaking-open.png": {
+      "path": "M1-speaking-open.png",
+      "sha256": "ad2f1af34b4938f39f0609ff9f6341e08f4975285bc8c34e3ca9ec58867be3e3"
+    },
+    "m1-mesh.js": {
+      "path": "m1-mesh.js",
+      "sha256": "41b9deccdf0040f7f2d248f77fcbd285d16c725f4f4c49c15705b7bd5bd3a947"
+    },
+    "片头生成提示词.txt": {
+      "path": "片头生成提示词.txt",
+      "sha256": "085fa714978cd90e8f3810b91a885f970c55efff84ae43a2f2a06e4bef916e2f"
+    },
+    "片尾生成提示词.txt": {
+      "path": "片尾生成提示词.txt",
+      "sha256": "07775ba07c2e6ebdcbb3936f936477ae64d644debcaaff0aa8749258f3594afa"
+    }
+  },
+  "version": "kgxc-r5-r8-m1-v8-assets",
+  "status": "approved",
+  "asset_root": "."
+}

@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>课程预览</title>
+<style>*{box-sizing:border-box}html,body{margin:0;background:#101617;overflow:hidden}html,body{height:100%}body{display:flex;align-items:center;justify-content:center}#output{display:block;width:100%;height:100%;object-fit:contain}#native{position:absolute;left:-10000px;top:0;width:1920px;height:1080px;border:0}#error{color:#ffc5b5;font:16px sans-serif;position:fixed;bottom:8px;left:8px}</style>
+<canvas id="output" width="1920" height="1080"></canvas><iframe id="native" title="课程画布" src="/native/index.html"></iframe><div id="error"></div>
+<script type="module">
+import {CourseRenderer} from '/renderer.js';
+const r=new CourseRenderer(document.querySelector('#output'),document.querySelector('#native'));
+window.courseRenderer=r;
+try {const job=new URLSearchParams(location.search).get('job');const d=await fetch(job?'/api/job-document/'+job:'/api/document').then(x=>x.json());await r.load(d);await r.drawFrame(0);window.ready=true;parent.postMessage({type:'renderer-ready'},location.origin)}catch(e){document.querySelector('#error').textContent=e.message;window.renderError=e.message}
+</script></html>

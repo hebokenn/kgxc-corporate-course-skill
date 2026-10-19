@@ -1,0 +1,334 @@
+{
+  "title": "酷果星创 · 收货核对技术样例",
+  "sourceDurationFrames": 271,
+  "scenes": [
+    {
+      "id": "N001",
+      "title": "先核对订单",
+      "chapter": "收货核对",
+      "sourceStartFrame": 0,
+      "sourceEndFrame": 75
+    },
+    {
+      "id": "N002",
+      "title": "检查商品与编码",
+      "chapter": "收货核对",
+      "sourceStartFrame": 75,
+      "sourceEndFrame": 165
+    },
+    {
+      "id": "N003",
+      "title": "三项对应后交接",
+      "chapter": "收货核对",
+      "sourceStartFrame": 165,
+      "sourceEndFrame": 271
+    }
+  ],
+  "captions": [
+    {
+      "id": "Q001",
+      "sceneId": "N001",
+      "text": "收货时先核对订单",
+      "startFrame": 0,
+      "endFrame": 75
+    },
+    {
+      "id": "Q002",
+      "sceneId": "N002",
+      "text": "再检查商品的SN编码和外包装",
+      "startFrame": 75,
+      "endFrame": 165
+    },
+    {
+      "id": "Q003",
+      "sceneId": "N003",
+      "text": "最后拍照留存 确认三项信息对应 再完成交接",
+      "startFrame": 165,
+      "endFrame": 271
+    }
+  ],
+  "media": {
+    "audio": "audio/narration.wav",
+    "intro": null,
+    "outro": null
+  },
+  "voice": "Qwen3-TTS Aiden 原速1.0 · 本地生成",
+  "assets": [
+    {
+      "id": "order",
+      "label": "订单示意图",
+      "path": "assets/order.png"
+    },
+    {
+      "id": "product",
+      "label": "商品编码示意图",
+      "path": "assets/product.png"
+    }
+  ],
+  "sceneGraph": {
+    "background": "#f3f2ec",
+    "nodes": [
+      {
+        "id": "N001-tag",
+        "type": "text",
+        "sceneId": "N001",
+        "text": "01 / ORDER",
+        "x": 130,
+        "y": 95,
+        "fontSize": 26,
+        "fill": "#4d7b65"
+      },
+      {
+        "id": "N001-title",
+        "type": "text",
+        "sceneId": "N001",
+        "text": "先核对订单",
+        "x": 130,
+        "y": 155,
+        "fontSize": 70,
+        "fill": "#193e32"
+      },
+      {
+        "id": "N002-tag",
+        "type": "text",
+        "sceneId": "N002",
+        "text": "02 / PRODUCT",
+        "x": 130,
+        "y": 95,
+        "fontSize": 26,
+        "fill": "#4d7b65"
+      },
+      {
+        "id": "N002-title",
+        "type": "text",
+        "sceneId": "N002",
+        "text": "检查商品与编码",
+        "x": 130,
+        "y": 155,
+        "fontSize": 70,
+        "fill": "#193e32"
+      },
+      {
+        "id": "N003-tag",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "03 / RECORD",
+        "x": 130,
+        "y": 95,
+        "fontSize": 26,
+        "fill": "#4d7b65"
+      },
+      {
+        "id": "N003-title",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "三项对应后交接",
+        "x": 130,
+        "y": 155,
+        "fontSize": 70,
+        "fill": "#193e32"
+      },
+      {
+        "id": "N001-order",
+        "type": "image",
+        "sceneId": "N001",
+        "assetId": "order",
+        "x": 130,
+        "y": 290,
+        "width": 850,
+        "height": 540
+      },
+      {
+        "id": "N001-box",
+        "type": "rect",
+        "sceneId": "N001",
+        "x": 1250,
+        "y": 375,
+        "width": 340,
+        "height": 240,
+        "radius": 20,
+        "fill": "#d4b282",
+        "motion": [
+          {
+            "property": "x",
+            "from": 1500,
+            "to": 1200,
+            "startFrame": 0,
+            "endFrame": 60,
+            "ease": "smooth"
+          }
+        ]
+      },
+      {
+        "id": "N001-box-label",
+        "type": "text",
+        "sceneId": "N001",
+        "text": "商品包裹",
+        "x": 1260,
+        "y": 460,
+        "fontSize": 48,
+        "fill": "#443822"
+      },
+      {
+        "id": "N002-product",
+        "type": "image",
+        "sceneId": "N002",
+        "assetId": "product",
+        "x": 960,
+        "y": 290,
+        "width": 840,
+        "height": 540
+      },
+      {
+        "id": "N002-code",
+        "type": "text",
+        "sceneId": "N002",
+        "text": "SN 编码",
+        "x": 200,
+        "y": 360,
+        "fontSize": 64,
+        "fill": "#214a60"
+      },
+      {
+        "id": "N002-package",
+        "type": "text",
+        "sceneId": "N002",
+        "text": "外包装状态",
+        "x": 200,
+        "y": 500,
+        "fontSize": 56,
+        "fill": "#214a60"
+      },
+      {
+        "id": "N002-rule",
+        "type": "text",
+        "sceneId": "N002",
+        "text": "逐项核对  再进入交接",
+        "x": 200,
+        "y": 690,
+        "fontSize": 38,
+        "fill": "#658178"
+      },
+      {
+        "id": "N003-circle-0",
+        "type": "ellipse",
+        "sceneId": "N003",
+        "x": 430,
+        "y": 450,
+        "width": 180,
+        "height": 180,
+        "fill": "#daeadf",
+        "motion": [
+          {
+            "property": "opacity",
+            "from": 0,
+            "to": 1,
+            "startFrame": 165,
+            "endFrame": 185
+          }
+        ]
+      },
+      {
+        "id": "N003-number-0",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "01",
+        "x": 385,
+        "y": 410,
+        "fontSize": 64,
+        "fill": "#315747"
+      },
+      {
+        "id": "N003-label-0",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "订单",
+        "x": 430,
+        "y": 620,
+        "fontSize": 48,
+        "align": "center",
+        "fill": "#315747"
+      },
+      {
+        "id": "N003-circle-1",
+        "type": "ellipse",
+        "sceneId": "N003",
+        "x": 1010,
+        "y": 450,
+        "width": 180,
+        "height": 180,
+        "fill": "#dce7f3",
+        "motion": [
+          {
+            "property": "opacity",
+            "from": 0,
+            "to": 1,
+            "startFrame": 177,
+            "endFrame": 197
+          }
+        ]
+      },
+      {
+        "id": "N003-number-1",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "02",
+        "x": 965,
+        "y": 410,
+        "fontSize": 64,
+        "fill": "#315747"
+      },
+      {
+        "id": "N003-label-1",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "商品",
+        "x": 1010,
+        "y": 620,
+        "fontSize": 48,
+        "align": "center",
+        "fill": "#315747"
+      },
+      {
+        "id": "N003-circle-2",
+        "type": "ellipse",
+        "sceneId": "N003",
+        "x": 1590,
+        "y": 450,
+        "width": 180,
+        "height": 180,
+        "fill": "#f3e5cc",
+        "motion": [
+          {
+            "property": "opacity",
+            "from": 0,
+            "to": 1,
+            "startFrame": 189,
+            "endFrame": 209
+          }
+        ]
+      },
+      {
+        "id": "N003-number-2",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "03",
+        "x": 1545,
+        "y": 410,
+        "fontSize": 64,
+        "fill": "#315747"
+      },
+      {
+        "id": "N003-label-2",
+        "type": "text",
+        "sceneId": "N003",
+        "text": "留存记录",
+        "x": 1590,
+        "y": 620,
+        "fontSize": 48,
+        "align": "center",
+        "fill": "#315747"
+      }
+    ]
+  }
+}

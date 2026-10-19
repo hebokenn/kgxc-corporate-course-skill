@@ -1,0 +1,7 @@
+# Media/editor/QA runtime only. Qwen3-TTS is prepared separately by the user.
+playwright==1.63.0
+numpy==2.5.4
+Pillow==12.3.0
+scipy
+fonttools
+opencv-python-headless

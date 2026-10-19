@@ -1,0 +1,9 @@
+{
+  "python": "~/.local/share/kgxc-course/runtime/venv/bin/python",
+  "node": "node",
+  "node_modules": "~/.local/share/kgxc-course/runtime/node/node_modules",
+  "browser_channel": "chromium",
+  "browser_path": "~/.local/share/kgxc-course/runtime/browsers",
+  "ffmpeg": "ffmpeg",
+  "ffprobe": "ffprobe"
+}

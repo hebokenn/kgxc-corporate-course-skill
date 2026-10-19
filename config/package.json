@@ -1,0 +1,7 @@
+{
+  "name": "kgxc-course-media-runtime",
+  "version": "3.4.0",
+  "private": true,
+  "description": "Local web rendering helper; no model or cloud service",
+  "dependencies": { "playwright-core": "1.63.0" }
+}

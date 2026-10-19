@@ -1,0 +1,20 @@
+[
+  {
+    "id": "B001",
+    "duration_sec": 5,
+    "visual_type": "ProcessFlow",
+    "rule_ids": [
+      "R004"
+    ],
+    "narration_ids": [
+      "N001"
+    ],
+    "on_screen_facts": [
+      {
+        "rule_id": "R004",
+        "text": "先核对再交接"
+      }
+    ],
+    "animation_cues": []
+  }
+]

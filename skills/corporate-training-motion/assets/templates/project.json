@@ -1,0 +1,107 @@
+{
+  "project_id": "REPLACE-me",
+  "course_title": "待输入课程名称",
+  "source_file": "source/your-document.pdf",
+  "source_version": "来源未提供版本信息",
+  "source_pages": null,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "language": "zh-CN",
+  "visual_plan_version": 2,
+  "content_contract_version": 2,
+  "deliverable": "full",
+  "pilot_rule_ids": [],
+  "approvals": {
+    "content": false,
+    "visual": false,
+    "pilot": false,
+    "final": false
+  },
+  "approval_note": "阶段审核须由用户/制度负责人明确确认，Codex 不得自行改为 true",
+  "production_mode": "local_only",
+  "preview_mode": "narrated",
+  "render_artifacts": {
+    "preview": null,
+    "final": null
+  },
+  "brand": {
+    "profile": "kgxc",
+    "greeting": "欢迎来到酷果星创企业培训课堂",
+    "closing": "本节课程到此结束，感谢大家观看",
+    "logo_file": "assets/brand/kgxc/kgxc-logo.png",
+    "intro_video": null,
+    "outro_video": null,
+    "bookend_version": null,
+    "bookend_sha256": {}
+  },
+  "voice": {
+    "status": "user_selected_default_for_new_narration",
+    "provider": "qwen3_tts",
+    "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
+    "voice_id": "Aiden",
+    "description": "清亮中音，美式英语男声",
+    "language": "auto",
+    "instruct": null,
+    "speed": 1.0,
+    "temperature": 0.65,
+    "top_p": 0.9,
+    "repetition_penalty": 1.05,
+    "seed": 20261019,
+    "stream": false,
+    "cloud_generation_authorized": false
+  },
+  "process_visual_default": {
+    "strategy": "choose_by_content_audience_and_visual_goal",
+    "world": "map_or_scene_or_real_operation_as_needed",
+    "camera": "purposeful_overview_detail_return_or_other_justified_route",
+    "footer_review": "actual_visible_glyph_and_object_bounds_after_camera_transform",
+    "map_required": false,
+    "single_world_required": false
+  },
+  "subtitle_occlusion_review": {
+    "required_before_delivery": true,
+    "scope": "whole_course_at_final_fps",
+    "camera_states": [
+      "push_in",
+      "pan",
+      "pull_back",
+      "settled",
+      "handoff"
+    ],
+    "subjects": [
+      "current_teaching_content",
+      "visible_explained_neighbor_annotations"
+    ],
+    "bounds": "after_camera_transform_before_clip_including_glyph_stroke_and_grouped_lines",
+    "acceptance": "known_defect_negative_control_then_corrected_scan_and_final_encoded_player_review"
+  },
+  "subtitles": {
+    "punctuation": false,
+    "single_line": true,
+    "auto_wrap": false,
+    "shrink_to_fit": false,
+    "max_em": 28,
+    "font_px": 42,
+    "safe_region": [
+      112,
+      942,
+      1808,
+      1028
+    ],
+    "timing_review": "required_for_new_splits"
+  },
+  "owning_skill": "corporate-training-motion@3.4.0",
+  "titles": {
+    "policy": "choose_by_content",
+    "independent_from_subtitles": true
+  },
+  "workbench": {
+    "required": true,
+    "contract_version": 1,
+    "document": "workbench.json",
+    "adapter": "scene-graph-v1",
+    "entry": "editor/scripts/workbench.py",
+    "runtime_check": "required_for_preview_and_final"
+  }
+}

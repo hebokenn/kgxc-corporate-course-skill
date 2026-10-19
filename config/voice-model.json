@@ -1,0 +1,9 @@
+{
+  "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
+  "revision": "52f4770fd9726457eae3d3b6aa92047a25a10776",
+  "voice": "Aiden",
+  "speed": 1.0,
+  "source": "https://github.com/QwenLM/Qwen3-TTS",
+  "runtime": "mlx-audio",
+  "download": "automatic during full install; weights stay outside repository"
+}

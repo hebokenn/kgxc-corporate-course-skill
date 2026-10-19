@@ -1,0 +1,17 @@
+{
+  "origin": "Approved KGXC R5/R8 immutable backgrounds, lossless RGB packaging; title layers remain editable",
+  "backgrounds": {
+    "intro": {
+      "file": "intro-background.mkv",
+      "frames": 145,
+      "fps": 24,
+      "sha256": "b3cedaafcd3e01690ca81a1372f34920555abb46c9f9415513a040f9a41cc3fb"
+    },
+    "outro": {
+      "file": "outro-background.mkv",
+      "frames": 109,
+      "fps": 24,
+      "sha256": "ee5ab8a0fdba1a797e10776d2bf79e0a6a7b0954776ad2a8c80845fd0dc47c83"
+    }
+  }
+}
