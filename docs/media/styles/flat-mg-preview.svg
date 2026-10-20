@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="PingFang SC,Hiragino Sans GB,Microsoft YaHei,sans-serif">
+  <defs>
+    <pattern id="dots" width="48" height="48" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="2.2" fill="#e4e1d6"/>
+    </pattern>
+    <marker id="arrowB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f5c8c"/>
+    </marker>
+  </defs>
+  <rect width="1920" height="1080" fill="#f3f2ec"/>
+  <rect width="1920" height="1080" fill="url(#dots)"/>
+
+  <text x="64" y="92" font-size="36" font-weight="700" fill="#1a2332">收货核对 · 三项信息对应</text>
+  <text x="1856" y="92" text-anchor="end" font-size="24" fill="#9aa3af">虚构验收示意 · 非业务标准</text>
+
+  <g font-size="26" font-weight="500" text-anchor="middle">
+    <rect x="258" y="130" width="230" height="54" rx="27" fill="#ffffff" stroke="#dbe2ec" stroke-width="2"/>
+    <text x="373" y="165" fill="#6b7686">1 · 核对订单</text>
+    <rect x="524" y="130" width="300" height="54" rx="27" fill="#0f5c8c"/>
+    <text x="674" y="165" fill="#ffffff">2 · 检查SN与外包装</text>
+    <polygon points="660,184 688,184 674,200" fill="#0f5c8c"/>
+    <rect x="860" y="130" width="230" height="54" rx="27" fill="#ffffff" stroke="#dbe2ec" stroke-width="2"/>
+    <text x="975" y="165" fill="#6b7686">3 · 拍照留存</text>
+    <rect x="1126" y="130" width="270" height="54" rx="27" fill="#ffffff" stroke="#dbe2ec" stroke-width="2"/>
+    <text x="1261" y="165" fill="#6b7686">4 · 确认三项对应</text>
+    <rect x="1432" y="130" width="230" height="54" rx="27" fill="#ffffff" stroke="#dbe2ec" stroke-width="2"/>
+    <text x="1547" y="165" fill="#6b7686">5 · 完成交接</text>
+  </g>
+
+  <rect x="170" y="250" width="620" height="610" rx="18" fill="#ffffff" stroke="#dbe2ec" stroke-width="2"/>
+  <rect x="170" y="250" width="620" height="86" rx="18" fill="#0f5c8c"/>
+  <rect x="170" y="320" width="620" height="16" fill="#0f5c8c"/>
+  <text x="210" y="303" font-size="32" font-weight="700" fill="#ffffff">送货单</text>
+  <text x="750" y="300" text-anchor="end" font-size="22" fill="#cfe3f2">NO. SO-2026-1042</text>
+
+  <text x="210" y="404" font-size="24" fill="#8a93a3">商品名称</text>
+  <text x="210" y="448" font-size="32" fill="#1a2332">蓝牙音箱 × 2 件</text>
+  <rect x="196" y="470" width="568" height="112" rx="14" fill="#e3eef7"/>
+  <text x="226" y="508" font-size="24" fill="#5b7f9c">SN编码</text>
+  <text x="226" y="556" font-size="36" font-weight="700" fill="#0f5c8c">SN-KG-2026-1043</text>
+  <text x="210" y="646" font-size="24" fill="#8a93a3">收货数量</text>
+  <text x="210" y="690" font-size="32" fill="#1a2332">2 件</text>
+  <text x="210" y="806" font-size="24" fill="#8a93a3">核对人：__________      日期：2026-10-20</text>
+
+  <rect x="1150" y="430" width="590" height="400" rx="12" fill="#c9a06a"/>
+  <rect x="1150" y="430" width="590" height="30" rx="12" fill="#b58a52"/>
+  <rect x="1150" y="445" width="590" height="15" fill="#b58a52"/>
+  <rect x="1425" y="460" width="40" height="370" fill="#c69a63" opacity="0.75"/>
+  <rect x="1150" y="780" width="590" height="50" rx="12" fill="#a87c45" opacity="0.35"/>
+  <rect x="1260" y="540" width="340" height="160" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="2"/>
+  <text x="1286" y="576" font-size="22" fill="#8a93a3">SN编码</text>
+  <g fill="#1a2332">
+    <rect x="1286" y="592" width="5" height="46"/>
+    <rect x="1298" y="592" width="3" height="46"/>
+    <rect x="1308" y="592" width="7" height="46"/>
+    <rect x="1322" y="592" width="3" height="46"/>
+    <rect x="1332" y="592" width="5" height="46"/>
+    <rect x="1344" y="592" width="3" height="46"/>
+    <rect x="1354" y="592" width="7" height="46"/>
+    <rect x="1368" y="592" width="4" height="46"/>
+    <rect x="1379" y="592" width="6" height="46"/>
+    <rect x="1392" y="592" width="3" height="46"/>
+    <rect x="1402" y="592" width="5" height="46"/>
+    <rect x="1414" y="592" width="3" height="46"/>
+    <rect x="1424" y="592" width="6" height="46"/>
+    <rect x="1437" y="592" width="4" height="46"/>
+    <rect x="1448" y="592" width="6" height="46"/>
+    <rect x="1461" y="592" width="3" height="46"/>
+    <rect x="1471" y="592" width="5" height="46"/>
+    <rect x="1483" y="592" width="7" height="46"/>
+    <rect x="1497" y="592" width="3" height="46"/>
+    <rect x="1507" y="592" width="6" height="46"/>
+    <rect x="1520" y="592" width="4" height="46"/>
+    <rect x="1531" y="592" width="5" height="46"/>
+    <rect x="1543" y="592" width="3" height="46"/>
+    <rect x="1553" y="592" width="6" height="46"/>
+    <rect x="1566" y="592" width="4" height="46"/>
+    <rect x="1577" y="592" width="7" height="46"/>
+  </g>
+  <text x="1286" y="690" font-size="26" font-weight="700" fill="#1a2332">SN-KG-2026-1043</text>
+  <text x="1445" y="886" text-anchor="middle" font-size="26" fill="#6b7686">检查商品SN编码与外包装</text>
+
+  <line x1="790" y1="525" x2="1252" y2="588" stroke="#0f5c8c" stroke-width="3" stroke-dasharray="12 9" marker-end="url(#arrowB)"/>
+  <text x="1015" y="492" text-anchor="middle" font-size="24" fill="#0f5c8c">逐项对应</text>
+  <circle cx="1015" cy="560" r="46" fill="#1f9d55"/>
+  <path d="M995,560 l16,16 l30,-34" stroke="#ffffff" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1015" y="642" text-anchor="middle" font-size="26" font-weight="700" fill="#1f9d55">SN一致</text>
+
+  <text x="960" y="1002" text-anchor="middle" font-size="42" font-weight="600" fill="#ffffff" stroke="#172b38" stroke-width="8" paint-order="stroke">再检查商品SN编码和外包装</text>
+</svg>

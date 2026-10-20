@@ -1,0 +1,132 @@
+{
+  "version": "v5.0.0 showcase",
+  "scope": "documentation assets, real technical examples and brand previews",
+  "files": {
+    "courseware-cover.png": {
+      "bytes": 110901,
+      "sha256": "91d2cd9acbce2d97c9831f5b2896a69339b47d3a2d68cef96df6ce38c8ff7c80",
+      "image": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "courseware-demo.html": {
+      "bytes": 10576,
+      "sha256": "0235a8b6ce2d3c0ade649afe5689704379e6558464b9880382e2d4eb24c66e19"
+    },
+    "courseware-exercise.png": {
+      "bytes": 67207,
+      "sha256": "2b65f15d69e458363a2cb0858cc642c4a906b537dfb7f1a1c54e28d84f104d86",
+      "image": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "courseware-overview.png": {
+      "bytes": 70275,
+      "sha256": "259ecaa047bff410d3a26097c13d8a080ce42586862177ad18ad16696764b255",
+      "image": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "embeds.json": {
+      "bytes": 830,
+      "sha256": "34670d0afdc7c4f4011d81ad9f38233c1ef9de9846eeacdb0d5ef173b1fb29d9"
+    },
+    "hero.png": {
+      "bytes": 310792,
+      "sha256": "3a823aa4737a392017a507d6f0905921e9f20aa25f3cda06d5a205d7db6cbe98",
+      "image": {
+        "width": 1280,
+        "height": 640
+      }
+    },
+    "source/hero.html": {
+      "bytes": 1889,
+      "sha256": "b8149ba4db0ba7b8432e7a95c80385f731f55a320b51af5bd018c79a281e4ef8"
+    },
+    "source/render.py": {
+      "bytes": 3606,
+      "sha256": "764e6501024db633c9c3183a61d75be80fdcf08b5dae104b4a2569a2a41bbb39"
+    },
+    "styles/flat-mg-preview.png": {
+      "bytes": 94187,
+      "sha256": "a325a7cab95cc871b5b07c43b3a8f8743e1ad5f85b821b8308493edf6b765959",
+      "image": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "styles/flat-mg-preview.svg": {
+      "bytes": 5749,
+      "sha256": "f0b0190ffcefd12f896de4d1a2f63e1975d3d4ba467ff646315a3348fbf711b6"
+    },
+    "styles/iso-diorama-preview.png": {
+      "bytes": 102122,
+      "sha256": "1a63f293d8ef71e4d38fb604e3d9ee608a220130137151b02d34411e3f9282ac",
+      "image": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    "styles/iso-diorama-preview.svg": {
+      "bytes": 6254,
+      "sha256": "ff2948c3414b376c775fee6f5aba49e203f0ef50dc91dd5f05d66963f680a36e"
+    },
+    "styles/live-action-preview.png": {
+      "bytes": 1966388,
+      "sha256": "ddb65947d5fc5a817e10f71664554a2f11fa65ae1f8c94aa6adaecc4d40bf1ed",
+      "image": {
+        "width": 1536,
+        "height": 1024
+      }
+    },
+    "v5-confirmations.png": {
+      "bytes": 66207,
+      "sha256": "8086b4ccae8148996b2eebb45d9678090b84be35fc44f8ac6eb9f090ae8d571e",
+      "image": {
+        "width": 1150,
+        "height": 647
+      }
+    },
+    "v5-course-demo.mp4": {
+      "bytes": 885591,
+      "sha256": "d961adaba799ba51cdb95878e6baba8af3245333bbb1f813fc9bdfa80c9d19a0",
+      "media": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1920,
+            "height": 1080,
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          }
+        ],
+        "format": {
+          "duration": "9.033333"
+        }
+      }
+    },
+    "v5-course-demo.srt": {
+      "bytes": 285,
+      "sha256": "da33d7bb4c2d6de46682e6b396266c87d6a1a97ef2e8460d246c5feb88489c76"
+    },
+    "v5-editor.png": {
+      "bytes": 193835,
+      "sha256": "8e19f64324068ef6b4b06a38e2965571be3642bfd2a2b1a2410ea8995735ce57",
+      "image": {
+        "width": 1600,
+        "height": 1080
+      }
+    }
+  }
+}

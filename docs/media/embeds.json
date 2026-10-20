@@ -1,0 +1,23 @@
+{
+  "repository": "hebokenn/kgxc-corporate-course-skill",
+  "videos": [
+    {
+      "file": "v5-course-demo.mp4",
+      "url": "https://github.com/user-attachments/assets/a3710430-2c9f-482e-8d03-6fb9078e4471",
+      "sha256": "d961adaba799ba51cdb95878e6baba8af3245333bbb1f813fc9bdfa80c9d19a0",
+      "bytes": 885591
+    },
+    {
+      "file": "intro-preview.mp4",
+      "url": "https://github.com/user-attachments/assets/e9237470-ffc7-43af-ad71-81694ed3b7e9",
+      "sha256": "fb40d80ce9cc34cb86adf4ff862b24a179f9f78eca05971106d41033f572f616",
+      "bytes": 3502615
+    },
+    {
+      "file": "outro-preview.mp4",
+      "url": "https://github.com/user-attachments/assets/031576a8-3d59-4ac1-9256-736f6bc7e987",
+      "sha256": "472f2c7f439c3f4f13efe75613318e1fc13905c9002a35a5adb4a8370c0decf4",
+      "bytes": 1367276
+    }
+  ]
+}
