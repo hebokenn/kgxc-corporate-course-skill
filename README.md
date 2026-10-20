@@ -1,66 +1,256 @@
-# 酷果星创课程共创与制作
+# 酷果星创 · 把知识做成看得进去的课程
 
-![把原始资料，做成一门好课。课程设计、逐字稿、课件与视频，在同一套工作流里完成。右侧为真实品牌片头和课程工作台。](docs/media/hero.png)
+![实际成品画面：企业虚拟讲师、空间拆解、人物情境与字体动效](docs/media/capabilities-poster.jpg)
 
-**先把课讲清楚，再把画面做好。** 给 AI 一份制度、手册、PPT 或零散资料，先共同确定怎么教，再制作可讲授的课件或有声视频。
+**17支教学动效 · 7种新增视觉风格 · 80秒成品混剪。**
 
-**[下载安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-suite-v5.0.0.zip)** · [看实际效果](#实际效果) · [开始做第一门课](#开始做第一门课) · [使用指南](docs/USAGE.md)
+看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-支持 **Codex / WorkBuddy** · 当前发布 **[v5.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v5.0.0)** · 完整环境已验证 **macOS Apple 芯片**
+**[安装 Skill v5.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-suite-v5.0.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
-## 实际效果
+支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
 
-### 配音、画面、动作和字幕，一起看
+## 先看80秒成品
 
-下面是 WorkBuddy 实际导出的 **9 秒有声正文**：核对订单、检查 SN、拍照留存、对应核对、完成交接。播放器可直接播放和全屏；点击音量图标可打开声音。
+无旁白，用BGM和动作音效串起17种具体的教学效果。1920×1080，30fps。
+
+https://github.com/user-attachments/assets/d66985f1-e143-4a30-83d4-336f45908d54
+
+[下载网页版MP4](docs/media/capability-showreel.mp4) · [下载全部原画质视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip)
+
+本组新样片与宣传片由 **huashu-motion** 基于既有课程内容、原公司角色和动效资源制作。下方另有原生WorkBuddy 9秒导出，标明实际来源，方便对照。
+
+## 新增7种视觉风格
+
+![7种实际视频帧：瑞士字体、等距空间、纸艺、品牌人物漫画、深色诊断台、水墨知识图与像素任务场景](docs/media/capabilities-7-new-styles.jpg)
+
+每支都是8秒独立MP4。展开即可在GitHub内播放，也可以[一次下载全部视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip)。
+
+<details>
+<summary><strong>11 · 瑞士字体海报 / 字体层级</strong></summary>
+
+服务七步骤中的发掘线索与展示体验。大字遮罩上升；基线游标切换；提问层级建立。
+
+https://github.com/user-attachments/assets/129abcc7-cdab-4aca-8679-97cda4269ab6
+
+[下载独立MP4](docs/media/sample-swiss.mp4)
+
+</details>
+
+<details>
+<summary><strong>12 · 等距空间拆解 / 空间分层</strong></summary>
+
+外包装、SN标签与订单记录的对应关系。包装和信息层沿空间轴拆开；引线逐层标注。
+
+https://github.com/user-attachments/assets/5b539c55-b9aa-45ed-99b1-0a9ebc5ce42d
+
+[下载独立MP4](docs/media/sample-isometric.mp4)
+
+</details>
+
+<details>
+<summary><strong>13 · 纸艺层叠 / 折页展开</strong></summary>
+
+将服务七步骤分为接待前、中、后。三层纸面依次翻开；露出对应步骤；折角和投影随动。
+
+https://github.com/user-attachments/assets/b9b4d6a5-3bf4-4661-a1a6-cb5a07068b0f
+
+[下载独立MP4](docs/media/sample-papercut.mp4)
+
+</details>
+
+<details>
+<summary><strong>14 · 品牌人物漫画 / 分镜对话</strong></summary>
+
+从了解使用场景，到邀请顾客亲手体验。三个分镜推进；原始M1与员工角色入画；气泡弹出。
+
+https://github.com/user-attachments/assets/9ea812c4-e1a9-4642-8efd-c498afc8566d
+
+[下载独立MP4](docs/media/sample-comic.mp4)
+
+</details>
+
+<details>
+<summary><strong>15 · 深色诊断台 / 筛选追踪</strong></summary>
+
+只把范围对应的线下客流用于示意计算。无关记录划除；信号连入结果；同口径数字聚合。
+
+https://github.com/user-attachments/assets/c6a58b13-cb9e-46c9-8ae2-5eb01635abff
+
+[下载独立MP4](docs/media/sample-terminal.mp4)
+
+</details>
+
+<details>
+<summary><strong>16 · 水墨知识图 / 知识分枝</strong></summary>
+
+使用场景、优先考虑与体验验证。手绘分枝生长；知识节点顺势展开；朱印收束。
+
+https://github.com/user-attachments/assets/2738bee1-8b12-484a-bfe6-b64a57efd578
+
+[下载独立MP4](docs/media/sample-ink.mp4)
+
+</details>
+
+<details>
+<summary><strong>17 · 像素任务场景 / 情境闯关</strong></summary>
+
+按订单、SN与包装、照片完成交接前核对。商品小车经过任务站；逐关插旗；任务完成反馈。
+
+https://github.com/user-attachments/assets/b0a91e06-b2a0-44c7-a6ca-e99c49a020eb
+
+[下载独立MP4](docs/media/sample-pixel.mp4)
+
+</details>
+
+## 10种教学动效，逐条看
+
+![17种独立样片的实际编码视频帧，带编号与类型](docs/media/capabilities-17-overview.jpg)
+
+扫描、拆解、连线、手势、放大、纠错、重排、反馈、补位、聚合。每种动作都围绕实际课程知识点展开。
+
+<details>
+<summary><strong>01 · 扫描连线 / 工程蓝图 · 10秒</strong></summary>
+
+订单与商品SN对应。扫描线扫过标签；连线连接同一SN；逐项勾选。
+
+https://github.com/user-attachments/assets/b9cb36c9-e6bf-4b3f-ac22-890e83f44521
+
+[下载独立MP4](docs/media/sample-blueprint.mp4)
+
+</details>
+
+<details>
+<summary><strong>02 · 公式拆解 / 编辑式排版 · 10秒</strong></summary>
+
+线下主机转化率的分子与分母。分子分母归位；分数线展开；圈出对应范围。
+
+https://github.com/user-attachments/assets/4b709201-255c-4baf-a5be-0ba3543c68b4
+
+[下载独立MP4](docs/media/sample-editorial.mp4)
+
+</details>
+
+<details>
+<summary><strong>03 · 逐笔路径 / 手写白板 · 10秒</strong></summary>
+
+顾客服务七步骤。路径逐笔绘制；步骤连续展开；手绘圈注。
+
+https://github.com/user-attachments/assets/a9086358-c463-49b2-88cc-9f082d1dbd76
+
+[下载独立MP4](docs/media/sample-whiteboard.mp4)
+
+</details>
+
+<details>
+<summary><strong>04 · 人物手势 / 公司虚拟讲师 · 10秒</strong></summary>
+
+M1讲解收货三项核对。连续网格抬手、眨眼与知识点选中协同。
+
+https://github.com/user-attachments/assets/12c5efa5-d6f2-4e30-b60b-a50259ecf42e
+
+[下载独立MP4](docs/media/sample-presenter.mp4)
+
+</details>
+
+<details>
+<summary><strong>05 · 聚光放大 / 细节检视 · 8秒</strong></summary>
+
+收货时读取并核对SN。背景压暗；局部放大；引导线接入核对位置。
+
+https://github.com/user-attachments/assets/a2adf5be-3ee2-4fc2-9e7d-c6aebded7b65
+
+[下载独立MP4](docs/media/sample-spotlight.mp4)
+
+</details>
+
+<details>
+<summary><strong>06 · 对比纠错 / 双栏对照 · 8秒</strong></summary>
+
+回查实物后纠正示意编码的末位。差异抖动；末位替换；由异常切换为对应状态。
+
+https://github.com/user-attachments/assets/1d11a7ad-c4a0-4266-b3c9-eaa942e0612e
+
+[下载独立MP4](docs/media/sample-correction.mp4)
+
+</details>
+
+<details>
+<summary><strong>07 · 排序归组 / 流程卡片 · 8秒</strong></summary>
+
+核对订单→核对SN和外包装→拍照→确认对应完成交接。四张内容卡从错序移动到对应步骤。
+
+https://github.com/user-attachments/assets/55e2d65e-4dd3-4a86-9743-0ce6e8a9b8fc
+
+[下载独立MP4](docs/media/sample-sorting.mp4)
+
+</details>
+
+<details>
+<summary><strong>08 · 练习反馈 / 课中问答 · 8秒</strong></summary>
+
+交接前确认三项信息对应。预设选择；错误解释；正确答案与反馈显现。
+
+https://github.com/user-attachments/assets/261f7281-61e4-42ed-81d7-1d8a73f33372
+
+[下载独立MP4](docs/media/sample-quiz.mp4)
+
+</details>
+
+<details>
+<summary><strong>09 · 时间轴编排 / 排班信息图 · 8秒</strong></summary>
+
+该时段在岗覆盖不等于全天人数。任务区间移动补位；时段覆盖数同步变化。
+
+https://github.com/user-attachments/assets/7ee4f707-2dfd-414f-8f1b-1be9e7685766
+
+[下载独立MP4](docs/media/sample-timeline.mp4)
+
+</details>
+
+<details>
+<summary><strong>10 · 数据聚合 / 量化教学 · 8秒</strong></summary>
+
+示意100人接待、20台销量与20%转化率。100条记录选出20条；聚合成分子；比例显现。
+
+https://github.com/user-attachments/assets/b1eb5814-4ed0-426d-85f3-64af771e163c
+
+[下载独立MP4](docs/media/sample-data.mp4)
+
+</details>
+
+## 原生WorkBuddy与独立课件
+
+### WorkBuddy实际导出的9秒正文
+
+核对订单、检查SN、拍照留存、确认对应、完成交接。保留原画面与原声音。
 
 https://github.com/user-attachments/assets/a3710430-2c9f-482e-8d03-6fb9078e4471
 
-[下载原画质 MP4](docs/media/v5-course-demo.mp4) · [查看字幕](docs/media/v5-course-demo.srt)
-
-这里展示的是虚构收货核对技术样例，用于看制作与编辑效果；不是完整企业课程或正式业务制度。[素材来源与演示范围](docs/media/README.md)
-
-### 同一段讲解，先看三个视觉方向
-
-视频从已确认逐字稿启动导演。同一段“检查商品 SN 编码和外包装”，先做出三份可查看的方案，再由你确认画面与风格。
-
-| 实拍质感示意 | 2D 工程图示 | 等距微缩场景 |
-| :---: | :---: | :---: |
-| ![AI生成的工位实拍质感方案示意，纸箱与单据均为虚构道具](docs/media/styles/live-action-preview.png) | ![原生WorkBuddy生成的二维图示风格，展示送货单与SN标签的对应关系](docs/media/styles/flat-mg-preview.png) | ![原生WorkBuddy生成的等距工位方案，展示人物、纸箱与核对位置](docs/media/styles/iso-diorama-preview.png) |
-| 看操作的现场感 | 把对应关系讲清楚 | 把流程放进空间 |
-
-三图为真实生成的方案预览，实拍质感图使用 AI 生成，编号和数据为虚构示意。选定风格后制作**配音与画面结合的小样**，试听、看画面并确认，再制作完整视频。
+[下载原始MP4](docs/media/v5-course-demo.mp4) · [查看字幕](docs/media/v5-course-demo.srt)
 
 ### 课件路线，交付后就能自己讲
 
-想自行授课或录制，就交付**独立课件＋逐字稿**。下面是 WorkBuddy 实际生成的 HTML 课件，包含目标、讲解、示范、练习与反馈，共 6 页。
+WorkBuddy实际生成的6页HTML课件，包含目标、讲解、示范、练习与反馈，交付独立课件与逐字稿。
 
-![实际HTML课件的三项信息核对页，展示订单、SN编码和外包装的讲解结构](docs/media/courseware-overview.png)
+![实际HTML课件的三项信息核对页](docs/media/courseware-overview.png)
 
-[查看课件源码与下载](docs/media/courseware-demo.html) · [查看练习与反馈页](docs/media/courseware-exercise.png)
-
-### 保存之后，课程还能继续改
-
-![v5实际编辑工作台：课程场景、画面预览、字幕编辑、配音波形与时间轴](docs/media/v5-editor.png)
-
-在工作台里改画面文字、字幕、素材和时间轴；需要调整节奏时，先试听，再同步裁剪画面、配音与字幕。保存工程后可以再次导出，原始素材与录音保留。
+[查看课件源码与下载](docs/media/courseware-demo.html) · [查看练习页](docs/media/courseware-exercise.png)
 
 <details>
-<summary><strong>再看两个品牌包装示例：片头 10.5 秒 / 片尾 7 秒</strong></summary>
+<summary>播放实际课件页面展示</summary>
 
-### R5 品牌片头
-
-沿用已批准的品牌动画与原配乐，替换本门课的名称。下面是“收货核对流程”的实际导出。
-
-https://github.com/user-attachments/assets/e9237470-ffc7-43af-ad71-81694ed3b7e9
-
-### R8 品牌片尾
-
-同一套品牌语言，完成课程收束。正式课程的固定问候与结束语由当课配音加入。
-
-https://github.com/user-attachments/assets/031576a8-3d59-4ac1-9256-736f6bc7e987
+https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 </details>
+
+收货商品、编码、数字和情境为教学演示；17支样片、原生WorkBuddy短片和课件页面分别列出。[素材来源与演示范围](docs/media/README.md)
+
+### 保存之后，还能继续改
+
+![现有课程编辑工作台：场景、画面、字幕、配音波形与时间轴](docs/media/v5-editor.png)
+
+画面文字、字幕、素材与时间轴可继续调整，原始素材与录音随工程保留。展示样片工程包含17支独立源项目与总片镜头表，可用huashu-motion打开、修改与重新导出。
 
 ## 一门课，先共创，再制作
 
