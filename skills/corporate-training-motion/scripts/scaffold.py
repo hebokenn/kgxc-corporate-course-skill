@@ -3,11 +3,13 @@
 from pathlib import Path
 import argparse,json,shutil,sys
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'workbench'))
+from runtime import ensure_dir
 def create(destination):
  destination=Path(destination).expanduser().resolve()
  if destination.exists() and any(destination.iterdir()):raise SystemExit('目标目录非空，不覆盖：'+str(destination))
- destination.mkdir(parents=True,exist_ok=True)
- for name in ['inputs','project','delivery','packages','project/source','project/assets','project/audio','project/media','project/qa','project/work']:(destination/name).mkdir(parents=True,exist_ok=True)
+ ensure_dir(destination)
+ for name in ['inputs','project','delivery','packages','project/source','project/assets','project/audio','project/media','project/qa','project/work']:ensure_dir(destination/name)
  for p in (ROOT/'assets/templates').iterdir():
   if p.is_file():shutil.copy2(p,destination/'project'/('qa' if p.name in {'assessment-status.json','visual-evidence.json'} else '')/p.name)
  shutil.copytree(ROOT/'assets/profiles/kgxc',destination/'project/assets/brand/kgxc')
@@ -17,10 +19,14 @@ def create(destination):
  init_project(destination/'project',ROOT)
  editor=destination/'project/editor';shutil.copytree(ROOT/'workbench',editor/'workbench',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
  (editor/'scripts').mkdir(parents=True)
- for name in ['workbench.py','single_line_subtitles.py','check_workbench.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
+ for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
+ from workflow import Course
+ Course(destination).init()
  w={'layout_version':2,'current_version':None,'project_dir':'project','delivery_dir':'delivery','package_dir':'packages','retain_artifacts':[]}
  (destination/'workspace.json').write_text(json.dumps(w,ensure_ascii=False,indent=2)+'\n')
- (destination/'README.md').write_text('# 企业培训课程\n\ninputs/：原始资料；project/：唯一制作工程；delivery/：当前成片与字幕；packages/：当前工程包。\n\n工作台已内置，运行 `python3 project/editor/scripts/workbench.py serve .` 即可打开。当前为可编辑草稿，尚未生成声音或视频。制作时填入实际配音、场景、素材与字幕，使用统一工作台配置及导出。\n')
+ launcher=destination/'打开课程工作台.command'
+ launcher.write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")"\nexec python3 project/editor/scripts/workflow.py resume .\n');launcher.chmod(0o755)
+ (destination/'README.md').write_text('# 企业培训课程\n\n双击“打开课程工作台.command”，或运行 python3 project/editor/scripts/workflow.py resume .\n\ninputs/ 原件；project/design-plan.json 教学设计与选择；project/course-state.json 进度与确认；project/workbench.json 画面与时间轴。新课先确认教学方案和逐字稿，再选择独立课件或导演视频。视频先确认三个风格与有声画面小样，再生成整片。\n')
  print('工程已建立（仅模板）：',destination)
 if __name__=='__main__':
  a=argparse.ArgumentParser(description=__doc__);a.add_argument('destination',type=Path);create(a.parse_args().destination)

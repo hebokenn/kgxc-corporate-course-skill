@@ -7,7 +7,7 @@ def check(root):
  root=Path(root).expanduser().resolve();errors=[]
  try:w=json.loads((root/'workspace.json').read_text())
  except (OSError,ValueError) as e:return {'ok':False,'errors':['workspace.json: '+str(e)]}
- expected={'README.md','workspace.json','inputs','project','delivery','packages'}
+ expected={'README.md','workspace.json','inputs','project','delivery','packages','打开课程工作台.command','course-package-manifest.json'}
  errors += ['Unexpected course-root entry: '+p.name for p in root.iterdir() if p.name not in expected and p.name!='.DS_Store']
  for d in ['inputs','project','delivery','packages']:
   if not (root/d).is_dir():errors.append('Missing directory: '+d)

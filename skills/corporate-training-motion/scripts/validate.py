@@ -154,6 +154,25 @@ def validate(folder: Path, stage: str, require_approved=False):
     delivery=folder.parent/'delivery' if separated else folder/'output'
     voice=folder/'audio' if separated else folder/'voice'
     project=load(folder/'project.json',report)
+    if (folder/'course-state.json').is_file():
+        sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'workbench'))
+        from workflow import Course
+        from check_design import check as check_design
+        course=Course(folder);status=course.status()
+        if not status['source_files'] or any(x['sha256'] is None for x in status['source_files'].values()):
+            report.error('SOURCE_INFO','需要存在的原始素材及来源登记')
+        if stage!='analyze':
+            for error in check_design(status['plan'],folder)['errors']:report.error('TEACHING_DESIGN',error)
+            required=({'script':'outline','storyboard':'script','preview':'style','final':'final'}.get(stage,'outline') if course.modern() else {'script':'outline','storyboard':'content','preview':'visual','final':'pilot'}.get(stage,'source'))
+            if course.modern() and status.get('branch')=='courseware' and stage=='final':required='courseware'
+            try:
+                if course.modern() and stage in ('preview','final') and status.get('branch')!='courseware':course.require_video(required)
+                else:course.require(required)
+            except ValueError as exc:report.error('WORKFLOW_CONFIRMATION',str(exc))
+        if stage in ('preview','final') and not (course.modern() and status.get('branch')=='courseware'):
+            from check_workbench import check as check_editable
+            for error in check_editable(folder,require_runtime=True)['errors']:report.error('WORKBENCH_CONTRACT',error)
+        return report
     rules_arr=load(folder/'source_rules.json',report)
     if project is None or rules_arr is None:return report
     if not isinstance(project,dict):

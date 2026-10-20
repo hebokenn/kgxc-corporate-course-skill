@@ -19,6 +19,9 @@ class InstallationTests(unittest.TestCase):
         (self.source/'scripts').mkdir();(self.source/'scripts/kgxc_course.py').write_text('print("ok")\n')
         (self.root/'VERSION').write_text('3.4.0');i.write(self.root/'release.json',dict(repository='hebokenn/kgxc-corporate-course-skill'))
         self.manifest();self.dest=self.base/'installed skill';self.data=self.base/'data';self.cfg=self.base/'config';self.bin=self.base/'bin'
+        design=self.root/'skills/elearning-course-design';design.mkdir()
+        (design/'SKILL.md').write_text('---\nname: elearning-course-design\ndescription: Course design\n---\n')
+        i.write(design/'package-manifest.json',dict(name='elearning-course-design',version='1.0.0',files={'SKILL.md':i.digest(design/'SKILL.md')}))
     def tearDown(self):self.t.cleanup()
     def manifest(self):
         files={str(p.relative_to(self.source)):i.digest(p) for p in self.source.rglob('*') if p.is_file() and p.name!='package-manifest.json'}
@@ -63,6 +66,7 @@ class InstallationTests(unittest.TestCase):
             self.assertEqual(self.invoke('--skill-only'),0);self.assertEqual(self.invoke('--skill-only'),0)
             media.assert_not_called();voice.assert_not_called()
         self.assertEqual(self.invoke('--uninstall'),0);self.assertFalse(self.dest.exists());self.assertFalse((self.bin/'kgxc-course').exists())
+        self.assertFalse((self.dest.parent/'elearning-course-design').exists())
         self.assertEqual((course/'original').read_text(),'keep');self.assertEqual(i.read(self.cfg/'tools.json')['custom'],'kept')
         self.assertTrue(list((self.data/'uninstalled').glob('*/corporate-training-motion/SKILL.md')))
         with self.assertRaises(ValueError):self.invoke('--uninstall')

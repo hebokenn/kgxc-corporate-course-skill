@@ -1,0 +1,4 @@
+interface:
+  display_name: "电子课程教学设计"
+  short_description: "按教学目标推荐讲法与大纲，确认后写逐字稿，交接课件或导演视频"
+  default_prompt: "使用 $elearning-course-design 分析原始素材，先推荐讲解方法与课程大纲，确认后编写逐字稿，再交接独立课件或导演视频制作。"

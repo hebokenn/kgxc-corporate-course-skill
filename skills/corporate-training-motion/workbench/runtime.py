@@ -4,6 +4,15 @@ import os
 from pathlib import Path
 
 
+def ensure_dir(path):
+    """Idempotent even when a host maps EEXIST to PermissionError."""
+    path = Path(path)
+    if path.is_dir(): return
+    try: path.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        if not path.is_dir(): raise
+
+
 def config_dir():
     return Path(os.environ.get('COURSE_CONFIG_DIR',str(Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/'corporate-training-motion'))).expanduser()
 

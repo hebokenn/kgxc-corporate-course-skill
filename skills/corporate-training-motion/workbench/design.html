@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>课程共创工作台</title><link rel="stylesheet" href="/design.css"></head>
+<body><header><a class="identity" href="/">课<span>课程共创工作台</span></a><nav aria-label="工作区">
+<a href="#design" id="nav-design">课程设计</a><a href="#decisions" id="nav-decisions">待你确认 <span id="pending-count"></span></a><a href="#production" id="nav-production">制作与交付</a><a href="/edit.html" id="nav-video" hidden>视频编辑</a></nav>
+<span id="connection" role="status">正在恢复工程</span></header>
+<main><aside><p class="eyebrow">当前课程</p><h1 id="course-title">正在打开</h1><p id="next-action"></p><ol id="stages"></ol>
+<p class="aside-note">选择与确认保存在本课程中<br>关闭页面后可继续</p><button id="refresh">刷新工程状态</button></aside>
+<section class="workspace"><div id="notice" role="status" hidden></div>
+<section id="design-view"><div class="heading"><div><p class="eyebrow">先确认教学方案与逐字稿</p><h2>课程设计</h2></div><span id="design-status" class="badge"></span></div>
+<section class="section"><h3>原始素材</h3><div id="sources"></div></section>
+<section class="section"><h3>受众与工作任务</h3><p id="audience"></p><p id="performance-task"></p></section>
+<section class="section"><h3>学完后能做什么</h3><div id="objectives"></div></section>
+<section class="section"><h3>课程结构与取舍</h3><div id="units"></div></section>
+<section class="section"><h3>练习与反馈</h3><div id="assessments"></div></section>
+<section class="section"><div class="heading"><h3>课程逐字稿</h3><span id="narration-status" class="badge"></span></div>
+<label for="courseware">讲解正文、案例、练习引导与答案反馈</label><textarea id="courseware" rows="14" placeholder="结构与讲解方法确认后，逐字稿会出现在这里。"></textarea>
+<button id="save-courseware" class="primary">保存逐字稿</button><span id="courseware-dirty" role="status"></span>
+<p class="hint">这份逐字稿是课件和视频的共同起点。修改正文后，关联的确认与产物需要复核。</p></section>
+<details class="section"><summary>制作人员：教学设计数据</summary><label for="plan-data">导入或修改结构化设计</label>
+<textarea id="plan-data" rows="14" spellcheck="false"></textarea><button id="save-plan">保存设计数据</button>
+<p class="hint">已提交的选择通过确认面板修改；这里保存设计内容。</p></details></section>
+<section id="decisions-view" hidden><div class="heading"><div><p class="eyebrow">每次只决定当前有影响的事项</p><h2>待你确认</h2></div></div>
+<div id="branch-panel" class="section" hidden><h3>选择交付形式</h3><p id="branch-summary"></p>
+<label class="option"><input type="radio" name="output-branch" value="courseware"><span><strong>制作课件</strong><small>交付独立课件与逐字稿，供你讲授或自行录制。以后仍可从本稿启动视频。</small></span></label>
+<label class="option"><input type="radio" name="output-branch" value="video"><span><strong>制作视频</strong><small>导演基于逐字稿设计画面，先选三个风格之一，再确认配音与画面小样，最后制作整片。</small></span></label>
+<textarea id="branch-evidence" aria-label="交付形式选择说明" placeholder="记录这次交付需求"></textarea><button id="choose-branch" class="primary">保存交付形式</button><p id="branch-receipt" class="receipt"></p></div>
+<div id="decisions"></div><section class="section"><h3>问题与缺口</h3><div id="issues"></div></section>
+<section class="section"><h3>阶段审阅</h3><p class="hint">先查看实际内容或样段，再确认当前版本。修改关联内容后，会提示重新审阅。</p><div id="reviews"></div></section></section>
+<section id="production-view" hidden><div class="heading"><div><p class="eyebrow">沿用已确认逐字稿</p><h2 id="production-title">制作与交付</h2></div><span id="branch-badge" class="badge"></span></div>
+<section class="section"><p id="production-summary"></p><div id="production-script"></div></section>
+<div id="video-production" hidden><section class="section"><h3>导演画面方案</h3><p class="hint">从逐字稿与原始素材设计镜头、动作和讲解画面。独立生成的课件不作为视频制作基础。</p><div id="director-beats"></div></section>
+<section class="section"><h3>三个视觉风格</h3><p class="hint">三个方案使用同一段实际讲解内容。先看画面与动作方案，再明确选择；推荐不会自动成为确认。</p><div id="style-options" class="style-grid"></div>
+<textarea id="style-evidence" aria-label="视觉风格确认说明" placeholder="记录你对画面、动作与风格的确认"></textarea><button id="choose-style" class="primary">确认画面与所选风格</button><p id="style-receipt" class="receipt"></p></section>
+<section class="section"><h3>配音与画面小样</h3><p class="hint">播放有声小样，核对发音、语速、画面、动作、字幕和配合。确认当前小样后开始完整视频。</p><div id="pilot-preview"></div><a href="#decisions">前往阶段审阅确认小样</a></section>
+<details class="section"><summary>制作人员：导演方案数据</summary><textarea id="director-data" rows="14" aria-label="导演方案数据"></textarea><button id="save-director">保存导演方案</button></details></div>
+<section class="section"><h3>交付文件</h3><div id="deliveries"></div></section></section>
+</section></main><script type="module" src="/design.js"></script></body></html>

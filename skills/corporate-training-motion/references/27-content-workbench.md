@@ -4,15 +4,20 @@
 
 ## 新课制作顺序
 
-以下命令从Skill目录运行，COURSE和SPEC使用实际路径：
+本页是**视频分支**的编辑与导出契约。共同前段和课件分支见[课程工作流](28-course-workflow.md)。先完成课程结构、逐字稿确认，再记录video分支；导演提供三个实际风格，用户确认画面与所选风格后才configure和导出有声小样。小样确认后才能导出完整视频，不能把课件页面作为渲染输入。
+
+以下命令从Skill目录运行，COURSE和SPEC使用实际路径。中间的设计、导演和确认使用工作流页面或CLI保存真实答复，不省略前置确认：
 
 ```sh
-python3 scripts/scaffold.py COURSE
-python3 scripts/workbench.py serve COURSE
+python3 scripts/kgxc_course.py start COURSE --title 课名 --source 原件
 # 在展示的工作台地址中查看可打开的初始草稿
+# 完成逐字稿、video分支、导演与风格确认后再配置视频
 python3 scripts/workbench.py configure COURSE --spec COURSE/project/source/course-composition.json
 python3 scripts/check_workbench.py COURSE --runtime
-python3 scripts/workbench.py export COURSE --server ACTUAL_LOCAL_URL
+# 先导出代表片段，工作台确认有声画面小样后再导出完整视频
+python3 scripts/workbench.py export COURSE --server ACTUAL_LOCAL_URL --purpose pilot
+# 确认小样并完成整课制作后
+python3 scripts/workbench.py export COURSE --server ACTUAL_LOCAL_URL --purpose final
 python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL_MP4
 ```
 
@@ -53,6 +58,8 @@ python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL
 有品牌片头片尾时，media提供实际文件，introFrames和bodyEndFrame使用实测帧边界，audio包含完整包装及正文混音。没有品牌时两者为null，边界为0和总帧数；不能为通过导出伪造片头。如果project.json已指定品牌资产，验收会核对工作台使用的实际资产。
 
 可以在configure前于课程内写好自定义native源码。configure不覆盖native；已经ready后的构图与复杂动效由本Skill修改当前源码/sceneGraph，并保留用户在fields/assets/captions中的改动，重测相关时间轴。UI目前不提供任意关键帧曲线、原有片段重排或复杂图形重绘。
+
+`Workspace.save`是工作台编辑接口，只保存已有字段的编辑值，不接受新增场景、场景图或字段身份。小样扩展整片属于制作端写源：从当前文档副本追加或修改结构，保留既有编辑，先`backend.validate`，核对读入版本未变并将旧稿写入`workbench-history/`，再递增revision并用`backend.atomic`保存；随后重新验证和导出。不要为新增场景放宽编辑器的结构保护，也不要重新configure。
 
 ## 其他引擎的统一桥接
 

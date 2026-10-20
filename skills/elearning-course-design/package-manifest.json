@@ -1,0 +1,15 @@
+{
+  "name": "elearning-course-design",
+  "version": "2.0.0",
+  "usage": "KGXC course production suite",
+  "files": {
+    "SKILL.md": "9f2881d0788c71c549a0c46d52026ab799a62c4cc243a8d5d6f922f68661d04d",
+    "agents/openai.yaml": "6bd6b3a1baafcd281b63c7e8ec15dba4a4ff96c461c9ab7dd7170c7e551549b4",
+    "assets/design-plan.json": "385550f0877f90a07530e44c154d87f09366d551b9cee642c16ad9cb3719df89",
+    "references/decision-prompts.md": "7a1005c00845a79a58967c1e94068722d059c60b0e75191da2a558aa2e4562df",
+    "references/deliverables.md": "d0252c65cba7e00cff77d3871e4119cf6da34ed21a3e3cadb5acb3338ac8aa13",
+    "references/media-selection.md": "268a72968d91106fc32021aff1461e64f3ae5c2699284dc1923c3df71788cf46",
+    "references/research-and-methods.md": "a9db5037293eaa5361513d1d13e5fb0fad4e6c4f689e44348c97877780f930e6",
+    "scripts/check_design.py": "5fedbaab3bb36358be9685bdcc6a0c0e796f3981142af3a80591ff2cd66b388d"
+  }
+}

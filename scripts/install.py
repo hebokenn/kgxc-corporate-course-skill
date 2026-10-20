@@ -38,6 +38,7 @@ def verify(folder):
 
 def install_skill(source,destination,data_root,replace=False):
     manifest=verify(source)
+    skill_name=source.name
     if destination.is_symlink():raise ValueError('目标是已有符号链接 请明确选择另一个 --dest 不覆盖链接')
     if destination.exists():
         try:old=verify(destination)
@@ -50,7 +51,7 @@ def install_skill(source,destination,data_root,replace=False):
     try:
         shutil.copytree(source,stage,dirs_exist_ok=True);verify(stage)
         if destination.exists():
-            backup=data_root/'backups'/datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')/NAME;backup.parent.mkdir(parents=True,exist_ok=True)
+            backup=data_root/'backups'/datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')/skill_name;backup.parent.mkdir(parents=True,exist_ok=True)
             destination.rename(backup)
         stage.rename(destination)
     except Exception:
@@ -102,21 +103,37 @@ def prepare_voice(data_root,config_root,skill,uv):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--skill-only',action='store_true');p.add_argument('--skip-voice',action='store_true');p.add_argument('--replace-skill',action='store_true');p.add_argument('--uninstall',action='store_true')
-    p.add_argument('--dest',type=Path,default=Path.home()/'.agents/skills'/NAME)
+    p.add_argument('--dest',type=Path)
+    p.add_argument('--agent',choices=['codex','workbuddy','both'],default='both')
     p.add_argument('--data-dir',type=Path,default=Path(os.environ.get('XDG_DATA_HOME',str(Path.home()/'.local/share')))/'kgxc-course')
     p.add_argument('--config-dir',type=Path,default=Path(os.environ.get('COURSE_CONFIG_DIR',str(Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/NAME))))
     p.add_argument('--bin-dir',type=Path,default=Path.home()/'.local/bin');p.add_argument('--uv',default=shutil.which('uv'))
-    a=p.parse_args();dest=a.dest.expanduser().absolute();data=a.data_dir.expanduser().absolute();cfg=a.config_dir.expanduser().absolute();bindir=a.bin_dir.expanduser().absolute();receipt_path=data/'install-receipt.json'
+    a=p.parse_args();data=a.data_dir.expanduser().absolute();cfg=a.config_dir.expanduser().absolute();bindir=a.bin_dir.expanduser().absolute();receipt_path=data/'install-receipt.json'
+    roots=([a.dest.expanduser().absolute().parent] if a.dest else
+           [Path.home()/name/'skills' for name in (['.agents','.workbuddy'] if a.agent=='both' else ['.workbuddy' if a.agent=='workbuddy' else '.agents'])])
+    dest=(a.dest.expanduser().absolute() if a.dest else roots[0]/NAME)
     receipt=read(receipt_path,{})
     if a.uninstall:
         if receipt.get('skill_path')!=str(dest) or receipt.get('managed_by')!='kgxc-course':raise ValueError('此目标没有本安装器的记录 不自动删除')
         archive=data/'uninstalled'/datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f');archive.mkdir(parents=True)
-        if dest.exists():dest.rename(archive/NAME)
+        installed=receipt.get('skills') or [dict(name=NAME,path=str(dest))]
+        for index,item in enumerate(installed):
+            target=Path(item['path'])
+            if target.is_symlink():raise ValueError('已安装目标变为符号链接，保留原件')
+            if target.exists():target.rename(archive/(item['name'] if index==0 else str(index)+'-'+item['name']))
         launcher=Path(receipt.get('launcher',str(bindir/'kgxc-course')))
         if launcher.is_file() and launcher.read_text().startswith('#!/bin/sh\n# kgxc-course managed launcher'):launcher.rename(archive/'kgxc-course')
         receipt_path.rename(archive/'install-receipt.json');print('已卸载 Skill 和启动器 原件保留于 '+str(archive)+'；课程 配置 运行环境未移除');return 0
-    status=install_skill(ROOT/'skills'/NAME,dest,data,a.replace_skill)
-    receipt.update(managed_by='kgxc-course',skill_path=str(dest),version=(ROOT/'VERSION').read_text().strip(),source_repository=read(ROOT/'release.json')['repository'],config_dir=str(cfg))
+    # Verify both sources before changing any installed module.
+    for name in [NAME,'elearning-course-design']:verify(ROOT/'skills'/name)
+    statuses=[]
+    for folder in roots:
+        for name in [NAME,'elearning-course-design']:
+            target=dest if a.dest and name==NAME else folder/name
+            status=install_skill(ROOT/'skills'/name,target,data,a.replace_skill)
+            statuses.append(dict(name=name,path=str(target),status=status))
+    status=statuses[0]['status']
+    receipt.update(managed_by='kgxc-course',skill_path=str(dest),skills=statuses,agent=a.agent,version=(ROOT/'VERSION').read_text().strip(),source_repository=read(ROOT/'release.json')['repository'],config_dir=str(cfg))
     write(receipt_path,receipt)
     if not a.skill_only:
         if not a.uv:raise ValueError('找不到 uv 请运行仓库 install.sh 或先按 https://docs.astral.sh/uv/getting-started/installation/ 安装')
@@ -128,8 +145,8 @@ def main():
     command=dest/'scripts/kgxc_course.py';python=read(cfg/'tools.json',{}).get('python',sys.executable)
     launcher.write_text('#!/bin/sh\n# kgxc-course managed launcher\nexport COURSE_CONFIG_DIR='+shlex.quote(str(cfg))+'\nexec '+shlex.quote(str(python))+' '+shlex.quote(str(command))+' "$@"\n');launcher.chmod(0o755)
     receipt['launcher']=str(launcher);receipt['skill_status']=status;write(receipt_path,receipt)
-    print('\nSkill 已安装：'+str(dest)+'\n快捷入口：'+str(launcher)+'\n请在 Codex 新对话中用 $corporate-training-motion 调用；未显示时重启 Codex。')
-    if a.skill_only:print('仅安装了 Skill；尚未准备媒体导出环境和配音模型。');return 0
+    print('\n两个课程模块已安装：'+', '.join(str(folder) for folder in roots)+'\n快捷入口：'+str(launcher)+'\n在 Codex 或 WorkBuddy 新对话中调用 corporate-training-motion；先确认教学方案与逐字稿，再选择独立课件或导演视频分支。')
+    if a.skill_only:print('已更新技能并保留已有媒体与配音配置；新机器仍需完整安装。可运行 kgxc-course doctor 检查。');return 0
     if not a.skip_voice:
         prepare_voice(data,cfg,dest,a.uv)
         configuration=read(cfg/'tools.json',{});configuration['voice_proof']=str(data/'voice/setup-proof.json');write(cfg/'tools.json',configuration)

@@ -1,8 +1,13 @@
 {
-  "version": "3.4.0",
+  "version": "5.0.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
-  "default_tool": "Codex",
-  "verified_platform": "macOS arm64"
+  "default_tool": "Codex / WorkBuddy",
+  "verified_platform": "macOS arm64",
+  "skills": [
+    "corporate-training-motion",
+    "elearning-course-design"
+  ],
+  "distribution": "GitHub Release installable bundle and versioned source tag"
 }

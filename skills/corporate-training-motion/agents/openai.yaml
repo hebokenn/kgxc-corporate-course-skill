@@ -1,4 +1,4 @@
 interface:
-  display_name: "酷果星创企业课程制作"
-  short_description: "每门新课默认带可编辑工作台的企业课程制作入口"
-  default_prompt: "使用 $corporate-training-motion 制作酷果星创企业内部课程，按内容选择画面，字幕单行无标点、标题按需保留，新配音使用本地Aiden原速；执行包内融合的导演与动画方法，每门新课从建档开始内置工作台，绑定字幕、时间轴、同步裁剪、画面文字和素材；从同一工程导出视频，验证保存恢复并交付可编辑包。"
+  display_name: "酷果星创课程设计与制作"
+  short_description: "先确认大纲与逐字稿，独立制作课件或导演视频，默认工作台与恢复"
+  default_prompt: "使用 $corporate-training-motion 从原始素材设计课程，先确认推荐讲法和大纲，再确认逐字稿，选择独立课件或导演视频；视频先确认三个视觉风格及有声画面小样，保存全部选择并交付可编辑产物。"

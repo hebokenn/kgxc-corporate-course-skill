@@ -6,6 +6,7 @@ import json
 import math
 import shutil
 import subprocess
+from runtime import ensure_dir
 
 
 def native_fingerprint(project):
@@ -26,7 +27,7 @@ def init_project(project, skill_root):
     from backend import atomic
     p=Path(project);skill=Path(skill_root)
     shutil.copytree(skill/'workbench/starter',p/'native',dirs_exist_ok=True)
-    font=p/'native/assets/fonts';font.mkdir(parents=True,exist_ok=True)
+    font=p/'native/assets/fonts';ensure_dir(font)
     original=skill/'libraries/illustration/scripts/engine/lib/fonts'
     shutil.copy2(original/'NotoSansSC-500.woff',font/'CourseHan.woff')
     shutil.copy2(original/'OFL.txt',font/'OFL.txt')
@@ -69,6 +70,10 @@ def configure(course, spec_path):
     from backend import read,atomic,safe,validate
     p=Path(course).resolve();p=p if (p/'workbench.json').exists() else p/'project'
     old=read(p/'workbench.json')
+    if (p/'course-state.json').is_file():
+        from workflow import Course
+        course=Course(p)
+        course.require_video('style') if course.modern() else course.require('content')
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     spec=read(spec_path);d=copy.deepcopy(old)
     d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph'] if k in spec})

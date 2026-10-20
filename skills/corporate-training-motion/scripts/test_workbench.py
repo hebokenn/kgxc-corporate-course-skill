@@ -44,6 +44,7 @@ class WorkbenchTests(unittest.TestCase):
         self.assertEqual(duration(changed),375);validate(changed,self.project)
 
     def test_reject_invalid_edits_and_path_escape(self):
+        elevated=copy.deepcopy(self.doc);elevated['captionStyle']['y']=850;validate(elevated,self.project)
         mutations=[lambda d:d['captions'][0].update(text='有标点，不能保存'),lambda d:d['captions'][0].update(startFrame=-1),
                    lambda d:d['captions'][1].update(startFrame=80),lambda d:d['captions'][0].update(endFrame=301),
                    lambda d:d['assets'][0].update(path='../outside.png'),lambda d:d['audio'].update(speed=.8),

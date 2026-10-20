@@ -20,6 +20,12 @@ def check(plan_path):
             from check_workbench import check as editable_check, required as requires_workbench
             if requires_workbench(json.loads(config.read_text())):
                 errors+=editable_check(folder,require_runtime=True,video=video)['errors']
+            if (folder/'course-state.json').is_file():
+                import sys
+                sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'workbench'))
+                from workflow import Course
+                try:Course(folder).require('final')
+                except ValueError as exc:pending.append(str(exc))
             break
     for a in plan.get('assets',[]):asset(a)
     cue_file=asset(plan['captions']);metrics_file=asset(plan['caption_metrics'])

@@ -48,7 +48,7 @@ def doctor(media_only=False):
         audio=proof_path.parent/'setup-test.wav'
         voice_ok=proof.get('status')=='pass' and proof.get('configuration_sha256')==fingerprint and audio.is_file() and proof.get('audio_sha256')==hashlib.sha256(audio.read_bytes()).hexdigest() and Path(voice.get('model','')).is_dir() and Path(voice.get('python','')).is_file()
     item('Qwen3-TTS / Aiden',voice_ok,'Aiden 原速短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
-    report=dict(skill='corporate-training-motion',version='3.4.0',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
+    report=dict(skill='corporate-training-motion',version='5.0.0',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
     report['full_ready']=report['media_ready'] and voice_ok
     for x in result:print(f'[{x["status"]}] {x["name"]}: {x["detail"]}')
     print('\n编辑导出环境：'+('就绪' if report['media_ready'] else '尚未就绪')+'；Aiden 原速配音：'+('就绪' if voice_ok else '尚未就绪'))
@@ -57,8 +57,13 @@ def doctor(media_only=False):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['doctor','new','demo','serve','export','bookends','check']);args,rest=p.parse_known_args()
+    workflow_commands={'start','resume','status','design','decide','checkpoint','package','review','script','director','branch','style'}
+    if len(sys.argv)>1 and sys.argv[1] in workflow_commands:
+        return subprocess.call([sys.executable,str(ROOT/'scripts/workflow.py'),*sys.argv[1:]])
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=sorted(workflow_commands|{'doctor','new','demo','serve','export','bookends','check'}));args,rest=p.parse_known_args()
     if args.command=='doctor':return doctor(media_only='--media-only' in rest)
+    if args.command in workflow_commands:
+        return subprocess.call([sys.executable,str(ROOT/'scripts/workflow.py'),args.command,*rest])
     script={'new':'scaffold.py','demo':'example_course.py','serve':'workbench.py','export':'workbench.py','bookends':'bookends.py','check':'check_workbench.py'}[args.command]
     prefix=[args.command] if args.command in ['serve','export'] else []
     return subprocess.call([sys.executable,str(ROOT/'scripts'/script),*prefix,*rest])

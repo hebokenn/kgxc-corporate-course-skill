@@ -20,7 +20,7 @@ import uuid
 import wave
 import zipfile
 from timeline import display_frame, source_frame, duration, segments
-from runtime import activate, tools
+from runtime import activate, tools, ensure_dir
 activate()
 
 APP = Path(__file__).resolve().parent
@@ -37,7 +37,7 @@ def read(path):
 
 def atomic(path, value):
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(path.parent)
     tmp = path.with_name(path.name+'.pending-'+uuid.uuid4().hex)
     tmp.write_text(json.dumps(value, ensure_ascii=False, indent=2)+'\n')
     tmp.replace(path)
@@ -94,7 +94,7 @@ def validate(doc, project):
     if not isinstance(gain,(int,float)) or not math.isfinite(gain) or not 0 <= gain <= 2:
         raise ValueError('音量须在0至2之间')
     style=doc.get('captionStyle',{})
-    if not 24 <= style.get('fontSize',0) <= 64 or not 940 <= style.get('y',0) <= 1025:
+    if not 24 <= style.get('fontSize',0) <= 64 or not 100 <= style.get('y',0) <= 1025:
         raise ValueError('字幕字号或位置超出编辑范围')
     last = -1
     ids = set()
@@ -232,7 +232,7 @@ class Workspace:
         validate(read(self.file),self.project)
         self.jobs={}
         self.work=self.project/'work/workbench'
-        self.work.mkdir(parents=True,exist_ok=True)
+        ensure_dir(self.work)
 
     def job(self, name):
         if not re.fullmatch('[a-f0-9]{12}',name):
@@ -321,7 +321,7 @@ class Workspace:
                 if not url.startswith('/download/'):continue
                 relative=url.removeprefix('/download/');old=safe(self.root,relative)
                 if relative in protected or not old.exists():continue
-                dest=result.parent/'published'/old.name;dest.parent.mkdir(exist_ok=True);old.replace(dest)
+                dest=result.parent/'published'/old.name;ensure_dir(dest.parent);old.replace(dest)
                 if key=='video':
                     old_meta=old.with_suffix('.json')
                     if old_meta.exists():old_meta.replace(dest.with_suffix('.json'))
@@ -329,7 +329,7 @@ class Workspace:
                         if path and (self.project/path).resolve()==old:config['render_artifacts'][stage]=str(dest.relative_to(self.project))
         atomic(config_path,config)
 
-    def start_export(self, revision, start, end, url):
+    def start_export(self, revision, start, end, url, purpose=None):
         with LOCK:
             doc=read(self.file)
             validate(doc,self.project)
@@ -340,11 +340,24 @@ class Workspace:
                 raise ValueError('已有导出正在进行')
             first=round(float(start)*doc['fps']);last=round(float(end)*doc['fps'])
             if not 0 <= first < last <= duration(doc):raise ValueError('导出范围无效')
+            if purpose not in [None,'pilot','final']:raise ValueError('导出用途须为pilot或final')
+            key=purpose or ('final' if first==0 and last==duration(doc) else 'pilot')
+            if key=='final' and (first!=0 or last!=duration(doc)):raise ValueError('完整视频须导出当前完整时间线')
+            render_context=None
+            if (self.project/'course-state.json').is_file():
+                from workflow import Course
+                course=Course(self.root)
+                if course.modern():
+                    course.require_video('pilot' if key=='final' else 'style')
+                    render_context=course._video_context()
+                else:
+                    if purpose:raise ValueError('旧工程沿原导出规则，不指定导出用途')
+                    course.require('pilot' if first==0 and last==duration(doc) else 'visual')
             job_id=uuid.uuid4().hex[:12];directory=self.work/'exports'/job_id;directory.mkdir(parents=True)
             atomic(directory/'document.json',doc)
             from authoring import native_fingerprint
             native_hash=native_fingerprint(self.project)
-            job=dict(id=job_id,status='queued',progress=0,firstFrame=first,lastFrame=last,revision=revision)
+            job=dict(id=job_id,status='queued',progress=0,firstFrame=first,lastFrame=last,revision=revision,purpose=key)
             self.jobs[job_id]=job
         def worker():
             try:
@@ -365,7 +378,8 @@ class Workspace:
                         time.sleep(.4)
                     if process.returncode:raise ValueError((directory/'render.log').read_text()[-1800:])
                 if native_hash!=native_fingerprint(self.project):raise ValueError('导出期间源码或媒体已改变，请重新导出；没有把旧帧绑定到新源码')
-                delivery=self.root/'delivery';delivery.mkdir(exist_ok=True)
+                if render_context is not None and read(self.file)!=doc:raise ValueError('导出期间编辑版本已改变，请重新生成当前版本')
+                delivery=self.root/'delivery';ensure_dir(delivery)
                 video=delivery/f'course-edit-r{revision}-{job_id}.mp4'
                 shutil.copy2(directory/'video.mp4',video)
                 cues=[]
@@ -376,12 +390,12 @@ class Workspace:
                 def stamp(t):
                     ms=round(t*1000);return f'{ms//3600000:02}:{ms//60000%60:02}:{ms//1000%60:02},{ms%1000:03}'
                 srt.write_text('\n\n'.join(f'{i+1}\n{stamp(c["start"])} --> {stamp(c["end"])}\n{c["text"]}' for i,c in enumerate(cues))+'\n')
-                metadata=dict(schema=doc['schema'],revision=revision,native_sha256=native_hash,range=dict(firstFrame=first,lastFrame=last,fps=doc['fps']),
+                metadata=dict(schema=doc['schema'],revision=revision,purpose=key,native_sha256=native_hash,range=dict(firstFrame=first,lastFrame=last,fps=doc['fps']),
                               document_sha256=digest(directory/'document.json'),video_sha256=digest(video),
                               subtitles_sha256=digest(srt),review='technical_export_verified; content/user acceptance pending',
                               verification=read(directory/'verification.json'))
                 atomic(video.with_suffix('.json'),metadata)
-                packages=self.root/'packages';packages.mkdir(exist_ok=True)
+                packages=self.root/'packages';ensure_dir(packages)
                 archive=packages/f'editable-r{revision}-{job_id}.zip'
                 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=1) as z:
                     modern=doc['adapter']!='national-world-v1'
@@ -393,7 +407,7 @@ class Workspace:
                             z.write(f,'project/'+str(rel))
                     for f in APP.rglob('*'):
                         if f.is_file() and '__pycache__' not in f.parts:z.write(f,editor_prefix+'/workbench/'+str(f.relative_to(APP)))
-                    for name in ['workbench.py','single_line_subtitles.py','check_workbench.py']:
+                    for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py']:
                         z.write(APP.parent/'scripts'/name,editor_prefix+'/scripts/'+name)
                     if modern:
                         z.writestr('README.md','# 可编辑企业课程\n\n运行 python3 project/editor/scripts/workbench.py serve . 打开工作台。\n建议先按Skill仓库README完成完整安装，再运行 kgxc-course serve .。视频导出使用本机配置的ffmpeg、Python Playwright和Chromium。\n')
@@ -410,12 +424,19 @@ class Workspace:
                 self.archive_previous_exports(job_id)
                 cfg=self.project/'project.json'
                 if cfg.exists():
-                    config=read(cfg);config.setdefault('render_artifacts',{})['final' if first==0 and last==duration(doc) else 'preview']=str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1);atomic(cfg,config)
+                    config=read(cfg);config.setdefault('render_artifacts',{})['final' if key=='final' else 'preview']=str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1);atomic(cfg,config)
                 # Only a whole-course export establishes complete editable-engine evidence.
                 if first==0 and last==duration(doc) and read(self.file)==doc:
                     proof=read(directory/'verification.json')
                     atomic(self.project/'qa/workbench-runtime.json',dict(status='pass',document_sha256=digest(self.file),native_sha256=native_hash,
                            scene_ids=[s['id'] for s in doc['scenes']],binding_receipt=proof.get('bindingReceipt'),seek_deterministic=proof.get('seekDeterministic'),full_decode=proof['fullDecode']))
+                if (self.project/'course-state.json').is_file():
+                    from workflow import Course,bundle_course
+                    course=Course(self.root)
+                    with LOCK:
+                        if course.modern():course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'],render_context=render_context)
+                        else:course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'])
+                    bundle_course(self.root,archive)
                 job.update(status='complete',progress=1,video='/download/'+urllib.parse.quote(str(video.relative_to(self.root))),
                            srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),
                            package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata)
@@ -465,6 +486,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             url=urllib.parse.urlparse(self.path);path=urllib.parse.unquote(url.path);q=urllib.parse.parse_qs(url.query)
             if path=='/api/document':return self.json(read(self.space.file))
+            if path=='/api/identity':
+                from workflow import VERSION
+                state=read(self.space.project/'course-state.json') if (self.space.project/'course-state.json').is_file() else {}
+                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION))
+            if path=='/api/workflow':
+                from workflow import Course
+                return self.json(Course(self.space.root).status())
+            if path=='/api/courseware':
+                from workflow import Course
+                return self.json(Course(self.space.root).courseware())
+            if path=='/api/script':
+                from workflow import Course
+                return self.json(Course(self.space.root).script())
+            if path=='/course-file':
+                from workflow import Course
+                return self.file(Course(self.space.root).relative(q.get('path',[''])[0]))
             if path=='/api/waveform':return self.json(self.space.waveform())
             if path=='/api/history':return self.json([dict(revision=int(p.stem)) for p in sorted((self.space.project/'workbench-history').glob('*.json'))])
             if path.startswith('/api/history/'):
@@ -492,7 +529,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     match=re.search(r'-([a-f0-9]{12})\.(mp4|srt|json|zip)$',f.name)
                     if match:f=safe(self.space.work,'exports/'+match[1]+'/published/'+f.name)
                 return self.file(f)
-            if path in ['/','/index.html']:return self.file(APP/'index.html')
+            if path in ['/','/index.html']:return self.file(APP/('design.html' if (self.space.project/'course-state.json').is_file() else 'index.html'))
+            if path=='/edit.html':return self.file(APP/'index.html')
             return self.file(safe(APP,path.lstrip('/')))
         except (BrokenPipeError,ConnectionResetError):pass
         except Exception as exc:self.json(dict(error=str(exc)),404 if isinstance(exc,FileNotFoundError) else 400)
@@ -507,23 +545,37 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if path=='/api/upload':
                 name=urllib.parse.unquote(self.headers.get('X-Filename','image.png'));suffix=Path(name).suffix.lower()
                 if suffix not in ['.png','.jpg','.jpeg','.webp']:raise ValueError('只接受PNG、JPEG、WebP图片')
-                dest=self.space.project/'media/uploads'/(uuid.uuid4().hex+suffix);dest.parent.mkdir(parents=True,exist_ok=True)
+                dest=self.space.project/'media/uploads'/(uuid.uuid4().hex+suffix);ensure_dir(dest.parent)
                 dest.write_bytes(raw)
                 probe=subprocess.run(['ffprobe','-v','error','-select_streams','v:0','-show_entries','stream=width,height','-of','json',str(dest)],capture_output=True,text=True)
                 if probe.returncode or not json.loads(probe.stdout).get('streams'):
                     dest.unlink();raise ValueError('无法解码该图片')
                 return self.json(dict(path=str(dest.relative_to(self.space.project)),name=name,sha256=digest(dest)))
             data=json.loads(raw)
+            if path.startswith('/api/workflow/'):
+                from workflow import Course
+                course=Course(self.space.root)
+                with LOCK:
+                    if path=='/api/workflow/design':return self.json(course.save_plan(data['plan'],data['baseRevision']))
+                    if path=='/api/workflow/decision':return self.json(course.decide(data['id'],data['selected'],data['baseRevision'],data['evidence']))
+                    if path=='/api/workflow/confirm':return self.json(course.confirm(data['gate'],data['baseRevision'],data['evidence']))
+                    if path=='/api/workflow/artifacts':return self.json(course.register(data['gate'],data['paths'],data['baseRevision']))
+                    if path=='/api/workflow/courseware':return self.json(course.save_courseware(data['text'],data['baseRevision']))
+                    if path=='/api/workflow/script':return self.json(course.save_script(data['text'],data['baseRevision']))
+                    if path=='/api/workflow/branch':return self.json(course.select_branch(data['branch'],data['baseRevision'],data['evidence'],actor='workbench'))
+                    if path=='/api/workflow/director':return self.json(course.save_director(data['director'],data['baseRevision']))
+                    if path=='/api/workflow/style':return self.json(course.select_style(data['id'],data['baseRevision'],data['evidence']))
+                raise ValueError('未知课程操作')
             if path=='/api/save':return self.json(self.space.save(data['document'],data['baseRevision']))
             if path=='/api/clean-caption':return self.json(dict(text=clean_caption(data['text'])))
             if path=='/api/preview-audio':
                 doc=data['document'];audio=self.space.audio(doc)
                 name=self.space.audio_key(doc)+'.wav'
-                dest=self.space.work/'preview'/name;dest.parent.mkdir(exist_ok=True)
+                dest=self.space.work/'preview'/name;ensure_dir(dest.parent)
                 if not dest.exists():shutil.copy2(audio,dest)
                 return self.json(dict(url='/preview-audio/'+name))
             if path=='/api/export':
-                return self.json(self.space.start_export(data['revision'],data['start'],data['end'],'http://'+self.headers['Host']))
+                return self.json(self.space.start_export(data['revision'],data['start'],data['end'],'http://'+self.headers['Host'],data.get('purpose') or None))
             raise ValueError('未知操作')
         except FileExistsError as exc:self.json(dict(error=str(exc)),409)
         except (BrokenPipeError,ConnectionResetError):pass
@@ -533,6 +585,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
 def serve(root,port=0):
     http.server.ThreadingHTTPServer.request_queue_size=128
     server=http.server.ThreadingHTTPServer(('127.0.0.1',port),Handler);server.workspace=Workspace(root)
+    if (server.workspace.project/'course-state.json').is_file():
+        from workflow import VERSION
+        atomic(server.workspace.project/'work/workbench-service.json',dict(pid=os.getpid(),version=VERSION,url='http://127.0.0.1:'+str(server.server_address[1])))
     print('WORKBENCH_URL=http://127.0.0.1:'+str(server.server_address[1]),flush=True)
     try:server.serve_forever()
     except KeyboardInterrupt:pass
@@ -546,6 +601,7 @@ def main():
     launch=sub.add_parser('serve');launch.add_argument('course',type=Path);launch.add_argument('--port',type=int,default=0)
     config=sub.add_parser('configure');config.add_argument('course',type=Path);config.add_argument('--spec',type=Path,required=True)
     export=sub.add_parser('export');export.add_argument('course',type=Path);export.add_argument('--server',required=True);export.add_argument('--start',type=float,default=0);export.add_argument('--end',type=float)
+    export.add_argument('--purpose',choices=['pilot','final'],help='独立短小样也可以导出其完整时间线；整片用途需要小样确认')
     args=parser.parse_args()
     if args.command=='import':import_course(args.course,args.out)
     elif args.command=='configure':
@@ -556,13 +612,14 @@ def main():
         url=args.server.rstrip('/');parsed=urllib.parse.urlparse(url)
         if parsed.scheme!='http' or parsed.hostname!='127.0.0.1' or parsed.path:raise ValueError('请提供本次工作台实际打印的127.0.0.1地址')
         space=Workspace(args.course);doc=read(space.file)
-        current=json.load(urllib.request.urlopen(url+'/api/document'))
+        from workflow import local_json
+        current=local_json(url+'/api/document')
         if current!=doc:raise ValueError('该服务打开的不是当前保存工程')
-        payload=json.dumps(dict(revision=doc['revision'],start=args.start,end=args.end if args.end is not None else duration(doc)/doc['fps'])).encode()
-        response=urllib.request.urlopen(urllib.request.Request(url+'/api/export',data=payload,headers={'Content-Type':'application/json'}));job=json.load(response)
+        payload=json.dumps(dict(revision=doc['revision'],start=args.start,end=args.end if args.end is not None else duration(doc)/doc['fps'],purpose=args.purpose)).encode()
+        job=local_json(url+'/api/export',json.loads(payload))
         until=time.monotonic()+14400
         while time.monotonic()<until:
-            job=json.load(urllib.request.urlopen(url+'/api/jobs/'+job['id']))
+            job=local_json(url+'/api/jobs/'+job['id'])
             if job['status']=='complete':print(json.dumps(job,ensure_ascii=False,indent=2));return
             if job['status'] in ['failed','missing']:raise ValueError(job.get('error','导出未完成'))
             time.sleep(1)
