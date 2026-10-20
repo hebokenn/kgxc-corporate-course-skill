@@ -55,6 +55,8 @@ python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL
 
 这是数据结构示例，不是整课视觉模板。audio必须是真实已生成的课程混音，5秒示例时长需要与实测一致，否则configure拒绝。单行字幕无标点，画面标题按内容保留。可用text、image、rect、ellipse、line、path、group，支持嵌套children、sceneId、起止帧、透明度、旋转、缩放及绝对时间motion。path使用Canvas Path2D数据；image支持contain或cover。sceneId为空的对象跨场景保留。时间从0开始，end不包含该帧。
 
+需要逐字、遮罩、模糊、渐变、描线或其他内置动效时，在同一spec中配置`rendering.route=auto`和节点effects；configure会选motion-canvas、自动登记文字与位置、复制现有库并接入seek-bridge-v1。无需逐字拆编辑字段。字段、换图、时间轴、字幕与正式导出仍走同一CourseRenderer。完整参数和选路依据见[渲染选路](30-renderer-selection.md)。未知动效、强制简易画布却要求高级动效、或缺少自定义实现时明确报错，不能悄悄丢弃要求。旧工程不因Skill更新自动切换渲染器；已制作工程改路线须先保留源码和编辑，再由制作端迁移并复验。
+
 有品牌片头片尾时，media提供实际文件，introFrames和bodyEndFrame使用实测帧边界，audio包含完整包装及正文混音。没有品牌时两者为null，边界为0和总帧数；不能为通过导出伪造片头。如果project.json已指定品牌资产，验收会核对工作台使用的实际资产。
 
 可以在configure前于课程内写好自定义native源码。configure不覆盖native；已经ready后的构图与复杂动效由本Skill修改当前源码/sceneGraph，并保留用户在fields/assets/captions中的改动，重测相关时间轴。UI目前不提供任意关键帧曲线、原有片段重排或复杂图形重绘。

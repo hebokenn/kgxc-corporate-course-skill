@@ -91,7 +91,7 @@
     ],
     "timing_review": "required_for_new_splits"
   },
-  "owning_skill": "corporate-training-motion@3.4.0",
+  "owning_skill": "corporate-training-motion@5.0.2",
   "titles": {
     "policy": "choose_by_content",
     "independent_from_subtitles": true
@@ -103,5 +103,19 @@
     "adapter": "scene-graph-v1",
     "entry": "editor/scripts/workbench.py",
     "runtime_check": "required_for_preview_and_final"
+  },
+  "rendering_policy": {
+    "selection": "automatic_on_video_continuation",
+    "default_route": "auto",
+    "preserve_effect_requirements": true,
+    "preserve_custom_native": true
+  },
+  "sound_effects": {
+    "palette": "soft-tactile-v1",
+    "selection": "semantic_role_with_stable_variation",
+    "repeat_same_sample": false,
+    "per_character_sound": false,
+    "preserve_existing_narration": true,
+    "listen_in_actual_mix": true
   }
 }

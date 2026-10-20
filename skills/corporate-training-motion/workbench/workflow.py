@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.0.0'
+VERSION = '5.0.2'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -319,6 +319,8 @@ class LegacyCourse:
         lines += ['待解决 ' + p['id'] + '：' + p['question'] for p in s['pending']]
         lines += ['已登记产物：' + json.dumps(s['artifacts'], ensure_ascii=False),
                   '运行/完成任务：' + json.dumps(s['jobs'], ensure_ascii=False), '配音状态：' + s['narration_status']]
+        if s.get('production_handoff',{}).get('active'):
+            lines.append('制作接续（制作端自动执行）：'+json.dumps(s['production_handoff'],ensure_ascii=False))
         return '\n'.join(lines)
 
 
@@ -534,7 +536,11 @@ class Course(LegacyCourse):
         return list(dict.fromkeys(errors))
 
     def status(self):
-        if not self.modern():return super().status()
+        if not self.modern():
+            result=super().status()
+            from production import handoff
+            result['production_handoff']=handoff(self.project,result)
+            return result
         plan=read(self.plan_file);state=read(self.state_file);pending=self._pending(plan);branch=state.get('branch')
         keys=self.COMMON+(self.VIDEO if branch=='video' else [('courseware','课件交付')] if branch=='courseware' else [])
         gates=[];upstream=True
@@ -564,6 +570,9 @@ class Course(LegacyCourse):
             branch=branch,branch_receipt=state.get('branch_receipt'),branch_history=state.get('branch_history',[]),selected_style=state.get('selected_style'),director=self.director(),script_sha256=self.script_sha(plan),
             deliveries=state.get('deliveries',[]),gates=gates,pending=pending,plan=plan,artifacts=state['artifacts'],jobs=jobs,source_files=self._source_files(plan),
             narration_status='not_required' if branch!='video' else 'ready' if complete else 'sample_ready' if any(g['id']=='pilot' and g['status'] in ['open','confirmed'] and g['ready'] for g in gates) else 'needs_regeneration' if state['artifacts'].get('pilot') else narration,updated_at=state['updated_at'])
+        result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
+        from production import handoff
+        result['production_handoff']=handoff(self.project,result)
         result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries']))
         return result
 
@@ -669,7 +678,17 @@ def bundle_course(root, destination):
     for p in app.rglob('*'):
         if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc':
             files['project/editor/workbench/'+str(p.relative_to(app))]=p
-    for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py']:
+    from render_routes import LIBRARIES
+    library_root=app.parent/'libraries/illustration/scripts/engine/lib'
+    if not library_root.is_dir():library_root=app/'motion/lib'
+    for name in LIBRARIES:
+        files['project/editor/workbench/motion/lib/'+name]=library_root/name
+    license_file=library_root/'LICENSE' if (library_root/'LICENSE').is_file() else library_root.parents[2]/'LICENSE'
+    files['project/editor/workbench/motion/lib/LICENSE']=license_file
+    from sound import palette_root,PALETTE
+    for p in palette_root(course.project).glob('*'):
+        if p.is_file():files['project/audio/sfx/'+PALETTE+'/'+p.name]=p
+    for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py']:
         files['project/editor/scripts/'+name]=app.parent/'scripts'/name
     for name in ['workspace.json','打开课程工作台.command','README.md']:
         if (course.root/name).is_file():files[name]=course.root/name

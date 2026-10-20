@@ -13,7 +13,7 @@ class NewCourseTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.course=Path(self.temp.name)/'course';create(self.course);self.p=self.course/'project'
     def tearDown(self):self.temp.cleanup()
-    def ready(self):
+    def ready(self, composition_overrides=None):
         course=Course(self.course);s=course.status();plan=s['plan']
         source=self.course/'inputs/test.txt';source.write_text('验收用原件')
         plan.update(audience='测试人员',performance_task='核对订单')
@@ -34,6 +34,7 @@ class NewCourseTests(unittest.TestCase):
         spec=dict(title='独立课程',sourceDurationFrames=30,scenes=[dict(id='X',chapter='技术',title='对象',sourceStartFrame=0,sourceEndFrame=30)],
                   captions=[dict(id='c',sceneId='X',text='核对SN与订单',startFrame=0,endFrame=30)],media=dict(audio='audio/test.wav',intro=None,outro=None),
                   sceneGraph=dict(nodes=[dict(id='t',type='text',sceneId='X',text='单独场景',x=100,y=100)]))
+        if composition_overrides:spec.update(composition_overrides)
         path=self.p/'source/spec.json';atomic(path,spec);return configure(self.course,path)
     def test_configure_requires_real_design_review_chain(self):
         path=self.p/'source/spec.json';atomic(path,{})

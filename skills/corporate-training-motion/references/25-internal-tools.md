@@ -4,6 +4,11 @@
 
 ```sh
 python3 scripts/course_tools.py inventory
+python3 scripts/course_tools.py capabilities
+python3 scripts/course_tools.py route --spec COURSE/project/source/course-composition.json
+python3 scripts/course_tools.py sfx-catalog
+python3 scripts/course_tools.py sfx-plan COURSE --events COURSE/project/source/sfx-events.json
+python3 scripts/course_tools.py sfx-mix COURSE --plan COURSE/project/audio/sfx-plan.json --narration audio/narration.wav --out audio/course-mix.wav
 python3 scripts/scaffold.py NEW_COURSE
 python3 scripts/course_tools.py workbench configure NEW_COURSE --spec NEW_COURSE/project/source/course-composition.json
 python3 scripts/check_workbench.py NEW_COURSE --runtime
@@ -15,6 +20,8 @@ python3 scripts/course_tools.py diagnose-web COURSE/delivery/course.mp4 --style 
 ```
 
 网页引擎使用`window.seek(t)`、`window.ready`、固定种子；依赖从当前工作目录解析已有playwright/playwright-core和浏览器。导入代码模板只提供起点；原模板包含的默认主题和示例动作不是本课定稿。嵌套素材修改后使用`--force`或完整依赖指纹，避免复用旧帧。
+
+制作端优先按[渲染选路](30-renderer-selection.md)使用已经接入工作台的motion-canvas；configure自动复制实际库、建立全部文字/素材绑定并保存路线。上面的prepare-web/prepare-illustration仅复制旧引擎源码，不自动完成其工作台接入；特殊实现仍需apply/seek并验证。route只读，不生成画面、不记录用户批准。
 
 ## 插画与参数化动画
 

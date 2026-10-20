@@ -1,17 +1,19 @@
 ---
 name: corporate-training-motion
-description: 酷果星创课程设计与制作统一入口。先按教学设计方法诊断素材、推荐讲法和大纲，确认后写逐字稿。逐字稿确认后独立交付课件，或进入导演、三个视觉风格、有声画面小样和完整视频。默认打开工作台并从文件恢复。
+description: 酷果星创课程设计与制作统一入口。设计新课或继续制作已有课程；恢复工程后自动核对渲染选路和动作音效，沿用有效确认。先确认教学方案与逐字稿，再交付独立课件或导演视频、风格小样和完整视频。
 ---
 
 # 酷果星创课程共创与制作
 
-版本 **5.0.0**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
+版本 **5.0.2**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
 
 ## 开工与恢复
 
 新课先运行 `python3 SKILL_DIR/scripts/kgxc_course.py start COURSE --title 课名 --source 原件`，保留原件并默认打开实际工作台。继续制作的首个操作是完整命令 `python3 SKILL_DIR/scripts/kgxc_course.py resume COURSE`；独立工程也可运行 `python3 COURSE/project/editor/scripts/workflow.py resume COURSE`。返回摘要已包含当前分支、确认原话、时间、产物与未决项；从摘要进入当前阶段，再按需读取该阶段参考，沿用有效确认。界面未打开时展示实际URL并使用宿主浏览器能力打开；不要直接打开Skill目录中的design.html。
 
 问题与分析只完成所求。旧版工程保留原流程，不自动迁移或重新渲染。完整字段、命令和分支见[课程工作流](references/28-course-workflow.md)。
+
+用户说“继续制作”“接着做”即恢复并执行当前阶段，不要求重复长提示词。视频分支依据resume返回的`production_handoff`，主动读取当前稿件、导演方案与构图，核对实际能力，选择并接入合适渲染器；必要时保留编辑后升级通用画布，特殊源码保留实际实现。技术选路、动效接入、动作选音及验证由制作端完成，不把这些选择推回给用户，也不停在分析说明。把实际结果写回工程并交付当前阶段产物；只在真正缺少事实、资源或仍需用户确认内容/风格/新小样时询问。既有有效确认沿用，完成或冻结工程不因恢复自动修改。具体判断见[选路](references/30-renderer-selection.md)，声音见[动作音效](references/31-action-sound.md)。
 
 ## 共同前段：教学方案，再逐字稿
 
@@ -32,6 +34,8 @@ description: 酷果星创课程设计与制作统一入口。先按教学设计�
 **视频分支**：启动[导演方法](references/12-director-teaching.md)，从逐字稿拆解画面、动作、镜头、示范和练习反馈，映射教学单元。先提供**三个实际视觉风格**：使用同一段本课内容制作可查看的关键画面，说明动作方式、适用理由、制作影响及推荐。三个方案按本课内容设计，不固定套三套通用模板；推荐不自动选中。
 
 导演方案保存到 `project/director-plan.json`，用 `director COURSE --file PLAN` 导入。请用户同时确认画面方案与所选风格，工作台或 `style COURSE --id 风格ID --evidence 实际确认原话` 保存。
+
+画面实现先读[渲染选路与已接入动效](references/30-renderer-selection.md)，按具体对象变化选择路线。`course_tools.py capabilities`查看实际可用能力；在构图spec中声明`rendering.route=auto`及需要的动效，运行`course_tools.py route --spec SPEC`核对。工作台configure会把逐字、遮罩、模糊、渐变、描线、强调和镜头接入内置动效库并保留整段文字编辑，无需重写桥接。基础图解仍可用简易画布；三维或其他特殊需求须提供实际原生实现。不能从默认画布缺少参数推断整包不支持，也不能忽略未实现的需求后继续出片。
 
 风格确认后，使用本课逐字稿生成**配音与画面结合的有声MP4小样**，含代表性画面、动作、字幕和发音难点，供用户正常速度观看和试听。使用 `workbench.py export COURSE --server URL --purpose pilot`，可导出独立短小样的整条时间线，不必先做完整课程；工作台自动登记，也可用 `checkpoint --gate pilot` 登记外部小样。明确确认后才生成完整配音与完整视频，使用 `--purpose final` 导出完整时间线。已有音色选择沿用；每课小样检查实际发音、节奏及视听配合，最终交付MP4、SRT与可编辑工程包。
 

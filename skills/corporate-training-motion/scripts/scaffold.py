@@ -13,13 +13,16 @@ def create(destination):
  for p in (ROOT/'assets/templates').iterdir():
   if p.is_file():shutil.copy2(p,destination/'project'/('qa' if p.name in {'assessment-status.json','visual-evidence.json'} else '')/p.name)
  shutil.copytree(ROOT/'assets/profiles/kgxc',destination/'project/assets/brand/kgxc')
+ shutil.copytree(ROOT/'assets/sfx',destination/'project/audio/sfx')
  p=destination/'project/project.json';d=json.loads(p.read_text());d['source_file']='../inputs/your-document.pdf';d['layout_version']=2;p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
  sys.path.insert(0,str(ROOT/'workbench'))
  from authoring import init_project
  init_project(destination/'project',ROOT)
  editor=destination/'project/editor';shutil.copytree(ROOT/'workbench',editor/'workbench',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+ from render_routes import stage_libraries
+ stage_libraries(ROOT,editor/'workbench/motion/lib')
  (editor/'scripts').mkdir(parents=True)
- for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
+ for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
  from workflow import Course
  Course(destination).init()
  w={'layout_version':2,'current_version':None,'project_dir':'project','delivery_dir':'delivery','package_dir':'packages','retain_artifacts':[]}

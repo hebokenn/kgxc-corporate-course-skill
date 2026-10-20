@@ -58,8 +58,10 @@ Codex会建立 `inputs/`、`project/`、`delivery/`、`packages/`。先锁定原
 新课建档和继续制作默认会启动并打开工作台。也可以直接对Codex或WorkBuddy说：
 
 ```text
-恢复这门课程，先读取工程里的已有选择与当前阶段，打开工作台并继续等待未确认事项。
+继续制作这门课程。工程目录：填写实际课程目录。
 ```
+
+已知当前工程时只说“继续制作”即可。制作端按当前阶段执行，视频阶段自动核对需求和实际能力，选择并接入合适渲染器与动作音效；沿用有效确认，遇到真正缺少的事实、资源或内容/风格/新小样确认再询问。已完成工程不会因恢复自动重制。具体见[渲染选路](../skills/corporate-training-motion/references/30-renderer-selection.md)和[动作音效](../skills/corporate-training-motion/references/31-action-sound.md)。
 
 已安装快捷入口时，也可将路径替换成实际课程目录：
 

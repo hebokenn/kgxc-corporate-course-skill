@@ -1,4 +1,4 @@
 interface:
   display_name: "酷果星创课程设计与制作"
-  short_description: "先确认大纲与逐字稿，独立制作课件或导演视频，默认工作台与恢复"
-  default_prompt: "使用 $corporate-training-motion 从原始素材设计课程，先确认推荐讲法和大纲，再确认逐字稿，选择独立课件或导演视频；视频先确认三个视觉风格及有声画面小样，保存全部选择并交付可编辑产物。"
+  short_description: "设计或继续课程，恢复有效确认，视频自动选路与选音并交付可编辑产物"
+  default_prompt: "使用 $corporate-training-motion 设计或继续制作当前课程，恢复有效确认，视频主动选择适合内容的渲染与动作音效，完成当前阶段并保存可编辑产物。"

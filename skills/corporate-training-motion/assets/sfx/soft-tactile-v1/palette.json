@@ -1,0 +1,198 @@
+{
+  "id": "soft-tactile-v1",
+  "sampleRate": 48000,
+  "channels": 1,
+  "source": "original deterministic local foley synthesis",
+  "selection": "semantic role; stable per course and cue; no immediate same-role repeat",
+  "assets": [
+    {
+      "id": "enter-1",
+      "role": "enter",
+      "label": "柔和落位",
+      "path": "enter-1.wav",
+      "sha256": "3d23a9f9263eb07b6487a04077e54cee6389d977b388132fef99fc44ec64e8ba",
+      "peakSample": 539,
+      "samples": 7219
+    },
+    {
+      "id": "enter-2",
+      "role": "enter",
+      "label": "柔和落位",
+      "path": "enter-2.wav",
+      "sha256": "d29f2196caa808b27c0fc26cd5216754e6cfcd768ac1e53fd5cfcc10d3919c38",
+      "peakSample": 446,
+      "samples": 7680
+    },
+    {
+      "id": "enter-3",
+      "role": "enter",
+      "label": "柔和落位",
+      "path": "enter-3.wav",
+      "sha256": "d44e6c47609c5d893f2c941ce608042c65fcd5091224e05e0e2fca3a6d05dc3c",
+      "peakSample": 300,
+      "samples": 8141
+    },
+    {
+      "id": "move-1",
+      "role": "move",
+      "label": "轻空气位移",
+      "path": "move-1.wav",
+      "sha256": "bf652e660cc249464096f733cea52de213edc57ee77caa9c126ef341ccc4ff3b",
+      "peakSample": 6550,
+      "samples": 12634
+    },
+    {
+      "id": "move-2",
+      "role": "move",
+      "label": "轻空气位移",
+      "path": "move-2.wav",
+      "sha256": "5f7a48970aba7332b5c1606f5274ee67ab53b8ceb1a8596f00e4b550170c564c",
+      "peakSample": 6415,
+      "samples": 13440
+    },
+    {
+      "id": "move-3",
+      "role": "move",
+      "label": "轻空气位移",
+      "path": "move-3.wav",
+      "sha256": "b450e71a2babd3938b7512b104f68cdf2bcfabac10baa597daabfec9de592381",
+      "peakSample": 7776,
+      "samples": 14246
+    },
+    {
+      "id": "reveal-1",
+      "role": "reveal",
+      "label": "纸面展开",
+      "path": "reveal-1.wav",
+      "sha256": "f57ac55af9bb308061e4077c48be402f8fb2b2a4650a2a07071eba0399c21f0d",
+      "peakSample": 943,
+      "samples": 10378
+    },
+    {
+      "id": "reveal-2",
+      "role": "reveal",
+      "label": "纸面展开",
+      "path": "reveal-2.wav",
+      "sha256": "0017d5bc36c57e21db8b6c33f84be01e48948c3514502fd0d379172b3f9abadc",
+      "peakSample": 816,
+      "samples": 11040
+    },
+    {
+      "id": "reveal-3",
+      "role": "reveal",
+      "label": "纸面展开",
+      "path": "reveal-3.wav",
+      "sha256": "5a5b5f02f26ef36d4e151440a447438a259fde38db855d8160327ab9e5b75388",
+      "peakSample": 572,
+      "samples": 11702
+    },
+    {
+      "id": "focus-1",
+      "role": "focus",
+      "label": "轻触聚焦",
+      "path": "focus-1.wav",
+      "sha256": "41defdb6124a6bb111b2640d965ab412f70937b2b0193fee45875bdc03687bf5",
+      "peakSample": 342,
+      "samples": 5866
+    },
+    {
+      "id": "focus-2",
+      "role": "focus",
+      "label": "轻触聚焦",
+      "path": "focus-2.wav",
+      "sha256": "ad826efc44b4b1ce716f924fe737520448c375560868c0192aaf08e0a8a1f1a8",
+      "peakSample": 605,
+      "samples": 6240
+    },
+    {
+      "id": "focus-3",
+      "role": "focus",
+      "label": "轻触聚焦",
+      "path": "focus-3.wav",
+      "sha256": "d95accc1d5f4487a1ca6429d0634cd870f827fc3d1b0dd8c968452dd7afc8cd2",
+      "peakSample": 358,
+      "samples": 6614
+    },
+    {
+      "id": "confirm-1",
+      "role": "confirm",
+      "label": "低柔双触",
+      "path": "confirm-1.wav",
+      "sha256": "21ca415299ffad0ea7296fbd8c0afcac83aea6304975f5debc4391439436ceb9",
+      "peakSample": 441,
+      "samples": 13536
+    },
+    {
+      "id": "confirm-2",
+      "role": "confirm",
+      "label": "低柔双触",
+      "path": "confirm-2.wav",
+      "sha256": "d84a07179eba0a21aafc7bf0f147e491f41ab6ee2a93ae74d077d3bd5c66ca44",
+      "peakSample": 443,
+      "samples": 14400
+    },
+    {
+      "id": "confirm-3",
+      "role": "confirm",
+      "label": "低柔双触",
+      "path": "confirm-3.wav",
+      "sha256": "b3b67e3d4ed33b0ce2037fc54345153363e48c5a84609f01bfe6c78a206426b3",
+      "peakSample": 381,
+      "samples": 15264
+    },
+    {
+      "id": "transition-1",
+      "role": "transition",
+      "label": "宽缓空气过渡",
+      "path": "transition-1.wav",
+      "sha256": "5fc8a59fabb52fb55a373d5c719b17e8eac1cd55ee7db40d59931eb882f4335d",
+      "peakSample": 9680,
+      "samples": 18950
+    },
+    {
+      "id": "transition-2",
+      "role": "transition",
+      "label": "宽缓空气过渡",
+      "path": "transition-2.wav",
+      "sha256": "1fe0648dd09c82575bf2cdded172411cb4d540152ac108014b05de8fbdd5c817",
+      "peakSample": 10599,
+      "samples": 20160
+    },
+    {
+      "id": "transition-3",
+      "role": "transition",
+      "label": "宽缓空气过渡",
+      "path": "transition-3.wav",
+      "sha256": "4e5ad8ec444ae598a4826de85a3c0744f9dab3456cf5364281b14a8e8e8df2ce",
+      "peakSample": 10770,
+      "samples": 21370
+    },
+    {
+      "id": "warning-1",
+      "role": "warning",
+      "label": "低沉止步",
+      "path": "warning-1.wav",
+      "sha256": "fc9352231ba86f2e6afbb03319b78732dd8dc1c1ca6b8cb8237532c940623726",
+      "peakSample": 514,
+      "samples": 9926
+    },
+    {
+      "id": "warning-2",
+      "role": "warning",
+      "label": "低沉止步",
+      "path": "warning-2.wav",
+      "sha256": "5fadc0c9b8c0a1daae1a8875742d25b96b691aa82365f469acd50009139bc3a5",
+      "peakSample": 572,
+      "samples": 10560
+    },
+    {
+      "id": "warning-3",
+      "role": "warning",
+      "label": "低沉止步",
+      "path": "warning-3.wav",
+      "sha256": "83edcf6aefacdd9f7189e20ccc5ec04f3194217e415e36113bae3d603196f3e3",
+      "peakSample": 357,
+      "samples": 11194
+    }
+  ]
+}

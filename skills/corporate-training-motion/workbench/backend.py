@@ -136,10 +136,15 @@ def validate(doc, project):
         if not isinstance(a,int) or not isinstance(b,int) or not 0 <= a < b <= doc['sourceDurationFrames'] or a<previous or scene['id'] in scene_ids:
             raise ValueError('场景ID或时间轴无效')
         previous=b;scene_ids.add(scene['id'])
-    if doc['adapter']=='scene-graph-v1':
+    if doc['adapter']=='scene-graph-v1' or doc.get('rendering',{}).get('route')=='motion-canvas':
         from authoring import graph_errors
         errors=graph_errors(doc)
         if errors:raise ValueError('; '.join(errors))
+    if doc.get('rendering'):
+        from render_routes import plan
+        selection=plan(doc)
+        if not selection['ready'] or selection['adapter']!=doc['adapter']:
+            raise ValueError('渲染路线与能力要求不一致：'+'; '.join(selection['errors']))
     for field in doc['fields']:
         if not isinstance(field['text'],str) or len(field['text']) > 300:
             raise ValueError('画面文字无效')
@@ -247,7 +252,7 @@ class Workspace:
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
-            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph']:
+            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering']:
                 if doc.get(key) != current.get(key):
                     raise ValueError('不可通过编辑器修改原始结构字段：'+key)
             if [(a['id'],a['originalPath']) for a in doc['assets']] != [(a['id'],a['originalPath']) for a in current['assets']]:

@@ -2,6 +2,8 @@
 
 导演方法、Aiden原速、单行无标点字幕及验收规则在所有路线中一致。按内容选择技术，不把技术路线变成另一套Skill或整课格式。
 
+实际选路先运行`course_tools.py capabilities`与`route --spec SPEC`，见[选路与动效参数](30-renderer-selection.md)。基础变换选scene-graph；逐字、遮罩、模糊、渐变、描线、强调、曲线与镜头选motion-canvas，configure自动接入；定制三维/网页/其他引擎选native-canvas并提供实际桥接。不能将scene-graph参数表当作本包总能力表。
+
 ## 网页图解、插画和真实素材
 
 - DOM、Canvas、SVG适合日历、图表、关系图、操作标注和业务动画。状态由绝对时间`t`计算，用本包web渲染器逐帧输出；不用实时计时器推导演出结果。

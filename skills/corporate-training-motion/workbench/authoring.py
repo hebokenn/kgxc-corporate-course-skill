@@ -17,7 +17,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -63,6 +63,9 @@ def graph_errors(doc):
     fields=doc['fields'];text_bindings={f['objectId'] for f in fields if f['property']=='text'}
     if any(n.get('type')=='text' and n['id'] not in text_bindings for n in nodes):errors.append('存在未登记到工作台的画面文字')
     if any(f['objectId'] not in ids for f in fields):errors.append('工作台字段未绑定到画面对象')
+    from render_routes import effect_errors, requirements
+    if doc.get('rendering',{}).get('route')=='motion-canvas':errors.extend(effect_errors(doc))
+    elif requirements(doc):errors.append('当前简易画布不能实现所需动效；先选择 motion-canvas 或实际自定义渲染')
     return errors
 
 
@@ -78,21 +81,21 @@ def configure(course, spec_path):
     spec=read(spec_path);d=copy.deepcopy(old)
     d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
-    d['adapter']=spec.get('adapter','scene-graph-v1');d['audio']['voice']=spec.get('voice','Aiden 原速 · 以实际配音文件为准')
+    from render_routes import plan,prepare,bind_fields
+    selection=plan(spec)
+    if not selection['ready']:raise ValueError('; '.join(selection['errors']))
+    d['rendering']=selection;d['adapter']=selection['adapter'];d['audio']['voice']=spec.get('voice','Aiden 原速 · 以实际配音文件为准')
     if spec.get('font'):d['font']=spec['font']
     d['assets']=[dict(id=a['id'],label=a.get('label',a['id']),path=a['path'],originalPath=a['path']) for a in spec.get('assets',[])]
-    if d['adapter']=='scene-graph-v1':
-        d['fields']=[]
-        for n in walk(d['sceneGraph']['nodes']):
-            prop='text' if n['type']=='text' else 'position'
-            d['fields'].append(dict(id=n['id']+':'+prop,target='node',objectId=n['id'],sceneId=n.get('sceneId',''),property=prop,
-                                    label=('文字 · ' if prop=='text' else '位置 · ')+n['id'],text=n.get('text',''),dx=0,dy=0))
+    if selection['route'] in ['scene-graph','motion-canvas']:
+        bind_fields(d)
     elif d['adapter']=='seek-bridge-v1':d['fields']=spec.get('fields',[])
     else:raise ValueError('新课只使用通用场景图或统一seek桥接，不使用国补专用适配器')
     validate(d,p)
     if not d['media'].get('audio'):raise ValueError('尚未接入实际混音；保留可打开的草稿，不能标为可导出')
     actual=float(json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',str(safe(p,d['media']['audio']))]))['format']['duration'])
     if abs(actual-d['sourceDurationFrames']/30)>.12:raise ValueError('课程时间轴与真实混音时长不一致；请先按实际音轨对齐')
+    prepare(p,selection,Path(__file__).resolve().parents[1])
     atomic(p/'workbench.json',d)
     config=p/'project.json'
     if config.exists():

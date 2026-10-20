@@ -48,7 +48,7 @@ def doctor(media_only=False):
         audio=proof_path.parent/'setup-test.wav'
         voice_ok=proof.get('status')=='pass' and proof.get('configuration_sha256')==fingerprint and audio.is_file() and proof.get('audio_sha256')==hashlib.sha256(audio.read_bytes()).hexdigest() and Path(voice.get('model','')).is_dir() and Path(voice.get('python','')).is_file()
     item('Qwen3-TTS / Aiden',voice_ok,'Aiden 原速短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
-    report=dict(skill='corporate-training-motion',version='5.0.0',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
+    report=dict(skill='corporate-training-motion',version='5.0.2',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
     report['full_ready']=report['media_ready'] and voice_ok
     for x in result:print(f'[{x["status"]}] {x["name"]}: {x["detail"]}')
     print('\n编辑导出环境：'+('就绪' if report['media_ready'] else '尚未就绪')+'；Aiden 原速配音：'+('就绪' if voice_ok else '尚未就绪'))
