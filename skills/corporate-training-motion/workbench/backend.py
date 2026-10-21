@@ -408,7 +408,9 @@ class Workspace:
                     z.write(directory/'document.json','project/workbench.json')
                     for f in self.project.rglob('*'):
                         rel=f.relative_to(self.project)
-                        if f.is_file() and not f.name.startswith('.') and f!=self.file and rel.parts[0] not in ['work','workbench-history','editor','qa'] and '__pycache__' not in rel.parts:
+                        # work/style-previews 是风格确认引用的预览件，不是缓存；缺它则重开副本无法通过风格闸门
+                        preview=len(rel.parts)>1 and rel.parts[0]=='work' and rel.parts[1]=='style-previews'
+                        if f.is_file() and not f.name.startswith('.') and f!=self.file and '__pycache__' not in rel.parts and (rel.parts[0] not in ['work','workbench-history','editor','qa'] or preview):
                             z.write(f,'project/'+str(rel))
                     for f in APP.rglob('*'):
                         if f.is_file() and '__pycache__' not in f.parts:z.write(f,editor_prefix+'/workbench/'+str(f.relative_to(APP)))

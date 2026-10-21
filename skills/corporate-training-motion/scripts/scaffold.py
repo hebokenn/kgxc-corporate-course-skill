@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse,json,shutil,sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'workbench'))
-from runtime import ensure_dir
+from runtime import ensure_dir,config_dir
 def create(destination):
  destination=Path(destination).expanduser().resolve()
  if destination.exists() and any(destination.iterdir()):raise SystemExit('目标目录非空，不覆盖：'+str(destination))
@@ -14,7 +14,12 @@ def create(destination):
   if p.is_file():shutil.copy2(p,destination/'project'/('qa' if p.name in {'assessment-status.json','visual-evidence.json'} else '')/p.name)
  shutil.copytree(ROOT/'assets/profiles/kgxc',destination/'project/assets/brand/kgxc')
  shutil.copytree(ROOT/'assets/sfx',destination/'project/audio/sfx')
- p=destination/'project/project.json';d=json.loads(p.read_text());d['source_file']='../inputs/your-document.pdf';d['layout_version']=2;p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+ p=destination/'project/project.json';d=json.loads(p.read_text());d['source_file']='../inputs/your-document.pdf';d['layout_version']=2
+ from qwen3_tts import resolve
+ voice_config=config_dir()/'voice.json';selected=resolve(json.loads(voice_config.read_text()) if voice_config.exists() else {})
+ d['voice']={k:v for k,v in selected.items() if k not in ['python','model_paths','model','reference_audio','reference_text']}
+ d['voice']['model']=selected['model_repository'];d['voice']['status']='selected_default_for_new_narration'
+ p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
  sys.path.insert(0,str(ROOT/'workbench'))
  from authoring import init_project
  init_project(destination/'project',ROOT)

@@ -29,7 +29,7 @@ def handoff(project,status):
             '基础图解可保留简易画布；复杂动效接入动效画布；特殊画面保留实际原生实现，不忽略未实现要求',
             '仅在画面需要新动效时升级旧画布，保留用户编辑、配音、字幕与时间轴；自定义源码不自动覆盖',
             '实际改字换图、正常速度动态、正反向定位、预览与编码一致性检查后交付当前阶段产物；沿用有效确认'],
-        sound_defaults=dict(palette=PALETTE,roles=list(ROLES),selection='按动作角色选声，同类轮换，固定课程种子，峰值对齐动作结果',
-            policy='新音效使用柔和触感与空气声；不用统一蜂鸣声，不每字鸣叫；保留既有旁白与批准混音，新增或修改音效后实听小样',
+        sound_defaults=dict(palette=PALETTE,roles=list(ROLES),selection='按动作角色选声，同类轮换，固定课程种子，按动作起点、峰值或完成点对齐',
+            policy='新音效使用natural-ui-v1真实界面素材，按点击、构建、移动、缩放、显隐、旋转、增长等动作选择；不用统一蜂鸣声，不每字鸣叫；保留既有旁白与批准混音，新增或修改音效后实听小样',
             commands=['course_tools.py sfx-catalog','course_tools.py sfx-plan COURSE --events EVENTS','course_tools.py sfx-mix COURSE --plan PLAN --narration DRY_AUDIO --out audio/course-mix.wav']),
         confirmation_boundary='技术选路与选音由制作端执行；用户的内容、风格和新小样确认仍按有效版本执行；完成或冻结工程不因恢复而改写')

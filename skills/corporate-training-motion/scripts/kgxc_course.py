@@ -40,6 +40,7 @@ def doctor(media_only=False):
         item('Node Playwright',test.returncode==0,'playwright-core 可加载' if test.returncode==0 else 'Node 环境缺依赖 重跑完整安装')
     blender=shutil.which('blender') or ('/Applications/Blender.app/Contents/MacOS/Blender' if Path('/Applications/Blender.app/Contents/MacOS/Blender').exists() else None)
     item('Blender',bool(blender),blender or '请安装 Blender https://www.blender.org/download/ 用于三维源工程编辑',False)
+    voice={}
     voice_path=config_dir()/'voice.json';proof_path=Path(tools().get('voice_proof',str(config_dir()/'voice-setup-proof-missing.json')));voice_ok=False
     if voice_path.is_file() and proof_path.is_file():
         voice=json.loads(voice_path.read_text());proof=json.loads(proof_path.read_text())
@@ -47,11 +48,12 @@ def doctor(media_only=False):
         fingerprint=hashlib.sha256((json.dumps(candidate,ensure_ascii=False,indent=2)+'\n').encode()).hexdigest()
         audio=proof_path.parent/'setup-test.wav'
         voice_ok=proof.get('status')=='pass' and proof.get('configuration_sha256')==fingerprint and audio.is_file() and proof.get('audio_sha256')==hashlib.sha256(audio.read_bytes()).hexdigest() and Path(voice.get('model','')).is_dir() and Path(voice.get('python','')).is_file()
-    item('Qwen3-TTS / Aiden',voice_ok,'Aiden 原速短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
-    report=dict(skill='corporate-training-motion',version='5.0.2',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
+    voice_label=voice.get('profile',voice.get('voice_id','B2')) if voice_path.is_file() else 'B2'
+    item('Qwen3-TTS / '+voice_label,voice_ok,voice_label+' 短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
+    report=dict(skill='corporate-training-motion',version='5.0.3',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
     report['full_ready']=report['media_ready'] and voice_ok
     for x in result:print(f'[{x["status"]}] {x["name"]}: {x["detail"]}')
-    print('\n编辑导出环境：'+('就绪' if report['media_ready'] else '尚未就绪')+'；Aiden 原速配音：'+('就绪' if voice_ok else '尚未就绪'))
+    print('\n编辑导出环境：'+('就绪' if report['media_ready'] else '尚未就绪')+'；'+voice_label+' 配音：'+('就绪' if voice_ok else '尚未就绪'))
     config_dir().mkdir(parents=True,exist_ok=True);(config_dir()/'last-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     return 0 if (report['media_ready'] if media_only else report['full_ready']) else 2
 

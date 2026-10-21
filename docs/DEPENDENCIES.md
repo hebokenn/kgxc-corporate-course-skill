@@ -14,7 +14,7 @@
 | 编码、剪辑、混音、探测 | ffmpeg、ffprobe | 实测9.0.2；缺项时尝试已有 Homebrew；[FFmpeg 官方](https://ffmpeg.org/download.html)、[Homebrew](https://brew.sh/) |
 | 插画、字体、波形、布局与运动 QA、换课片头 | numpy2.5.4、Pillow12.3.0、SciPy1.18.1、fontTools4.67.0、OpenCV5.0.0.93 | 具体传递依赖见 `requirements.lock`，安装到独立媒体环境 |
 | 新文本配音 | [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS)，MLX Audio0.5.9、MLX/MLX Metal0.32.4、transformers5.20.1、soundfile0.14.0等 | 默认完整安装自动创建单独配音环境，依赖及传递依赖见 `requirements-voice.lock`；实测 Apple 芯片本地推理；[运行器官方说明](https://github.com/Blaizzy/mlx-audio) |
-| 配音模型 | `mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16` | 固定提交 `52f4770fd9726457eae3d3b6aa92047a25a10776`；完整安装从[模型仓库](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16)下载约4.2GB，权重在用户数据目录，不放 Git；Aiden、speed1.0 |
+| 配音模型 | `mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16` | 固定提交 `7d3824abff87e49756bb0f83fb5411de75d160c4`；完整安装从[模型仓库](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16)下载约4.2GB，权重在用户数据目录，不放 Git；B2 原始生成1.0、保音高交付1.1；其他预设与参考克隆需相应变体，见[配音指南](VOICE.md) |
 | 品牌包装换课名 | 包内批准R5/R8背景、原配乐、中文字体、跟踪参数、`scripts/bookends.py` | 无需开发者的外部工程。保持背景动作和音乐，更换课名；重编码会产生正常编码差异，不承诺视频字节与历史片段相同 |
 | 三维源工程修改 | Blender5.2.2 LTS已验证 | 请人工从[官方入口](https://www.blender.org/download/)安装；内置两份已打包外部图片的 `.blend`；一般换课名用合成器，无需重渲三维 |
 
@@ -24,7 +24,7 @@
 
 - 默认录音、编辑、渲染和导出本地运行，无需额外 TTS API Key 或付费云渲染。
 - Azure 旧适配器仅在主动指定时使用，需要相应订阅和环境变量；示例见 `config/azure.example.json`、`.env.example`。本版未验证真实云调用。
-- MiniMax仅保留明确另选供应商时的历史接入指引，需要相应账号、有效余额和安全凭据；不纳入默认安装，本版未完成真实合成验收，不更改Aiden默认值。
+- MiniMax仅保留明确另选供应商时的历史接入指引，需要相应账号、有效余额和安全凭据；不纳入默认安装，本版未完成真实合成验收，不覆盖当前选定默认声音。
 - AI 生图、远程资料抓取或另选外部服务，需要目标工具对应权限，可能产生费用；不自动开通或上传内部资料。
 - `templates/remotion` 是保留的静音原型，需要自行安装其声明依赖并核对许可；不进入默认安装，不宣称完成有声课。
 - 三维几何可在 Blender 编辑；完整品牌后期仍由包内标题合成器完成，不承诺单靠 Blender 复现全部后期。
@@ -35,4 +35,4 @@
 
 安装器不会自动登录 Codex、获取模型调用额度、安装 Homebrew 或 Blender，不修改系统 Python、不改 shell 启动文件、不上传课程。若 ffmpeg/Node 缺失且没有 Homebrew，先按提示安装 Homebrew，再重跑同一命令。默认模型为公开下载，不要求填写 Hugging Face Token；公司网络限流或拦截时先解决下载连接。
 
-`--skill-only` 只安装文本、脚本与资源；`--skip-voice` 准备媒体环境并跳过模型。只有默认完整安装通过实际短句生成，才标记 Aiden 原速配音就绪。
+`--skill-only` 只安装文本、脚本与资源；`--skip-voice` 准备媒体环境并跳过模型。只有默认完整安装通过实际短句生成，才标记所选配音就绪。

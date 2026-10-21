@@ -54,7 +54,7 @@ def main(argv=None):
         return 0
     if args.command.startswith('sfx-'):
         from sound import catalog,make_plan,mix
-        sound_parser=argparse.ArgumentParser(description='Semantic, varied tactile SFX for the current course')
+        sound_parser=argparse.ArgumentParser(description='Natural interface action SFX for the current course')
         if args.command=='sfx-catalog':
             sound_parser.parse_args(rest);result=catalog()
         else:

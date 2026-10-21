@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.0.2'
+VERSION = '5.0.3'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -671,7 +671,9 @@ def bundle_course(root, destination):
     for base in ['inputs','project','delivery']:
         for p in (course.root/base).rglob('*'):
             rel=p.relative_to(course.root)
-            if not p.is_file() or p.is_symlink() or any(x in rel.parts for x in ['work','workbench-history','editor','__pycache__']):continue
+            # work/style-previews 是风格确认引用的实操预览，不是可重建缓存；漏掉它重开副本会卡在风格闸门
+            preview=len(rel.parts)>2 and rel.parts[1]=='work' and rel.parts[2]=='style-previews'
+            if not p.is_file() or p.is_symlink() or (any(x in rel.parts for x in ['work','workbench-history','editor','__pycache__']) and not preview):continue
             if p.name.startswith('.') or p.suffix=='.pyc' or p.name in ['tools.json','voice.json']:continue
             if 'qa' in rel.parts and not p.is_relative_to(course.project/'qa/reviews'):continue
             files[str(rel)]=p

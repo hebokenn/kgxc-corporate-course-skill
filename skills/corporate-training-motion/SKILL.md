@@ -5,7 +5,7 @@ description: 酷果星创课程设计与制作统一入口。设计新课或继�
 
 # 酷果星创课程共创与制作
 
-版本 **5.0.2**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
+版本 **5.0.3**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
 
 ## 开工与恢复
 
@@ -45,6 +45,6 @@ description: 酷果星创课程设计与制作统一入口。设计新课或继�
 
 课件分支在交付后显示完成，仍保留以后启动视频的入口。视频分支显示三个风格、实际小样播放器与确认。所有选择写入后端工程文件，不能仅靠聊天记忆或localStorage。
 
-制作时按需加载：[制作方法](references/29-production-method.md)、[工作台契约](references/27-content-workbench.md)、[来源核对](references/01-evidence.md)。新配音默认本地Qwen3-TTS Aiden原速；本次另选及既有录音优先，见[声音参数](references/23-local-qwen3-voice.md)。完整视频沿用已批准KGXC R5/R8换课名头尾，见[品牌资源](references/11-brand-bookends.md)。字幕、布局、听看和编码沿原制作规范，不用课件翻页代替导演画面。
+制作时按需加载：[制作方法](references/29-production-method.md)、[工作台契约](references/27-content-workbench.md)、[来源核对](references/01-evidence.md)。新配音默认本地Qwen3-TTS B2清亮平和教学男声，可选其他预设、文字改声或参考音频克隆；本次另选及既有录音优先，见[声音参数](references/23-local-qwen3-voice.md)。完整视频沿用已批准KGXC R5/R8换课名头尾，见[品牌资源](references/11-brand-bookends.md)。字幕、布局、听看和编码沿原制作规范，不用课件翻页代替导演画面。
 
 inputs/project/delivery/packages保持分离。修改Skill先备份；技术检查、主观听看和真实用户认可分别报告。WorkBuddy兼容必须在原生应用验证；独立新对话恢复不冒称已触发真实自动压缩事件。

@@ -1,9 +1,12 @@
 {
-  "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
-  "revision": "52f4770fd9726457eae3d3b6aa92047a25a10776",
-  "voice": "Aiden",
+  "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16",
+  "revision": "7d3824abff87e49756bb0f83fb5411de75d160c4",
+  "voice": "B2",
+  "profile": "B2",
+  "mode": "voice_design",
   "speed": 1.0,
+  "delivery_rate": 1.1,
   "source": "https://github.com/QwenLM/Qwen3-TTS",
   "runtime": "mlx-audio",
-  "download": "automatic during full install; weights stay outside repository"
+  "download": "automatic during full install; optional preset/clone model only when selected"
 }

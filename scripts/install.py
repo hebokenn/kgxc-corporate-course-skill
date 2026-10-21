@@ -93,17 +93,18 @@ def prepare_runtime(data_root,uv):
     return dict(python=str(python),node=shutil.which('node'),node_modules=str(node_root/'node_modules'),ffmpeg=shutil.which('ffmpeg'),ffprobe=shutil.which('ffprobe'),browser_channel='chromium',browser_path=str(runtime/'browsers'))
 
 
-def prepare_voice(data_root,config_root,skill,uv):
+def prepare_voice(data_root,config_root,skill,uv,profile=None):
     venv=data_root/'voice/venv'
     if not (venv/'bin/python').exists():run([uv,'venv','--managed-python','--python','3.12.13',venv])
     run([uv,'pip','install','--python',venv/'bin/python','-r',ROOT/'requirements-voice.lock'])
-    run([venv/'bin/python',ROOT/'scripts/prepare_voice.py','--root',ROOT,'--data',data_root,'--config',config_root/'voice.json','--skill',skill])
+    run([venv/'bin/python',ROOT/'scripts/prepare_voice.py','--root',ROOT,'--data',data_root,'--config',config_root/'voice.json','--skill',skill,*(['--profile',profile] if profile else [])])
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--skill-only',action='store_true');p.add_argument('--skip-voice',action='store_true');p.add_argument('--replace-skill',action='store_true');p.add_argument('--uninstall',action='store_true')
     p.add_argument('--dest',type=Path)
+    p.add_argument('--voice-profile',help='Select B2, a preset such as Aiden, or B2-clone; preserves existing choice when omitted')
     p.add_argument('--agent',choices=['codex','workbuddy','both'],default='both')
     p.add_argument('--data-dir',type=Path,default=Path(os.environ.get('XDG_DATA_HOME',str(Path.home()/'.local/share')))/'kgxc-course')
     p.add_argument('--config-dir',type=Path,default=Path(os.environ.get('COURSE_CONFIG_DIR',str(Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/NAME))))
@@ -148,7 +149,7 @@ def main():
     print('\n两个课程模块已安装：'+', '.join(str(folder) for folder in roots)+'\n快捷入口：'+str(launcher)+'\n在 Codex 或 WorkBuddy 新对话中调用 corporate-training-motion；先确认教学方案与逐字稿，再选择独立课件或导演视频分支。')
     if a.skill_only:print('已更新技能并保留已有媒体与配音配置；新机器仍需完整安装。可运行 kgxc-course doctor 检查。');return 0
     if not a.skip_voice:
-        prepare_voice(data,cfg,dest,a.uv)
+        prepare_voice(data,cfg,dest,a.uv,profile=a.voice_profile)
         configuration=read(cfg/'tools.json',{});configuration['voice_proof']=str(data/'voice/setup-proof.json');write(cfg/'tools.json',configuration)
     return subprocess.call([str(launcher),'doctor',*(['--media-only'] if a.skip_voice else [])])
 

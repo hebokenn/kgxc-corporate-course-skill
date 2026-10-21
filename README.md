@@ -6,15 +6,25 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.0.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.2/kgxc-course-suite-v5.0.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.0.3](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/kgxc-course-suite-v5.0.3.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.0.3：B2 默认旁白与自然界面音效
+
+**默认 B2 清亮平和教学男声**，沿用已确认整课的声音描述与 1.1 倍保音高交付节奏。它是默认选项；也可以选择其他九种预设、用文字调整音色，或用自己的参考录音与逐字文本克隆声音。一次换声与“以后默认”分开保存；既有课程保留原录音。新安装默认 B2，更新保留个人选择，主动切换可用 `--voice-profile B2`。
+
+[如何切换、克隆和修改配音](docs/VOICE.md) · [B2 原始参考](skills/corporate-training-motion/assets/voice/B2-reference.wav) · [实际声音配置](skills/corporate-training-motion/assets/voice/profiles.json)
+
+**音效改为 natural-ui-v1：15 类动作、45 个常用 WAV，另附 100 个 Kenney CC0 原始素材。** 覆盖点击、构建、移动、放大、缩小、出现、消失、旋转、增长、收拢、揭示、聚焦、确认、切换和提醒。常用素材经短切和柔化，取代上一版的滤波噪声生成器；动作对位、语音避让和静音留白可编辑。
+
+[15 类动作有声试听 MP4](docs/media/natural-ui-audition.mp4) · [45 个声音逐项试听 HTML](skills/corporate-training-motion/assets/sfx/natural-ui-v1/audition.html)（下载后打开） · [音效库及替换方法](docs/SOUND.md) · [本版验证范围](docs/V5.0.3-VERIFICATION.md)
 
 ## 5.0.2：继续制作，自动选择渲染方式
 
 在已知课程工程的对话中说“继续制作”，制作端会恢复已有确认，读取构图与导演需求，选择基础图解、内置动效或实际原生渲染，并接好当前阶段需要的动作。逐字、模糊、遮罩、渐变、描线、强调与镜头已接入，画面文字仍按整段编辑。新对话先提供课程工程目录即可。
 
-动作音效改用 soft-tactile-v1：落位、位移、展开、聚焦、确认、转场、提醒共 7 类 21 个本地 WAV，按动作选择并轮换，支持留白。原始旁白和有效确认保留；已完成工程不因恢复自动重制。详见[选路说明](skills/corporate-training-motion/references/30-renderer-selection.md)、[动作音效](skills/corporate-training-motion/references/31-action-sound.md)和[本版验证](docs/V5.0.2-VERIFICATION.md)。
+5.0.2 曾使用 soft-tactile-v1：落位、位移、展开、聚焦、确认、转场、提醒共 7 类 21 个本地 WAV，按动作选择并轮换，支持留白。5.0.3 的新音效默认见上方；旧库保留用于历史课程。原始旁白和有效确认保留，已完成工程不因恢复自动重制。详见[选路说明](skills/corporate-training-motion/references/30-renderer-selection.md)、[动作音效](skills/corporate-training-motion/references/31-action-sound.md)和[本版验证](docs/V5.0.2-VERIFICATION.md)。
 
 ## 先看80秒成品
 
@@ -285,9 +295,9 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.0.2 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.2/kgxc-course-suite-v5.0.2.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.0.3 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/kgxc-course-suite-v5.0.3.zip)** → 解压 → 双击 **安装或更新.command**。
 
-默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、Aiden 配音环境和个人配置。更新后开启新对话，调用 `$corporate-training-motion`。
+默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 
 <details>
 <summary>命令行安装、新机器准备与校验文件</summary>
@@ -304,11 +314,11 @@ kgxc-course resume ./courses/my-course
 ./install.sh --agent both
 ```
 
-完整安装首次需要联网下载媒体依赖和本地 Aiden 模型，目前完整环境验证范围为 macOS Apple 芯片。只安装 WorkBuddy 使用 `--agent workbuddy`。
+完整安装首次需要联网下载媒体依赖和本地 B2 VoiceDesign 模型，目前完整环境验证范围为 macOS Apple 芯片。只安装 WorkBuddy 使用 `--agent workbuddy`。
 
-安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.0.2` 与 `elearning-course-design 2.0.0`，日常只需调用统一课程入口。
+安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.0.3` 与 `elearning-course-design 2.0.0`，日常只需调用统一课程入口。
 
-[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.2/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
+[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
 
 </details>
 

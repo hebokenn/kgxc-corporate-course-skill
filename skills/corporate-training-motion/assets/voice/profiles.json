@@ -1,0 +1,132 @@
+{
+  "schema": "course-voice-profiles/1",
+  "default": "B2",
+  "generation": {
+    "temperature": 0.65,
+    "top_p": 0.9,
+    "repetition_penalty": 1.05,
+    "max_tokens": 4096,
+    "stream": false,
+    "speed": 1.0
+  },
+  "models": {
+    "voice_design": {
+      "repository": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16",
+      "revision": "7d3824abff87e49756bb0f83fb5411de75d160c4"
+    },
+    "custom_voice": {
+      "repository": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
+      "revision": "52f4770fd9726457eae3d3b6aa92047a25a10776"
+    },
+    "clone": {
+      "repository": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
+      "revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48"
+    }
+  },
+  "profiles": {
+    "B2": {
+      "mode": "voice_design",
+      "description": "清亮平和教学男声",
+      "language": "chinese",
+      "instruct": "一位成年中国男性培训讲师的声音，标准普通话，清亮通透的中高音，音色轻盈自然。表达亲切、平和、从容，自然有精神，像面对面给同事解释步骤。语调起伏适中，重音轻一些，句尾自然收住，音量均匀。关键概念和数字清晰说明，所有数字和百分比单位完整读出，计算步骤之间有简短自然的停顿。",
+      "seed": 20261020,
+      "delivery_rate": 1.1
+    },
+    "B2-clone": {
+      "mode": "clone",
+      "description": "使用已确认B2参考音频克隆 待试听",
+      "language": "chinese",
+      "reference_audio": "B2-reference.wav",
+      "reference_text": "B2-reference.txt",
+      "seed": 20261020,
+      "delivery_rate": 1.1,
+      "reference_sha256": "2ca620f1f2a3c59de931ef29089c73859ee5075b29f31d710ffc5a3f80e6d6df"
+    },
+    "Aiden": {
+      "mode": "custom_voice",
+      "voice_id": "Aiden",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Dylan": {
+      "mode": "custom_voice",
+      "voice_id": "Dylan",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Eric": {
+      "mode": "custom_voice",
+      "voice_id": "Eric",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Ryan": {
+      "mode": "custom_voice",
+      "voice_id": "Ryan",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Uncle_Fu": {
+      "mode": "custom_voice",
+      "voice_id": "Uncle_Fu",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Vivian": {
+      "mode": "custom_voice",
+      "voice_id": "Vivian",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Serena": {
+      "mode": "custom_voice",
+      "voice_id": "Serena",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Ono_Anna": {
+      "mode": "custom_voice",
+      "voice_id": "Ono_Anna",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    },
+    "Sohee": {
+      "mode": "custom_voice",
+      "voice_id": "Sohee",
+      "description": "Qwen3-TTS 预设声音",
+      "language": "auto",
+      "instruct": null,
+      "seed": 20261019,
+      "delivery_rate": 1.0
+    }
+  },
+  "reference": {
+    "origin": "user-selected synthetic VoiceDesign B2; not a real-person identity",
+    "sha256": "2ca620f1f2a3c59de931ef29089c73859ee5075b29f31d710ffc5a3f80e6d6df",
+    "date": "2026-10-21"
+  }
+}

@@ -43,15 +43,15 @@ class ContinuationSoundTests(unittest.TestCase):
             self.assertFalse(handoff(self.p,status)['active'])
 
     def test_palette_has_actual_distinct_waveforms_and_valid_hashes(self):
-        data=catalog(self.p);self.assertEqual(len(data['assets']),21)
+        data=catalog(self.p);self.assertEqual(len(data['assets']),45)
         self.assertEqual({a['role'] for a in data['assets']},set(ROLES))
-        self.assertEqual(len({a['sha256'] for a in data['assets']}),21)
+        self.assertEqual(len({a['sha256'] for a in data['assets']}),45)
         for a in data['assets']:
             path=self.p/'audio/sfx'/PALETTE/a['path'];self.assertEqual(sha(path),a['sha256'])
             with wave.open(str(path),'rb') as w:
                 self.assertEqual((w.getframerate(),w.getnchannels(),w.getsampwidth()),(48000,1,2))
                 samples=array('h');samples.frombytes(w.readframes(w.getnframes()))
-            self.assertGreater(max(abs(v) for v in samples),1000);self.assertLess(max(abs(v) for v in samples),8000)
+            self.assertGreater(max(abs(v) for v in samples),300);self.assertLess(max(abs(v) for v in samples),8000)
             self.assertLess(abs(samples[0]),10);self.assertLess(abs(samples[-1]),10)
 
     def test_same_role_varies_but_replanning_is_reproducible_and_respects_silence(self):
@@ -87,14 +87,17 @@ class ContinuationSoundTests(unittest.TestCase):
         self.assertEqual(receipt['duration'],1);self.assertIsNone(read(p/'workbench.json')['media']['audio'])
 
     def test_portable_package_restores_handoff_and_sound_tools(self):
+        preview=self.p/'work/style-previews/approved.png';preview.parent.mkdir(parents=True,exist_ok=True);preview.write_bytes(b'approved style preview')
+        (self.p/'work/unrelated-cache.bin').write_bytes(b'not distributable')
         archive=self.fixture.course/'packages/course.zip';bundle_course(self.fixture.course,archive)
         destination=self.fixture.course.parent/'portable'
-        with zipfile.ZipFile(archive) as z:self.assertIsNone(z.testzip());z.extractall(destination)
+        with zipfile.ZipFile(archive) as z:
+            self.assertIsNone(z.testzip());self.assertIn('project/work/style-previews/approved.png',z.namelist());self.assertNotIn('project/work/unrelated-cache.bin',z.namelist());z.extractall(destination)
         command=[sys.executable,str(destination/'project/editor/scripts/workflow.py'),'status',str(destination),'--json']
         status=json.loads(subprocess.check_output(command,text=True));self.assertTrue(status['production_handoff']['active'])
         tools=destination/'project/editor/scripts/course_tools.py'
         result=json.loads(subprocess.check_output([sys.executable,str(tools),'sfx-catalog'],text=True))
-        self.assertEqual(result['id'],PALETTE);self.assertEqual(len(result['assets']),21)
+        self.assertEqual(result['id'],PALETTE);self.assertEqual(len(result['assets']),45)
 
 
 if __name__=='__main__':unittest.main()
