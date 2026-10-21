@@ -70,6 +70,8 @@ def build(destination,modules=False):
     p=root/'project'
     for name in ['inputs','delivery','packages','project/source','project/assets','project/audio','project/media','project/qa','project/work']: (root/name).mkdir(parents=True,exist_ok=True)
     init_project(p,ROOT)
+    diagnostic=json.loads((p/'workbench.json').read_text());diagnostic['motionPolicy']['semanticRequired']=False;atomic(p/'workbench.json',diagnostic)
+    marker=json.loads((p/'motion-contract.json').read_text());marker.update(semanticRequired=False,purpose='silent technical gallery');atomic(p/'motion-contract.json',marker)
     (p/'assets/detail.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="450"><rect width="900" height="450" fill="#e5ebd9"/><rect x="70" y="70" width="310" height="300" rx="25" fill="#3c8170"/><circle cx="650" cy="220" r="130" fill="#d9ad60"/><path d="M70 70L380 370M380 70L70 370" stroke="#ffffff" stroke-width="15"/><text x="650" y="240" text-anchor="middle" font-size="72" fill="#183f3c">128</text></svg>')
     assets=[dict(id='detail',path='assets/detail.svg')]
     for ident,name in [('m1','M1-repaired.png'),('m1-open','M1-speaking-open.png'),('m1-blink','M1-blink.png'),('kg','kg-original.png')]:

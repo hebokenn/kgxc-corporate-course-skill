@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.1.0'
+VERSION = '5.1.1'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -487,6 +487,7 @@ class Course(LegacyCourse):
             style=state.get('selected_style'),voice=audio.get('voice'),speed=audio.get('speed',1),
             gain=audio.get('gain',1),caption_style=doc.get('captionStyle'))
         if doc.get('motionPolicy',{}).get('required'):
+            if doc.get('motionPolicy',{}).get('semanticRequired'):basis['narration_object_contract']='narration-object-events/1'
             basis['motion_language']=doc.get('motionPlan',{}).get('language')
             from motion_quality import runtime_digest
             basis['motion_library']=runtime_digest(self.project,doc)

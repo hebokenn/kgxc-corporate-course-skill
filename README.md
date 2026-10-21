@@ -6,9 +6,19 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-course-suite-v5.1.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.1/kgxc-course-suite-v5.1.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.1.1：动作按具体讲解发生，纠正慢放填时长
+
+5.1.0的有声连续样段在实际观看中暴露了问题：局部交接、回填和描线被拖到整句的5～12秒，动作虽在执行，却没有继续展现下一句的操作、结果和反馈。此前的技术通过不能视为教学效果通过，该样段不再作为合格节奏示范。
+
+新课把旁白窗口、单次动作和停稳读图分别安排。逐句说明正在解释的对象、用途与结果，动作绑定实际词句和时刻；普通过长位移与揭示会被检查拦下。编码验证改用动作真实起、中、末帧，快速点击无需放慢以迁就2fps采样。完成整课前还要记录正常速度连续复看，判断动作是否适合本句，技术计数不能代替观看。
+
+[具体调用和修改方法](docs/MOTION.md) · [5.1.1修正及验证边界](docs/V5.1.1-VERIFICATION.md)
+
+48种动作、17类构图、B2默认声音及角色创建能力保留；调用数量是可用能力，不是每门课必须凑齐的指标。
 
 ## 5.1.0：整课实际动效与虚拟角色
 
@@ -309,7 +319,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.0.3 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-course-suite-v5.1.0.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.1.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.1/kgxc-course-suite-v5.1.1.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

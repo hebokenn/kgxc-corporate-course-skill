@@ -28,7 +28,7 @@ def library_digest(root=None):
 
 def policy():
     return dict(schema='course-motion-policy/1',required=True,librarySha256=library_digest(),
-                longStaticWarningSeconds=8,acceptance='technical evidence plus continuous visual review; user acceptance separate')
+                longStaticWarningSeconds=8,semanticRequired=True,acceptance='technical evidence plus continuous visual review; user acceptance separate')
 
 
 def runtime_digest(project,doc):
@@ -99,7 +99,7 @@ def preflight(doc):
         if any(y-x>1 for x,y in uncovered):errors.append('动作窗口长于实际动作；请补齐过程或明确读图停留 '+bid)
         actions.append(b);coverage.extend((max(a,x),min(z,y)) for x,y in effect_intervals if max(a,x)<min(z,y))
     if not actions:errors.append('没有实际教学主体动作')
-    for cue in doc.get('captions',[]):
+    for cue in ([] if doc.get('motionPolicy',{}).get('semanticRequired') else doc.get('captions',[])):
         from timeline import segments
         spans=segments(dict(doc,holds=doc.get('holds',[])))
         source_ranges=[]
@@ -113,7 +113,9 @@ def preflight(doc):
         if any(z-a>1 for a,z in missing):errors.append('旁白缺少对应动作或有理由的停留 '+cue['id'])
     protected=set(plan.get('protectedEffects',[]));actual={e['type'] for n in nodes.values() for e in n.get('effects',[])}
     if protected-actual:errors.append('已选动作在整课中缺失 '+', '.join(sorted(protected-actual)))
-    return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),
+    from semantic_motion import inspect as inspect_semantics
+    semantic=inspect_semantics(doc,nodes);errors.extend(semantic['errors'])
+    return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),semantic=semantic,
                 actualEffects=sorted(actual),librarySha256=doc.get('motionPolicy',{}).get('librarySha256'),
                 scope='implementation and narration coverage; encoded motion and visual review still required')
 
@@ -121,6 +123,10 @@ def preflight(doc):
 def require(doc,project=None):
     if project and (Path(project)/'motion-contract.json').is_file() and not doc.get('motionPolicy',{}).get('required'):
         raise ValueError('本工程要求逐段动效检查；不能删除 motionPolicy 绕过检查')
+    if project and (Path(project)/'motion-contract.json').is_file():
+        marker=json.loads((Path(project)/'motion-contract.json').read_text())
+        if marker.get('semanticRequired') and not doc.get('motionPolicy',{}).get('semanticRequired'):
+            raise ValueError('本工程要求口播与对象状态对应；不能删除 semanticRequired 绕过检查')
     report=preflight(doc)
     if report['status']=='fail':raise ValueError('整课动效检查未通过：'+'; '.join(report['errors'][:16]))
     return report
@@ -132,6 +138,8 @@ def director_review(project,doc,video):
     if (p/'motion-contract.json').is_file() and not doc.get('motionPolicy',{}).get('required'):
         return dict(status='pending',errors=['本工程缺少必需的逐段动效策略，不能登记为旧工程完成'])
     if not doc.get('motionPolicy',{}).get('required'):return dict(status='legacy-not-opted-in',errors=[])
+    try:require(doc,p)
+    except ValueError as exc:return dict(status='pending',errors=[str(exc)])
     f=p/'qa/director-review.json'
     if not f.is_file():return dict(status='pending',errors=['缺少绑定当前成片的逐段导演复核 qa/director-review.json'])
     review=json.loads(f.read_text());errors=[]
@@ -140,11 +148,17 @@ def director_review(project,doc,video):
     if review.get('videoSha256')!=sha(video) or review.get('documentSha256')!=sha(p/'workbench.json'):errors.append('导演复核绑定的是旧版本')
     if not review.get('reviewer') or not review.get('scope'):errors.append('未说明真实复核者与检查范围')
     if not str(review.get('pilotComparison','')).strip():errors.append('缺少批准小样与全片的画面、动作和节奏比较')
+    if doc.get('motionPolicy',{}).get('semanticRequired'):
+        playback=review.get('continuousPlayback',{})
+        if playback.get('speed')!=1 or not playback.get('reviewedRanges') or not playback.get('method'):
+            errors.append('缺少正常速度连续复看的实际范围与方法；关键帧和技术计数不能代替连续检查')
     sections={s.get('sceneId'):s for s in review.get('sections',[])}
     for s in doc['scenes']:
         item=sections.get(s['id'])
         if not item:errors.append('未逐段复核 '+s['id']);continue
         if item.get('status')!='reviewed' or item.get('unresolvedIssues') or not all(item.get(k) for k in ['observedAction','narrationAlignment','visualContinuity']):errors.append('导演复核仍有未解决项 '+s['id'])
+        if doc.get('motionPolicy',{}).get('semanticRequired') and not all(item.get(k) for k in ['semanticFit','pacingObservation','resultOrFeedback']):
+            errors.append('须复核动作用途是否合适、正常速度节奏、结果或反馈 '+s['id'])
         frames=item.get('evidenceFrames',[])
         if not frames:errors.append('缺少本段实际编码画面证据 '+s['id'])
         for frame in frames:
@@ -183,14 +197,9 @@ def audit_encoded(video,doc,first,last):
             if times[i-1]-times[start]>=warn:static.append(dict(start=round(float(times[start]),3),end=round(float(times[i-1]),3),sceneId=scene_at(source_times[start])))
             start=None
     if start is not None and times[-1]-times[start]>=warn:static.append(dict(start=round(float(times[start]),3),end=round(float(times[-1]),3),sceneId=scene_at(source_times[start])))
-    beats=doc['motionPlan']['beats'];proofs=[];failures=[]
-    for b in beats:
-        if b.get('kind','action')!='action':continue
-        indices=[i for i in range(1,len(times)) if b['startFrame']/fps<=source_times[i]<=b['endFrame']/fps and 0<source_times[i]-source_times[i-1]<=.75 and scene_at(source_times[i])==scene_at(source_times[i-1])]
-        changed=sum(changes[i-1] for i in indices)
-        item=dict(id=b['id'],samplePairs=len(indices),changedPairs=changed)
-        proofs.append(item)
-        if indices and not changed:failures.append('成片主体未检测到所声明动作 '+b['id'])
+    beats=doc['motionPlan']['beats']
+    from motion_samples import action_phase_audit
+    proofs,failures=action_phase_audit(video,doc,first,last)
     unresolved=[]
     for run in static:
         holds=[s for s in segments(dict(doc,holds=doc.get('holds',[]))) if s['kind']=='hold']

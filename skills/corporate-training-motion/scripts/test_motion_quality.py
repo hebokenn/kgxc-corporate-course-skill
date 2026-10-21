@@ -27,7 +27,52 @@ def fixture():
             dict(id='R',sceneId='S',kind='observe',startFrame=60,endFrame=90,reason='看清交接后的持有者')]))
 
 
+def linked_fixture():
+    doc=fixture();doc['motionPolicy']['semanticRequired']=True
+    beat=doc['motionPlan']['beats'][0]
+    beat['anchor']=dict(cueId='C',phrase='交接过程',atFrame=0)
+    doc['narrationLinks']=dict(schema='narration-object-events/1',cueLinks=[dict(cueId='C',text='请观察交接过程',
+        purpose='看清交接后由谁操作；后半段观察结果',visibleObjectIds=['phone'])])
+    return doc
+
+
 class MotionContractTests(unittest.TestCase):
+    def test_narration_can_explain_a_completed_state_without_slow_padding(self):
+        doc=linked_fixture();doc['sceneGraph']['nodes'][0]['effects'][0]['endFrame']=12
+        doc['motionPlan']['beats'][0]['endFrame']=12;doc['motionPlan']['beats'].pop()
+        self.assertEqual(preflight(doc)['status'],'pass')
+
+    def test_missing_or_stale_narration_and_false_anchors_fail(self):
+        for change in ['links','text','object','anchor','time']:
+            doc=linked_fixture()
+            if change=='links':doc.pop('narrationLinks')
+            elif change=='text':doc['narrationLinks']['cueLinks'][0]['text']='旧版口播'
+            elif change=='object':doc['narrationLinks']['cueLinks'][0]['visibleObjectIds']=['invented']
+            elif change=='anchor':doc['motionPlan']['beats'][0]['anchor']['phrase']='不存在的口播'
+            elif change=='time':doc['motionPlan']['beats'][0]['anchor']['atFrame']=80
+            with self.subTest(change=change):self.assertEqual(preflight(doc)['status'],'fail')
+
+    def test_slow_padding_and_invented_pacing_exceptions_fail(self):
+        doc=linked_fixture();doc['sceneGraph']['nodes'][0]['effects'][0]['endFrame']=90
+        doc['motionPlan']['beats'][0]['endFrame']=90;doc['motionPlan']['beats'].pop()
+        self.assertTrue(preflight(doc)['semantic']['slowTransitions'])
+        self.assertEqual(preflight(doc)['status'],'fail')
+        doc['narrationLinks']['pacingExceptions']={'phone:0':dict(reason='凑够时长',cueIds=['fake1','fake2'],reviewFrames=[0,40,89])}
+        self.assertEqual(preflight(doc)['status'],'fail')
+
+    def test_new_semantic_contract_cannot_be_deleted_to_bypass_checks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp);(p/'motion-contract.json').write_text('{"semanticRequired":true}')
+            doc=fixture()
+            with self.assertRaisesRegex(ValueError,'不能删除 semanticRequired'):require(doc,p)
+
+    def test_anchors_stay_on_source_after_non_destructive_edit(self):
+        doc=linked_fixture();doc['cuts']=[dict(startFrame=0,endFrame=15)];doc['holds']=[dict(sourceFrame=45,frames=15)]
+        doc['captions'][0].update(startFrame=0,endFrame=90)
+        doc['motionPlan']['beats'][0]['anchor']['atFrame']=15
+        doc['motionPlan']['beats'][0]['startFrame']=15
+        self.assertEqual(preflight(doc)['status'],'pass')
+
     def test_real_inventory_exceeds_30_teaching_actions_without_counting_styles(self):
         self.assertGreaterEqual(len(TEACHING),31)
         self.assertNotIn('gradient',CATALOG);self.assertNotIn('camera',CATALOG)
@@ -98,6 +143,22 @@ class MotionContractTests(unittest.TestCase):
 
 
 class EncodedSubjectTests(unittest.TestCase):
+    def test_fast_actions_between_two_fps_samples_are_checked_at_exact_phases(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp);doc=linked_fixture();doc['sourceDurationFrames']=60
+            doc['scenes'][0]['sourceEndFrame']=60;doc['captions'][0]['endFrame']=60
+            doc['sceneGraph']['nodes'][0]['effects'][0].update(startFrame=18,endFrame=26)
+            doc['motionPlan']['beats']=[dict(doc['motionPlan']['beats'][0],startFrame=18,endFrame=26,anchor=dict(cueId='C',phrase='交接过程',atFrame=18))]
+            for name,y,expected in [('subject',450,'pass'),('captions',950,'fail')]:
+                video=p/(name+'.mp4')
+                subprocess.run(['ffmpeg','-y','-v','error','-f','lavfi','-i','color=white:s=1920x1080:r=30:d=2',
+                    '-f','lavfi','-i','color=0x397a69:s=240x100:r=30:d=2','-filter_complex',
+                    f"[0:v][1:v]overlay=x='300+(t-0.6)*1200':y={y}:enable='between(t,0.6,0.86)'",
+                    '-c:v','libx264','-preset','ultrafast','-threads','2','-pix_fmt','yuv420p',str(video)],check=True)
+                result=audit_encoded(video,doc,0,60)
+                self.assertEqual(result['status'],expected)
+                self.assertEqual(result['actionProofs'][0]['encodedFrames'],[18,22,25])
+
     def test_caption_motion_alone_fails_but_real_subject_motion_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp);doc=fixture();doc['motionPlan']['beats'][0]['endFrame']=90;doc['sceneGraph']['nodes'][0]['effects'][0]['endFrame']=90;doc['motionPlan']['beats'].pop()
