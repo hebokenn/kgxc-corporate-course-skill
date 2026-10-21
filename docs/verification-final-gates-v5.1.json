@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "candidateNotCompleteBeforeDirectorReview": true,
+  "reviewUsesCurrentVideoAndDocument": true,
+  "modifiedEvidenceInvalidatesFinal": true,
+  "changedMotionRuntimeInvalidatesPilot": true,
+  "scope": "disposable workflow integration with real audiovisual fixture; never user acceptance"
+}

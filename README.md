@@ -2,13 +2,27 @@
 
 ![实际成品画面：企业虚拟讲师、空间拆解、人物情境与字体动效](docs/media/capabilities-poster.jpg)
 
-**17支教学动效 · 7种新增视觉风格 · 80秒成品混剪。**
+**48种可调用动作 · 17类教学构图 · 3位虚拟顾客。**
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.0.3](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/kgxc-course-suite-v5.0.3.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-course-suite-v5.1.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.1.0：整课实际动效与虚拟角色
+
+**48种动作已接入工作台的同一预览、编辑和导出入口**，其中37种是教学对象的操作、比较、判断、路径和反馈，另有8种文字/强调和3种符号描绘。17类教学构图可带入本课数据和实际旁白节拍；原有展示片保留在下方作为视觉参考。风格、配色、缓动和速度变化不计作新的动作。
+
+为防止小样扩成全片后变成静止页面，新视频工程必须登记逐段对象动作与读图停留；导出前检查实现和旁白覆盖，编码后检查实际主体画面及运行回执。批准小样绑定实际动效代码；缺少逐段导演复核时，完整MP4仍是待审候选。检查用于发现问题，不能代替真实听看或自动保证审美。
+
+[48种动作、17类构图与实际调用](docs/MOTION.md) · [本版验证范围](docs/V5.1-VERIFICATION.md)
+
+**新增 C01 牛仔便装男性、C02 绿裙女性、C03 卡通卫衣儿童顾客**，配有已确认设计板、独立透明全身原图、同源半身取景、表情/姿态设计、profile及提示词。角色采用日常服装，与原品牌店员区分。
+
+[创建、换衣、修改表情与动作的方法](docs/CHARACTERS.md) · [角色素材与确认记录](skills/corporate-training-motion/assets/characters/kgxc-customers-v1/catalog.json)
+
+B2默认旁白及natural-ui-v1自然界面音效继续沿用。更新保留个人声音配置和既有课程；新顾客已验证静态全身、半身和图解站位，**自然走路、接物和关节动画需要该角色单独绑定与验证**。
 
 ## 5.0.3：B2 默认旁白与自然界面音效
 
@@ -295,7 +309,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.0.3 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/kgxc-course-suite-v5.0.3.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.0.3 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-course-suite-v5.1.0.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

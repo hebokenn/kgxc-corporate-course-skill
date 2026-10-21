@@ -11,13 +11,15 @@ from runtime import ensure_dir
 
 def native_fingerprint(project):
     root=Path(project);h=hashlib.sha256()
+    marker=root/'motion-contract.json'
+    if marker.is_file():h.update(marker.read_bytes())
     for parent in ['native','assets','audio','media','source']:
         folder=root/parent
         if folder.exists():
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_catalog.py','teaching_modules.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -30,13 +32,17 @@ def init_project(project, skill_root):
     font=p/'native/assets/fonts';ensure_dir(font)
     original=skill/'libraries/illustration/scripts/engine/lib/fonts'
     shutil.copy2(original/'NotoSansSC-500.woff',font/'CourseHan.woff')
+    for source,name in [('LXGWWenKai-500.woff','CourseHand.woff'),('NotoSerifSC-sub.woff','CourseSerif.woff'),('NotoSansSC-900.woff','CourseHeavy.woff')]:shutil.copy2(original/source,font/name)
     shutil.copy2(original/'OFL.txt',font/'OFL.txt')
     doc=dict(schema='course-workbench/1',revision=0,status='draft',title='待输入课程名称',fps=30,width=1920,height=1080,
              adapter='scene-graph-v1',sourceDurationFrames=1,introFrames=0,bodyEndFrame=1,
              font='native/assets/fonts/CourseHan.woff',media=dict(audio=None,intro=None,outro=None),
              holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#f3f2ec',nodes=[]),
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
-             audio=dict(gain=1,voice='Aiden 原速 · 尚未生成配音',speed=1))
+             audio=dict(gain=1,voice='B2 清亮平和教学男声 · 尚未生成配音',speed=1))
+    from motion_quality import policy
+    doc['motionPolicy']=policy()
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.1.0'))
     atomic(p/'workbench.json',doc)
     return doc
 
@@ -57,6 +63,9 @@ def graph_errors(doc):
         if n.get('type') not in allowed:errors.append('不支持的画面类型 '+str(n.get('type')))
         if n.get('sceneId') and n['sceneId'] not in scene_ids:errors.append('画面引用不存在的场景 '+n['id'])
         if n.get('type')=='image' and n.get('assetId') not in assets:errors.append('图片节点缺少素材 '+n['id'])
+        if 'crop' in n:
+            crop=n['crop']
+            if not isinstance(crop,list) or len(crop)!=4 or any(type(v) not in [int,float] or not math.isfinite(v) for v in crop) or min(crop)<0 or crop[2]<=0 or crop[3]<=0 or crop[0]+crop[2]>1 or crop[1]+crop[3]>1:errors.append('图片取景范围无效 '+n['id'])
         for a in n.get('motion',[]):
             if a.get('property') not in motion or not all(isinstance(a.get(k),(int,float)) and math.isfinite(a[k]) for k in ['from','to','startFrame','endFrame']) or a['endFrame']<=a['startFrame']:
                 errors.append('动作参数无效 '+n['id'])
@@ -78,13 +87,14 @@ def configure(course, spec_path):
         course=Course(p)
         course.require_video('style') if course.modern() else course.require('content')
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
-    spec=read(spec_path);d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph'] if k in spec})
+    from teaching_modules import expand
+    spec=expand(read(spec_path));d=copy.deepcopy(old)
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','teachingModules'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
     from render_routes import plan,prepare,bind_fields
     selection=plan(spec)
     if not selection['ready']:raise ValueError('; '.join(selection['errors']))
-    d['rendering']=selection;d['adapter']=selection['adapter'];d['audio']['voice']=spec.get('voice','Aiden 原速 · 以实际配音文件为准')
+    d['rendering']=selection;d['adapter']=selection['adapter'];d['audio']['voice']=spec.get('voice','B2 清亮平和教学男声 · 以实际配音文件为准')
     if spec.get('font'):d['font']=spec['font']
     d['assets']=[dict(id=a['id'],label=a.get('label',a['id']),path=a['path'],originalPath=a['path']) for a in spec.get('assets',[])]
     if selection['route'] in ['scene-graph','motion-canvas']:

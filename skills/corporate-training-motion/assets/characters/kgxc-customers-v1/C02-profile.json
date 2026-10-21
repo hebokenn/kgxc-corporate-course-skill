@@ -1,0 +1,94 @@
+{
+  "schema": "course-character/1",
+  "id": "C02",
+  "title": "成年女性顾客",
+  "role": "customer",
+  "outfit": "鼠尾草绿色连衣裙",
+  "approval": {
+    "stage": "design",
+    "evidence": "三张都可以，按这版继续（推荐）",
+    "actor": "human-user",
+    "at": "2026-10-21T11:17:41.249677+08:00",
+    "approvedFiles": [
+      {
+        "path": "C02-design-v1.png",
+        "sha256": "d99a1bce8131521e1f78d129ac03204101eb2bf352cb444e936a480b0bdbac6e"
+      }
+    ]
+  },
+  "assets": {
+    "design": {
+      "path": "C02-design-v1.png",
+      "sha256": "d99a1bce8131521e1f78d129ac03204101eb2bf352cb444e936a480b0bdbac6e"
+    },
+    "master": {
+      "path": "C02-full-v1.png",
+      "sha256": "c12ac2b0bb90851652af0881683800000ed89ac35fea746b0d59f3a7032c2224",
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha": true,
+      "derivedFrom": "d99a1bce8131521e1f78d129ac03204101eb2bf352cb444e936a480b0bdbac6e"
+    }
+  },
+  "views": {
+    "full": {
+      "crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "label": "全身"
+    },
+    "half": {
+      "crop": [
+        0.1,
+        0,
+        0.8,
+        0.61
+      ],
+      "label": "半身，同一原图重新取景"
+    }
+  },
+  "identity": {
+    "locked": [
+      "face",
+      "hair",
+      "body-proportions",
+      "skin",
+      "clothing",
+      "shoes"
+    ],
+    "roleDistinction": "casual clothing; no employee polo, badge or logo"
+  },
+  "expressions": {
+    "states": [
+      "neutral-smile",
+      "listen",
+      "concern",
+      "relieved"
+    ],
+    "source": "approved-design-board",
+    "productionTexturesReady": false
+  },
+  "performance": {
+    "validated": [
+      "static-full",
+      "static-half",
+      "diagrammatic-position"
+    ],
+    "concepts": [
+      "listen",
+      "phone-use",
+      "curious-look"
+    ],
+    "naturalJointAnimationReady": false,
+    "limitations": [
+      "顾客不自动使用旁白口型",
+      "M1关节坐标不能套用本角色",
+      "自然走路、接物、转身需补图和独立绑定验证"
+    ]
+  }
+}

@@ -27,7 +27,7 @@ def create(destination):
  from render_routes import stage_libraries
  stage_libraries(ROOT,editor/'workbench/motion/lib')
  (editor/'scripts').mkdir(parents=True)
- for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
+ for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
  from workflow import Course
  Course(destination).init()
  w={'layout_version':2,'current_version':None,'project_dir':'project','delivery_dir':'delivery','package_dir':'packages','retain_artifacts':[]}

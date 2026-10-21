@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.0.3'
+VERSION = '5.1.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -270,6 +270,8 @@ class LegacyCourse:
         if key not in dict(GATES): raise ValueError('未知阶段')
         if not paths or any(not self.relative(p).is_file() for p in paths): raise ValueError('审阅产物不存在')
         if key in ['pilot','final']:
+            from motion_quality import require as require_motion
+            require_motion(read(self.project/'workbench.json'),self.project)
             videos=[self.relative(p) for p in paths if Path(p).suffix.lower()=='.mp4']
             if not videos:raise ValueError('需要真实有声MP4候选')
             for video in videos:
@@ -481,9 +483,15 @@ class Course(LegacyCourse):
         artifact, not an edit to the immutable reviewed MP4.
         """
         doc=read(self.project/'workbench.json',{});audio=doc.get('audio',{})
-        return dict(script_sha256=self.script_sha(),director_sha256=self._director_proof()['sha256'],
+        basis=dict(script_sha256=self.script_sha(),director_sha256=self._director_proof()['sha256'],
             style=state.get('selected_style'),voice=audio.get('voice'),speed=audio.get('speed',1),
             gain=audio.get('gain',1),caption_style=doc.get('captionStyle'))
+        if doc.get('motionPolicy',{}).get('required'):
+            basis['motion_language']=doc.get('motionPlan',{}).get('language')
+            from motion_quality import runtime_digest
+            basis['motion_library']=runtime_digest(self.project,doc)
+            basis['protected_effects']=sorted(doc.get('motionPlan',{}).get('protectedEffects',[]))
+        return basis
 
     def _artifact_hashes(self, key, state):
         result=[]
@@ -532,6 +540,10 @@ class Course(LegacyCourse):
             if not files or any(f['sha256'] is None for f in files):errors.append('尚未生成本阶段实际产物')
             reviewed=key=='pilot' and state.get('gates',{}).get('pilot',{}).get('sha256')==self._gate_hash('pilot',plan,state)
             if key in ['pilot','final'] and not reviewed and state.get(key+'_context')!=self._video_context(state):errors.append('样片或成片与当前逐字稿、风格或画面版本不一致，请重新生成')
+        if key=='final' and state.get('artifacts',{}).get('final'):
+            from motion_quality import director_review
+            target=self.relative(state['artifacts']['final'][0])
+            if target.is_file():errors.extend(director_review(self.project,read(self.project/'workbench.json'),target)['errors'])
         errors.extend(('待解决：' if p.get('kind')=='issue' else '待选择：')+p['id'] for p in pending if p.get('gate')==key)
         return list(dict.fromkeys(errors))
 
@@ -571,6 +583,8 @@ class Course(LegacyCourse):
             deliveries=state.get('deliveries',[]),gates=gates,pending=pending,plan=plan,artifacts=state['artifacts'],jobs=jobs,source_files=self._source_files(plan),
             narration_status='not_required' if branch!='video' else 'ready' if complete else 'sample_ready' if any(g['id']=='pilot' and g['status'] in ['open','confirmed'] and g['ready'] for g in gates) else 'needs_regeneration' if state['artifacts'].get('pilot') else narration,updated_at=state['updated_at'])
         result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
+        result['director_review_status']=state.get('director_review_status')
+        if stage=='final' and state.get('artifacts',{}).get('final') and state.get('director_review_status',{}).get('status')=='pending':result['next_action']='当前完整视频为候选；制作端完成逐段导演复核后登记，不重复渲染或代填用户认可'
         from production import handoff
         result['production_handoff']=handoff(self.project,result)
         result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries']))
@@ -600,6 +614,8 @@ class Course(LegacyCourse):
         if key=='courseware' and read(self.state_file).get('branch')!='courseware':raise ValueError('请先选择课件分支')
         if not paths or any(not self.relative(p).is_file() for p in paths):raise ValueError('实际交付文件不存在')
         if key in ['pilot','final']:
+            from motion_quality import require as require_motion
+            require_motion(read(self.project/'workbench.json'),self.project)
             videos=[self.relative(p) for p in paths if Path(p).suffix.lower()=='.mp4']
             if not videos:raise ValueError('配音和画面小样须有真实有声MP4，不能只交音频')
             for path in videos:
@@ -632,7 +648,14 @@ class Course(LegacyCourse):
                 stable.append('../'+str(target.relative_to(self.root)))
             state['artifacts'][key]=stable
             if context:state[key+'_context']=context
-            if key in ['courseware','final']:
+            quality_ready=True
+            if key=='final':
+                from motion_quality import director_review
+                quality=director_review(self.project,read(self.project/'workbench.json'),videos[0])
+                state['director_review_status']=quality
+                quality_ready=quality['status'] in ['pass','legacy-not-opted-in']
+                if not quality_ready:state['gates'].pop('final',None)
+            if key in ['courseware','final'] and quality_ready:
                 receipt=dict(at=now(),evidence=str(evidence),actor=actor,sha256=self._gate_hash(key,read(self.plan_file),state))
                 state['gates'][key]=receipt
                 state['deliveries'].append(dict(branch='courseware' if key=='courseware' else 'video',at=now(),script_sha256=self.script_sha(),files=self._artifact_hashes(key,state),evidence=str(evidence)))
@@ -690,7 +713,7 @@ def bundle_course(root, destination):
     from sound import palette_root,PALETTE
     for p in palette_root(course.project).glob('*'):
         if p.is_file():files['project/audio/sfx/'+PALETTE+'/'+p.name]=p
-    for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py']:
+    for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py','character_assets.py']:
         files['project/editor/scripts/'+name]=app.parent/'scripts'/name
     for name in ['workspace.json','打开课程工作台.command','README.md']:
         if (course.root/name).is_file():files[name]=course.root/name

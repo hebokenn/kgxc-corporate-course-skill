@@ -31,8 +31,8 @@
   const top=c.measureText('国Hg').actualBoundingBoxAscent;
   c.textBaseline='alphabetic';const ascent=c.measureText('国Hg').actualBoundingBoxAscent-top;
   lines.forEach((line,i)=>{const y=ascent+i*(n.lineHeight||1.4)*size;c.textBaseline='alphabetic';
-   if(e.type==='chars-in'){const span=(e.endFrame-e.startFrame)/fps,stagger=Math.min(e.stagger??.04,span/Math.max(1,[...line].length)),dur=Math.max(1/fps,span-stagger*Math.max(0,[...line].length-1));TY.charsIn(c,line,0,y,(f-e.startFrame)/fps,{font:`${size}px CourseHan`,color:c.fillStyle,align:n.align||'left',dur,stagger,dy:e.dy??24,scale0:e.scale0??1})}
-   else if(e.type==='text-rise')TY.rise(c,line,0,y,p,{size,fam:'CourseHan',color:c.fillStyle,align:n.align||'left'});
+   if(e.type==='chars-in'){const span=(e.endFrame-e.startFrame)/fps,stagger=Math.min(e.stagger??.04,span/Math.max(1,[...line].length)),dur=Math.max(1/fps,span-stagger*Math.max(0,[...line].length-1));TY.charsIn(c,line,0,y,(f-e.startFrame)/fps,{font:`${size}px ${n.fontFamily||'CourseHan'}`,color:c.fillStyle,align:n.align||'left',dur,stagger,dy:e.dy??24,scale0:e.scale0??1})}
+   else if(e.type==='text-rise')TY.rise(c,line,0,y,p,{size,fam:n.fontFamily||'CourseHan',color:c.fillStyle,align:n.align||'left'});
    else if(e.type==='blur-in')TY.blurIn(c,line,0,y,p,{blur:e.blur??18,dy:e.dy??28});
    else c.fillText(TY.typed(line,p),0,y);
   });return true;

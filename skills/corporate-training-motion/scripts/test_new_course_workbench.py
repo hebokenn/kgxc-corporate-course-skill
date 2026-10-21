@@ -14,6 +14,10 @@ class NewCourseTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.course=Path(self.temp.name)/'course';create(self.course);self.p=self.course/'project'
     def tearDown(self):self.temp.cleanup()
     def ready(self, composition_overrides=None):
+        # This shared fixture exercises the pre-5.1 authoring/approval contract.
+        # The new mandatory motion path has separate real-render and negative tests.
+        historical=read(self.p/'workbench.json');historical.pop('motionPolicy',None);atomic(self.p/'workbench.json',historical)
+        (self.p/'motion-contract.json').unlink(missing_ok=True)
         course=Course(self.course);s=course.status();plan=s['plan']
         source=self.course/'inputs/test.txt';source.write_text('验收用原件')
         plan.update(audience='测试人员',performance_task='核对订单')

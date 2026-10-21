@@ -19,7 +19,8 @@ def main():
           '-vf','scale=in_range=full:out_range=limited,format=yuv420p','-color_range','tv',
           '-frames:v',str(count),'-c:a','aac','-b:a','192k','-ar','48000','-af','apad',
           '-t',str(count/a.fps),'-movflags','+faststart',str(output)]
-    metrics={};captured=0
+    metrics={};captured=0;motion_calls={}
+    document=json.loads((a.directory/'document.json').read_text())
     with sync_playwright() as pw, (a.directory/'encoder.log').open('w') as log:
         browser=pw.chromium.launch(headless=True,**browser_options())
         page=browser.new_page(viewport=dict(width=1920,height=1080));errors=[]
@@ -48,6 +49,11 @@ def main():
                 if data.get('jpeg'):
                     buffer=base64.b64decode(data['jpeg']);captured+=1
                     if data.get('caption'):metrics[data['caption']['id']]=data['caption']
+                for call in data.get('motionReceipt',[]):
+                    if 0<call.get('progress',0)<1 and call.get('role')!='decoration':
+                        key=(call['nodeId'],call['type']);source_f=call.get('frame',data.get('sourceFrame',f))
+                        item=motion_calls.setdefault(key,dict(nodeId=call['nodeId'],type=call['type'],firstFrame=source_f,lastFrame=source_f,sampledFrames=0))
+                        item['lastFrame']=source_f;item['sampledFrames']+=1
                 last_key=data['key'];encoder.stdin.write(buffer)
                 if (f-a.first)%15==0:
                     path=a.directory/'progress.json';tmp=path.with_suffix('.pending');tmp.write_text(json.dumps(dict(progress=(f-a.first+1)/count)));tmp.replace(path)
@@ -63,9 +69,25 @@ def main():
     assert int(video['nb_frames'])==count
     assert abs(float(probe['format']['duration'])-count/a.fps)<.09
     subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(output),'-f','null','-'],check=True)
+    from motion_quality import audit_encoded
+    motion_audit=audit_encoded(output,document,a.first,a.last)
+    motion_audit['runtimeCalls']=list(motion_calls.values())
+    if document.get('motionPolicy',{}).get('required'):
+        from timeline import segments
+        retained=[]
+        for span in segments(dict(document,holds=document.get('holds',[]))):
+            x=max(a.first,span['startFrame']);z=min(a.last,span['endFrame'])
+            if x<z and span['kind']=='source':retained.append((span['sourceFrame']+x-span['startFrame'],span['sourceFrame']+z-span['startFrame']))
+        for beat in document.get('motionPlan',{}).get('beats',[]):
+            if beat.get('kind','action')!='action' or not any(max(x,beat['startFrame'])<min(z,beat['endFrame']) for x,z in retained):continue
+            if not any(item['nodeId'] in beat.get('objectIds',[]) and item['firstFrame']<beat['endFrame'] and item['lastFrame']>=beat['startFrame'] for item in motion_calls.values()):
+                motion_audit.setdefault('failures',[]).append('没有实际运行回执 '+beat['id']);motion_audit['status']='fail'
+    (a.directory/'motion-audit.json').write_text(json.dumps(motion_audit,ensure_ascii=False,indent=2))
+    if motion_audit['status'] in ['fail','review-required']:
+        raise ValueError('编码成片动效未通过：'+json.dumps(dict(failures=motion_audit.get('failures',[]),unresolved=motion_audit.get('unresolvedStaticRuns',[])),ensure_ascii=False)+'；候选和证据保留在本次导出目录，未登记为完成')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,renderer='same renderer.html and immutable document snapshot as preview')
+                captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))
 

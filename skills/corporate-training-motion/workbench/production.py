@@ -22,10 +22,13 @@ def handoff(project,status):
     current=doc.get('rendering',{}).get('route','scene-graph' if doc.get('adapter')=='scene-graph-v1' else 'native-canvas')
     action='configure' if doc.get('status')=='draft' else 'upgrade-renderer' if current=='scene-graph' and selection.get('route')=='motion-canvas' else 'continue-current-renderer'
     if not selection.get('ready'):action='resolve-specific-renderer-gap'
+    if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
     return dict(active=True,automatic=True,current_route=current,route_audit=selection,
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
-        available_effects=sorted(capabilities()['effects']),
-        next_steps=['根据当前逐字稿与导演对象变化补齐能力要求，执行选路并落到实际画面，不停在分析或等待用户给技术指令',
+        available_effects=sorted(capabilities()['effects']),teaching_modules=capabilities()['teaching_modules'],motion_catalog_count=capabilities()['executable_motion_count'],
+        motion_quality=__import__('motion_quality').preflight(doc),
+        next_steps=['执行32号整课动效规范：真实模块、逐段旁白覆盖、编码主体与运行回执、绑定当前候选的逐段导演复核；不能简化后标记完成',
+            '根据当前逐字稿与导演对象变化补齐能力要求，执行选路并落到实际画面，不停在分析或等待用户给技术指令',
             '基础图解可保留简易画布；复杂动效接入动效画布；特殊画面保留实际原生实现，不忽略未实现要求',
             '仅在画面需要新动效时升级旧画布，保留用户编辑、配音、字幕与时间轴；自定义源码不自动覆盖',
             '实际改字换图、正常速度动态、正反向定位、预览与编码一致性检查后交付当前阶段产物；沿用有效确认'],

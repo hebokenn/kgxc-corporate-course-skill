@@ -34,6 +34,7 @@ export class CourseRenderer{
   else{if(d.adapter==='national-world-v1')await this.native.seek(t);else await this.native.courseWorkbench.seek(t);c.drawImage(this.sourceCanvas,0,0,1920,1080)}
   const cue=d.captions.find(x=>x.startFrame<=frame&&frame<x.endFrame);let metric=null;
   if(cue){const s=d.captionStyle;c.font=`500 ${s.fontSize}px CourseHan`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=s.strokeWidth;const m=c.measureText(cue.text),bounds=[960-m.actualBoundingBoxLeft-s.strokeWidth/2,s.y-m.actualBoundingBoxAscent-s.strokeWidth/2,960+m.actualBoundingBoxRight+s.strokeWidth/2,s.y+m.actualBoundingBoxDescent+s.strokeWidth/2];if(bounds[0]<112||bounds[2]>1808||bounds[1]<80||bounds[3]>1030)throw Error('字幕超出画面安全区：'+cue.id+'，请调整字号或位置，长句可按语义拆分');c.strokeStyle=s.stroke;c.fillStyle=s.fill;c.strokeText(cue.text,960,s.y);c.fillText(cue.text,960,s.y);metric={id:cue.id,text:cue.text,line_count:1,bounds}}
-  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame)};
+  let motionReceipt=[];if(kind==='native'&&d.motionPolicy?.required){if(typeof this.native.courseWorkbench.motionReceipt!=='function')throw Error('实际引擎未提供动效运行回执，不得通过改路线绕过检查');motionReceipt=this.native.courseWorkbench.motionReceipt()}
+  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame),motionReceipt};
  }
 }

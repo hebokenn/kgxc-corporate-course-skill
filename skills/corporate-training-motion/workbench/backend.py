@@ -252,7 +252,7 @@ class Workspace:
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
-            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering']:
+            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','teachingModules']:
                 if doc.get(key) != current.get(key):
                     raise ValueError('不可通过编辑器修改原始结构字段：'+key)
             if [(a['id'],a['originalPath']) for a in doc['assets']] != [(a['id'],a['originalPath']) for a in current['assets']]:
@@ -358,8 +358,11 @@ class Workspace:
                 else:
                     if purpose:raise ValueError('旧工程沿原导出规则，不指定导出用途')
                     course.require('pilot' if first==0 and last==duration(doc) else 'visual')
+            from motion_quality import require as require_motion
+            motion_preflight=require_motion(doc,self.project)
             job_id=uuid.uuid4().hex[:12];directory=self.work/'exports'/job_id;directory.mkdir(parents=True)
             atomic(directory/'document.json',doc)
+            atomic(directory/'motion-preflight.json',motion_preflight)
             from authoring import native_fingerprint
             native_hash=native_fingerprint(self.project)
             job=dict(id=job_id,status='queued',progress=0,firstFrame=first,lastFrame=last,revision=revision,purpose=key)
@@ -414,7 +417,7 @@ class Workspace:
                             z.write(f,'project/'+str(rel))
                     for f in APP.rglob('*'):
                         if f.is_file() and '__pycache__' not in f.parts:z.write(f,editor_prefix+'/workbench/'+str(f.relative_to(APP)))
-                    for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py']:
+                    for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:
                         z.write(APP.parent/'scripts'/name,editor_prefix+'/scripts/'+name)
                     if modern:
                         z.writestr('README.md','# 可编辑企业课程\n\n运行 python3 project/editor/scripts/workbench.py serve . 打开工作台。\n建议先按Skill仓库README完成完整安装，再运行 kgxc-course serve .。视频导出使用本机配置的ffmpeg、Python Playwright和Chromium。\n')

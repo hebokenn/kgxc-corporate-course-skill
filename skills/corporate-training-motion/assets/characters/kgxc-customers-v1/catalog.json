@@ -1,0 +1,102 @@
+{
+  "schema": "course-character-catalog/1",
+  "status": "design-approved-static-assets-ready-natural-animation-pending",
+  "characters": [
+    {
+      "id": "C01",
+      "title": "成年男性顾客",
+      "role": "customer",
+      "outfit": "靛蓝牛仔夹克与休闲长裤",
+      "status": "design-approved",
+      "designBoard": "C01-design-v1.png",
+      "designSha256": "aeb37960e684bf40385dd6223369768ede8079361d5225ce9216535cb4569b16",
+      "views": [
+        "full-body-neutral",
+        "full-body-listen",
+        "full-body-phone-use",
+        "half-body",
+        "expressions"
+      ],
+      "approval": {
+        "stage": "design",
+        "evidence": "三张都可以，按这版继续（推荐）",
+        "actor": "human-user",
+        "at": "2026-10-21T11:17:41.227461+08:00",
+        "approvedFiles": [
+          {
+            "path": "C01-design-v1.png",
+            "sha256": "aeb37960e684bf40385dd6223369768ede8079361d5225ce9216535cb4569b16"
+          }
+        ]
+      },
+      "animationStatus": "design poses available; natural joint animation not yet validated",
+      "cannotBeUsedAsMaster": true,
+      "master": "C01-full-v1.png",
+      "masterSha256": "51373a45767214b133c0e4469180f8a8b69624d107b535f6c1f1dc2494f3bd62"
+    },
+    {
+      "id": "C02",
+      "title": "成年女性顾客",
+      "role": "customer",
+      "outfit": "鼠尾草绿色连衣裙",
+      "status": "design-approved",
+      "designBoard": "C02-design-v1.png",
+      "designSha256": "d99a1bce8131521e1f78d129ac03204101eb2bf352cb444e936a480b0bdbac6e",
+      "views": [
+        "full-body-neutral",
+        "full-body-listen",
+        "full-body-phone-use",
+        "half-body",
+        "expressions"
+      ],
+      "approval": {
+        "stage": "design",
+        "evidence": "三张都可以，按这版继续（推荐）",
+        "actor": "human-user",
+        "at": "2026-10-21T11:17:41.249677+08:00",
+        "approvedFiles": [
+          {
+            "path": "C02-design-v1.png",
+            "sha256": "d99a1bce8131521e1f78d129ac03204101eb2bf352cb444e936a480b0bdbac6e"
+          }
+        ]
+      },
+      "animationStatus": "design poses available; natural joint animation not yet validated",
+      "cannotBeUsedAsMaster": true,
+      "master": "C02-full-v1.png",
+      "masterSha256": "c12ac2b0bb90851652af0881683800000ed89ac35fea746b0d59f3a7032c2224"
+    },
+    {
+      "id": "C03",
+      "title": "儿童顾客",
+      "role": "customer",
+      "outfit": "卡通小行星卫衣与短裤",
+      "status": "design-approved",
+      "designBoard": "C03-design-v1.png",
+      "designSha256": "b5370911e2d1b8b0fb839507317f406ee8d3d8141c56c5e9965a4e8214a20144",
+      "views": [
+        "full-body-neutral",
+        "full-body-listen",
+        "full-body-phone-use",
+        "half-body",
+        "expressions"
+      ],
+      "approval": {
+        "stage": "design",
+        "evidence": "三张都可以，按这版继续（推荐）",
+        "actor": "human-user",
+        "at": "2026-10-21T11:17:41.275530+08:00",
+        "approvedFiles": [
+          {
+            "path": "C03-design-v1.png",
+            "sha256": "b5370911e2d1b8b0fb839507317f406ee8d3d8141c56c5e9965a4e8214a20144"
+          }
+        ]
+      },
+      "animationStatus": "design poses available; natural joint animation not yet validated",
+      "cannotBeUsedAsMaster": true,
+      "master": "C03-full-v1.png",
+      "masterSha256": "7456a646efa9df3234cfd69bb1ee203657e88a6eb3672c499dc64ed908c3e2eb"
+    }
+  ]
+}

@@ -16,13 +16,38 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'compile-modules', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command in ['motion-catalog','motion-check','compile-modules']:
+        if args.command=='motion-catalog':
+            if rest:parser.error('motion-catalog 不接受其他参数')
+            from motion_catalog import inventory
+            from teaching_modules import catalog
+            result=inventory();result['modules']=catalog()
+        else:
+            motion_parser=argparse.ArgumentParser(description='Executable teaching modules and full-course motion quality')
+            motion_parser.add_argument('--spec',type=Path,required=True)
+            motion_parser.add_argument('--out',type=Path)
+            if args.command=='motion-check':motion_parser.add_argument('--video',type=Path)
+            motion_args=motion_parser.parse_args(rest)
+            from teaching_modules import expand
+            result=expand(json.loads(motion_args.spec.read_text()))
+            if args.command=='motion-check':
+                from motion_quality import preflight,audit_encoded
+                doc=result;result=preflight(doc)
+                if motion_args.video:result['encoded']=audit_encoded(motion_args.video,doc,0,doc['sourceDurationFrames'])
+            if motion_args.out:
+                if args.dry_run:parser.error('--dry-run 不写入输出')
+                motion_args.out.parent.mkdir(parents=True,exist_ok=True)
+                motion_args.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+        if args.command=='compile-modules' and motion_args.out:print(motion_args.out)
+        else:print(json.dumps(result,ensure_ascii=False,indent=2))
+        return 2 if result.get('status')=='fail' or result.get('encoded',{}).get('status') in ['fail','review-required'] else 0
     web = ROOT / 'libraries/web'
     art = ROOT / 'libraries/illustration'
     paths = dict(web_renderer=web/'scripts/render.mjs', web_qa=web/'scripts/qa.py',

@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 import shutil
 import uuid
+from motion_catalog import CATALOG
 
 LIBRARIES = ('util.js', 'paint.js', 'motion.js', 'typo.js', 'diagram.js', 'ui.js', 'camera.js')
 TEXT_EFFECTS = {'chars-in', 'text-rise', 'blur-in', 'typewriter'}
@@ -22,10 +23,13 @@ EFFECTS = {
     'camera': 'CAM.apply: world camera with editable objects',
     'easing': 'MO: analytical easing and spring functions',
 }
+EFFECTS.update({key:value['purpose'] for key,value in CATALOG.items()})
 EASES = {'linear', 'smooth', 'sineInOut', 'cubicIn', 'cubicOut', 'cubicInOut',
          'quartOut', 'quintOut', 'quintInOut', 'expoIn', 'expoOut', 'expoInOut',
          'backOut', 'elasticOut', 'appleOut', 'emphasized', 'k75', 'easyEase',
          'longTail', 'smoothSpring', 'snappy', 'bouncy'}
+PRIOR_ENGINE_SHA256 = '937481a1c77cdb571bd14abca34a9ebb72cde3f581d22ef62bce517c57abc2be'
+PRIOR_ENTRY_SHA256 = '83f2035f70b5148e0de613b93d225abaf1827e77852cb90377f821fc1b9e40c3'
 LEGACY_ENGINE_SHA256 = '07eebcc6d8a0f29e3f619f29d74f8ce136dadcdc558043c3ee03bb8753fc30a7'
 
 
@@ -40,11 +44,14 @@ def capabilities():
         'scene-graph': dict(adapter='scene-graph-v1', use='basic shapes, images and transform keyframes'),
         'motion-canvas': dict(adapter='seek-bridge-v1', use='built-in effects with automatic editable bindings', effects=EFFECTS),
         'native-canvas': dict(adapter='seek-bridge-v1', use='custom Canvas/Three.js/other native implementation; apply/seek required'),
-    }, effects=EFFECTS, easing=sorted(EASES),
+    }, effects=EFFECTS, executable_motion_count=len(CATALOG),
+        teaching_modules=__import__('teaching_modules').catalog(), easing=sorted(EASES),
         boundary='DOM-only animation needs a Canvas implementation for workbench export; 3D/assets/dependencies are not installed automatically')
 
 
 def requirements(spec):
+    if spec.get('sceneGraph',{}).get('modules'):
+        spec=__import__('teaching_modules').expand(spec)
     requested = spec.get('rendering', {}).get('requiredEffects', [])
     if not isinstance(requested, list) or any(not isinstance(x, str) for x in requested):
         raise ValueError('rendering.requiredEffects 须为能力名称数组；运行 course_tools.py capabilities 查看')
@@ -117,6 +124,19 @@ def effect_errors(spec):
                 errors.append('动效起止须为课程范围内的绝对整数帧 '+node['id'])
             if kind in TEXT_EFFECTS and node['type'] != 'text':
                 errors.append(kind+' 只适用于可编辑文字')
+            allowed=CATALOG.get(kind,{}).get('nodes',['*'])
+            if '*' not in allowed and node['type'] not in allowed:errors.append(kind+' 不适用于 '+node['type'])
+            if kind in ['path-follow','route-progress','flow-token','check-draw','cross-draw','brace-draw']:
+                points=e.get('points',node.get('points',[]))
+                if len(points)<2 or any(not isinstance(p,list) or len(p)!=2 or not all(_number(v) for v in p) for p in points):errors.append(kind+' 缺少真实路径坐标')
+            if kind in ['group-collect','timeline-reflow','balance']:
+                required=['from','to'] if kind=='group-collect' else ['to'] if kind=='timeline-reflow' else ['values']
+                if any(not isinstance(e.get(k),list) or len(e[k])!=len(node.get('children',[])) for k in required):errors.append(kind+' 参数须与真实子对象一一对应')
+            if kind=='record-filter' and (not isinstance(e.get('keep'),list) or any(type(v) is not int or not 0<=v<len(node.get('children',[])) for v in e['keep'])):errors.append('筛选须提供有效 keep 记录序号')
+            if kind=='correct-replace' and not isinstance(e.get('fromText'),str):errors.append('差异纠正须提供起态 fromText')
+            if kind=='presenter-gesture':
+                assets={a['id'] for a in spec.get('assets',[])}
+                if any(e.get(k) not in assets for k in ['kgAsset','openAsset','blinkAsset']):errors.append('人物手势缺少原始品牌素材绑定')
             if kind == 'draw-on':
                 pts = node.get('points', [])
                 if node['type'] not in ['line', 'path'] or len(pts) < 2 or any(not isinstance(p, list) or len(p) != 2 or not all(_number(v) for v in p) for p in pts):
@@ -196,7 +216,7 @@ def prepare(project, selection, skill_root):
     managed = (base/'motion/index.html').read_bytes()
     engine=p/'native/scene-engine.js'
     recognized=engine.is_file() and hashlib.sha256(engine.read_bytes()).hexdigest() in {
-        LEGACY_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
     if selection['route'] == 'native-canvas':
         if not entry.is_file() or entry.read_bytes() in [starter, managed] and recognized:
             raise ValueError('尚未提供实际自定义渲染器；默认画布不能冒充 native-canvas')
@@ -205,11 +225,12 @@ def prepare(project, selection, skill_root):
         if entry.read_bytes() != starter:
             raise ValueError('已有其他 native 源码，保留实现并选择对应路线，不自动覆盖')
         return
-    if entry.read_bytes() not in [starter, managed] or not recognized:
+    if entry.read_bytes() not in [starter, managed] and hashlib.sha256(entry.read_bytes()).hexdigest()!=PRIOR_ENTRY_SHA256 or not recognized:
         raise ValueError('已有自定义 native 源码，不能自动覆盖；请沿用 native-canvas')
     (p/'native/motion').mkdir(exist_ok=True)
     stage_libraries(skill_root, p/'native/motion/lib')
-    shutil.copy2(base/'motion/effects.js', p/'native/motion/effects.js')
+    for name in ['effects.js','teaching-effects.js','m1-mesh.js']:
+        shutil.copy2(base/'motion'/name,p/'native/motion'/name)
     shutil.copy2(base/'starter/scene-engine.js', p/'native/scene-engine.js')
     entry.write_bytes(managed)
 
@@ -242,8 +263,8 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
         d['revision']=old['revision']+1;validate(d,p)
         entry=(p/'native/index.html').read_bytes()
         engine=p/'native/scene-engine.js'
-        hashes={LEGACY_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
-        if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
+        hashes={LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] and hashlib.sha256(entry).hexdigest()!=PRIOR_ENTRY_SHA256 or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
             raise ValueError('检测到自定义native源码，未覆盖；请保留实现并手动接入所需库')
         if dry_run:return dict(route=selection,currentRevision=old['revision'],nextRevision=d['revision'],dryRun=True)
         backup=p/'workbench-history'/('renderer-'+str(old['revision'])+'-'+uuid.uuid4().hex[:8])
@@ -257,7 +278,7 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
             if editor.resolve()!=base:
                 shutil.copytree(base,editor,dirs_exist_ok=True,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
                 stage_libraries(base.parent,editor/'motion/lib')
-                for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py']:
+                for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py','character_assets.py']:
                     shutil.copy2(base.parent/'scripts'/name,p/'editor/scripts'/name)
                 from sound import palette_root,PALETTE
                 source=palette_root(p);target=p/'audio/sfx'/PALETTE
