@@ -6,9 +6,23 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.1/kgxc-course-suite-v5.1.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.0/kgxc-course-suite-v5.2.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.2.0：按课程内容制作素材，具名手机与角色接触姿态
+
+新增可编译为工作台普通节点的代码素材：手机机身与七类屏幕、文书/票据、外箱及角色表现。对象的结构、内容、状态、景别与操作按本句讲解设计，素材库不限制新增画法。iPhone 18 Pro 有独立的官方参考、机身比例、正背侧视角与配色；界面明确标为教学示意。
+
+![实际代码绘制的 iPhone 18 Pro 与不同屏幕](docs/media/iphone18pro-content-assets.png)
+
+顾客原图分层、表情与姿态分别登记。实际审阅指出旋转松开手掌会产生错误握持，因此该捷径已在入口禁用；C01 修订为看向自己屏幕、手指握边的接触姿态，手机由代码绘制并位于自己的手部遮挡之后。黑衣 M1 必须带原版 KG 左胸标，与原有动作网格使用相同位置。角色修订仍是待课程小样审阅的候选，不将新图生成或技术检查冒充用户认可。
+
+**角色定义：店长是黑衣 KG，店员是蓝衣，Coach 是黑衣 MyCoach。** 当前与后续新制作使用同一角色配置，保留历史冻结文件。
+
+![实际工作台画面：店长 KG 胸标与修订持机姿态](docs/media/contact-pose-and-KG.png)
+
+[创建、修改与调用代码素材](docs/CONTENT-ASSETS.md) · [角色制作方法](docs/CHARACTERS.md) · [5.2.0验证与范围](docs/V5.2-VERIFICATION.md)
 
 ## 5.1.1：动作按具体讲解发生，纠正慢放填时长
 
@@ -319,7 +333,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.1.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.1/kgxc-course-suite-v5.1.1.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.1.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.0/kgxc-course-suite-v5.2.0.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

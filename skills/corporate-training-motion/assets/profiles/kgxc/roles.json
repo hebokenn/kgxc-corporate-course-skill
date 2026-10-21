@@ -1,0 +1,30 @@
+{
+  "schema": "kgxc-character-roles/1",
+  "source": "用户当前对角色身份的明确纠正",
+  "roles": [
+    {
+      "id": "store_manager",
+      "name": "店长",
+      "identity": "M1",
+      "outfit": "black",
+      "mark": "KG",
+      "asset": "M1-repaired.png",
+      "requiredOverlay": "kg-original.png"
+    },
+    {
+      "id": "store_staff",
+      "name": "店员",
+      "outfit": "blue",
+      "mark": "按既有店员设计",
+      "asset": "blue-cast.png"
+    },
+    {
+      "id": "coach",
+      "name": "Coach",
+      "outfit": "black",
+      "mark": "MyCoach",
+      "asset": "MyCoach-reference-2D.png"
+    }
+  ],
+  "scope": "current and future production; historical frozen course files are preserved"
+}

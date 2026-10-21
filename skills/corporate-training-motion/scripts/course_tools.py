@@ -16,13 +16,36 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'compile-modules', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command in ['asset-catalog','compile-assets','stage-character-rig','stage-contact-pose']:
+        if args.dry_run and args.command!='asset-catalog':parser.error('本素材命令不支持 --dry-run；未执行写入。先用 asset-catalog 查看能力')
+        from content_assets import catalog,expand
+        if args.command=='asset-catalog':
+            if rest:parser.error('asset-catalog 不接受其他参数')
+            result=catalog()
+        else:
+            ap=argparse.ArgumentParser(description='Code-authored content assets in the actual course graph')
+            if args.command=='compile-assets':ap.add_argument('--spec',type=Path,required=True)
+            else:ap.add_argument('course',type=Path);ap.add_argument('--identity',choices=['C01','C02','C03'],required=True)
+            ap.add_argument('--out',type=Path,required=True);aa=ap.parse_args(rest)
+            if aa.out.exists():ap.error('输出已存在，保留既有文件；指定新的 --out')
+            if args.command=='compile-assets':result=expand(json.loads(aa.spec.read_text()))
+            elif args.command=='stage-character-rig':
+                from character_rig import stage
+                result=stage(aa.identity,aa.course,ROOT)
+            else:
+                from character_pose import stage_pose
+                result=stage_pose(aa.identity,aa.course,ROOT)
+            aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+        if args.command=='asset-catalog':print(json.dumps(result,ensure_ascii=False,indent=2))
+        else:print(aa.out)
+        return 0
     if args.command in ['motion-catalog','motion-check','compile-modules']:
         if args.command=='motion-catalog':
             if rest:parser.error('motion-catalog 不接受其他参数')

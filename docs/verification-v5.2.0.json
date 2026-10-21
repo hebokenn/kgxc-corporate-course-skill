@@ -1,0 +1,14 @@
+{
+  "version": "5.2.0",
+  "skillRegressionTests": 110,
+  "skillRegressionStatus": "pass",
+  "newAssetTests": 9,
+  "newAssetTestsStatus": "pass",
+  "installerTests": 7,
+  "installerStatus": "pass",
+  "videoSha256": "003b887ef8487ba2927a0a79732b92b1db8c72ad098b3b0e965d09d5347dca65",
+  "packageSha256": "aac3bc29d142e126352fdd78eb4da68796723f1dd5b04b9768dd83d893366f84",
+  "fullDecode": "pass",
+  "zipCRC": "pass",
+  "acceptance": "technical candidate; actual user motion/teaching acceptance pending"
+}

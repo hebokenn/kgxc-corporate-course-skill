@@ -1,0 +1,42 @@
+{
+  "schema": "course-contact-pose/1",
+  "id": "C01-phone-use-v2",
+  "identity": "C01",
+  "sourceSize": [
+    1024,
+    1536
+  ],
+  "master": {
+    "path": "C01-phone-use-v2.png",
+    "sha256": "2d3bb9a3301dabe3f6cb569e12818a7be4f4fb8aa7c6ff4796f8cab951e6a5ed"
+  },
+  "foreground": {
+    "path": "C01-phone-use-hands-v2.png",
+    "bbox": [
+      499,
+      358,
+      693,
+      470
+    ],
+    "sha256": "bfe94cad763094a18ae23cd576ccc7ec8f1e0b7ec353b1b304fce8c2067cf202"
+  },
+  "deviceMount": {
+    "x": 623,
+    "y": 293,
+    "matrix": [
+      0.2737226277372263,
+      0,
+      -0.07347445255474454,
+      0.24316545012165452,
+      0,
+      0
+    ],
+    "view": "back",
+    "model": "iphone-18-pro",
+    "finish": "glacier-blue"
+  },
+  "method": "built-in imagegen pose correction from approved identity; code device geometry and source-derived hand occlusion",
+  "designApproval": "original identity approved; this revised pose remains a review candidate",
+  "reason": "prior palm rotations were rejected; customer now looks at the screen facing himself",
+  "prompt": "identity-preserve; same C01 denim character; looking down at a vertical phone, normal fingers curl round its edges; audience sees back; transparent full body"
+}

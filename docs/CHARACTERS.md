@@ -1,5 +1,9 @@
 # 虚拟角色：创建、修改与使用
 
+门店人员身份固定为：**店长＝黑衣 KG；店员＝蓝色工服；Coach＝黑衣 MyCoach**。M1 对应店长，不能再将蓝衣配置为店长。实际绑定见 [roles.json](../skills/corporate-training-motion/assets/profiles/kgxc/roles.json)。
+
+![门店三类角色的实际工作台画面](media/store-role-identities.png)
+
 已确认的三位顾客与原门店店员共用插画画风，日常服装用于区分身份。每人附设计板、独立透明全身原图、同源半身取景、表情与姿态设计、提示词和可核对的profile。
 
 | 角色 | 服装与身份 | 资产 |
@@ -40,3 +44,9 @@ python3 SKILL_DIR/scripts/character_assets.py stage SKILL_DIR/assets/characters/
 - 接物检查手—物件接触、时间和遮挡；行走检查身体协调、骨段长度与脚底支撑；顾客不随旁白自动张嘴。需要对白时，能量开合与逐音素口型分别验证和说明。
 
 三位顾客当前完成**设计确认、透明原图、静态全身/半身与图解站位**。自然走路、接物、转身与完整关节动画尚未验证，stage会拒绝未验证动作。表情设计与可连续动画的生产纹理分开登记。详见[完整制作规范](../skills/corporate-training-motion/references/33-virtual-characters.md)、[原角色动作规范](../skills/corporate-training-motion/references/19-character-performance.md)和[提示词](../skills/corporate-training-motion/assets/characters/kgxc-customers-v1/prompts.json)。
+
+## 5.2 的代码分层与接触姿态
+
+C01/C02/C03 现在可分别 stage 自己的纹理分层与局部表情，普通倾听/询问/欢迎姿态可展开为普通工作台节点。持机另走接触姿态：已拒绝的摊开手掌旋转方案不能再生成。C01 修订姿态基于原身份用内置 imagegen 制作，机身、手部遮挡与屏幕特写由代码合成；它不等于自然连续手指动作。新姿态随实际课程小样审阅，原设计确认不被扩写为新动作确认。
+
+黑衣店长必须绑定原版 KG 左胸标；旧原图不被覆盖，静态与原动作使用同一标定位置。[具体调用和修改方法](CONTENT-ASSETS.md)。

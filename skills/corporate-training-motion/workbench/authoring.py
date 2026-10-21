@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','teaching_modules.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','teaching_modules.py','content_assets.py','character_rig.py','character_pose.py','device_models.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -42,7 +42,7 @@ def init_project(project, skill_root):
              audio=dict(gain=1,voice='B2 清亮平和教学男声 · 尚未生成配音',speed=1))
     from motion_quality import policy
     doc['motionPolicy']=policy()
-    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.1.1',semanticRequired=True))
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.0',semanticRequired=True))
     atomic(p/'workbench.json',doc)
     return doc
 
@@ -66,6 +66,12 @@ def graph_errors(doc):
         if 'crop' in n:
             crop=n['crop']
             if not isinstance(crop,list) or len(crop)!=4 or any(type(v) not in [int,float] or not math.isfinite(v) for v in crop) or min(crop)<0 or crop[2]<=0 or crop[3]<=0 or crop[0]+crop[2]>1 or crop[1]+crop[3]>1:errors.append('图片取景范围无效 '+n['id'])
+        if 'clip' in n:
+            box=n['clip']
+            if not isinstance(box,list) or len(box)!=4 or any(type(v) not in [int,float] or not math.isfinite(v) for v in box) or box[2]<=0 or box[3]<=0:errors.append('局部取景范围无效 '+n['id'])
+        if 'matrix' in n:
+            matrix=n['matrix']
+            if not isinstance(matrix,list) or len(matrix)!=6 or any(type(v) not in [int,float] or not math.isfinite(v) for v in matrix) or abs(matrix[0]*matrix[3]-matrix[1]*matrix[2])<1e-9:errors.append('素材平面变换无效 '+n['id'])
         for a in n.get('motion',[]):
             if a.get('property') not in motion or not all(isinstance(a.get(k),(int,float)) and math.isfinite(a[k]) for k in ['from','to','startFrame','endFrame']) or a['endFrame']<=a['startFrame']:
                 errors.append('动作参数无效 '+n['id'])
@@ -89,7 +95,7 @@ def configure(course, spec_path):
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
     spec=expand(read(spec_path));d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules'] if k in spec})
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
     from render_routes import plan,prepare,bind_fields
     selection=plan(spec)

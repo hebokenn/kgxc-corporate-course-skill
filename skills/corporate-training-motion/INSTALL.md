@@ -1,6 +1,6 @@
 # 安装与更新
 
-本版为5.1.1联合更新包，包含corporate-training-motion 5.1.1和elearning-course-design 2.0.0。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
+本版为5.2.0联合更新包，包含corporate-training-motion 5.2.0和elearning-course-design 2.0.0。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
 
 解压完整更新包，双击“安装或更新.command”。默认更新两个宿主的技能，保留已有媒体和配音环境；检测到自改同名Skill会先保留并提示。也可在解压目录运行：
 

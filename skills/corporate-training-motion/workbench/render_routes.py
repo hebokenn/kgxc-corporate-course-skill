@@ -28,6 +28,7 @@ EASES = {'linear', 'smooth', 'sineInOut', 'cubicIn', 'cubicOut', 'cubicInOut',
          'quartOut', 'quintOut', 'quintInOut', 'expoIn', 'expoOut', 'expoInOut',
          'backOut', 'elasticOut', 'appleOut', 'emphasized', 'k75', 'easyEase',
          'longTail', 'smoothSpring', 'snappy', 'bouncy'}
+CONTENT_ASSETS_PRIOR_ENGINE_SHA256 = '09edb7d6a46c804e9c87528c564817ea91c7efa23d3da7be81f8105274f607cd'
 PRIOR_ENGINE_SHA256 = '937481a1c77cdb571bd14abca34a9ebb72cde3f581d22ef62bce517c57abc2be'
 PRIOR_ENTRY_SHA256 = '83f2035f70b5148e0de613b93d225abaf1827e77852cb90377f821fc1b9e40c3'
 LEGACY_ENGINE_SHA256 = '07eebcc6d8a0f29e3f619f29d74f8ce136dadcdc558043c3ee03bb8753fc30a7'
@@ -45,12 +46,12 @@ def capabilities():
         'motion-canvas': dict(adapter='seek-bridge-v1', use='built-in effects with automatic editable bindings', effects=EFFECTS),
         'native-canvas': dict(adapter='seek-bridge-v1', use='custom Canvas/Three.js/other native implementation; apply/seek required'),
     }, effects=EFFECTS, executable_motion_count=len(CATALOG),
-        teaching_modules=__import__('teaching_modules').catalog(), easing=sorted(EASES),
+        teaching_modules=__import__('teaching_modules').catalog(), content_assets=__import__('content_assets').catalog(), easing=sorted(EASES),
         boundary='DOM-only animation needs a Canvas implementation for workbench export; 3D/assets/dependencies are not installed automatically')
 
 
 def requirements(spec):
-    if spec.get('sceneGraph',{}).get('modules'):
+    if spec.get('sceneGraph',{}).get('modules') or spec.get('sceneGraph',{}).get('materials'):
         spec=__import__('teaching_modules').expand(spec)
     requested = spec.get('rendering', {}).get('requiredEffects', [])
     if not isinstance(requested, list) or any(not isinstance(x, str) for x in requested):
@@ -216,7 +217,7 @@ def prepare(project, selection, skill_root):
     managed = (base/'motion/index.html').read_bytes()
     engine=p/'native/scene-engine.js'
     recognized=engine.is_file() and hashlib.sha256(engine.read_bytes()).hexdigest() in {
-        LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
     if selection['route'] == 'native-canvas':
         if not entry.is_file() or entry.read_bytes() in [starter, managed] and recognized:
             raise ValueError('尚未提供实际自定义渲染器；默认画布不能冒充 native-canvas')
@@ -263,7 +264,7 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
         d['revision']=old['revision']+1;validate(d,p)
         entry=(p/'native/index.html').read_bytes()
         engine=p/'native/scene-engine.js'
-        hashes={LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        hashes={LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
         if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] and hashlib.sha256(entry).hexdigest()!=PRIOR_ENTRY_SHA256 or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
             raise ValueError('检测到自定义native源码，未覆盖；请保留实现并手动接入所需库')
         if dry_run:return dict(route=selection,currentRevision=old['revision'],nextRevision=d['revision'],dryRun=True)

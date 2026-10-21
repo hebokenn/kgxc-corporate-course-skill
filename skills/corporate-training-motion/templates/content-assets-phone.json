@@ -1,0 +1,47 @@
+{
+  "sourceDurationFrames": 90,
+  "scenes": [
+    {
+      "id": "S1",
+      "sourceStartFrame": 0,
+      "sourceEndFrame": 90
+    }
+  ],
+  "assets": [],
+  "sceneGraph": {
+    "background": "#f5f3e9",
+    "materials": [
+      {
+        "id": "phone",
+        "kind": "phone",
+        "sceneId": "S1",
+        "x": 800,
+        "y": 270,
+        "scale": 1,
+        "data": {
+          "model": "iphone-18-pro",
+          "finish": "glacier-blue",
+          "deviceId": "demo",
+          "screenStates": [
+            {
+              "atFrame": 0,
+              "mode": "camera"
+            },
+            {
+              "atFrame": 52,
+              "mode": "gallery"
+            }
+          ],
+          "interactions": [
+            {
+              "atFrame": 40,
+              "durationFrames": 9,
+              "target": "shutter",
+              "capture": true
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
