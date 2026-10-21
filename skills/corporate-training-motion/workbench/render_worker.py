@@ -19,7 +19,7 @@ def main():
           '-vf','scale=in_range=full:out_range=limited,format=yuv420p','-color_range','tv',
           '-frames:v',str(count),'-c:a','aac','-b:a','192k','-ar','48000','-af','apad',
           '-t',str(count/a.fps),'-movflags','+faststart',str(output)]
-    metrics={};captured=0;motion_calls={}
+    metrics={};captured=0;motion_calls={};layout_checks={};layout_frames=0
     document=json.loads((a.directory/'document.json').read_text())
     with sync_playwright() as pw, (a.directory/'encoder.log').open('w') as log:
         browser=pw.chromium.launch(headless=True,**browser_options())
@@ -49,6 +49,9 @@ def main():
                 if data.get('jpeg'):
                     buffer=base64.b64decode(data['jpeg']);captured+=1
                     if data.get('caption'):metrics[data['caption']['id']]=data['caption']
+                    if data.get('layoutReceipt'):layout_frames+=1
+                    for rule in data.get('layoutReceipt',[]):
+                        key=(rule['objectId'],rule['rule']);item=layout_checks.setdefault(key,dict(objectId=rule['objectId'],rule=rule['rule'],checkedStates=0,firstFrame=f,lastFrame=f));item['checkedStates']+=1;item['lastFrame']=f
                 for call in data.get('motionReceipt',[]):
                     if 0<call.get('progress',0)<1 and call.get('role')!='decoration':
                         key=(call['nodeId'],call['type']);source_f=call.get('frame',data.get('sourceFrame',f))
@@ -87,7 +90,8 @@ def main():
         raise ValueError('编码成片动效未通过：'+json.dumps(dict(failures=motion_audit.get('failures',[]),unresolved=motion_audit.get('unresolvedStaticRuns',[])),ensure_ascii=False)+'；候选和证据保留在本次导出目录，未登记为完成')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,renderer='same renderer.html and immutable document snapshot as preview')
+                captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,
+                layoutAudit=dict(status='pass' if layout_checks else 'not-declared',checkedRenderedStates=layout_frames,rules=list(layout_checks.values()),scope='declared text enclosure and row separation, not all possible visual collisions'),renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))
 

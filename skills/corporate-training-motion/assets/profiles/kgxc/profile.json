@@ -21,7 +21,7 @@
   "characters": {
     "default_presenter": "M1-repaired.png",
     "default_presenter_clothes": "black KG polo; original KG at character left chest / viewer right; no 店长 text",
-    "staff": "blue-cast.png: blue-uniform store staff, female and male",
+    "staff": "blue-cast.png: blue-uniform female and male store staff, required original KG chest mark",
     "manager": "M1-repaired.png with original kg-original.png at left chest; black KG polo",
     "mycoach": "MyCoach-reference-2D.png: chestnut-haired 2D woman; black collared shirt with MyCoach text; not KG",
     "default_presenter_role": "store_manager",
@@ -84,7 +84,7 @@
     },
     "roles.json": {
       "path": "roles.json",
-      "sha256": "873d83dd6b097dfe40959fbf76dce9a0729753f3e7a9af31940f3519a605b341"
+      "sha256": "3e2f93b05bb5f4bab67a58963f8ed4b53aea7c375a929d0d9797f51ad282d743"
     }
   },
   "version": "kgxc-r5-r8-m1-v8-assets",

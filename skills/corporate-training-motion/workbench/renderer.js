@@ -18,6 +18,7 @@ export class CourseRenderer{
    this.bindingReceipt={fields:d.fields.map(f=>f.id),assets:d.assets.map(a=>a.id)};
   }else{
    const bridge=this.native.courseWorkbench;if(!bridge||bridge.version!==1||typeof bridge.apply!=='function'||typeof bridge.seek!=='function')throw Error('课程缺少统一工作台桥接接口');
+   if(d.layoutPolicy?.required&&typeof bridge.layoutReceipt!=='function')throw Error('缺少实际文字与标注边界检查，不能忽略布局约束');
    this.bindingReceipt=await bridge.apply(structuredClone(d));
    for(const [key,items]of [['fields',d.fields],['assets',d.assets]]){const got=this.bindingReceipt?.[key];if(!Array.isArray(got)||items.some(x=>!got.includes(x.id)))throw Error('课程引擎没有应用全部可编辑'+key)}
   }
@@ -35,6 +36,8 @@ export class CourseRenderer{
   const cue=d.captions.find(x=>x.startFrame<=frame&&frame<x.endFrame);let metric=null;
   if(cue){const s=d.captionStyle;c.font=`500 ${s.fontSize}px CourseHan`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=s.strokeWidth;const m=c.measureText(cue.text),bounds=[960-m.actualBoundingBoxLeft-s.strokeWidth/2,s.y-m.actualBoundingBoxAscent-s.strokeWidth/2,960+m.actualBoundingBoxRight+s.strokeWidth/2,s.y+m.actualBoundingBoxDescent+s.strokeWidth/2];if(bounds[0]<112||bounds[2]>1808||bounds[1]<80||bounds[3]>1030)throw Error('字幕超出画面安全区：'+cue.id+'，请调整字号或位置，长句可按语义拆分');c.strokeStyle=s.stroke;c.fillStyle=s.fill;c.strokeText(cue.text,960,s.y);c.fillText(cue.text,960,s.y);metric={id:cue.id,text:cue.text,line_count:1,bounds}}
   let motionReceipt=[];if(kind==='native'&&d.motionPolicy?.required){if(typeof this.native.courseWorkbench.motionReceipt!=='function')throw Error('实际引擎未提供动效运行回执，不得通过改路线绕过检查');motionReceipt=this.native.courseWorkbench.motionReceipt()}
-  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame),motionReceipt};
+  const layoutReceipt=kind==='native'&&typeof this.native.courseWorkbench?.layoutReceipt==='function'?this.native.courseWorkbench.layoutReceipt():[];
+  const bad=layoutReceipt.filter(r=>r.violations?.length);if(bad.length)throw Error('画面布局检查失败，源帧 '+source+'：'+bad.map(r=>r.objectId+' '+r.violations.join('；')).join('；'));
+  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame),motionReceipt,layoutReceipt};
  }
 }

@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','teaching_modules.py','content_assets.py','character_rig.py','character_pose.py','device_models.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','teaching_modules.py','content_assets.py','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -40,9 +40,10 @@ def init_project(project, skill_root):
              holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#f3f2ec',nodes=[]),
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
              audio=dict(gain=1,voice='B2 清亮平和教学男声 · 尚未生成配音',speed=1))
+    doc['characterPolicy']=dict(required=True,scope='known company masters require their original uniform mark')
     from motion_quality import policy
     doc['motionPolicy']=policy()
-    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.0',semanticRequired=True))
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.1',semanticRequired=True))
     atomic(p/'workbench.json',doc)
     return doc
 
@@ -63,6 +64,8 @@ def graph_errors(doc):
         if n.get('type') not in allowed:errors.append('不支持的画面类型 '+str(n.get('type')))
         if n.get('sceneId') and n['sceneId'] not in scene_ids:errors.append('画面引用不存在的场景 '+n['id'])
         if n.get('type')=='image' and n.get('assetId') not in assets:errors.append('图片节点缺少素材 '+n['id'])
+        for rule in ['enclosesTextIds','nonOverlappingTextIds']:
+            if rule in n and (not isinstance(n[rule],list) or not n[rule] or any(not isinstance(i,str) for i in n[rule])):errors.append('文字布局约束无效 '+n['id'])
         if 'crop' in n:
             crop=n['crop']
             if not isinstance(crop,list) or len(crop)!=4 or any(type(v) not in [int,float] or not math.isfinite(v) for v in crop) or min(crop)<0 or crop[2]<=0 or crop[3]<=0 or crop[0]+crop[2]>1 or crop[1]+crop[3]>1:errors.append('图片取景范围无效 '+n['id'])
@@ -78,6 +81,9 @@ def graph_errors(doc):
     fields=doc['fields'];text_bindings={f['objectId'] for f in fields if f['property']=='text'}
     if any(n.get('type')=='text' and n['id'] not in text_bindings for n in nodes):errors.append('存在未登记到工作台的画面文字')
     if any(f['objectId'] not in ids for f in fields):errors.append('工作台字段未绑定到画面对象')
+    text_ids={n['id'] for n in nodes if n.get('type')=='text'}
+    for n in nodes:
+        if any(identifier not in text_ids for rule in ['enclosesTextIds','nonOverlappingTextIds'] for identifier in n.get(rule,[])):errors.append('布局约束引用不存在的文字 '+n['id'])
     from render_routes import effect_errors, requirements
     if doc.get('rendering',{}).get('route')=='motion-canvas':errors.extend(effect_errors(doc))
     elif requirements(doc):errors.append('当前简易画布不能实现所需动效；先选择 motion-canvas 或实际自定义渲染')
@@ -97,6 +103,7 @@ def configure(course, spec_path):
     spec=expand(read(spec_path));d=copy.deepcopy(old)
     d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
+    if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure and row separation on each rendered state')
     from render_routes import plan,prepare,bind_fields
     selection=plan(spec)
     if not selection['ready']:raise ValueError('; '.join(selection['errors']))

@@ -150,6 +150,8 @@ def validate(doc, project):
             raise ValueError('画面文字无效')
         if not all(isinstance(field[k],(int,float)) and math.isfinite(field[k]) and abs(field[k]) <= 500 for k in ['dx','dy']):
             raise ValueError('画面位移超出允许范围')
+    from company_characters import validate_uniforms
+    validate_uniforms(doc,project)
     return doc
 
 

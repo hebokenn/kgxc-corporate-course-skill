@@ -6,9 +6,15 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.0/kgxc-course-suite-v5.2.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.2.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.1/kgxc-course-suite-v5.2.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.2.1：拦截穿字高亮与漏胸标
+
+实际审阅继续发现了固定宽度高亮穿过右列文字、蓝衣店员误用无标原图的问题。本版把文书高亮绑定到具体行，并在实际预览和导出中测量字体范围，检查框线与左右列。高亮窗口不重叠；改字或位移后不合布局会报错停止导出。
+
+店长和蓝衣男女店员必须带原版 KG，Coach 保留 MyCoach。新增完整角色入口；直接裁切已知无标公司原图、胸标未覆盖人物时间窗，也会被检查拒绝。检查范围和具体调用见 [文字边界与门店胸标](docs/LAYOUT-UNIFORMS.md)，不把这些规则宣传为自动判断全部视觉遮挡。
 
 ## 5.2.0：按课程内容制作素材，具名手机与角色接触姿态
 
@@ -333,7 +339,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.1.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.0/kgxc-course-suite-v5.2.0.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.2.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.1/kgxc-course-suite-v5.2.1.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

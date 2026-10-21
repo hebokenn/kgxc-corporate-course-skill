@@ -1,6 +1,6 @@
 # 虚拟角色：创建、修改与使用
 
-门店人员身份固定为：**店长＝黑衣 KG；店员＝蓝色工服；Coach＝黑衣 MyCoach**。M1 对应店长，不能再将蓝衣配置为店长。实际绑定见 [roles.json](../skills/corporate-training-motion/assets/profiles/kgxc/roles.json)。
+门店人员身份固定为：**店长＝黑衣 KG；店员＝蓝色工服＋KG；Coach＝黑衣 MyCoach**。M1 对应店长，不能再将蓝衣配置为店长。实际绑定见 [roles.json](../skills/corporate-training-motion/assets/profiles/kgxc/roles.json)。
 
 ![门店三类角色的实际工作台画面](media/store-role-identities.png)
 
@@ -50,3 +50,5 @@ python3 SKILL_DIR/scripts/character_assets.py stage SKILL_DIR/assets/characters/
 C01/C02/C03 现在可分别 stage 自己的纹理分层与局部表情，普通倾听/询问/欢迎姿态可展开为普通工作台节点。持机另走接触姿态：已拒绝的摊开手掌旋转方案不能再生成。C01 修订姿态基于原身份用内置 imagegen 制作，机身、手部遮挡与屏幕特写由代码合成；它不等于自然连续手指动作。新姿态随实际课程小样审阅，原设计确认不被扩写为新动作确认。
 
 黑衣店长必须绑定原版 KG 左胸标；旧原图不被覆盖，静态与原动作使用同一标定位置。[具体调用和修改方法](CONTENT-ASSETS.md)。
+
+5.2.1 起，蓝衣男女店员使用各自的胸口坐标和原版 KG 层；完整身份素材通过 stage-company-character 取得。直接裁切已知无标原图会被新工程检查拦下，见[胸标与布局检查](LAYOUT-UNIFORMS.md)。

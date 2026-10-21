@@ -143,11 +143,26 @@ def phone(recipe,scene):
 def actor(recipe,scene):
     from character_rig import pose_angles
     b=Drawing(recipe,scene);d=recipe.get('data',{});identity=d.get('identity','C01');rig=d.get('rig')
+    if identity in ['S01','S02','COACH']:
+        if not d.get('headAsset'):raise ValueError('须使用该门店角色自己的原图')
+        staff=identity in ['S01','S02'];w,h=(737.28,1024) if staff else (1024,1536)
+        crop=[0,0,.48,1] if identity=='S01' else [780/1536,0,.48,1] if identity=='S02' else [0,0,1,1]
+        image=b.node('image','original-master',assetId=d['headAsset'],x=0,y=0,width=w,height=h,crop=crop);items=[image]
+        if staff:
+            if not d.get('logoAsset'):raise ValueError('蓝衣店员必须绑定原版 KG 胸标')
+            x=440 if identity=='S01' else 390
+            items.append(b.node('image','uniform-KG',assetId=d['logoAsset'],x=x,y=320,width=48,height=48*251/321))
+            image['uniformMarkNodeId']=b.r['id']+'-uniform-KG'
+        elif d.get('logoAsset'):raise ValueError('Coach 保留自身 MyCoach 标识，不能加 KG')
+        scale=recipe.get('scale',1)*810/h;root=b.group('root',recipe.get('x',0),recipe.get('y',0),items,w,h,scaleX=scale,scaleY=scale)
+        if d.get('view')=='half':root['clip']=[0,0,w,h*.60]
+        return root,dict(kind='actor',identity=identity,characterRole='store_staff' if staff else 'coach',uniformMark='KG' if staff else 'MyCoach',representation='original role art with required role-specific uniform marking')
     if identity=='M1' and not rig:
         if not d.get('headAsset'):raise ValueError('M1须绑定已有完整原图')
         if not d.get('logoAsset'):raise ValueError('黑衣店长须绑定原版KG胸标；不能直接使用无标原图')
         image=b.node('image','original-master',assetId=d['headAsset'],x=0,y=0,width=1115,height=1411)
         logo=b.node('image','uniform-KG',assetId=d['logoAsset'],x=559,y=458,width=70,height=70*251/321)
+        image['uniformMarkNodeId']=b.r['id']+'-uniform-KG'
         root=b.group('root',recipe.get('x',0),recipe.get('y',0),[image,logo],1115,1411,scaleX=recipe.get('scale',1)*810/1411,scaleY=recipe.get('scale',1)*810/1411)
         if d.get('view')=='half':root['clip']=[0,0,1115,780]
         return root,dict(kind='actor',identity=identity,characterRole='store_manager',representation='original M1 illustration plus original KG at registered left chest; mesh uses same mark position',design='original identity with required brand layer')
@@ -207,8 +222,15 @@ def document(recipe,scene):
     for i,row in enumerate(d.get('rows',[])):
         y=145+i*70;at=row_frames[i];group=b.group('row-'+str(i),0,y,[b.ellipse('bullet-'+str(i),38,12,8,8,GOLD),b.text('label-'+str(i),row[0],58,0,23),b.text('value-'+str(i),row[1] if len(row)>1 else '',w-28,0,21,MUTED,align='right')],w,55)
         group['startFrame']=at
+        group['nonOverlappingTextIds']=[b.r['id']+'-label-'+str(i),b.r['id']+'-value-'+str(i)];group['textGap']=10
         if 'rowFrames' in d:group['effects']=[dict(type='mask-reveal',startFrame=at,endFrame=min(at+10,b.z))]
         c.append(group)
+    focus=d.get('rowFocus',[])
+    for i,event in enumerate(focus):
+        row=event.get('row');at=event.get('atFrame');end=event.get('endFrame',focus[i+1].get('atFrame') if i+1<len(focus) else b.z)
+        if type(row) is not int or not 0<=row<len(d.get('rows',[])) or type(at) is not int or type(end) is not int or not b.a<=at<end<=b.z or i and at<focus[i-1]['atFrame'] or i+1<len(focus) and end>focus[i+1]['atFrame']:raise ValueError('当前行高亮须按实际行绑定，窗口不能重叠或越界')
+        border=b.rect('row-focus-'+str(i),22,145+row*70-9,w-40,52,None,stroke=GOLD,lineWidth=2,radius=8)
+        border.update(startFrame=at,endFrame=end,enclosesTextIds=[b.r['id']+'-label-'+str(row),b.r['id']+'-value-'+str(row)],effects=[dict(type='mask-reveal',startFrame=at,endFrame=min(at+9,end))]);c.append(border)
     footer=b.text('footer',d.get('footer',''),28,h-47,19,MUTED);footer['startFrame']=d.get('footerFrame',b.a)
     if type(footer['startFrame']) is not int or not b.a<=footer['startFrame']<b.z:raise ValueError('文书页脚源帧越界')
     c.append(footer)
@@ -227,7 +249,7 @@ def parcel(recipe,scene):
 
 
 def catalog():return dict(schema='course-content-assets/1',phone=dict(models=['slab','compact','foldable','iphone-18-pro'],views=['front','back','side'],screens=list(SCREENS),ui='editable teaching illustration; use verified screenshots for exact OS operation training'),
-    actor=dict(identities=list(IDENTITIES),poses=['rest','welcome','listen','question'],contactPoses=['C01-phone-use-v2'],expressions=list(MOODS),scope='own-identity contact pose required for holding; no rotated open palm shortcut'),
+    actor=dict(identities=list(IDENTITIES)+['S01','S02','COACH'],poses=['rest','welcome','listen','question'],contactPoses=['C01-phone-use-v2'],expressions=list(MOODS),scope='role-specific uniform mark required; own-identity contact pose required for holding'),
     document=dict(formats=['sheet','ticket'],editable=['title','subtitle','rows','footer']),parcel=dict(editable=['label','serial']),
     implementation='ordinary editable graph nodes; no separate preview renderer')
 
@@ -242,7 +264,7 @@ def expand(spec):
         identifiers.add(identifier)
         if sid not in scenes:raise ValueError('素材须绑定本课实际场景')
         if kind=='actor' and not recipe.get('data',{}).get('rig') and not recipe.get('data',{}).get('contactPose') and recipe.get('data',{}).get('headAsset') not in assets:raise ValueError('人物原图素材不存在')
-        if kind=='actor' and recipe.get('data',{}).get('identity')=='M1' and recipe['data'].get('logoAsset') not in assets:raise ValueError('原版KG胸标素材不存在')
+        if kind=='actor' and recipe.get('data',{}).get('identity') in ['M1','S01','S02'] and recipe['data'].get('logoAsset') not in assets:raise ValueError('原版KG胸标素材不存在')
         if kind=='actor' and recipe.get('data',{}).get('contactPose'):
             if any(recipe['data']['contactPose'][k].get('assetId') not in assets for k in ['master','foreground']):raise ValueError('接触姿态或手部遮挡素材不存在')
         if kind=='actor' and recipe.get('data',{}).get('rig'):

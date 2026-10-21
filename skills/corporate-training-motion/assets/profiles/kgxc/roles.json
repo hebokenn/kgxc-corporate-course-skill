@@ -15,8 +15,13 @@
       "id": "store_staff",
       "name": "店员",
       "outfit": "blue",
-      "mark": "按既有店员设计",
-      "asset": "blue-cast.png"
+      "mark": "KG",
+      "asset": "blue-cast.png",
+      "requiredOverlay": "kg-original.png",
+      "identities": [
+        "S01",
+        "S02"
+      ]
     },
     {
       "id": "coach",
