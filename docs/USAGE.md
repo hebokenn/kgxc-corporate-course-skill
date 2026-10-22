@@ -39,6 +39,8 @@
 
 Codex会建立 `inputs/`、`project/`、`delivery/`、`packages/`。先锁定原文条件、例外和口径，再安排画面，避免仅凭标题补造业务规则。
 
+默认学员拿不到这些原件。Skill会先把表单名称、用途和当前要点讲清，并把完成任务必需的字段及条件放进课程；如确实会分发学员用材料，在任务中说明即可。逐字稿与画面复核见[学员上下文和改写示例](../skills/elearning-course-design/references/learner-context.md)。
+
 ## 3. 按阶段确认
 
 | 阶段 | 你重点看什么 | 确认后进入 |

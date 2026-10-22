@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.2.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.1/kgxc-course-suite-v5.2.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.2.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.2/kgxc-course-suite-v5.2.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.2.2：学员不依赖原始附件也能听懂
+
+默认学员只拿到课程成品。首次提到表单、图表、制度或界面，先交代名称、用途与当前要看的内容；判断或操作必需的字段、数值和条件直接纳入课程。不能默认学员拥有制作端的 Excel、PDF、手卡或工程包。
+
+逐字稿在配音前按“没有原件”的视角通读；制作后再检查实际口播、字幕和画面标题。讲到具体子项时，同时定位该项及所属维度；“表里”“原表”等指代需要清楚前文。语义检查由制作端执行，结构校验和编码通过不能替代。
+
+[具体规则与改写示例](skills/elearning-course-design/references/learner-context.md) · [验证范围](docs/V5.2.2-VERIFICATION.md)。本次更新不自动修改已确认逐字稿、既有配音或已交付视频。
 
 ## 5.2.1：拦截穿字高亮与漏胸标
 
@@ -339,7 +347,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.2.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.1/kgxc-course-suite-v5.2.1.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.2.2 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.2/kgxc-course-suite-v5.2.2.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 
@@ -360,9 +368,9 @@ kgxc-course resume ./courses/my-course
 
 完整安装首次需要联网下载媒体依赖和本地 B2 VoiceDesign 模型，目前完整环境验证范围为 macOS Apple 芯片。只安装 WorkBuddy 使用 `--agent workbuddy`。
 
-安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.0.3` 与 `elearning-course-design 2.0.0`，日常只需调用统一课程入口。
+安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.2.2` 与 `elearning-course-design 2.0.1`，日常只需调用统一课程入口。
 
-[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.3/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
+[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.2.2/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
 
 </details>
 

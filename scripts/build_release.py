@@ -16,7 +16,7 @@ def main():
     for name in [NAME,'elearning-course-design']:
         skill=ROOT/'skills'/name;manifest=skill/'package-manifest.json'
         files={str(p.relative_to(skill)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(skill.rglob('*')) if p.is_file() and p!=manifest}
-        manifest.write_text(json.dumps(dict(name=name,version=version if name==NAME else '2.0.0',usage='KGXC course production suite',files=files),ensure_ascii=False,indent=2)+'\n')
+        manifest.write_text(json.dumps(dict(name=name,version=version if name==NAME else '2.0.1',usage='KGXC course production suite',files=files),ensure_ascii=False,indent=2)+'\n')
         subprocess.run([sys.executable,str(ROOT/'skills'/NAME/'scripts/check_skill_package.py'),str(skill)],check=True)
     out=ROOT/'dist';out.mkdir(exist_ok=True);archive=out/f'kgxc-course-suite-v{version}.zip'
     candidates=[]
