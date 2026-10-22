@@ -14,7 +14,9 @@ python3 SKILL_DIR/scripts/course_tools.py motion-check --spec COURSE/project/wor
 
 17类构图：blueprint扫描连线、editorial公式拆解、whiteboard逐笔路径、presenter品牌手势、spotlight聚光放大、correction差异纠正、sorting流程归位、quiz选择反馈、timeline时段编排、data数量聚合、swiss字体层级、isometric空间拆层、papercut纸艺折页、comic分镜对话、terminal记录筛选、ink知识分枝、pixel任务闯关。
 
-动作可在普通节点的`effects`中组合；构图是可选起点，不能全课只换文字。数据、人物、物件、目标与镜头依本课设计。选择A风格不等于只准基础形状、同一白底或默认淡入。无需每门课机械塞入全部48种。
+动作可在普通节点的`effects`中组合；构图是可选起点，不能全课只换文字。三选一决定配色、字体、图形材质和画面气质，全部动效与构图仍可按内容选用。选定同一视觉风格后，整课应根据不同内容充分组合人员变化、对话、操作、对比、流程、反馈和镜头，不锁定小样的少数动作或同一版式。无需机械塞入全部48种，丰富程度由内容是否得到恰当表现判断。
+
+`motionPlan.language` 是本课动作编排的说明标识，不是动作类别限制。`protectedEffects` 是明确要保留的核心动作下限，不是允许使用的动作清单；其他实际动作可增加。`style_scope=visual` 的风格与小样批准不因这两个字段或内容分镜的正常扩展而失效。实际源码、声音、字幕或美术规范改变仍按受影响范围复核；所有新动作继续通过口播、实际实现和编码画面检查。
 
 ## 从旁白排真实过程
 
@@ -61,7 +63,7 @@ python3 SKILL_DIR/scripts/course_tools.py motion-check --spec COURSE/project/wor
 
 复核文件格式：`schema=course-director-review/1`、`status=reviewed`、`videoSha256`、`documentSha256`、`reviewer`、`scope`、`pilotComparison`和`sections`。5.1.1的连续复看另含`continuousPlayback={speed:1,method:实际方法,reviewedRanges:实际范围}`；每个section另含`semanticFit`、`pacingObservation`、`resultOrFeedback`，如实说明实际检查，不得用自动填充文字冒充观看。每个section含`sceneId`、`status=reviewed`、`observedAction`、`narrationAlignment`、`visualContinuity`、`unresolvedIssues=[]`、`evidenceFrames=[{path,sha256,sourceFrame}]`。证据路径相对project，须为当前成片抽取的实际画面。只填写实际检查范围，不冒称已全程人工听看。复核完成后对同一当前MP4重新checkpoint final，无需为补登记重复渲染。
 
-小样批准同时绑定实际已加载动效源码哈希、动作语言与核心动作。扩展内容仍可新增镜头，不能通过保留“A”标签却替换动效引擎绕过受影响的小样复核。自定义native路线也须提供真实动作实现路径/函数与`courseWorkbench.motionReceipt()`运行回执，不能改adapter名称逃过检查。
+小样批准绑定实际已加载动效源码哈希；视觉范围的新方案还绑定美术规范、声音和字幕，不把小样的动作种类当全课上限。旧方案继续原动作语言与核心动作绑定，除非用户明确授权修改。扩展内容可新增与组合镜头、构图和动效；不能通过保留“A”标签却替换动效引擎绕过受影响的小样复核。自定义native路线也须提供真实动作实现路径/函数与`courseWorkbench.motionReceipt()`运行回执，不能改adapter名称逃过检查。
 
 ## 可复现的验证
 

@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.2.2'
+VERSION = '5.3.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -417,13 +417,21 @@ class Course(LegacyCourse):
                     errors.append('独立生成的课件不能成为视频制作基础')
             except (KeyError,ValueError,TypeError):errors.append('导演输入路径无效')
         styles=data.get('styles',[])
+        visual_scope=data.get('style_scope')=='visual'
+        if data.get('style_scope') not in [None,'visual']:
+            errors.append('style_scope 须为 visual；旧方案可保留未声明状态')
         ids=[i.get('id') for i in styles if isinstance(i,dict)]
         if len(styles)!=3 or len(ids)!=3 or any(not isinstance(i,str) or not i for i in ids) or len(set(ids))!=3:
             errors.append('导演须提供三个不同的视觉风格')
         for style in styles:
             if not isinstance(style,dict):continue
-            if any(not isinstance(style.get(k),str) or not style[k].strip() for k in ['id','title','rationale','motion','production_impact','preview_file']):
-                errors.append('风格须含实际预览、推荐理由、动作与制作影响');continue
+            required=['id','title','rationale','production_impact','preview_file']+([] if visual_scope else ['motion'])
+            if any(not isinstance(style.get(k),str) or not style[k].strip() for k in required):
+                errors.append('风格须含实际预览、推荐理由与制作影响'+('' if visual_scope else '；旧方案还须保留动作说明'));continue
+            if visual_scope:
+                visual=style.get('visual',{})
+                if not isinstance(visual,dict) or any(not isinstance(visual.get(k),str) or not visual[k].strip() for k in ['palette','typography','graphics','atmosphere']):
+                    errors.append('视觉风格须说明配色、字体、图形与材质、画面气质；动效在分镜中按内容安排')
             try:
                 p=self.relative(style['preview_file'])
                 if not p.is_file() or p.suffix.lower() not in ['.svg','.png','.jpg','.jpeg','.webp','.html'] or not p.stat().st_size:
@@ -444,7 +452,14 @@ class Course(LegacyCourse):
         if expected_units-covered:errors.append('核心教学单元尚未映射到导演画面：'+','.join(sorted(expected_units-covered)))
         expected_assessments={a['id'] for a in read(self.plan_file).get('assessments',[])}
         if expected_assessments-assessment_ids:errors.append('练习与反馈尚未映射到导演画面：'+','.join(sorted(expected_assessments-assessment_ids)))
-        return dict(errors=list(dict.fromkeys(errors)),sha256=hashed(dict(plan=data,previews=previews)))
+        proof=dict(errors=list(dict.fromkeys(errors)),sha256=hashed(dict(plan=data,previews=previews)))
+        if visual_scope:
+            # The selected art direction is shared; scene actions remain content-led.
+            # The full plan still fingerprints each actual preview/export version.
+            choices=[{k:s.get(k) for k in ['id','title','rationale','visual','production_impact','preview_file']} for s in styles if isinstance(s,dict)]
+            proof['style_sha256']=hashed(dict(scope='visual',basis=data.get('basis'),script_sha256=data.get('script_sha256'),
+                script_excerpt=excerpt,styles=choices,recommended=data.get('recommended'),previews=previews))
+        return proof
 
     def save_director(self, data, expected):
         if not isinstance(data,dict):raise ValueError('导演方案须为对象')
@@ -482,16 +497,19 @@ class Course(LegacyCourse):
         Full production may add scenes and narration after approval. It is a new
         artifact, not an edit to the immutable reviewed MP4.
         """
-        doc=read(self.project/'workbench.json',{});audio=doc.get('audio',{})
-        basis=dict(script_sha256=self.script_sha(),director_sha256=self._director_proof()['sha256'],
+        doc=read(self.project/'workbench.json',{});audio=doc.get('audio',{});proof=self._director_proof()
+        visual_scope=self.director().get('style_scope')=='visual'
+        basis=dict(script_sha256=self.script_sha(),director_sha256=proof.get('style_sha256',proof['sha256']),
             style=state.get('selected_style'),voice=audio.get('voice'),speed=audio.get('speed',1),
             gain=audio.get('gain',1),caption_style=doc.get('captionStyle'))
         if doc.get('motionPolicy',{}).get('required'):
             if doc.get('motionPolicy',{}).get('semanticRequired'):basis['narration_object_contract']='narration-object-events/1'
-            basis['motion_language']=doc.get('motionPlan',{}).get('language')
             from motion_quality import runtime_digest
             basis['motion_library']=runtime_digest(self.project,doc)
-            basis['protected_effects']=sorted(doc.get('motionPlan',{}).get('protectedEffects',[]))
+            if not visual_scope:
+                basis['motion_language']=doc.get('motionPlan',{}).get('language')
+                basis['protected_effects']=sorted(doc.get('motionPlan',{}).get('protectedEffects',[]))
+        if visual_scope:basis['style_scope']='visual'
         return basis
 
     def _artifact_hashes(self, key, state):
@@ -517,7 +535,8 @@ class Course(LegacyCourse):
         decisions=[dict(id=d['id'],subject=self._subject(d),selected=d.get('selected'),status=d.get('status')) for d in plan['decisions'] if d.get('gate','outline')==key]
         if key=='outline':data=dict(plan={k:plan.get(k) for k in ['sources','source_items','audience','performance_task','objectives','units','assessments']},sources=self._source_files(plan))
         elif key=='script':data=dict(script=self.script_sha(plan),assessments=plan['assessments'])
-        elif key=='style':data=dict(director=self._director_proof()['sha256'],selected=state.get('selected_style'))
+        elif key=='style':
+            proof=self._director_proof();data=dict(director=proof.get('style_sha256',proof['sha256']),selected=state.get('selected_style'))
         elif key=='courseware':data=dict(script=self.script_sha(plan),files=self._artifact_hashes(key,state))
         elif key=='pilot':data=dict(basis=self._pilot_basis(state),files=self._artifact_hashes(key,state))
         else:data=dict(context=self._video_context(state),files=self._artifact_hashes(key,state))

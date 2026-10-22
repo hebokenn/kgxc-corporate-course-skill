@@ -49,10 +49,11 @@ project/director-plan.json至少包含：
 - inputs: role为transcript或original，path是相对project的实际文件路径；transcript必须包含当前script_file，original只能指向登记的原始输入。
 - script_excerpt: 从本稿抽取同一段内容供三个风格对比。
 - beats: 每项有id、unit_id、script_excerpt、picture、action、assessment_ids；覆盖核心单元及练习反馈，不增加稿中不存在的台词。
-- styles: 恰好三个不同ID，每项有id、title、rationale、motion、production_impact、preview_file；预览是实际SVG/PNG/JPEG/WebP或HTML，三个文件内容应不同。
+- style_scope: 新方案为 `visual`，表示三选一只决定美术规范。旧工程未声明时继续原确认算法，不自动迁移。
+- styles: 恰好三个不同ID，每项有id、title、rationale、visual、production_impact、preview_file。`visual` 含非空文字 `palette`（配色）、`typography`（字体与层级）、`graphics`（图形与材质）、`atmosphere`（画面气质）；不再要求每个风格选一种motion。预览为实际SVG/PNG/JPEG/WebP或HTML，三份画面内容不同，并由导演检查视觉差异。
 - recommended: 推荐风格ID，仍保持未选择，直到收到明确选择。
 
-可用`python3 -c`计算脚本SHA-256。导演负责根据内容创造三种方案，不按固定全课模板或只换三种配色。风格选择绑定当前稿件、导演方案和预览文件。未确认小样须与当前画布和声音一致；确认绑定冻结的实际MP4、逐字稿、导演风格、声音及字幕样式。整课是后续新产物，扩展新镜头和完整音轨不会覆盖小样批准。更换共用方案或改动冻结MP4会使批准失效。整片导出仍须核对它自己的当前完整制作版本。
+可用`python3 -c`计算脚本SHA-256。导演负责根据内容创造三种方案，不按固定全课模板或只换三种配色。`style_scope=visual` 时，风格选择绑定当前稿件、三种美术规范和实际预览；分镜beats更新不会让视觉选择失效。未确认小样仍须与当前完整画布和声音一致。批准绑定冻结的实际MP4、逐字稿、视觉规范、声音、字幕样式和实际渲染源码。全片可以增加或组合不同场景、动效和镜头；动作编排标识language和核心动作清单protectedEffects不再被当作视觉批准的范围。protectedEffects仍检查明确要求保留的动作是否实际存在。改变美术规范、声音、字幕样式、渲染源码或冻结MP4会使受影响批准失效。整片导出继续绑定它自己的完整导演方案、当前画布、声音及源码，新增镜头不会使未渲染的新版本冒充已有成片。未声明style_scope的旧方案按原算法判断，不静默重签历史确认。
 
 ## 工作台与文件
 

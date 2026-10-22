@@ -38,6 +38,15 @@ def director(course):
         beats=[dict(id='B1',unit_id='U',script_excerpt='先核对订单，再核对编码。',picture='订单与编码并列',action='逐项连线对应',assessment_ids=['A'])])
 
 
+def visual_director(course):
+    data=director(course);data['style_scope']='visual'
+    for style in data['styles']:
+        style.pop('motion')
+        style['visual']=dict(palette='品牌绿与暖白',typography='清晰中文黑体与分级字号',
+            graphics='线描物件与纸张材质',atmosphere='安静、清楚、专业')
+    return data
+
+
 class BranchTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.root=Path(self.tmp.name);atomic(self.root/'project/workbench.json',{})
@@ -83,6 +92,53 @@ class BranchTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.course.save_director(bad,self.course.status()['revision'])
         s=self.course.save_director(d,self.course.status()['revision']);self.assertIsNone(s['selected_style'])
         with self.assertRaises(ValueError):self.course.require_video('style')
+    def visual_ready(self):
+        approve_script(self.course);self.branch('video');data=visual_director(self.course)
+        self.course.save_director(data,self.course.status()['revision'])
+        self.course.select_style('S2',self.course.status()['revision'],'QA：选择实际视觉方案，动作按内容安排',actor='qa-operator')
+        return data
+    def test_visual_choices_do_not_require_a_motion_option(self):
+        data=self.visual_ready()
+        self.assertEqual(self.course.status()['stage'],'pilot')
+        bad=copy.deepcopy(data);bad['styles'][0].pop('visual');bad['styles'][0]['motion']='描线与遮罩'
+        with self.assertRaisesRegex(ValueError,'视觉风格须说明'):
+            self.course.save_director(bad,self.course.status()['revision'])
+    def test_content_led_scene_revision_keeps_visual_choice_but_updates_export_context(self):
+        data=self.visual_ready();before=self.course._video_context();proof=self.course._director_proof()
+        data['beats'][0].update(picture='订单近景与核对人员同框',action='镜头推近编码，再展示核对结果')
+        self.course.save_director(data,self.course.status()['revision'])
+        self.assertEqual(self.course.status()['gates'][2]['status'],'confirmed')
+        self.assertEqual(proof['style_sha256'],self.course._director_proof()['style_sha256'])
+        self.assertNotEqual(before,self.course._video_context())
+    def test_visual_pilot_allows_new_actions_without_unlocking_voice_visual_or_runtime(self):
+        data=self.visual_ready()
+        from test_motion_quality import linked_fixture
+        doc=linked_fixture();doc['audio']=dict(voice='QA固定声音',speed=1,gain=1);doc['captionStyle']=dict(fontSize=42)
+        native=self.course.project/'native';native.mkdir();(native/'scene-engine.js').write_text('// actual runtime fixture v1')
+        atomic(self.course.project/'workbench.json',doc)
+        self.course.register('pilot',[self.audiovisual()],self.course.status()['revision'])
+        self.course.confirm('pilot',self.course.status()['revision'],'QA确认有声测试文件，非课程业务批准',actor='qa-operator')
+        receipt=copy.deepcopy(json.loads(self.course.state_file.read_text())['gates']['pilot'])
+        data['beats'][0].update(picture='增加流程近景',action='交接后显示记录结果')
+        self.course.save_director(data,self.course.status()['revision'])
+        doc['motionPlan'].update(language='mixed-content-actions',protectedEffects=['handoff','marker'])
+        doc['sceneGraph']['nodes'][0]['effects'].append(dict(type='marker',startFrame=60,endFrame=75))
+        atomic(self.course.project/'workbench.json',doc);self.course.require_video('pilot')
+        self.assertEqual(json.loads(self.course.state_file.read_text())['gates']['pilot'],receipt)
+        for key in ['voice','caption','runtime','visual']:
+            with self.subTest(change=key):
+                changed=copy.deepcopy(doc);new_plan=copy.deepcopy(data)
+                if key=='voice':changed['audio']['voice']='另一声音'
+                elif key=='caption':changed['captionStyle']['fontSize']=64
+                elif key=='runtime':(native/'scene-engine.js').write_text('// changed runtime')
+                else:new_plan['styles'][1]['visual']['typography']='另一字体体系'
+                atomic(self.course.project/'workbench.json',changed);atomic(self.course.project/'director-plan.json',new_plan)
+                with self.assertRaises(ValueError):self.course.require_video('pilot')
+                (native/'scene-engine.js').write_text('// actual runtime fixture v1')
+                atomic(self.course.project/'director-plan.json',data)
+        atomic(self.course.project/'workbench.json',doc)
+        frozen=self.course.relative(self.course.status()['artifacts']['pilot'][0]);frozen.write_bytes(frozen.read_bytes()+b'changed')
+        with self.assertRaises(ValueError):self.course.require_video('pilot')
     def test_style_preview_change_invalidates_existing_selection(self):
         d=self.video_ready();self.assertEqual(self.course.status()['stage'],'pilot')
         self.course.relative(d['styles'][1]['preview_file']).write_text('<svg xmlns="http://www.w3.org/2000/svg"><text>改变画面</text></svg>')

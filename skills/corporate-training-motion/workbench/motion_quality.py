@@ -61,7 +61,7 @@ def preflight(doc):
     plan=doc.get('motionPlan',{});errors=[]
     if not enabled and not plan:return dict(status='legacy-not-opted-in',errors=[],scope='frozen course left unchanged')
     if plan.get('schema')!=SCHEMA:return dict(status='fail',errors=['缺少逐段动作计划 motionPlan；不能用效果名称或短小样代替整课编排'])
-    if not plan.get('language'):errors.append('缺少已选视觉/动作语言标识')
+    if not plan.get('language'):errors.append('缺少本课动作编排标识；它不限制可组合的动作类型')
     nodes={n['id']:n for n in walk(doc.get('sceneGraph',{}).get('nodes',[]))}
     scenes={s['id']:s for s in doc.get('scenes',[])};beats=plan.get('beats',[]);ids=set();coverage=[];actions=[]
     native=doc.get('rendering',{}).get('route')=='native-canvas'
@@ -112,7 +112,7 @@ def preflight(doc):
         missing=[piece for span in source_ranges for piece in intervals_subtract(span,coverage)]
         if any(z-a>1 for a,z in missing):errors.append('旁白缺少对应动作或有理由的停留 '+cue['id'])
     protected=set(plan.get('protectedEffects',[]));actual={e['type'] for n in nodes.values() for e in n.get('effects',[])}
-    if protected-actual:errors.append('已选动作在整课中缺失 '+', '.join(sorted(protected-actual)))
+    if protected-actual:errors.append('明确保留的核心动作在整课中缺失 '+', '.join(sorted(protected-actual)))
     from semantic_motion import inspect as inspect_semantics
     semantic=inspect_semantics(doc,nodes);errors.extend(semantic['errors'])
     return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),semantic=semantic,

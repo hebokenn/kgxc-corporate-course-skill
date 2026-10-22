@@ -24,12 +24,19 @@ from workflow import Course,open_course
 def demo_director(course):
     """Three visible proposals for the installation fixture, not a business template."""
     folder=course.project/'director';folder.mkdir(exist_ok=True);styles=[]
-    for i,(title,color,caption) in enumerate([('清晰业务图解','#205c46','订单  →  SN编码  →  外包装'),('深色信息演示','#293553','逐项聚焦与字段对应'),('暖色情境演示','#a85b39','以收货动作解释核对顺序')]):
+    for i,(title,color,paper,stroke,kind,atmosphere) in enumerate([
+        ('品牌线描','#205c46','#f4faf6','#205c46','平面物件、清楚轮廓与留白','轻快、清楚、专业'),
+        ('深色精密','#17243d','#263958','#f1d182','细线网格、深色表面与高对比标记','沉稳、精密、集中'),
+        ('暖纸插画','#a85b39','#f6ead8','#70462e','暖纸材质、柔和形状与手绘线条','温和、亲近、易读')]):
         p=folder/f'fixture-style-{i+1}.svg'
-        p.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="1280" height="720" fill="{color}"/><text x="90" y="150" fill="white" font-size="36">收货核对</text><rect x="90" y="230" width="1100" height="280" rx="20" fill="white" opacity=".95"/><text x="140" y="380" fill="{color}" font-size="40">{caption}</text></svg>')
-        styles.append(dict(id=f'S{i+1}',title=title,rationale='用同一段核对内容检验风格选择',motion=caption,production_impact='技术夹具使用可编辑矢量画布',preview_file=str(p.relative_to(course.project))))
+        radius=[6,0,32][i];weight=[4,2,5][i]
+        items=''.join(f'<g transform="translate({100+j*390},250)"><rect width="290" height="230" rx="{radius}" fill="{paper}" stroke="{stroke}" stroke-width="{weight}"/><path d="M45 65H245 M45 95H200 M45 125H220" stroke="{stroke}" stroke-width="{weight}"/><text x="145" y="185" text-anchor="middle" fill="{stroke}" font-size="34">{label}</text></g>' for j,label in enumerate(['订单','SN编码','外包装']))
+        p.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="1280" height="720" fill="{color}"/><text x="100" y="150" fill="white" font-family="sans-serif" font-size="42">收货核对</text>{items}</svg>')
+        styles.append(dict(id=f'S{i+1}',title=title,rationale='同一段核对内容比较美术效果，动作仍按内容组合',
+            visual=dict(palette=color+' 与 '+paper,typography='清晰中文黑体、标题与字段分级',graphics=kind,atmosphere=atmosphere),
+            production_impact='技术夹具使用可编辑矢量画布',preview_file=str(p.relative_to(course.project))))
     text=course.script()['text'].strip()
-    return dict(basis='approved-transcript',script_sha256=course.script_sha(),script_excerpt=text,
+    return dict(basis='approved-transcript',style_scope='visual',script_sha256=course.script_sha(),script_excerpt=text,
         inputs=[dict(role='transcript',path=course.script()['path']),dict(role='original',path='../inputs/技术样例口播.txt')],
         recommended='S1',styles=styles,beats=[dict(id='B1',unit_id='U1',script_excerpt=text,picture='订单、编码与外包装',action='三项信息依次聚焦对应',assessment_ids=['A1'])])
 

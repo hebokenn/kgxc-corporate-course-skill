@@ -100,7 +100,11 @@ function renderProduction(){
  if(!document.activeElement?.closest('#style-options')||status.revision!==lastRevision)$('style-options').replaceChildren(...empty((director.styles||[]).map(s=>{
   const box=el('article',null,'style-card');box.append(el('h4',s.title+(director.recommended===s.id?' · 推荐':'')));
   if(s.preview_file){const src='/course-file?path='+encodeURIComponent(s.preview_file);if(s.preview_file.endsWith('.html')){const frame=document.createElement('iframe');frame.src=src;frame.title=s.title+'预览';frame.setAttribute('sandbox','allow-scripts');box.append(frame);}else{const img=document.createElement('img');img.src=src;img.alt=s.title+'实际画面预览';box.append(img);}box.append(fileLink(s.preview_file,'放大查看画面'));}
-  box.append(el('p',s.rationale),el('p','动作：'+s.motion,'meta'),el('p','制作影响：'+s.production_impact,'meta'));
+  box.append(el('p',s.rationale));
+  if(director.style_scope==='visual'){
+   for(const [key,label] of [['palette','配色'],['typography','字体'],['graphics','图形与材质'],['atmosphere','画面气质']])box.append(el('p',label+'：'+(s.visual?.[key]||''),'meta'));
+  }else if(s.motion)box.append(el('p','原方案动作说明：'+s.motion,'meta'));
+  box.append(el('p','制作影响：'+s.production_impact,'meta'));
   const label=el('label',null,'option'),radio=document.createElement('input');radio.type='radio';radio.name='video-style';radio.value=s.id;radio.checked=validStyle&&status.selected_style===s.id;label.append(radio,el('span','选择 '+s.title));box.append(label);return box;
  }),'导演会提供三个可查看的视觉风格。'));
  $('choose-style').disabled=!activeStyle?.ready;
@@ -116,7 +120,7 @@ function renderProduction(){
  }
 }
 $('choose-branch').onclick=async()=>{try{const selected=document.querySelector('input[name="output-branch"]:checked');if(!selected||!$('branch-evidence').value.trim()){note('请选择交付形式并记录本次需求。',true);return;}status=await api('/api/workflow/branch',{branch:selected.value,evidence:$('branch-evidence').value,baseRevision:status.revision});render();lastRevision=status.revision;note('交付形式已保存，原有逐字稿与交付文件保留。');}catch(e){note(e.message,true);}};
-$('choose-style').onclick=async()=>{try{const selected=document.querySelector('input[name="video-style"]:checked');if(!selected||!$('style-evidence').value.trim()){note('请明确选择一个风格，并记录画面与风格确认说明。',true);return;}status=await api('/api/workflow/style',{id:selected.value,evidence:$('style-evidence').value,baseRevision:status.revision});render();lastRevision=status.revision;note('画面与风格选择已保存，下一步生成配音与画面小样。');}catch(e){note(e.message,true);}};
+$('choose-style').onclick=async()=>{try{const selected=document.querySelector('input[name="video-style"]:checked');if(!selected||!$('style-evidence').value.trim()){note('请选择视觉风格，并记录确认说明。',true);return;}status=await api('/api/workflow/style',{id:selected.value,evidence:$('style-evidence').value,baseRevision:status.revision});render();lastRevision=status.revision;note('视觉风格已保存，动效继续按各段内容设计。下一步生成有声画面小样。');}catch(e){note(e.message,true);}};
 $('director-data').oninput=()=>{directorDirty=true;};
 $('save-director').onclick=async()=>{try{status=await api('/api/workflow/director',{director:JSON.parse($('director-data').value),baseRevision:status.revision});directorDirty=false;render();lastRevision=status.revision;note('导演方案已保存，三个风格等待明确选择。');}catch(e){note(e.message,true);}};
 $('refresh').onclick=()=>refresh(true);
