@@ -115,12 +115,15 @@ def preflight(doc):
     if protected-actual:errors.append('明确保留的核心动作在整课中缺失 '+', '.join(sorted(protected-actual)))
     from semantic_motion import inspect as inspect_semantics
     semantic=inspect_semantics(doc,nodes);errors.extend(semantic['errors'])
-    return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),semantic=semantic,
+    from craft_quality import analyze
+    return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),semantic=semantic,craft=analyze(doc),
                 actualEffects=sorted(actual),librarySha256=doc.get('motionPolicy',{}).get('librarySha256'),
                 scope='implementation and narration coverage; encoded motion and visual review still required')
 
 
 def require(doc,project=None):
+    if project and (Path(project)/'craft-contract.json').is_file() and not doc.get('qualityPolicy',{}).get('required'):
+        raise ValueError('本工程要求独立审美与声音复核，不能删除 qualityPolicy')
     if project and (Path(project)/'motion-contract.json').is_file() and not doc.get('motionPolicy',{}).get('required'):
         raise ValueError('本工程要求逐段动效检查；不能删除 motionPolicy 绕过检查')
     if project and (Path(project)/'motion-contract.json').is_file():
@@ -165,7 +168,9 @@ def director_review(project,doc,video):
             name=frame.get('path','');path=(p/name).resolve()
             if not name or Path(name).is_absolute() or not path.is_relative_to(p.resolve()) or not path.is_file() or frame.get('sha256')!=sha(path):errors.append('复核画面缺失或过期 '+s['id'])
             if type(frame.get('sourceFrame')) is not int or not s['sourceStartFrame']<=frame['sourceFrame']<s['sourceEndFrame']:errors.append('复核画面不属于当前场景 '+s['id'])
-    return dict(status='pass' if not errors else 'pending',errors=errors,scope='bound director evidence; human listening and user acceptance separate')
+    from craft_quality import review as craft_review
+    craft=craft_review(p,doc,video);errors.extend(craft['errors'])
+    return dict(status='pass' if not errors else 'pending',errors=errors,craft=craft,scope='bound director evidence; human listening and user acceptance separate')
 
 
 def audit_encoded(video,doc,first,last):

@@ -16,13 +16,23 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='craft-check':
+        ap=argparse.ArgumentParser(description='Read-only composition signals and bound aesthetic evidence')
+        ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--project',type=Path);ap.add_argument('--video',type=Path)
+        aa=ap.parse_args(rest)
+        if bool(aa.project)!=bool(aa.video):ap.error('核对成片须同时提供 --project 与 --video')
+        from craft_quality import analyze,review
+        doc=json.loads(aa.spec.read_text());result=analyze(doc)
+        if aa.video:result['review']=review(aa.project,doc,aa.video)
+        print(json.dumps(result,ensure_ascii=False,indent=2))
+        return 2 if result.get('review',{}).get('status')=='pending' else 0
     if args.command in ['asset-catalog','compile-assets','stage-character-rig','stage-contact-pose','stage-company-character']:
         if args.dry_run and args.command!='asset-catalog':parser.error('本素材命令不支持 --dry-run；未执行写入。先用 asset-catalog 查看能力')
         from content_assets import catalog,expand

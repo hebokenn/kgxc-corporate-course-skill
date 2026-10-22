@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.3.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.3.0/kgxc-course-suite-v5.3.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.4.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.4.0/kgxc-course-suite-v5.4.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.4.0：课程清楚、画面美观、配音自然，分别复核
+
+新增适用于不同 AI 的课程工艺流程：按内容选择表现，复杂或易重复的段落比较有依据的方案，再对实际渲染的构图、字体、配色材质、插画、留白比例和视觉节奏分别复核。重复构图只提示导演判断；连续比较同一张表可以保持位置，不以动效数量或自评分冒充质量。
+
+配音明确要求普通、自然的培训语气，标准普通话，干脆利落、停顿适度，速度不拖沓；整课尽量使用同一已确认参考声线，并检查衔接和完整尾音。新工程默认保存独立审美与声音复核要求，最终记录绑定当前视频、文档和早中晚段的实际编码画面；编码像素检查不能替代审美判断或真实试听。
+
+[制作规则](skills/corporate-training-motion/references/36-course-craft.md) · [使用方法](docs/USAGE.md) · [配音要求](docs/VOICE.md) · [验证范围](docs/V5.4.0-VERIFICATION.md)。沿用有效确认，保留个人声音配置和历史冻结课程。规则无法保证每个 AI 的主观审美达到同一水平，也不宣称自动保证最佳课程效果。
 
 ## 5.3.0：视觉风格与内容动效分别设计
 

@@ -57,6 +57,19 @@ Codex会建立 `inputs/`、`project/`、`delivery/`、`packages/`。先锁定原
 
 已有明确确认按范围沿用；重要变更只要求复核受影响部分。选择有推荐，但不会自动勾选。工作台和聊天提交写入同一工程，保存原话、时间与关联版本。技术检查不代填负责人意见；完整课仍需实际观看和听校。
 
+## 整课制作与独立审美复核
+
+制作端按本句要看清的对象和关系选择表现，在同一美术方向内组合人物、实物、表单、流程、对比和镜头。难讲或重复的段落先在制作端比较有依据的表现，不把普通导演选择反复交给用户。画面清楚和画面好看分别判断；查看实际构图、字体、配色材质、插画、留白与节奏后修正实际画面。
+
+新工程同时保存 `qualityPolicy` 和 `craft-contract.json`。完整 MP4 导出后，制作端填写 `qa/craft-review.json`，记录六项审美观察、四项配音依据和实际听看范围，并绑定当前视频、文档与正文早中晚段的编码画面。`craft-check` 可提示构图重复并核对已保存证据；同一表单的连续操作允许保持构图，说明内容理由即可。不能用同一句“美观”复制成复核，也不能以技术通过冒充听过整课或用户最终认可。
+
+```bash
+python3 skills/corporate-training-motion/scripts/course_tools.py craft-check --spec course/project/workbench.json
+python3 skills/corporate-training-motion/scripts/course_tools.py craft-check --spec course/project/workbench.json --project course/project --video course/delivery/course.mp4
+```
+
+检查结果和缺口留在工程中，完成实际修正再复看受影响部分；不要求无限返工或重复确认。配音遵守自然培训语气、标准普通话、干脆节奏与统一声线。旧工程保留原约定，已确认小样和历史冻结文件不自动失效。见[课程工艺规则](../skills/corporate-training-motion/references/36-course-craft.md)与[配音指南](VOICE.md)。
+
 ## 4. 打开工作台
 
 新课建档和继续制作默认会启动并打开工作台。也可以直接对Codex或WorkBuddy说：
