@@ -162,8 +162,10 @@ ZIP解压后可继续打开内置工作台。换电脑时仍需完成媒体运�
 
 ## 100种动作、视觉风格与本地素材
 
-见[扩展调用说明](../skills/corporate-training-motion/references/40-library-direction-assets.md)。`course_tools.py motion-catalog/style-catalog/retail-catalog`查看实际条目，`recommend-visuals --intent "顾客 对话 操作"`按内容选择。`asset_library.py register/import-photo/stage`保留用户本地原件、按哈希暂存素材；新增产品登记Apple品牌或Apple适配信息。`register-style --file JSON`增加用户美术配方。原有课程确认流程不因扩充被重启。
+见[扩展调用说明](../skills/corporate-training-motion/references/40-library-direction-assets.md)。`course_tools.py motion-catalog/style-catalog/surface-catalog/retail-catalog`列出实际条目；`recommend-visuals --intent "顾客 对话 操作"`按课程目的推荐不同家族，`stage-style-assets COURSE --style 风格ID --out 素材JSON`暂存原角色和所需材质图。合并返回的assets和data后编译，不能只抄风格名称。
 
-## 100种动作、视觉风格与本地素材
+先定具体业务对象与状态，再选动作。画廊示例各有任务与可见结果；整课维持已确认美术方向，按内容组合对话、操作、流程和数据，不把一个小样复制成全课。
 
-见[扩展调用说明](../skills/corporate-training-motion/references/40-library-direction-assets.md)。`course_tools.py motion-catalog/style-catalog/retail-catalog`查看实际条目，`recommend-visuals --intent "顾客 对话 操作"`按内容选择。`asset_library.py register/import-photo/stage`保留用户本地原件、按哈希暂存素材；新增产品登记Apple品牌或Apple适配信息。`register-style --file JSON`增加用户美术配方。原有课程确认流程不因扩充被重启。
+新工程默认要求逐场 `physicalSupport` 与 `typography` 观察，实际编码画面需绑定当前候选。人物按alpha可见轮廓和脚底定位；设备登记contactAnchor并通过supportBinding绑定桌面supportSurface；文字避让使用textExclusion，说明和标签保留独立行。运行时检测已登记接触点脱离或文字侵入后阻止该帧。仍须看当前画面，检查姿态、复杂遮挡及动作最大外延；不能将通过的坐标检查当作自动视觉验收。见[逐场规则](../skills/corporate-training-motion/references/39-visual-hygiene.md)。
+
+`asset_library.py register/import-photo/stage`保留本地原件并按哈希暂存素材。产品登记Apple品牌或无品牌Apple适配信息。实拍标注同时提供photoSize和带label/归一化point的annotations，并核对箭头所指物件。`register-style --file JSON`增加用户美术配方；全新动作、材质和物件须先实现、再登记实际可见示例与相应检查。原有课程的确认与冻结文件按原记录保留。

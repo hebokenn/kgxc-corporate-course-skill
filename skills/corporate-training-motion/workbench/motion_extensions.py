@@ -24,5 +24,20 @@ def effect_errors(e,node):
         elif kind in ['ratio-normalize','funnel-narrow'] and (any(x<0 for x in a) or sum(a)<=0):errors.append(kind+' values must be nonnegative with a positive total')
     if 'bins' in e and (not isinstance(e['bins'],list) or len(e['bins'])!=len(children) or any(type(x) is not int or x<0 for x in e['bins'])):errors.append(kind+' bins must match real records')
     if 'targets' in e and (not isinstance(e['targets'],list) or len(e['targets'])!=len(children) or any(not isinstance(p,list) or len(p)!=2 or not all(finite(x) for x in p) for p in e['targets'])):errors.append(kind+' targets must match real objects')
+    if kind=='cluster-pack':
+        centers=e.get('centers');cols=e.get('columns',2)
+        if type(cols) is not int or cols<1:errors.append('cluster-pack columns must be positive');return errors
+        if centers is not None and (not isinstance(centers,list) or not centers or any(not isinstance(v,list) or len(v)!=2 or not all(finite(x) for x in v) for v in centers)):
+            errors.append('cluster-pack centers must contain finite anchor pairs');return errors
+        widths=[(v.get('width') or 70)*abs(v.get('scaleX',1)) for v in children];heights=[(v.get('height') or 70)*abs(v.get('scaleY',1)) for v in children]
+        gx=e.get('gapX',e.get('gap',max(widths,default=70)+24));gy=e.get('gapY',e.get('gap',max(heights,default=70)+24))
+        if not all(finite(v) and v>0 for v in [gx,gy]):errors.append('cluster-pack spacing must be positive');return errors
+        count=len(centers) if centers else 3;w=node.get('width') or 960;h=node.get('height') or 300;boxes=[]
+        for i,child in enumerate(children):
+            bin=i%count;rank=i//count;anchor=centers[bin] if centers else [(bin+.5)*w/count-gx/2,24];x=anchor[0]+rank%cols*gx;y=anchor[1]+rank//cols*gy;ww=widths[i];hh=heights[i]
+            if x<0 or y<0 or x+ww>w or y+hh>h:errors.append('cluster-pack final object outside content bounds: '+child.get('id',str(i)))
+            for X,Y,W,H in boxes:
+                if min(x+ww,X+W)-max(x,X)>1 and min(y+hh,Y+H)-max(y,Y)>1:errors.append('cluster-pack final objects overlap; increase spacing')
+            boxes.append((x,y,ww,hh))
     if kind=='search-match' and ('query' in e and (not isinstance(e['query'],str) or not e['query'] or e['query'] not in str(node.get('text','')))):errors.append('search-match query must occur in the actual text')
     return errors

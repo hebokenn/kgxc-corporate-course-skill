@@ -104,6 +104,7 @@ def prop(r,s):
   else:
    for i,line in enumerate(d.get('lines',['项目名称','以实际信息为准'])):c.append(b.text('line'+str(i),line,xx+25,110+i*53,26,INK))
  elif k=='display-table':
+  ellipse('ground-shadow',255,358,370,68,'#3e51451a')
   path('top','M 25 80 L 345 35 L 465 115 L 145 160 Z','#f9faf7');path('edge','M 25 80 L 145 160 L 465 115 L 465 140 L 145 185 L 25 105 Z','#d1d9d2')
   for i,(x,y) in enumerate([(40,105),(145,183),(432,143)]):rect('leg'+str(i),x,y,25,200,'#d8ded8',radius=8)
  elif k=='stool':ellipse('seat',240,100,230,90,'#f9f9f2',stroke='#97a9a8',lineWidth=3);path('legs','M 155 115 L 130 360 M 325 115 L 350 360 M 175 125 L 190 350 M 305 125 L 290 350',None,'#a4b1af',9);path('brace','M 146 255 L 336 255',None,'#a4b1af',6)
@@ -116,6 +117,9 @@ def prop(r,s):
   rect('frame',5,95,470,150,'#525d61',radius=3);c.append(b.text('label',d.get('label','KG 酷果星创'),240,140,48,'#ffffff',align='center'));rect('seal',411,139,28,60,'#bc3d44',radius=3)
  elif k=='monitor-sign':pass
  root=b.group('root',r.get('x',0),r.get('y',0),c,480,400,scaleX=r.get('scale',1),scaleY=r.get('scale',1))
+ if k=='phone-stand':root['contactAnchor']=[240,335]
+ if k in ['tablet','laptop','desktop']:root['contactAnchor']=[240,355 if k=='laptop' else 383 if k=='desktop' else 305]
+ if k=='display-table':root['supportSurface']=[[25,80],[345,35],[465,115],[145,160]]
  return root,dict(kind='retail-prop',object=k,title=PROPS[k],productFamily=APPLE_PRODUCTS[k][0] if k in APPLE_PRODUCTS else None,brand='Apple' if k in APPLE_PRODUCTS and k not in ['phone-case','screen-film','phone-stand'] else 'Apple-compatible-unbranded' if k in APPLE_PRODUCTS else 'store-fixture',reference=APPLE_PRODUCTS[k][1] if k in APPLE_PRODUCTS else None,features=APPLE_PRODUCTS[k][2] if k in APPLE_PRODUCTS else None,accuracy='editable teaching schematic; not engineering dimensions or exact product specification')
 
 def customer(r,s):
@@ -155,15 +159,18 @@ def store(r,s):
   for j in range(3):
    rr={'id':r['id']+f'-wall-{side}-{j}','sceneId':s['id'],'startFrame':b.a,'endFrame':b.z,'x':30+side*1260,'y':190+j*135,'scale':.63,'data':{'object':'accessory-wall'}}
    n,_=prop(rr,s);c.append(n)
- for i,(x,y,z) in enumerate([(350,480,.85),(820,480,.85),(270,620,1.12),(820,620,1.12)]):
+ for i,(x,y,z) in enumerate([(360,400,.70),(850,400,.70),(330,535,.77),(850,535,.77)]):
   rr={'id':r['id']+'-table'+str(i),'sceneId':s['id'],'startFrame':b.a,'endFrame':b.z,'x':x,'y':y,'scale':z,'data':{'object':'display-table'}};n,_=prop(rr,s);c.append(n)
-  for j in range(3):
-   rr={'id':r['id']+f'-device{i}-{j}','sceneId':s['id'],'startFrame':b.a,'endFrame':b.z,'x':x+85+j*90*z,'y':y-15,'scale':z*.15,'data':{'object':'phone-stand'}};n,_=prop(rr,s);c.append(n)
+  for j,u in enumerate([.18,.5,.82]):
+   # Bilinear point on the actual drawn tabletop. The stand's visible base,
+   # rather than its SVG canvas origin, must meet that point.
+   px=85+320*u;py=120-45*u;ds=z*.13
+   rr={'id':r['id']+f'-device{i}-{j}','sceneId':s['id'],'startFrame':b.a,'endFrame':b.z,'x':x+px*z-240*ds,'y':y+py*z-335*ds,'scale':ds,'data':{'object':'phone-stand'}};n,_=prop(rr,s);n['supportBinding']=dict(objectId=r['id']+'-table'+str(i)+'-root',point=[px,py],anchor=[240,335]);c.append(n)
  if view=='front':
   rect('header',0,0,1600,145,'#515b5e',radius=0);c.append(b.text('sign',d.get('sign','KG 酷果星创'),800,44,78,'#ffffff',align='center'));rect('seal',1110,49,34,68,'#b83f49',radius=3)
   rect('left-frame',0,145,70,695,'#b7c1bd',radius=0);rect('right-frame',1530,145,70,695,'#b7c1bd',radius=0);path('glass','M 80 145 L 320 180 L 320 760 L 80 835 Z','#c8e3e34d','#adbeb7',3)
  if view=='isometric':
   # Authored 2.5D schematic, not a camera-measured reconstruction.
-  for n in c:n['x']=(n.get('x',0))*.8+160
+  c=[b.group('space-world',160,84,c,1600,840,scaleX=.8,scaleY=.8)]
  root=b.group('root',r.get('x',0),r.get('y',0),c,1600,840,scaleX=r.get('scale',1),scaleY=r.get('scale',1))
  return root,dict(kind='store-scene',view=view,accuracy='schematic inspired by retail layout; photo-linked variants live in the private user library',editable=['sign','screenTitle','display furniture','wall products','colors'])

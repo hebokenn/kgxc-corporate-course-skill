@@ -67,6 +67,11 @@ class SceneReviewTests(unittest.TestCase):
         (self.p/'qa/visual-hygiene-review.json').write_text(json.dumps(self.record));return review(self.p,self.doc,self.video,pixels)
     def test_new_policy_and_all_scenes_with_real_encoded_pixels(self):
         self.assertTrue(policy()['visualHygieneRequired']);self.assertEqual(self.check()['status'],'pass')
+    def test_new_spatial_review_requires_actual_support_and_typography_observations(self):
+        self.doc['qualityPolicy']['spatialReviewRequired']=True;(self.p/'workbench.json').write_text(json.dumps(self.doc));self.record['documentSha256']=sha(self.p/'workbench.json')
+        self.assertEqual(self.check(False)['status'],'pending')
+        for row in self.record['sceneReviews']:row.update(physicalSupport='Observed the drawn object supported by its surface',typography='No visible text overlaps the object')
+        self.assertEqual(self.check()['status'],'pass')
     def test_missing_scene_missing_observation_and_unresolved_issue_are_pending(self):
         for change in ['scene','observation','issue']:
             original=copy.deepcopy(self.record)

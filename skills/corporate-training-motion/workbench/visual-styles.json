@@ -3,7 +3,7 @@
   "styles": [
     {
       "id": "retail-toon",
-      "title": "门店卡通讲师",
+      "title": "品牌赛璐璐讲师",
       "layout": "presenter",
       "family": "角色讲解",
       "tags": [
@@ -39,12 +39,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "cel-paint",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "cel-paint",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "scene-toon",
-      "title": "生活场景动画",
+      "title": "门店平涂场景",
       "layout": "scene",
       "family": "情境演示",
       "tags": [
@@ -59,7 +67,7 @@
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "店内全景、人物位置与物件所有权可追踪",
+      "rules": "门店通道中使用蓝衣KG店员，人物与既有桌群分离；情境对象与知识点同场",
       "motions": [
         "handoff",
         "drag-drop",
@@ -80,12 +88,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "vector-clean",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "vector-clean",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "flat-cosmos",
-      "title": "几何矢量科普",
+      "title": "暗场霓虹科普",
       "layout": "cosmos",
       "family": "动画演示",
       "tags": [
@@ -121,12 +137,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "neon-emission",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "neon-emission",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "pen-whiteboard",
-      "title": "钢笔白板",
+      "title": "钢笔纸本",
       "layout": "whiteboard",
       "family": "内容讲解",
       "tags": [
@@ -162,8 +186,16 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "ink-paper",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "ink-paper",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "chalk-blackboard",
@@ -203,12 +235,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "chalk-dust",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "chalk-dust",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "handdrawn-story",
-      "title": "手绘绘本",
+      "title": "水彩绘本",
       "layout": "storybook",
       "family": "角色讲解",
       "tags": [
@@ -223,7 +263,7 @@
       ],
       "font": "CourseHand",
       "outline": 3,
-      "rules": "大幅单场景、圆润角色、少字旁注、手绘轮廓",
+      "rules": "双页实体绘本、纸层与水彩角色；顾客与KG店员同源原形象，实际体验桌和iPad另有站位",
       "motions": [
         "page-turn",
         "dialogue",
@@ -244,12 +284,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "watercolor",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "watercolor",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "paper-cut",
-      "title": "纸雕层叠",
+      "title": "纤维纸雕",
       "layout": "papercut",
       "family": "动画演示",
       "tags": [
@@ -285,12 +333,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "cut-paper",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "cut-paper",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "collage-documentary",
-      "title": "证据拼贴",
+      "title": "报刊证据拼贴",
       "layout": "collage",
       "family": "证据讲解",
       "tags": [
@@ -326,12 +382,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "newsprint",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "newsprint",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "comic-panels",
-      "title": "漫画分镜",
+      "title": "网点漫画",
       "layout": "comic",
       "family": "角色讲解",
       "tags": [
@@ -346,7 +410,7 @@
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "多格镜头、说话方与气泡归属、动作前后分格",
+      "rules": "顾客提问、蓝衣KG店员邀请与共同核对的连续三格；原角色网点处理，人桌分开，气泡有实际问答",
       "motions": [
         "dialogue",
         "tab-switch",
@@ -367,12 +431,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "comic-halftone",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "comic-halftone",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "isometric-store",
-      "title": "等距门店",
+      "title": "木质门店沙盘",
       "layout": "isometric",
       "family": "场景演示",
       "tags": [
@@ -380,14 +452,14 @@
         "service"
       ],
       "palette": [
-        "#eff0e5",
-        "#344e5a",
-        "#c8a270",
-        "#88b6b2"
+        "#e4d4b9",
+        "#3d3429",
+        "#926442",
+        "#b8905c"
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "空间轴一致、柜台与墙体层次、动线可见",
+      "rules": "木纹落在桌面、桌沿和桌腿；等距地台、物件与区域标记，不只替换背景",
       "motions": [
         "lane-distribute",
         "path-follow",
@@ -408,12 +480,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "wood-grain",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "wood-grain",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "technical-blueprint",
-      "title": "工程蓝图",
+      "title": "蓝晒工程图",
       "layout": "blueprint",
       "family": "结构演示",
       "tags": [
@@ -449,12 +529,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "cyanotype",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "cyanotype",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "technical-cutaway",
-      "title": "结构剖面",
+      "title": "金属结构演示",
       "layout": "cutaway",
       "family": "结构演示",
       "tags": [
@@ -469,7 +557,7 @@
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "同物件的整体与拆层对应，剖面与能量流并列",
+      "rules": "本地3D外观分层特写；正面显示、金属机身与背面镜组分离，不借示意宣称内部拆机事实",
       "motions": [
         "explode",
         "magnify",
@@ -490,12 +578,22 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "brushed-metal",
+      "materialEvidence": {
+        "runtime": "CourseSurface + local Blender raster / source blend",
+        "surface": "brushed-metal",
+        "technique": "independent local 3D geometry, lighting and procedural physical material; static rendered asset, course motion is graph-driven",
+        "full3D": true,
+        "geometrySource": "scripts/build_material_heroes.py",
+        "assetDirectory": "assets/material-heroes-v1"
+      }
     },
     {
       "id": "soft-volume",
-      "title": "软质立体插画",
+      "title": "黏土立体演示",
       "layout": "soft",
       "family": "动画演示",
       "tags": [
@@ -510,18 +608,18 @@
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "圆角体块、柔和体积渐变、明确接触阴影；当前为2.5D",
+      "rules": "本地3D黏土AirPods与Apple Watch，圆台座、捏塑边缘、粗糙哑光和接触阴影",
       "motions": [
         "spring-compress",
         "assemble",
         "focus-isolate"
       ],
       "source": {
-        "name": "TED-Ed",
-        "url": "https://www.ted.com/about/programs/ted-ed",
-        "example": "https://www.youtube.com/@TEDEd",
+        "name": "Aardman Academy + Blender local material",
+        "url": "https://academy.aardman.com/stop-motion-clay",
+        "example": "https://www.aardman.com/attractions-live-experiences/animate-with-aardman/",
         "checked": "2026-10-23",
-        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+        "basis": "material and stop-motion design inference; original code, no third-party characters copied"
       },
       "implementation": "editable graph recipe / absolute frames",
       "mutable": [
@@ -531,12 +629,22 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "clay-matte",
+      "materialEvidence": {
+        "runtime": "CourseSurface + local Blender raster / source blend",
+        "surface": "clay-matte",
+        "technique": "independent local 3D geometry, lighting and procedural physical material; static rendered asset, course motion is graph-driven",
+        "full3D": true,
+        "geometrySource": "scripts/build_material_heroes.py",
+        "assetDirectory": "assets/material-heroes-v1"
+      }
     },
     {
       "id": "lowpoly-diorama",
-      "title": "低多边形沙盘",
+      "title": "低多边形门店沙盘",
       "layout": "lowpoly",
       "family": "场景演示",
       "tags": [
@@ -551,7 +659,7 @@
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "可辨面的几何家具、正交视角；可升级本地Blender",
+      "rules": "本地3D完整门店：深灰门头、木地板、白色陈列墙、体验桌；直边几何与正交空间",
       "motions": [
         "rotate-inspect",
         "orbit-revolve",
@@ -572,12 +680,22 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "lowpoly-facets",
+      "materialEvidence": {
+        "runtime": "CourseSurface + local Blender raster / source blend",
+        "surface": "lowpoly-facets",
+        "technique": "independent local 3D geometry, lighting and procedural physical material; static rendered asset, course motion is graph-driven",
+        "full3D": true,
+        "geometrySource": "scripts/build_material_heroes.py",
+        "assetDirectory": "assets/material-heroes-v1"
+      }
     },
     {
       "id": "pixel-quest",
-      "title": "像素任务",
+      "title": "像素任务世界",
       "layout": "pixel",
       "family": "流程演示",
       "tags": [
@@ -613,12 +731,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "pixel-dither",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "pixel-dither",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "data-editorial",
-      "title": "数据新闻",
+      "title": "丝网印刷数据",
       "layout": "data",
       "family": "内容讲解",
       "tags": [
@@ -654,12 +780,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "screen-print",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "screen-print",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "math-dark",
-      "title": "暗场数学图解",
+      "title": "透明亚克力关系图",
       "layout": "math",
       "family": "内容讲解",
       "tags": [
@@ -667,14 +801,14 @@
         "quantity"
       ],
       "palette": [
-        "#161d2b",
-        "#e9ede9",
-        "#e8b564",
-        "#70bfb5"
+        "#102e3b",
+        "#ecf2e9",
+        "#9cdee2",
+        "#4f9ba6"
       ],
       "font": "CourseHan",
       "outline": 3,
-      "rules": "坐标与变量保持同一颜色映射、对象连续变换",
+      "rules": "本地3D斜置透明亚克力面板；iPhone、iPad、Mac轮廓不同，底网格可透视，不复用金属竖板构图",
       "motions": [
         "line-plot",
         "scatter-converge",
@@ -695,12 +829,22 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "clear-acrylic",
+      "materialEvidence": {
+        "runtime": "CourseSurface + local Blender raster / source blend",
+        "surface": "clear-acrylic",
+        "technique": "independent local 3D geometry, lighting and procedural physical material; static rendered asset, course motion is graph-driven",
+        "full3D": true,
+        "geometrySource": "scripts/build_material_heroes.py",
+        "assetDirectory": "assets/material-heroes-v1"
+      }
     },
     {
       "id": "ui-lab",
-      "title": "界面操作实验台",
+      "title": "玻璃界面实验台",
       "layout": "ui",
       "family": "操作演示",
       "tags": [
@@ -736,12 +880,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "polished-glass",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "polished-glass",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "photo-annotation",
-      "title": "实拍标注",
+      "title": "门店实拍标注",
       "layout": "photo",
       "family": "现场讲解",
       "tags": [
@@ -777,12 +929,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "photo-real",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "photo-real",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "minimal-type",
-      "title": "极简内容排版",
+      "title": "白瓷极简讲解",
       "layout": "minimal",
       "family": "内容讲解",
       "tags": [
@@ -818,12 +978,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "ceramic-glaze",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "ceramic-glaze",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "ink-map",
-      "title": "纸本墨线图解",
+      "title": "石墨知识图",
       "layout": "ink",
       "family": "内容讲解",
       "tags": [
@@ -831,10 +999,10 @@
         "causality"
       ],
       "palette": [
-        "#f5efdc",
-        "#43594f",
-        "#b4875e",
-        "#a3b3a2"
+        "#eeeadd",
+        "#323b35",
+        "#6e776f",
+        "#b9b7a5"
       ],
       "font": "CourseHand",
       "outline": 3,
@@ -859,12 +1027,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "graphite",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "graphite",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "kinetic-type",
-      "title": "动态文字讲解",
+      "title": "凸版文字讲解",
       "layout": "kinetic",
       "family": "内容讲解",
       "tags": [
@@ -900,12 +1076,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "letterpress",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "letterpress",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "flow-map",
-      "title": "流程地图",
+      "title": "毛毡流程图",
       "layout": "flowmap",
       "family": "流程演示",
       "tags": [
@@ -913,10 +1097,10 @@
         "handoff"
       ],
       "palette": [
-        "#edf1e4",
-        "#2a4d4c",
-        "#cca05d",
-        "#92b8b1"
+        "#d8d3be",
+        "#274942",
+        "#a26747",
+        "#8aa08b"
       ],
       "font": "CourseHan",
       "outline": 3,
@@ -941,12 +1125,20 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "felt-fabric",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "felt-fabric",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     },
     {
       "id": "simulation-board",
-      "title": "规则推演沙盘",
+      "title": "塑胶规则沙盘",
       "layout": "simulation",
       "family": "动画演示",
       "tags": [
@@ -954,10 +1146,10 @@
         "decision"
       ],
       "palette": [
-        "#f3eedf",
-        "#334e53",
-        "#cf9865",
-        "#9ebcb4"
+        "#b4c9bc",
+        "#244442",
+        "#d0a06d",
+        "#6c9b91"
       ],
       "font": "CourseHan",
       "outline": 3,
@@ -982,8 +1174,16 @@
         "layout",
         "rules",
         "motions",
-        "tags"
-      ]
+        "tags",
+        "surface"
+      ],
+      "surface": "plastic-toy",
+      "materialEvidence": {
+        "runtime": "CourseSurface",
+        "surface": "plastic-toy",
+        "technique": "deterministic Canvas patterns, physical shadows and approved-master local image treatments",
+        "full3D": false
+      }
     }
   ]
 }

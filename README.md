@@ -10,37 +10,25 @@
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
 
-## 5.7.0：100种真实动作、24种视觉风格与Apple门店素材
+## 5.7.0：100种业务动作、24种视觉方案与空间约束
 
-新增52种可执行教学动作，按真实对象、起态、过程和结果选择，预览/编辑/整课导出使用同一渲染器。100种全部通过实际调用、像素变化与倒序定位检查；颜色、缓动和风格不计入动作数。
+100种动作都有实际门店任务、对象、起态和结果，通过同一课程渲染器调用；交接记录、岗位泳道、Apple设备、表单与操作替代三色块占位。新增52种动作，缓动、配色和材质不计入动作数量。
 
-![24种本地可调用美术配方](docs/media/style-catalog-v5.7.jpg)
+![24种实际构图与材质方案](docs/media/style-catalog-v5.7.jpg)
 
-卡通讲师、生活场景、白板、绘本、纸雕、漫画、工程剖面、等距门店、数据新闻、界面操作和流程沙盘等24种配方包含可执行构图、字体、轮廓、配色和动作建议。参考Kurzgesagt、TED-Ed、3Blue1Brown、Crash Course、Animagraffs等官方作品与开放项目，属于设计归纳，不复制第三方角色或影片。用户可注册JSON增加或调整风格。
+24种方案涵盖原角色讲解、门店情境、白板推导、水彩绘本、纤维纸雕、网点漫画、蓝晒工程图、界面操作和规则沙盘。四种立体方案分别使用本地Blender建立金属外观分层、黏土AirPods与Apple Watch、完整低多边形门店和透明斜置设备面板，保留独立几何、程序材质、PNG与blend源文件。它们是可调用静态素材，课程动作由节点驱动。参考Kurzgesagt、TED-Ed、3Blue1Brown、Crash Course、Animagraffs等官方作品和开放项目的视觉组织，不复制其角色或影片；风格JSON支持后续增改。
 
-![Apple相关物件与门店场景](docs/media/retail-assets-v5.7.jpg)
-
-产品范围限Apple及无其他品牌的Apple适配配件，保留iPhone 18 Pro独立几何，新增iPad、Mac、Apple Watch、AirPods、HomePod与Apple配件。共有26种代码物件、3种门店场景和100个顾客身份/姿态/表情组合，导出129对透明SVG/PNG。附30个Lucide ISC图标、36个Kenney CC0家具视角及对应模型。私有门店实拍与其本地卡通化版本不进入公共源码或安装包。
-
-新增本地素材注册、哈希暂存、照片平涂/线稿处理和可选Blender导出透明PNG及blend。全程不调用生图。产品族教学示意不冒称精确规格或真实OS截图；既有批准人物、声音、课程和用户确认保持原记录。
-
-[调用与扩展说明](skills/corporate-training-motion/references/40-library-direction-assets.md) · [验证范围](docs/V5.7.0-VERIFICATION.md)。资源技术通过不等于整课教学效果、审美或最终用户验收。
-
-## 5.7.0：100种真实动作、24种视觉风格与Apple门店素材
-
-新增52种可执行教学动作，按真实对象、起态、过程和结果选择，预览/编辑/整课导出使用同一渲染器。100种全部通过实际调用、像素变化与倒序定位检查；颜色、缓动和风格不计入动作数。
-
-![24种本地可调用美术配方](docs/media/style-catalog-v5.7.jpg)
-
-卡通讲师、生活场景、白板、绘本、纸雕、漫画、工程剖面、等距门店、数据新闻、界面操作和流程沙盘等24种配方包含可执行构图、字体、轮廓、配色和动作建议。参考Kurzgesagt、TED-Ed、3Blue1Brown、Crash Course、Animagraffs等官方作品与开放项目，属于设计归纳，不复制第三方角色或影片。用户可注册JSON增加或调整风格。
+讲师、蓝衣KG店员和顾客默认绑定7位原批准角色；56份同源PNG提供纸本、水彩、漫画、像素等处理，身份与胸标保持对应。新增人物不再静默退回通用橙衣人。
 
 ![Apple相关物件与门店场景](docs/media/retail-assets-v5.7.jpg)
 
-产品范围限Apple及无其他品牌的Apple适配配件，保留iPhone 18 Pro独立几何，新增iPad、Mac、Apple Watch、AirPods、HomePod与Apple配件。共有26种代码物件、3种门店场景和100个顾客身份/姿态/表情组合，导出129对透明SVG/PNG。附30个Lucide ISC图标、36个Kenney CC0家具视角及对应模型。私有门店实拍与其本地卡通化版本不进入公共源码或安装包。
+商品限Apple及无其他品牌的Apple适配配件，包括具名iPhone 18 Pro、iPad、Mac、Apple Watch、AirPods与Apple配件。26种物件及3种门店场景进入实际画廊，另保留100个可选代码顾客组合，共129对透明SVG/PNG；代码顾客不充当公司人员。附30个Lucide ISC图标、36个Kenney CC0家具视角及9个GLB，仅用于操作符号与门店设施。
 
-新增本地素材注册、哈希暂存、照片平涂/线稿处理和可选Blender导出透明PNG及blend。全程不调用生图。产品族教学示意不冒称精确规格或真实OS截图；既有批准人物、声音、课程和用户确认保持原记录。
+**后续课程必查人物落地、物件支撑和文字避让。** 人物按可见脚底定位，设备底座绑定实际桌面点；渲染器逐帧核对已登记接触关系和人物文字避让。新工程逐场要求支撑、排版与当前编码画面的复核记录。照片标签必须绑定实际图像尺寸与目标点，标签按对象顺序排列；说明、产品标签和字幕独立留区。返修沿所有复用位置排查，再检查动作进入、运动中和停稳后的画面。
 
-[调用与扩展说明](skills/corporate-training-motion/references/40-library-direction-assets.md) · [验证范围](docs/V5.7.0-VERIFICATION.md)。资源技术通过不等于整课教学效果、审美或最终用户验收。
+本地素材注册、哈希暂存、照片平涂/线稿和可选Blender导出支持后续扩展；本次没有调用生图。用户门店实拍及衍生图仅保留在本地素材库，不进入公共源码、展示图或安装包。新规则不静默改写冻结课程。
+
+[调用与扩展](skills/corporate-training-motion/references/40-library-direction-assets.md) · [空间与文字规则](skills/corporate-training-motion/references/39-visual-hygiene.md) · [验证范围](docs/V5.7.0-VERIFICATION.md)。自动约束覆盖已登记对象，技术采样不能代替实际看图、整课视听或用户最终验收。
 
 ## 5.6.0：逐场检查对齐、箭头和动画残留
 

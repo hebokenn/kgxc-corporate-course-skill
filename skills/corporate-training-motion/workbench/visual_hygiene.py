@@ -8,13 +8,14 @@ import subprocess
 def review(project,doc,video,verify_pixels=True):
     p=Path(project).resolve();video=Path(video).resolve();path=p/'qa/visual-hygiene-review.json'
     marker=p/'craft-contract.json'
-    try:marked=json.loads(marker.read_text()).get('visualHygieneRequired') if marker.is_file() else False
+    try:contract=json.loads(marker.read_text()) if marker.is_file() else {};marked=contract.get('visualHygieneRequired');spatial=bool(contract.get('spatialReviewRequired') or doc.get('qualityPolicy',{}).get('spatialReviewRequired'))
     except (OSError,ValueError):return dict(status='pending',errors=['视觉复核契约不是有效JSON'])
     if not (doc.get('qualityPolicy',{}).get('visualHygieneRequired') or marked):
         return dict(status='legacy-not-opted-in',errors=[])
     errors=[]
     if marked and not doc.get('qualityPolicy',{}).get('visualHygieneRequired'):
         errors.append('本工程要求逐场视觉检查，不能删除 visualHygieneRequired')
+    if contract.get('spatialReviewRequired') and not doc.get('qualityPolicy',{}).get('spatialReviewRequired'):errors.append('本工程要求支撑关系和文字避让检查，不能删除 spatialReviewRequired')
     if not path.is_file():return dict(status='pending',errors=['缺少逐场视觉检查 qa/visual-hygiene-review.json'])
     try:data=json.loads(path.read_text())
     except (OSError,ValueError):return dict(status='pending',errors=['逐场视觉检查不是有效 JSON'])
@@ -31,7 +32,7 @@ def review(project,doc,video,verify_pixels=True):
     for row in rows:
         if not isinstance(row,dict):errors.append('场景检查条目无效');continue
         scene=row.get('sceneId','')
-        for key in ['alignment','connectors','animationResidue']:
+        for key in ['alignment','connectors','animationResidue']+(['physicalSupport','typography'] if spatial else []):
             if not isinstance(row.get(key),str) or not row[key].strip():errors.append('缺少实际观察 '+scene+' '+key)
         frames=row.get('evidenceFrames',[])
         if not isinstance(frames,list) or not frames:errors.append('缺少当前编码画面 '+scene);continue

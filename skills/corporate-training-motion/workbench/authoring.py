@@ -45,8 +45,8 @@ def init_project(project, skill_root):
     doc['motionPolicy']=policy()
     atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.1',semanticRequired=True))
     from craft_quality import policy as craft_policy
-    doc['qualityPolicy']=craft_policy()
-    atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,visualHygieneRequired=True,createdBy='5.6.0'))
+    doc['qualityPolicy']=craft_policy();doc['qualityPolicy']['spatialReviewRequired']=True
+    atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,visualHygieneRequired=True,spatialReviewRequired=True,createdBy='5.7.0'))
     atomic(p/'workbench.json',doc)
     return doc
 
@@ -106,7 +106,7 @@ def configure(course, spec_path):
     spec=expand(read(spec_path));d=copy.deepcopy(old)
     d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets','visualStyles'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
-    if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure and row separation on each rendered state')
+    if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') or n.get('textExclusion') or n.get('supportBinding') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure, row separation and declared character exclusion on each rendered state')
     from render_routes import plan,prepare,bind_fields
     selection=plan(spec)
     if not selection['ready']:raise ValueError('; '.join(selection['errors']))

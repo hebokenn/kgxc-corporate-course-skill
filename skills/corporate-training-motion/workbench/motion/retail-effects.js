@@ -14,12 +14,12 @@
  R('fan-spread','children',(a,n,e,p)=>a.map((o,i)=>({...o,x:lerp(w(n)/2-120,i*285,p),y:(o.y||0)+Math.abs(i-(a.length-1)/2)*35*p,rotation:(i-(a.length-1)/2)*16*p})));
  R('card-flip','children',(a,n,e,p)=>a.map((o,i)=>({...o,x:0,y:0,scaleX:Math.max(.015,Math.abs(Math.cos(Math.PI*p))),opacity:(o.opacity??1)*(p<.5?(i===0?1:0):(i===(e.selected??1)?1:0))})));
  R('page-turn','children',(a,n,e,p)=>a.map((o,i)=>i===0?{...o,x:0,y:0,scaleX:Math.max(.01,1-p),rotation:-12*p,opacity:1-p*.9}:alpha({...o,x:0,y:0},p)));
- R('carousel-shift','children',(a,n,e,p)=>a.map((o,i)=>({...o,x:((i+p)%a.length)*285,y:(o.y||0)+50*Math.sin((i+p)*Math.PI/a.length),scaleX:1-.15*Math.abs(i-p),scaleY:1-.15*Math.abs(i-p)})));
+ R('carousel-shift','children',(a,n,e,p)=>a.map((o,i)=>({...o,x:((i+p)%a.length)*285,y:(o.y||0)+50*Math.sin((i+p)*Math.PI/a.length),scaleX:(o.scaleX??1)*(1-.15*Math.abs(i-p)),scaleY:(o.scaleY??1)*(1-.15*Math.abs(i-p))})));
  R('accordion-open','children',(a,n,e,p)=>a.map((o,i)=>({...o,x:0,y:i*lerp(24,e.gap??150,p),scaleY:Math.max(.05,p)})));
  R('focus-isolate','children',(a,n,e,p)=>a.map((o,i)=>i===(e.selected??0)?{...o,scaleX:1+.15*p,scaleY:1+.15*p}:alpha({...o,scaleX:1-.35*p,scaleY:1-.35*p},1-.8*p)));
  R('rank-reorder','children',(a,n,e,p)=>a.map((o,i)=>move(o,(e.order||a.map((_,j)=>a.length-1-j)).indexOf(i)*285,o.y||0,p)));
  R('lane-distribute','children',(a,n,e,p)=>a.map((o,i)=>pos(o,lerp(0,i*320,p),lerp(0,(i%2)*180,p))));
- R('cluster-pack','children',(a,n,e,p)=>a.map((o,i)=>move(o,Math.floor(i/2)*500+(i%2)*90,100+(i%2)*95,p)));
+ R('cluster-pack','children',(a,n,e,p)=>a.map((o,i)=>{const count=e.centers?.length??3,bin=i%count,rank=Math.floor(i/count),cols=e.columns??2,gx=e.gapX??e.gap??Math.max(...a.map(v=>(v.width||70)*(v.scaleX??1)))+24,gy=e.gapY??e.gap??Math.max(...a.map(v=>(v.height||70)*(v.scaleY??1)))+24,cent=e.centers?.[bin]??[(bin+.5)*w(n)/count-gx/2,24];return move(o,cent[0]+rank%cols*gx,cent[1]+Math.floor(rank/cols)*gy,p)}));
  R('tree-collapse','children',(a,n,e,p)=>a.map((o,i)=>i?alpha(move(o,a[0].x||0,a[0].y||0,p),1-p):o));
  R('connector-reroute','path',(c,n,e,p)=>{const pts=n.points.map((v,i)=>[v[0],i&&i<n.points.length-1?lerp(v[1],e.viaY??200,p):v[1]]);c.beginPath();pts.forEach((a,i)=>i?c.lineTo(...a):c.moveTo(...a));c.stroke()});
  R('arrow-travel','path',(c,n,e,p)=>{c.save();c.globalAlpha*=.2;partial(c,n,1);c.restore();partial(c,n,p);const a=point(n,p),b=point(n,Math.max(0,p-.01));c.save();c.translate(...a);c.rotate(Math.atan2(a[1]-b[1],a[0]-b[0]));c.beginPath();c.moveTo(0,0);c.lineTo(-28,-16);c.lineTo(-28,16);c.closePath();c.fillStyle=e.color||n.stroke;c.fill();c.restore()});

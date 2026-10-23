@@ -63,6 +63,7 @@ CATALOG['orbit-revolve']['nodes'].append('ellipse')
 
 
 def inventory():
+    from motion_demos import CASES
     return dict(schema='course-motion-catalog/1', count=len(CATALOG),
                 teaching_actions=len(TEACHING)+len(EXTENSIONS), counted_as_variants=False,
-                effects=[dict(id=k, **v) for k,v in CATALOG.items()])
+                effects=[dict(id=k, **v,businessExample=dict(task=CASES[k][0],observe=CASES[k][1],objectFamily=CASES[k][2],scope='fictional teaching example; replace with the confirmed course objects and narration')) for k,v in CATALOG.items()])

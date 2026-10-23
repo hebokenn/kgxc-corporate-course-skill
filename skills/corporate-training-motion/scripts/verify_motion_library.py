@@ -37,7 +37,7 @@ def verify(course,out):
             actual=page.evaluate('window.courseRenderer.native.CourseMotion.runtimeCatalog()')
             assert set(actual)==set(CATALOG),(set(CATALOG)-set(actual),set(actual)-set(CATALOG))
             for i,(kind,info) in enumerate(CATALOG.items()):
-                a=i*150+30;stamps=[a+3,a+27,a+48,a+70,a+89];pictures={};calls=[]
+                a=i*150+30;stamps=[a-30,a-1,*range(a,a+90,6),a+89,a+90,a+119];pictures={};calls=[]
                 for frame in stamps:
                     result=page.evaluate('async f=>{const r=window.courseRenderer;const v=await r.drawFrame(f);return {png:r.canvas.toDataURL(),calls:v.motionReceipt}}',frame)
                     pictures[frame]=base64.b64decode(result['png'].split(',')[1]);calls.extend(result['calls'])
@@ -49,10 +49,19 @@ def verify(course,out):
                     raw=page.evaluate('async f=>{const r=window.courseRenderer;await r.drawFrame(f);return r.canvas.toDataURL()}',frame)
                     reverse &= base64.b64decode(raw.split(',')[1])==pictures[frame]
                 invoked=any(x['type']==kind and 0<x['progress']<1 for x in calls)
-                item=dict(id=kind,title=info['title'],actualPixelsChanged=visible,maximumChangedPixels=max(changes),reverseSeekIdentical=reverse,runtimeInvoked=invoked)
+                allframes=[np.asarray(Image.open(io.BytesIO(v)).convert('RGB')) for v in pictures.values()]
+                # Fixed narration/title and subtitle bands must not receive moving objects.
+                guards=[int((np.max(np.abs(v[:330].astype(np.int16)-allframes[0][:330].astype(np.int16)),axis=2)>12).sum())+int((np.max(np.abs(v[925:].astype(np.int16)-allframes[0][925:].astype(np.int16)),axis=2)>12).sum()) for v in allframes[1:]]
+                protected=max(guards)==0
+                item=dict(id=kind,title=info['title'],actualPixelsChanged=visible,maximumChangedPixels=max(changes),reverseSeekIdentical=reverse,runtimeInvoked=invoked,protectedBandsUnchanged=protected,protectedBandChangedPixels=max(guards),sampledFrames=stamps)
                 report.append(item)
-                if not visible or not reverse or not invoked:issues.append(item)
-                poster=Image.open(io.BytesIO(pictures[stamps[2]])).convert('RGB');poster.thumbnail((480,270));poster.save(out/(kind+'.png'));posters.append((kind,info['title'],poster))
+                if not visible or not reverse or not invoked or not protected:issues.append(item)
+                poster=Image.open(io.BytesIO(pictures[a+48])).convert('RGB');poster.save(out/(kind+'.png'))
+                phases=Image.new('RGB',(1920,1080),'#f4f3eb')
+                for j,f in enumerate([a-1,a+24,a+66,a+119]):
+                    shot=Image.open(io.BytesIO(pictures[f])).convert('RGB');shot.thumbnail((960,540));phases.paste(shot,(j%2*960,j//2*540))
+                (out/'phases').mkdir(exist_ok=True);phases.save(out/'phases'/(kind+'.jpg'),quality=92)
+                poster.thumbnail((480,270));posters.append((kind,info['title'],poster))
             # Exercise actual editable text, position and image replacement.
             frame=150*list(CATALOG).index('magnify')+90
             async_draw='async ([d,f])=>{const r=window.courseRenderer;await r.load(d);await r.drawFrame(f);return r.canvas.toDataURL()}'

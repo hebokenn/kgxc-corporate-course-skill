@@ -16,14 +16,6 @@
 
 Lucide 0.468.0: 30 SVG icons, ISC. Original LICENSE and exact source/hash are under `skills/corporate-training-motion/assets/open-source/lucide/`.
 
-Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. No generic or other-brand electronic merchandise is bundled.
+Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. Electronic merchandise from other brands is not bundled.
 
-The 24 art-direction recipes are original code adaptations inspired by linked official portfolios. Those links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos stay private and local. Apple product drawings are independently authored educational illustrations, not Apple image files or exact specifications.
-
-## 5.7.0 visual libraries
-
-Lucide 0.468.0: 30 SVG icons, ISC. Original LICENSE and exact source/hash are under `skills/corporate-training-motion/assets/open-source/lucide/`.
-
-Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. No generic or other-brand electronic merchandise is bundled.
-
-The 24 art-direction recipes are original code adaptations inspired by linked official portfolios. Those links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos stay private and local. Apple product drawings are independently authored educational illustrations, not Apple image files or exact specifications.
+The 24 art-direction recipes are original code adaptations informed by linked official portfolios. Links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos and local derivatives stay private. Apple-family drawings and the four Blender material scenes are independently authored teaching illustrations, not Apple image files, exact specifications or teardown CAD. Same-source surface processing preserves existing authorized company characters and does not create a new identity.

@@ -20,49 +20,9 @@ from backend import atomic
 from render_routes import stage_libraries
 
 
-def effect_node(kind,scene,start,end):
-    info=CATALOG[kind];typ=info['nodes'][0]
-    if typ=='*':typ='group'
-    node=dict(id='object-'+kind,type=typ,sceneId=scene,x=320,y=380,width=1040,height=310,fill='#468c79',role='subject')
-    effect=dict(type=kind,startFrame=start,endFrame=end)
-    if typ=='group':
-        node['children']=[dict(id=kind+'-part-'+str(i),type='rect',x=i*285,y=i*22,width=240,height=130,fill=['#3c8170','#dbb767','#7f9eac'][i],radius=10) for i in range(3)]
-    if typ=='text':node.update(text='128' if kind in ['count-up','odometer'] else '需求已经确认',fontSize=100,width=1200)
-    if typ=='image':node.update(assetId='detail',width=900,height=420,y=340)
-    if typ in ['path','line']:
-        pts=[[0,120],[180,120],[320,0],[720,0],[920,160]]
-        node.update(points=pts,path='M'+' L'.join(f'{x},{y}' for x,y in pts),fill=None,stroke='#3c8170',lineWidth=12)
-    if typ=='ellipse':node.update(x=900,y=540,width=350,height=350,fill=None,stroke='#3c8170')
-    if kind in ['check-draw','cross-draw','brace-draw']:
-        pts={'check-draw':[[0,100],[90,190],[270,0]],'cross-draw':[[0,0],[220,220],[110,110],[220,0],[0,220]],'brace-draw':[[0,0],[0,80],[360,80],[360,0]]}[kind]
-        node.update(points=pts,path='M'+' L'.join(f'{x},{y}' for x,y in pts))
-    if kind in ['scan','spotlight']:node.update(width=1040,height=360,fill=None)
-    if kind=='spotlight':effect.update(cx=520,cy=180,radius=140,fromX=100,fromY=100,fromRadius=1000)
-    if kind=='magnify':effect.update(zoom=2.5,cx=.7,cy=.45)
-    if kind=='path-follow':effect['points']=[[0,0],[150,-80],[360,0],[620,60]]
-    if kind in ['handoff','pixel-walk','swimlane-transfer']:effect.update(dx=480,dy=110)
-    if kind in ['group-collect','sort']:
-        effect['from']=[[0,0],[480,170],[160,280]];effect['to']=[[700,0],[700,160],[700,320]]
-        node.update(y=300,height=540)
-    if kind=='correct-replace':effect['fromText']='仍有疑问'
-    if kind=='record-filter':effect['keep']=[0,2]
-    if kind=='timeline-reflow':effect['to']=[[0,450],[300,700],[760,350]]
-    if kind=='quiz-feedback':effect.update(selected=1,correct=True)
-    if kind=='balance':effect.update(values=[4,7,10],height=330,baseline=350)
-    if kind=='presenter-gesture':
-        node.update(assetId='m1',x=300,y=285,width=430,height=550)
-        effect.update(kgAsset='kg',openAsset='m1-open',blinkAsset='m1-blink')
-    if kind=='gauge-sweep':node.update(x=900,y=600,width=310,height=0,x2=310,y2=0)
-    if kind=='venn-intersect':
-        node['children']=[dict(id='range-'+str(i),type='ellipse',x=i*550,y=170,width=430,height=330,fill=['#709b82aa','#d9ad60aa'][i]) for i in range(2)]
-    if kind=='parallel-sync':effect['to']=[[680,150],[680,150],[680,150]]
-    if kind=='dot-aggregate':
-        node['children']=[dict(id='record-'+str(i),type='rect',x=i%6*110,y=i//6*100,width=60,height=60,fill='#3c8170') for i in range(18)]
-        effect.update(columns=6,gap=42)
-    if kind=='callout':node['children'][0].update(type='path',fill=None,stroke='#3c8170',lineWidth=8,points=[[0,100],[150,100],[240,0]],path='M0,100 L150,100 L240,0')
-    effect.update(info.get('sample',{}))
-    node['effects']=[effect]
-    return node
+def effect_node(kind,scene,start,end,roles):
+    from motion_demos import create
+    return create(kind,scene,start,end,roles)
 
 
 def build(destination,modules=False):
@@ -77,14 +37,27 @@ def build(destination,modules=False):
     assets=[dict(id='detail',path='assets/detail.svg')]
     for ident,name in [('m1','M1-repaired.png'),('m1-open','M1-speaking-open.png'),('m1-blink','M1-blink.png'),('kg','kg-original.png')]:
         shutil.copy2(ROOT/'assets/profiles/kgxc'/name,p/'assets'/name);assets.append(dict(id=ident,path='assets/'+name))
+    from company_characters import stage_company
+    roles={}
+    for identity in ['M1','S01','S02','COACH']:
+        staged=stage_company(identity,root,ROOT);roles[identity]=staged['data'];assets.extend(staged['assets'])
+    for identity in ['C01','C02','C03']:
+        name=identity+'-full-v1.png';shutil.copy2(ROOT/'assets/characters/kgxc-customers-v1'/name,p/'assets'/name);aid='customer-'+identity;assets.append(dict(id=aid,path='assets/'+name));from PIL import Image
+        size=Image.open(p/'assets'/name).size;roles[identity]=dict(identity=identity,headAsset=aid,sourceSize=list(size))
+    # The detail image is the same independently authored iPhone geometry as the course prop.
+    from content_assets import phone
+    import importlib.util
+    export_spec=importlib.util.spec_from_file_location('retail_svg_export',ROOT/'scripts/export_retail_assets.py');export=importlib.util.module_from_spec(export_spec);export_spec.loader.exec_module(export)
+    handset,_=phone(dict(id='detail-device',data=dict(model='iphone-18-pro',finish='glacier-blue',view='back')),dict(id='D',sourceStartFrame=0,sourceEndFrame=90))
+    (p/'assets/detail.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="450" viewBox="0 0 900 450"><rect width="900" height="450" fill="#e8ece3"/><g transform="translate(140 20) rotate(-9 200 210) scale(.75)">'+export.svg(handset)+'</g><text x="550" y="140" font-size="38" fill="#22453f">iPhone 18 Pro</text><text x="550" y="200" font-size="24" fill="#5c786b">同一设备 · 局部检查</text></svg>')
     nodes=[];scenes=[];captions=[];beats=[];fps=30;span=150
     for i,(kind,info) in enumerate(CATALOG.items()):
         a=i*span;b=a+span;scene='M'+str(i+1).zfill(2)
         scenes.append(dict(id=scene,chapter='真实动效技术验证',title=info['title'],sourceStartFrame=a,sourceEndFrame=b))
         nodes.append(dict(id='title-'+kind,type='text',sceneId=scene,x=110,y=130,fontSize=68,text=f'{i+1:02}  {info["title"]}',fill='#183f3c',role='decoration'))
         nodes.append(dict(id='kind-'+kind,type='text',sceneId=scene,x=110,y=245,fontSize=30,text=kind,fill='#647b72',role='decoration'))
-        nodes.append(effect_node(kind,scene,a+30,a+120))
-        captions.append(dict(id='caption-'+kind,sceneId=scene,text='动效技术演示 无配音',startFrame=a,endFrame=b))
+        nodes.extend(effect_node(kind,scene,a+30,a+120,roles))
+        captions.append(dict(id='caption-'+kind,sceneId=scene,text=__import__('motion_demos').CASES[kind][0],startFrame=a,endFrame=b))
         beats += [dict(id=kind+'-before',sceneId=scene,kind='read',startFrame=a,endFrame=a+30,reason='先辨认对象起态'),dict(id=kind+'-action',sceneId=scene,startFrame=a+30,endFrame=a+120,purpose=info['purpose'],before='观察起始对象',after='观察动作完成状态',objectIds=['object-'+kind]),dict(id=kind+'-after',sceneId=scene,kind='observe',startFrame=a+120,endFrame=b,reason='检查动作结果')]
     if modules:
         from teaching_modules import MODULES,expand

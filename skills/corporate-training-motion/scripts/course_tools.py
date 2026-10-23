@@ -16,13 +16,21 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='surface-catalog':
+        from visual_styles import registry
+        print(json.dumps([dict(id=s['id'],title=s['title'],surface=s.get('surface'),evidence=s.get('materialEvidence')) for s in registry().values()],ensure_ascii=False,indent=2));return 0
+    if args.command=='stage-style-assets':
+        ap=argparse.ArgumentParser();ap.add_argument('course',type=Path);ap.add_argument('--style',required=True);ap.add_argument('--out',type=Path,required=True);aa=ap.parse_args(rest)
+        if aa.out.exists():ap.error('输出已存在，保留原件并指定新版本')
+        from visual_styles import stage_style_assets
+        result=stage_style_assets(aa.course,aa.style,ROOT);aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(aa.out);return 0
     if args.command in ['style-catalog','recommend-visuals','register-style','retail-catalog']:
         from visual_styles import catalog,register,recommend
         if args.command in ['style-catalog','retail-catalog']:

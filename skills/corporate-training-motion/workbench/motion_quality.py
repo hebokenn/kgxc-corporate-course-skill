@@ -21,7 +21,7 @@ def walk(nodes):
 def library_digest(root=None):
     root=Path(root) if root else Path(__file__).resolve().parent
     h=hashlib.sha256()
-    for name in ['motion/effects.js','motion/teaching-effects.js','motion/retail-effects.js','motion/m1-mesh.js','teaching_modules.py','motion_catalog.py','starter/scene-engine.js']:
+    for name in ['motion/effects.js','motion/teaching-effects.js','motion/retail-effects.js','motion/surface-materials.js','motion/m1-mesh.js','teaching_modules.py','motion_catalog.py','starter/scene-engine.js']:
         h.update(name.encode());h.update((root/name).read_bytes())
     return h.hexdigest()
 

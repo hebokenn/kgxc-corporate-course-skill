@@ -42,6 +42,16 @@ class LayoutTests(unittest.TestCase):
         self.assertIsNone(self.start(composition()));d=copy.deepcopy(self.doc);next(f for f in d['fields'] if f['objectId']=='paper-label-0')['text']='教育优惠条件需要逐项确认并且不能自动认定适用的具体说明'
         self.page.evaluate('async d=>window.courseRenderer.load(d)',d)
         with self.assertRaisesRegex(Exception,'同一行文字重叠'):self.page.evaluate('async()=>window.courseRenderer.drawFrame(3)')
+    def test_footer_cannot_be_edited_through_a_character(self):
+        s=composition();s['sceneGraph']=dict(nodes=[dict(id='visible-person',type='group',sceneId='X',x=500,y=300,width=250,height=350,textExclusion=True,children=[dict(id='silhouette',type='rect',width=250,height=350,fill='#7fa097')]),dict(id='footer',type='text',sceneId='X',x=520,y=700,fontSize=32,text='核对本次体验结果',fill='#193d3d')])
+        self.assertIsNone(self.start(s));d=copy.deepcopy(self.doc);next(f for f in d['fields'] if f['objectId']=='footer')['dy']=-100;self.page.evaluate('async d=>window.courseRenderer.load(d)',d)
+        with self.assertRaisesRegex(Exception,'文字侵入人物'):self.page.evaluate('async()=>window.courseRenderer.drawFrame(3)')
+    def test_device_cannot_float_above_its_bound_table(self):
+        s=composition();s['sceneGraph']=dict(materials=[dict(id='shop',kind='store-scene',sceneId='X',data=dict(view='interior'))]);self.assertIsNone(self.start(s));d=copy.deepcopy(self.doc)
+        next(f for f in d['fields'] if f['objectId']=='shop-device0-0-root')['dy']=-40;self.page.evaluate('async d=>window.courseRenderer.load(d)',d)
+        with self.assertRaisesRegex(Exception,'底座脱离支撑面'):self.page.evaluate('async()=>window.courseRenderer.drawFrame(3)')
+    def test_space_view_keeps_table_and_devices_in_one_transform(self):
+        s=composition();s['sceneGraph']=dict(materials=[dict(id='shop',kind='store-scene',sceneId='X',data=dict(view='isometric'))]);self.assertIsNone(self.start(s));receipt=self.page.evaluate('async()=>window.courseRenderer.drawFrame(3)')['layoutReceipt'];contacts=[x for x in receipt if x['rule']=='contact'];self.assertEqual(len(contacts),12);self.assertFalse(any(x['violations'] for x in contacts))
     def test_overlapping_current_row_windows_are_rejected(self):
         s=composition();s['sceneGraph']['materials'][0]['data']['rowFocus'][0]['endFrame']=20
         with self.assertRaisesRegex(ValueError,'窗口不能重叠'):expand(s)

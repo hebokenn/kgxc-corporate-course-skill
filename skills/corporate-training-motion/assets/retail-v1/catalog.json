@@ -507,7 +507,7 @@
       "id": "display-table",
       "kind": "retail-prop",
       "svg": "display-table.svg",
-      "sha256": "10298f6017b958bd936715ac918da43f36d8afe5280f3466f265691e3aedda2a",
+      "sha256": "bcbaf4ec95b55ded74210d35330a0cd37dcb82cc0e63cfe9628c9f944db4babd",
       "recipe": {
         "id": "display-table",
         "kind": "retail-prop",
@@ -3057,7 +3057,7 @@
       "id": "store-front",
       "kind": "store-scene",
       "svg": "store-front.svg",
-      "sha256": "6d9d534e31115c7697850ab0d49f2ba0aa1983b8c1e5ad73a4f4c3e6dd8d6ce4",
+      "sha256": "d4e8143ccce8ef71fee66a5df8f95878bed32700f0acebb5800c726b4d70d338",
       "recipe": {
         "id": "store-front",
         "kind": "store-scene",
@@ -3084,7 +3084,7 @@
       "id": "store-interior",
       "kind": "store-scene",
       "svg": "store-interior.svg",
-      "sha256": "a9c2fb1997117956547b3db93a762ff67b36faf16190cf66e567935864a485b8",
+      "sha256": "f674d100eb39451f75670adf70d1880a6c0f10004bbf5e5637df16fc0d2da026",
       "recipe": {
         "id": "store-interior",
         "kind": "store-scene",
@@ -3111,7 +3111,7 @@
       "id": "store-isometric",
       "kind": "store-scene",
       "svg": "store-isometric.svg",
-      "sha256": "f098e799dcabd37983892279136d06c519c0f96bd614116dc98d31d7be3a5afd",
+      "sha256": "6e19de9d078c1ba7a25ccee8c70ba92fcae5873c5c71b92c333938fc5cd507d4",
       "recipe": {
         "id": "store-isometric",
         "kind": "store-scene",

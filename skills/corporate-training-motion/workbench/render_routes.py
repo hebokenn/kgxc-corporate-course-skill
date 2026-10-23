@@ -21,6 +21,7 @@ EFFECTS = {
     'gradient': 'Canvas linear/radial gradient fills and backgrounds',
     'mesh-gradient': 'UI.mesh: deterministic moving gradient background',
     'camera': 'CAM.apply: world camera with editable objects',
+    'surface-material': 'Deterministic texture, lighting and physical surface treatment',
     'easing': 'MO: analytical easing and spring functions',
 }
 EFFECTS.update({key:value['purpose'] for key,value in CATALOG.items()})
@@ -31,6 +32,8 @@ EASES = {'linear', 'smooth', 'sineInOut', 'cubicIn', 'cubicOut', 'cubicInOut',
 CONTENT_ASSETS_PRIOR_ENGINE_SHA256 = '09edb7d6a46c804e9c87528c564817ea91c7efa23d3da7be81f8105274f607cd'
 LAYOUT_PRIOR_ENGINE_SHA256 = '50e71c16006e0923d7a79fa3ee77bf8a2d65e2dfd7ede5ad16039531f9359b1e'
 PRIOR_ENGINE_SHA256 = '937481a1c77cdb571bd14abca34a9ebb72cde3f581d22ef62bce517c57abc2be'
+V570_PRECONTACT_ENGINE_SHA256='a5e3814a041ef0413437002465ed22e1af1b13ccb9c970213dae74f005d52b7c'
+V560_ENGINE_SHA256 = '28f6588cbce71292c3a80047a2dc29123a4bd16fbaebcba03c9648971149ca0d'
 V560_ENTRY_SHA256 = '96eae29cbacf95a61c2a5de6615df2cb8bc744e657d5b86e7208808712b49fa9'
 PRIOR_ENTRY_SHA256 = '83f2035f70b5148e0de613b93d225abaf1827e77852cb90377f821fc1b9e40c3'
 LEGACY_ENGINE_SHA256 = '07eebcc6d8a0f29e3f619f29d74f8ce136dadcdc558043c3ee03bb8753fc30a7'
@@ -61,6 +64,7 @@ def requirements(spec):
     result = set(requested)
     graph = spec.get('sceneGraph', {})
     for node in walk(graph.get('nodes', [])):
+        if node.get('surface'):result.add('surface-material')
         for effect in node.get('effects', []):
             result.add(effect.get('type', 'unknown-effect'))
         for name in ['fill', 'stroke']:
@@ -221,7 +225,7 @@ def prepare(project, selection, skill_root):
     managed = (base/'motion/index.html').read_bytes()
     engine=p/'native/scene-engine.js'
     recognized=engine.is_file() and hashlib.sha256(engine.read_bytes()).hexdigest() in {
-        LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        LEGACY_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
     if selection['route'] == 'native-canvas':
         if not entry.is_file() or entry.read_bytes() in [starter, managed] and recognized:
             raise ValueError('尚未提供实际自定义渲染器；默认画布不能冒充 native-canvas')
@@ -234,7 +238,7 @@ def prepare(project, selection, skill_root):
         raise ValueError('已有自定义 native 源码，不能自动覆盖；请沿用 native-canvas')
     (p/'native/motion').mkdir(exist_ok=True)
     stage_libraries(skill_root, p/'native/motion/lib')
-    for name in ['effects.js','teaching-effects.js','retail-effects.js','m1-mesh.js']:
+    for name in ['effects.js','teaching-effects.js','retail-effects.js','surface-materials.js','m1-mesh.js']:
         shutil.copy2(base/'motion'/name,p/'native/motion'/name)
     shutil.copy2(base/'starter/scene-engine.js', p/'native/scene-engine.js')
     entry.write_bytes(managed)
@@ -268,7 +272,7 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
         d['revision']=old['revision']+1;validate(d,p)
         entry=(p/'native/index.html').read_bytes()
         engine=p/'native/scene-engine.js'
-        hashes={LEGACY_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        hashes={LEGACY_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
         if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] and hashlib.sha256(entry).hexdigest() not in [PRIOR_ENTRY_SHA256,V560_ENTRY_SHA256] or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
             raise ValueError('检测到自定义native源码，未覆盖；请保留实现并手动接入所需库')
         if dry_run:return dict(route=selection,currentRevision=old['revision'],nextRevision=d['revision'],dryRun=True)
