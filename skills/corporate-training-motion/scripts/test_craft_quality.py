@@ -9,7 +9,7 @@ from scaffold import create
 
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def fixture():
-    legacy_policy=policy();legacy_policy.pop('coverRequired')  # This fixture isolates the v5.4 craft contract.
+    legacy_policy=policy();legacy_policy.pop('coverRequired');legacy_policy.pop('visualHygieneRequired')  # Isolate the v5.4 craft contract.
     return dict(width=64,height=36,fps=6,sourceDurationFrames=18,introFrames=0,bodyEndFrame=18,qualityPolicy=legacy_policy,holds=[],cuts=[],
         scenes=[dict(id='S'+str(j),sourceStartFrame=j*3,sourceEndFrame=j*3+3) for j in range(6)],
         sceneGraph=dict(nodes=[dict(id='node'+str(j),sceneId='S'+str(j),type='text',text='内容'+str(j),x=j*80,y=20,fontSize=24) for j in range(6)]))

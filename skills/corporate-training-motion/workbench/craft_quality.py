@@ -8,7 +8,7 @@ CRITERIA=('composition','typography','colorMaterial','imagery','whitespace','vis
 
 
 def policy():
-    return dict(schema='course-craft-policy/1',required=True,aestheticReview=True,coverRequired=True,
+    return dict(schema='course-craft-policy/1',required=True,aestheticReview=True,coverRequired=True,visualHygieneRequired=True,
                 voiceRequirements=['natural-training-tone','standard-mandarin','crisp-pacing','consistent-speaker'])
 
 
@@ -51,7 +51,9 @@ def review(project,doc,video,verify_pixels=True):
     if not required:return dict(status='legacy-not-opted-in',errors=[])
     from cover_quality import review as cover_review
     cover=cover_review(p,doc,video,verify_pixels=verify_pixels)
-    errors=list(cover['errors'])
+    from visual_hygiene import review as hygiene_review
+    hygiene=hygiene_review(p,doc,video,verify_pixels=verify_pixels)
+    errors=list(cover['errors'])+list(hygiene['errors'])
     if not doc.get('qualityPolicy',{}).get('required'):errors.append('本工程要求课程工艺复核，不能删除 qualityPolicy')
     path=p/'qa/craft-review.json'
     if not path.is_file():return dict(status='pending',errors=errors+['缺少独立审美与配音复核 qa/craft-review.json'])
@@ -92,5 +94,5 @@ def review(project,doc,video,verify_pixels=True):
                 if size!=(doc['width'],doc['height']) or raw!=actual:errors.append('画面证据与当前视频真实像素不一致 '+name)
             except (OSError,subprocess.CalledProcessError):errors.append('无法核对编码画面 '+name)
     if thirds!={0,1,2}:errors.append('审美复核须覆盖整课早、中、晚段的实际编码画面')
-    return dict(status='pending' if errors else 'pass',errors=errors,cover=cover,
+    return dict(status='pending' if errors else 'pass',errors=errors,cover=cover,visualHygiene=hygiene,
                 scope='bound aesthetic observations and voice evidence; no automatic beauty score or fabricated listening acceptance')
