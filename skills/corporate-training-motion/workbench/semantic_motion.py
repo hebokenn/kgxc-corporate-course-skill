@@ -11,6 +11,9 @@ PACING_LIMITS={'dialogue':1.2,'mask-reveal':1.2,'text-rise':1.2,'blur-in':1.2,'p
     'swimlane-transfer':2.5,'path-follow':2.5,'evidence-attach':2.0,'parallel-sync':2.0,
     'callout':1.2,'route-progress':2.5,'branch-grow':2.5,'draw-on':2.0,'scan':2.5,'rotate-inspect':2.5}
 
+from motion_extensions import EXTENSIONS
+PACING_LIMITS.update({k:2.5 for k in EXTENSIONS})
+
 
 def compact(s):return re.sub(r'[\s\W_]+','',str(s))
 

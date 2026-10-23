@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','teaching_modules.py','content_assets.py','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -104,7 +104,7 @@ def configure(course, spec_path):
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
     spec=expand(read(spec_path));d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets'] if k in spec})
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets','visualStyles'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
     if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure and row separation on each rendered state')
     from render_routes import plan,prepare,bind_fields

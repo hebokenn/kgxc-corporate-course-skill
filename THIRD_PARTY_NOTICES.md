@@ -11,3 +11,19 @@
 - Python/npm 依赖由各自包管理器从原注册表安装，沿用其许可证。Qwen3-TTS 保留官方项目链接，模型由安装器下载到使用者本地，不放入仓库或ZIP；可选 Remotion 保留为单独原型，使用者须自行核对适用许可。
 
 本仓库没有为所有企业与第三方素材另行授予统一开源许可。各来源文件的许可证和企业内部用途说明继续适用。
+
+## 5.7.0 visual libraries
+
+Lucide 0.468.0: 30 SVG icons, ISC. Original LICENSE and exact source/hash are under `skills/corporate-training-motion/assets/open-source/lucide/`.
+
+Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. No generic or other-brand electronic merchandise is bundled.
+
+The 24 art-direction recipes are original code adaptations inspired by linked official portfolios. Those links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos stay private and local. Apple product drawings are independently authored educational illustrations, not Apple image files or exact specifications.
+
+## 5.7.0 visual libraries
+
+Lucide 0.468.0: 30 SVG icons, ISC. Original LICENSE and exact source/hash are under `skills/corporate-training-motion/assets/open-source/lucide/`.
+
+Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. No generic or other-brand electronic merchandise is bundled.
+
+The 24 art-direction recipes are original code adaptations inspired by linked official portfolios. Those links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos stay private and local. Apple product drawings are independently authored educational illustrations, not Apple image files or exact specifications.

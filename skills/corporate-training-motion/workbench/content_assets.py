@@ -100,8 +100,8 @@ def screen(b,key,mode,data,w=252,h=526):
 
 def phone(recipe,scene):
     from device_models import profile, shell, front_overlay
-    b=Drawing(recipe,scene);d=recipe.get('data',{});view=d.get('view','front');model=d.get('model','slab')
-    if view not in ['front','back','side'] or model not in ['slab','compact','foldable','iphone-18-pro']:raise ValueError('手机视角或机身未实现')
+    b=Drawing(recipe,scene);d=recipe.get('data',{});view=d.get('view','front');model=d.get('model','iphone-18-pro')
+    if view not in ['front','back','side'] or model not in ['iphone-18-pro']:raise ValueError('手机视角或机身未实现')
     named=profile(model,d.get('finish','glacier-blue')) if model=='iphone-18-pro' else None
     w=named['width'] if named else 274 if model!='compact' else 252
     h=named['height'] if named else 566 if model!='compact' else 508
@@ -248,10 +248,10 @@ def parcel(recipe,scene):
     return b.group('root',recipe.get('x',0),recipe.get('y',0),c,550,540,scaleX=recipe.get('scale',1),scaleY=recipe.get('scale',1)),dict(kind='parcel',serial=serial,barcode='visual example only; supply a real code for actual scanning')
 
 
-def catalog():return dict(schema='course-content-assets/1',phone=dict(models=['slab','compact','foldable','iphone-18-pro'],views=['front','back','side'],screens=list(SCREENS),ui='editable teaching illustration; use verified screenshots for exact OS operation training'),
+def catalog():return dict(schema='course-content-assets/1',phone=dict(models=['iphone-18-pro'],views=['front','back','side'],screens=list(SCREENS),ui='editable teaching illustration; use verified screenshots for exact OS operation training'),
     actor=dict(identities=list(IDENTITIES)+['S01','S02','COACH'],poses=['rest','welcome','listen','question'],contactPoses=['C01-phone-use-v2'],expressions=list(MOODS),scope='role-specific uniform mark required; own-identity contact pose required for holding'),
     document=dict(formats=['sheet','ticket'],editable=['title','subtitle','rows','footer']),parcel=dict(editable=['label','serial']),
-    implementation='ordinary editable graph nodes; no separate preview renderer')
+    retail=__import__('retail_assets').catalog(), implementation='ordinary editable graph nodes; no separate preview renderer')
 
 
 def expand(spec):
@@ -269,7 +269,8 @@ def expand(spec):
             if any(recipe['data']['contactPose'][k].get('assetId') not in assets for k in ['master','foreground']):raise ValueError('接触姿态或手部遮挡素材不存在')
         if kind=='actor' and recipe.get('data',{}).get('rig'):
             if any(part.get('assetId') not in assets for part in recipe['data']['rig'].get('files',{}).values()):raise ValueError('人物绑定分层素材不存在')
-        factories=dict(phone=phone,actor=actor,document=document,parcel=parcel)
+        from retail_assets import prop,customer,store
+        factories=dict(phone=phone,actor=actor,document=document,parcel=parcel,**{'retail-prop':prop,'retail-person':customer,'store-scene':store})
         if kind not in factories:raise ValueError('未实现的素材类型 '+str(kind))
         node,description=factories[kind](recipe,scenes[sid]);node['zIndex']=recipe.get('zIndex',0);graph.setdefault('nodes',[]).append(node)
         manifest.append(dict(id=identifier,kind=kind,source=recipe,sourceSha256=hashlib.sha256(json.dumps(recipe,ensure_ascii=False,sort_keys=True).encode()).hexdigest(),description=description,rootNodeId=node['id']))

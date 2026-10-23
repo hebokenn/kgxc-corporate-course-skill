@@ -1,0 +1,158 @@
+{
+  "project": "https://lucide.dev/",
+  "version": "0.468.0",
+  "license": "ISC; see LICENSE",
+  "checked": "2026-10-23",
+  "assets": [
+    {
+      "id": "smartphone",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/smartphone.svg",
+      "sha256": "f9fdb700b50feb5fc6436f53eb9813e9eb56a9071ac4cdcba69c7f7c1c13877d"
+    },
+    {
+      "id": "tablet",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/tablet.svg",
+      "sha256": "cf58f791bd83c5340362fc0694d3f766aa82b9abfe291ef72e15a3ac3da54125"
+    },
+    {
+      "id": "laptop",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/laptop.svg",
+      "sha256": "bf850eb2547b25504baf593b63925ed05331e11492b915117d984a2e843a0d81"
+    },
+    {
+      "id": "monitor",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/monitor.svg",
+      "sha256": "d1a443233345724859de8e4fb48968ba91e885e12ddbd710701548bd91b39428"
+    },
+    {
+      "id": "watch",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/watch.svg",
+      "sha256": "6189650beddc39b2d8dc32b21284f31f3cb42ce361d075efb3a285dabf2628fc"
+    },
+    {
+      "id": "headphones",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/headphones.svg",
+      "sha256": "7719585dafa921805aefc21fc3262bbcc621507610a653b84e1632236650b35a"
+    },
+    {
+      "id": "plug",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/plug.svg",
+      "sha256": "2797d68c45c73c7b0befc312bb5d9a8b90f16c86c7f8b31b8afe57b39b97718a"
+    },
+    {
+      "id": "cable",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/cable.svg",
+      "sha256": "612dd60f98acdf271b897e70a9c8418afe027223b48df9973ac45cd4b0c6518b"
+    },
+    {
+      "id": "battery-charging",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/battery-charging.svg",
+      "sha256": "e82992b504682d1611da1bd5f77ef3c56231d883aff6bb906883919e785388d2"
+    },
+    {
+      "id": "keyboard",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/keyboard.svg",
+      "sha256": "f509925ca81964ed06251ad4702e989bb81a566ffc74d15c2226b4f07ded67be"
+    },
+    {
+      "id": "mouse",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/mouse.svg",
+      "sha256": "e4238ad7b69d3c3d713fdc2284c8fb20c04781afe0be445539ce4f904c0a0e47"
+    },
+    {
+      "id": "shopping-bag",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/shopping-bag.svg",
+      "sha256": "355402d4ac02e4a6ed8a502c2196f45e197e986a0f7c050b9e02737579800206"
+    },
+    {
+      "id": "package",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/package.svg",
+      "sha256": "399c20ee3a2ef58300e30f4c930b8cfa52bbb8faf19053593b0ab027ffd45903"
+    },
+    {
+      "id": "receipt",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/receipt.svg",
+      "sha256": "2308fc7239dfaf64bfb38425344680ef352aacb95c91dcc144443d0f766562db"
+    },
+    {
+      "id": "badge",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/badge.svg",
+      "sha256": "b1a904606688d5c8e4b8fb00ed70a65bfbeb97c532bda3eb773e1e8734b816fb"
+    },
+    {
+      "id": "store",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/store.svg",
+      "sha256": "487f0f2b61a46cf2de715a701e3383fbf8e7a1f6f982e380dc580e1512dbee1d"
+    },
+    {
+      "id": "users",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/users.svg",
+      "sha256": "c94a3781b154ab2716e1696c25c50d37b4b5634f26cb80ae1cdea20cfafc49c1"
+    },
+    {
+      "id": "user-round",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/user-round.svg",
+      "sha256": "84870f26f3faf8da45da84174517519e81b9e8f00319c78954fcbb74f50038a1"
+    },
+    {
+      "id": "message-circle",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/message-circle.svg",
+      "sha256": "a9bd7a3e24bf81c598974bda992d0d363dd0996d0f14ecbe9986e03a07068884"
+    },
+    {
+      "id": "hand",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/hand.svg",
+      "sha256": "fe3771fa2f0a9a3c7736164c9a855beefacc02548084ac1d6fc8da8a8a9180b0"
+    },
+    {
+      "id": "check",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/check.svg",
+      "sha256": "7f33acc9a77a61659531044525fc008edebe215bf4dcf1c789c8674ad3277db0"
+    },
+    {
+      "id": "scan",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/scan.svg",
+      "sha256": "c77f0e634b2451a14a262a59b61d75bbcea3994b16eeba1f5753e86b33282a4d"
+    },
+    {
+      "id": "barcode",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/barcode.svg",
+      "sha256": "fac8780b6ab80f94e252aacbb293c56db82bdd24c46b1d2b410989910e930a73"
+    },
+    {
+      "id": "qr-code",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/qr-code.svg",
+      "sha256": "920cb79ab4b2fd23c36a16de3ca533c4896cb989adb823eb7dec97fd840d30f5"
+    },
+    {
+      "id": "shield-check",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/shield-check.svg",
+      "sha256": "8d4fcdbde5bba4abb1a2f6fe53e37ceb6343a1d5449a9d88f6f97c1971d26c4e"
+    },
+    {
+      "id": "circle-help",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/circle-help.svg",
+      "sha256": "975db087da041530dbf59ba1e61a7b99c3519fad43dae6375e42ccc74ba63924"
+    },
+    {
+      "id": "arrow-right",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/arrow-right.svg",
+      "sha256": "288397fdb73bb4f783cf9eabb726ff47357df1d4e3f1201dd748090579f108b9"
+    },
+    {
+      "id": "circle-check",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/circle-check.svg",
+      "sha256": "3e519680ab8e2a8ad8f56a340c10d61957d872237aaa868cf324b0900a74f384"
+    },
+    {
+      "id": "camera",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/camera.svg",
+      "sha256": "f48b4e6cb69c736630202728ed0fd41d8dbe3f2b743a644eaf58a69099dcb6d2"
+    },
+    {
+      "id": "smartphone-charging",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/0.468.0/icons/smartphone-charging.svg",
+      "sha256": "86cd0fa80e653169a8107cc585fa54e0f936e4a815128f14b72f758969307c38"
+    }
+  ]
+}

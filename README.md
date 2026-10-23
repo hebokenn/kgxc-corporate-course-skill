@@ -2,13 +2,45 @@
 
 ![实际成品画面：企业虚拟讲师、空间拆解、人物情境与字体动效](docs/media/capabilities-poster.jpg)
 
-**48种可调用动作 · 17类教学构图 · 3位虚拟顾客。**
+**100种可调用动作 · 24种视觉风格 · Apple产品与门店素材 · 可持续扩展。**
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.6.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.6.0/kgxc-course-suite-v5.6.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.7.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.0/kgxc-course-suite-v5.7.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.7.0：100种真实动作、24种视觉风格与Apple门店素材
+
+新增52种可执行教学动作，按真实对象、起态、过程和结果选择，预览/编辑/整课导出使用同一渲染器。100种全部通过实际调用、像素变化与倒序定位检查；颜色、缓动和风格不计入动作数。
+
+![24种本地可调用美术配方](docs/media/style-catalog-v5.7.jpg)
+
+卡通讲师、生活场景、白板、绘本、纸雕、漫画、工程剖面、等距门店、数据新闻、界面操作和流程沙盘等24种配方包含可执行构图、字体、轮廓、配色和动作建议。参考Kurzgesagt、TED-Ed、3Blue1Brown、Crash Course、Animagraffs等官方作品与开放项目，属于设计归纳，不复制第三方角色或影片。用户可注册JSON增加或调整风格。
+
+![Apple相关物件与门店场景](docs/media/retail-assets-v5.7.jpg)
+
+产品范围限Apple及无其他品牌的Apple适配配件，保留iPhone 18 Pro独立几何，新增iPad、Mac、Apple Watch、AirPods、HomePod与Apple配件。共有26种代码物件、3种门店场景和100个顾客身份/姿态/表情组合，导出129对透明SVG/PNG。附30个Lucide ISC图标、36个Kenney CC0家具视角及对应模型。私有门店实拍与其本地卡通化版本不进入公共源码或安装包。
+
+新增本地素材注册、哈希暂存、照片平涂/线稿处理和可选Blender导出透明PNG及blend。全程不调用生图。产品族教学示意不冒称精确规格或真实OS截图；既有批准人物、声音、课程和用户确认保持原记录。
+
+[调用与扩展说明](skills/corporate-training-motion/references/40-library-direction-assets.md) · [验证范围](docs/V5.7.0-VERIFICATION.md)。资源技术通过不等于整课教学效果、审美或最终用户验收。
+
+## 5.7.0：100种真实动作、24种视觉风格与Apple门店素材
+
+新增52种可执行教学动作，按真实对象、起态、过程和结果选择，预览/编辑/整课导出使用同一渲染器。100种全部通过实际调用、像素变化与倒序定位检查；颜色、缓动和风格不计入动作数。
+
+![24种本地可调用美术配方](docs/media/style-catalog-v5.7.jpg)
+
+卡通讲师、生活场景、白板、绘本、纸雕、漫画、工程剖面、等距门店、数据新闻、界面操作和流程沙盘等24种配方包含可执行构图、字体、轮廓、配色和动作建议。参考Kurzgesagt、TED-Ed、3Blue1Brown、Crash Course、Animagraffs等官方作品与开放项目，属于设计归纳，不复制第三方角色或影片。用户可注册JSON增加或调整风格。
+
+![Apple相关物件与门店场景](docs/media/retail-assets-v5.7.jpg)
+
+产品范围限Apple及无其他品牌的Apple适配配件，保留iPhone 18 Pro独立几何，新增iPad、Mac、Apple Watch、AirPods、HomePod与Apple配件。共有26种代码物件、3种门店场景和100个顾客身份/姿态/表情组合，导出129对透明SVG/PNG。附30个Lucide ISC图标、36个Kenney CC0家具视角及对应模型。私有门店实拍与其本地卡通化版本不进入公共源码或安装包。
+
+新增本地素材注册、哈希暂存、照片平涂/线稿处理和可选Blender导出透明PNG及blend。全程不调用生图。产品族教学示意不冒称精确规格或真实OS截图；既有批准人物、声音、课程和用户确认保持原记录。
+
+[调用与扩展说明](skills/corporate-training-motion/references/40-library-direction-assets.md) · [验证范围](docs/V5.7.0-VERIFICATION.md)。资源技术通过不等于整课教学效果、审美或最终用户验收。
 
 ## 5.6.0：逐场检查对齐、箭头和动画残留
 
@@ -379,7 +411,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.6.0 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.6.0/kgxc-course-suite-v5.6.0.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.6.0 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.0/kgxc-course-suite-v5.7.0.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

@@ -73,11 +73,11 @@ def verify(course,out):
     for n in walk(negative['sceneGraph']['nodes']):n.pop('effects',None);n.pop('motion',None)
     negative_result=preflight(negative);assert negative_result['status']=='fail'
     fontfile=ROOT/'assets/bookends/CourseTitle.otf';font=ImageFont.truetype(str(fontfile),24)
-    sheet=Image.new('RGB',(1500,8*181+90),'#f4f3eb');draw=ImageDraw.Draw(sheet)
-    draw.text((25,16),'48 种实际动作 · 由整课同一渲染入口生成',font=ImageFont.truetype(str(fontfile),33),fill='#183f3c')
+    sheet=Image.new('RGB',(1500,((len(CATALOG)+5)//6)*181+90),'#f4f3eb');draw=ImageDraw.Draw(sheet)
+    draw.text((25,16),str(len(CATALOG))+' 种实际动作 · 整课同一渲染入口',font=ImageFont.truetype(str(fontfile),33),fill='#183f3c')
     for i,(kind,title,im) in enumerate(posters):
         im=im.copy();im.thumbnail((245,138));x=4+i%6*250;y=80+i//6*181;sheet.paste(im,(x,y));draw.text((x+4,y+141),f'{i+1:02} {title}',font=font,fill='#183f3c')
-    sheet.save(out/'48种真实动作.png')
+    sheet.save(out/(str(len(CATALOG))+'种真实动作.png'))
     result=dict(status='fail' if issues else 'pass',count=len(report),actions=report,issues=issues,realEdits=dict(position=True,image=True,text=True),negativeControlRejected=negative_result['status']=='fail',scope='real canvas pixels, API calls and deterministic seeks; not whole-course aesthetic approval')
     (out/'verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(dict(status=result['status'],count=len(report),issues=issues),ensure_ascii=False))

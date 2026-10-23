@@ -236,7 +236,8 @@ class Build:
 def expand(spec):
     """Expand only requested modules. The compiled source remains the edit source."""
     from content_assets import expand as expand_assets
-    result=expand_assets(spec);graph=result.setdefault('sceneGraph',{});modules=graph.pop('modules',[])
+    from visual_styles import expand as expand_styles
+    result=expand_assets(expand_styles(spec));graph=result.setdefault('sceneGraph',{});modules=graph.pop('modules',[])
     if not modules:return result
     scenes={s['id']:s for s in result.get('scenes',[])};nodes=graph.setdefault('nodes',[]);manifest=[];ids=set()
     for module in modules:

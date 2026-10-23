@@ -16,13 +16,26 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command in ['style-catalog','recommend-visuals','register-style','retail-catalog']:
+        from visual_styles import catalog,register,recommend
+        if args.command in ['style-catalog','retail-catalog']:
+            if rest:parser.error('目录命令不接受额外参数')
+            result=catalog() if args.command=='style-catalog' else __import__('retail_assets').catalog()
+        else:
+            ap=argparse.ArgumentParser()
+            if args.command=='register-style':ap.add_argument('--file',type=Path,required=True)
+            else:ap.add_argument('--intent',required=True)
+            aa=ap.parse_args(rest)
+            if args.command=='register-style' and args.dry_run:parser.error('先检查风格JSON；dry-run不会注册')
+            result=register(aa.file) if args.command=='register-style' else recommend(aa.intent)
+        print(json.dumps(result,ensure_ascii=False,indent=2));return 0
     if args.command=='craft-check':
         ap=argparse.ArgumentParser(description='Read-only composition signals and bound aesthetic evidence')
         ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--project',type=Path);ap.add_argument('--video',type=Path)

@@ -1,0 +1,227 @@
+{
+  "project": "Kenney Furniture Kit",
+  "version": "archive 2.0",
+  "source": "https://kenney.nl/assets/furniture-kit",
+  "download": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
+  "sourceZipSha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
+  "license": "CC0",
+  "scope": "furniture fixtures only; no generic or other-brand electronic products",
+  "assets": [
+    {
+      "id": "table-NE",
+      "path": "sprites/table-NE.png",
+      "sha256": "8e43cc97587c17990f501069225ca479ba3393999697d40f2e4d9381c945c94c",
+      "category": "fixture"
+    },
+    {
+      "id": "table-NW",
+      "path": "sprites/table-NW.png",
+      "sha256": "f5bb588b3b179c74bbad294290946876dd11f5980e6ff8d70e41adf8be1b2197",
+      "category": "fixture"
+    },
+    {
+      "id": "table-SE",
+      "path": "sprites/table-SE.png",
+      "sha256": "278295bfa123b779a53f1303304e573289eafca5c63a0dee79ab9559e3ca9c9a",
+      "category": "fixture"
+    },
+    {
+      "id": "table-SW",
+      "path": "sprites/table-SW.png",
+      "sha256": "6e043a2df18a17fd5a82c8fe8ae7e4c6e2f16cf6b4aaa79d536e5a786e091614",
+      "category": "fixture"
+    },
+    {
+      "id": "tableCross-NE",
+      "path": "sprites/tableCross-NE.png",
+      "sha256": "5a60d09bb198c1249abaa2ab623a4bbdf5ae07de64c758aeb171df72219c89d4",
+      "category": "fixture"
+    },
+    {
+      "id": "tableCross-NW",
+      "path": "sprites/tableCross-NW.png",
+      "sha256": "b5df8cb6ec759db4082ed778587cb30456bf574866b1bb28b985b7b834a132c2",
+      "category": "fixture"
+    },
+    {
+      "id": "tableCross-SE",
+      "path": "sprites/tableCross-SE.png",
+      "sha256": "38abaa83b15a00007a4a212f9df592caf6adc0a90d775a3ae36efe269a6b5f3f",
+      "category": "fixture"
+    },
+    {
+      "id": "tableCross-SW",
+      "path": "sprites/tableCross-SW.png",
+      "sha256": "17552be9b7da29e512ad1eed7463f4733337329af2cd2085909bc6d938af71f7",
+      "category": "fixture"
+    },
+    {
+      "id": "desk-NE",
+      "path": "sprites/desk-NE.png",
+      "sha256": "c20b5ac347f08f534ad7850b968e350c330d51d5330352995b8f90a3ac43b3c4",
+      "category": "fixture"
+    },
+    {
+      "id": "desk-NW",
+      "path": "sprites/desk-NW.png",
+      "sha256": "a75755ce5a500ae9efa4649c56e83a06e94457030b9e3bf11db6e656a4179577",
+      "category": "fixture"
+    },
+    {
+      "id": "desk-SE",
+      "path": "sprites/desk-SE.png",
+      "sha256": "1887b506b8f09d03327bfd5ef2f7eeb28fdddd101ae7aa65faa220bbe15115c3",
+      "category": "fixture"
+    },
+    {
+      "id": "desk-SW",
+      "path": "sprites/desk-SW.png",
+      "sha256": "67ab2c6935e7179c57eb5c0d8e0c8a7f497189502d15a60c19f6f01be070976e",
+      "category": "fixture"
+    },
+    {
+      "id": "chair-NE",
+      "path": "sprites/chair-NE.png",
+      "sha256": "fc70809b4b4231b57f062dc5c65c3bac11e4fc3c88c7571102d038871addc760",
+      "category": "fixture"
+    },
+    {
+      "id": "chair-NW",
+      "path": "sprites/chair-NW.png",
+      "sha256": "c9cf99e750ea9c78f3daa15d97e11d404c273141e7329a94e6d9e67b7ead500b",
+      "category": "fixture"
+    },
+    {
+      "id": "chair-SE",
+      "path": "sprites/chair-SE.png",
+      "sha256": "93665777f7a85af47e5a7fda9d0b1520997a5e807745f4b706f3a0dc50215ad3",
+      "category": "fixture"
+    },
+    {
+      "id": "chair-SW",
+      "path": "sprites/chair-SW.png",
+      "sha256": "b098ba68107e8fb78d62ad71faca8bb0c9a72683c16dfefeb7a2a2e0c5204ef7",
+      "category": "fixture"
+    },
+    {
+      "id": "chairDesk-NE",
+      "path": "sprites/chairDesk-NE.png",
+      "sha256": "be22699bbf60523ac4a458541944cdd7cb63d3bb0f866d28c11aec4dc7c48719",
+      "category": "fixture"
+    },
+    {
+      "id": "chairDesk-NW",
+      "path": "sprites/chairDesk-NW.png",
+      "sha256": "e0efaf210936307d4a544e8f9392704894d18969a53f8e25e5f8f70723df4ddc",
+      "category": "fixture"
+    },
+    {
+      "id": "chairDesk-SE",
+      "path": "sprites/chairDesk-SE.png",
+      "sha256": "6d5974278e6d3f0c7f712c3d9403359931a807aad01742f4a465cfd98c0014f6",
+      "category": "fixture"
+    },
+    {
+      "id": "chairDesk-SW",
+      "path": "sprites/chairDesk-SW.png",
+      "sha256": "825ccf3214e9d69017a52c703eb10adb77b4c0f0a909f879554e451629d47e61",
+      "category": "fixture"
+    },
+    {
+      "id": "chairModernFrameCushion-NE",
+      "path": "sprites/chairModernFrameCushion-NE.png",
+      "sha256": "463dd06b1c4e1b127064e86c13bcb93331e60c034adc41f9c64eab80b54d31b6",
+      "category": "fixture"
+    },
+    {
+      "id": "chairModernFrameCushion-NW",
+      "path": "sprites/chairModernFrameCushion-NW.png",
+      "sha256": "b8828f61ac7412140ccb84cd9723e0cafcbe71e1952cdbdfbd1678990e2f506c",
+      "category": "fixture"
+    },
+    {
+      "id": "chairModernFrameCushion-SE",
+      "path": "sprites/chairModernFrameCushion-SE.png",
+      "sha256": "1e06276cf1279272649286b49249a3d5a47f27b67970e0198e7c935d94febcf4",
+      "category": "fixture"
+    },
+    {
+      "id": "chairModernFrameCushion-SW",
+      "path": "sprites/chairModernFrameCushion-SW.png",
+      "sha256": "c4ddda7bd0f7f02e61e1a45dc1c1ebd7af46d0bc0c6a9dda1f08797660e1fe46",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseOpen-NE",
+      "path": "sprites/bookcaseOpen-NE.png",
+      "sha256": "a178a2915a06d1c0fd3498f2b313849f1ff58138853591ced5d353a0410d89d6",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseOpen-NW",
+      "path": "sprites/bookcaseOpen-NW.png",
+      "sha256": "dce5b7ea2cdd0b1dbeda820591cf472e33920bf25caf86b40f8231cb87afe295",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseOpen-SE",
+      "path": "sprites/bookcaseOpen-SE.png",
+      "sha256": "ee13eb6a6225bfbe77828916ca68f185f73bd8155b3d8360070b374f944f3479",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseOpen-SW",
+      "path": "sprites/bookcaseOpen-SW.png",
+      "sha256": "27cc5eea90f4e25fa5f0fce41220005429909c227085d84991dbf90ec8f1721c",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseClosed-NE",
+      "path": "sprites/bookcaseClosed-NE.png",
+      "sha256": "ccec05c114bc98fbe8e5c04416195f420b8c9a16d1ab5de85bbce6220a779227",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseClosed-NW",
+      "path": "sprites/bookcaseClosed-NW.png",
+      "sha256": "ed7e2f417c98e89f01d5ea788efe733ebf20addadb3aca03de26225aaf8a3acd",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseClosed-SE",
+      "path": "sprites/bookcaseClosed-SE.png",
+      "sha256": "f3fd4a03f84343331b8d98f7d1f58fa2b4fc83891fe218bec362020ad0c339ad",
+      "category": "fixture"
+    },
+    {
+      "id": "bookcaseClosed-SW",
+      "path": "sprites/bookcaseClosed-SW.png",
+      "sha256": "e5babd29fe4cba4345a23f322005293b47d88f9bd05f6cdfa4f82d8eb3d55d6c",
+      "category": "fixture"
+    },
+    {
+      "id": "bench-NE",
+      "path": "sprites/bench-NE.png",
+      "sha256": "4be88db40652542fbd5bd8a9bb2730663ff4039e7011f305438cae5822ade08a",
+      "category": "fixture"
+    },
+    {
+      "id": "bench-NW",
+      "path": "sprites/bench-NW.png",
+      "sha256": "dd1b20b9bf1dfa514779f83ae857db9a82410c6e4af5b95f4d17bb60f152547a",
+      "category": "fixture"
+    },
+    {
+      "id": "bench-SE",
+      "path": "sprites/bench-SE.png",
+      "sha256": "2155adb68610e04fac14ba087d15a32ce0bd06b6549fcefe4235f49cee12f8e4",
+      "category": "fixture"
+    },
+    {
+      "id": "bench-SW",
+      "path": "sprites/bench-SW.png",
+      "sha256": "ef4724904ef403db98fad5fed179cdda38a3557258eb8604d970be2358ebd619",
+      "category": "fixture"
+    }
+  ]
+}

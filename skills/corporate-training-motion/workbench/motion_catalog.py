@@ -54,8 +54,15 @@ CATALOG = {
     **{k: dict(title=v[0], nodes=v[1].split(), category='symbol', purpose=v[0]) for k,v in SYMBOLS.items()},
 }
 
+from motion_extensions import EXTENSIONS
+CATALOG.update(EXTENSIONS)
+# These before-stage transforms also support shape nodes with the same bounds.
+CATALOG['paper-fold']['nodes'].append('rect')
+CATALOG['dialogue']['nodes'].append('rect')
+CATALOG['orbit-revolve']['nodes'].append('ellipse')
+
 
 def inventory():
     return dict(schema='course-motion-catalog/1', count=len(CATALOG),
-                teaching_actions=len(TEACHING), counted_as_variants=False,
+                teaching_actions=len(TEACHING)+len(EXTENSIONS), counted_as_variants=False,
                 effects=[dict(id=k, **v) for k,v in CATALOG.items()])

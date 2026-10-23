@@ -60,6 +60,7 @@ def effect_node(kind,scene,start,end):
         node['children']=[dict(id='record-'+str(i),type='rect',x=i%6*110,y=i//6*100,width=60,height=60,fill='#3c8170') for i in range(18)]
         effect.update(columns=6,gap=42)
     if kind=='callout':node['children'][0].update(type='path',fill=None,stroke='#3c8170',lineWidth=8,points=[[0,100],[150,100],[240,0]],path='M0,100 L150,100 L240,0')
+    effect.update(info.get('sample',{}))
     node['effects']=[effect]
     return node
 
@@ -115,7 +116,7 @@ def build(destination,modules=False):
     else:
         total=len(scenes)*span;graph=dict(background='#f4f3eb',nodes=nodes)
     with wave.open(str(p/'audio/diagnostic-silence.wav'),'wb') as w:w.setnchannels(1);w.setsampwidth(2);w.setframerate(24000);w.writeframes(b'\0\0'*(total//fps*24000))
-    spec=dict(title='48种真实动效技术验证',sourceDurationFrames=total,bodyEndFrame=total,scenes=scenes,captions=captions,media=dict(audio='audio/diagnostic-silence.wav',intro=None,outro=None),assets=assets,sceneGraph=graph,rendering=dict(route='auto'),voice='无配音 技术验证',motionPlan=dict(schema='course-motion-plan/1',language='motion-gallery-v1',beats=beats))
+    spec=dict(title=str(len(CATALOG))+'种真实动效技术验证',sourceDurationFrames=total,bodyEndFrame=total,scenes=scenes,captions=captions,media=dict(audio='audio/diagnostic-silence.wav',intro=None,outro=None),assets=assets,sceneGraph=graph,rendering=dict(route='auto'),voice='无配音 技术验证',motionPlan=dict(schema='course-motion-plan/1',language='motion-gallery-v1',beats=beats))
     atomic(p/'source/gallery.json',spec);doc=configure(root,p/'source/gallery.json')
     editor=p/'editor';shutil.copytree(ROOT/'workbench',editor/'workbench',ignore=shutil.ignore_patterns('__pycache__','*.pyc'));stage_libraries(ROOT,editor/'workbench/motion/lib')
     (editor/'scripts').mkdir()

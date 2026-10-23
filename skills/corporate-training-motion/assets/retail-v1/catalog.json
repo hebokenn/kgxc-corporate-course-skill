@@ -1,0 +1,3138 @@
+{
+  "schema": "course-retail-svg/1",
+  "count": 129,
+  "source": "editable factories",
+  "assets": [
+    {
+      "id": "ipad",
+      "kind": "retail-prop",
+      "svg": "ipad.svg",
+      "sha256": "5fe3184e602444e8dc04070571210f1b02c3ca80ae7def7a0388edfa2d920bfd",
+      "recipe": {
+        "id": "ipad",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "tablet"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "tablet",
+        "title": "iPad",
+        "productFamily": "ipad",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/ipad/",
+        "features": "rounded thin slab, landscape camera and full-display bezel",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "ipad.png"
+    },
+    {
+      "id": "macbook-air",
+      "kind": "retail-prop",
+      "svg": "macbook-air.svg",
+      "sha256": "fcdd46bd7b2c6a7fb327a86bc29c68062e3460663844724c6417bf5eba9cfbd5",
+      "recipe": {
+        "id": "macbook-air",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "laptop"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "laptop",
+        "title": "MacBook Air",
+        "productFamily": "macbook-air",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/macbook-air/",
+        "features": "thin aluminium base, rounded display and central notch",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "macbook-air.png"
+    },
+    {
+      "id": "imac",
+      "kind": "retail-prop",
+      "svg": "imac.svg",
+      "sha256": "87577d070fe2f4971ed928fb3d44be5b57b97f92f1db076ae0e2ff6e477f7ccb",
+      "recipe": {
+        "id": "imac",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "desktop"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "desktop",
+        "title": "iMac",
+        "productFamily": "imac",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/imac/",
+        "features": "thin coloured display, lower chin and aluminium stand",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "imac.png"
+    },
+    {
+      "id": "apple-watch",
+      "kind": "retail-prop",
+      "svg": "apple-watch.svg",
+      "sha256": "344c7d901bf8c1309fd2fb413d42f6faffd0a9644e208df672a1a7f3aeec07d6",
+      "recipe": {
+        "id": "apple-watch",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "watch"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "watch",
+        "title": "Apple Watch",
+        "productFamily": "apple-watch",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/watch/",
+        "features": "rounded rectangular face, band and right digital crown",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "apple-watch.png"
+    },
+    {
+      "id": "airpods",
+      "kind": "retail-prop",
+      "svg": "airpods.svg",
+      "sha256": "fc6f3400a27f31ae4f42042c5d070b2a8c0fe561e6e56980931434068d09096f",
+      "recipe": {
+        "id": "airpods",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "earbuds"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "earbuds",
+        "title": "AirPods",
+        "productFamily": "airpods",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/airpods/",
+        "features": "white open-fit earbuds with short stems and compact charging case",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "airpods.png"
+    },
+    {
+      "id": "iphone-18-pro-case",
+      "kind": "retail-prop",
+      "svg": "iphone-18-pro-case.svg",
+      "sha256": "be686ba2cbbedc2a1c533f38b510d0742c42aff63c15d98c5471644d5832e545",
+      "recipe": {
+        "id": "iphone-18-pro-case",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "phone-case"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "phone-case",
+        "title": "iPhone 18 Pro 适配保护壳",
+        "productFamily": "iphone-18-pro-case",
+        "brand": "Apple-compatible-unbranded",
+        "reference": "https://www.apple.com.cn/iphone-18-pro/",
+        "features": "unbranded iPhone-compatible case; wide camera platform opening",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "iphone-18-pro-case.png"
+    },
+    {
+      "id": "iphone-screen-film",
+      "kind": "retail-prop",
+      "svg": "iphone-screen-film.svg",
+      "sha256": "cccdf1cc4b39fe76e4bf6a5265da5b61ec7e65ffb5185cb57d657f88e1f3cd79",
+      "recipe": {
+        "id": "iphone-screen-film",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "screen-film"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "screen-film",
+        "title": "iPhone 适配保护膜",
+        "productFamily": "iphone-screen-film",
+        "brand": "Apple-compatible-unbranded",
+        "reference": "https://www.apple.com.cn/iphone/",
+        "features": "unbranded iPhone-compatible clear protective film",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "iphone-screen-film.png"
+    },
+    {
+      "id": "apple-usb-c-cable",
+      "kind": "retail-prop",
+      "svg": "apple-usb-c-cable.svg",
+      "sha256": "b5fb544f5f43eb3caef324ab72940ced165c4e1c44d5d24e4da745370f602a4a",
+      "recipe": {
+        "id": "apple-usb-c-cable",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "usb-c-cable"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "usb-c-cable",
+        "title": "Apple USB-C 充电线",
+        "productFamily": "apple-usb-c-cable",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/shop/accessories/all",
+        "features": "white cable and symmetric rounded USB-C connectors",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "apple-usb-c-cable.png"
+    },
+    {
+      "id": "apple-usb-c-adapter",
+      "kind": "retail-prop",
+      "svg": "apple-usb-c-adapter.svg",
+      "sha256": "4fc920cd626e2c1d2071c2dd7c9d37eb759ea89f39c1d45021bddcb1720c47ce",
+      "recipe": {
+        "id": "apple-usb-c-adapter",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "power-adapter"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "power-adapter",
+        "title": "Apple USB-C 电源适配器",
+        "productFamily": "apple-usb-c-adapter",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/shop/accessories/all",
+        "features": "white rounded power adapter with a USB-C port",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "apple-usb-c-adapter.png"
+    },
+    {
+      "id": "magsafe-charger",
+      "kind": "retail-prop",
+      "svg": "magsafe-charger.svg",
+      "sha256": "09f4d30e974bab871377dc0699df2d5c74fe565a72939f4a1f6b70c72c461a91",
+      "recipe": {
+        "id": "magsafe-charger",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "magnetic-charger"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "magnetic-charger",
+        "title": "MagSafe 充电器",
+        "productFamily": "magsafe-charger",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/shop/accessories/all",
+        "features": "round magnetic charging disc with connected USB-C cable",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "magsafe-charger.png"
+    },
+    {
+      "id": "homepod-mini",
+      "kind": "retail-prop",
+      "svg": "homepod-mini.svg",
+      "sha256": "d7667b53f6ea03c564e5026690c9bef398f12eeb35a9b6ea4086ff25d50b771e",
+      "recipe": {
+        "id": "homepod-mini",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "speaker"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "speaker",
+        "title": "HomePod mini",
+        "productFamily": "homepod-mini",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/homepod-mini/",
+        "features": "spherical fabric-mesh body, flat foot and luminous top touch surface",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "homepod-mini.png"
+    },
+    {
+      "id": "magic-keyboard",
+      "kind": "retail-prop",
+      "svg": "magic-keyboard.svg",
+      "sha256": "83480642ce6ef3c6bc1661433d9ff555f7a24130dc2c387f3c885bd5c4cafa9d",
+      "recipe": {
+        "id": "magic-keyboard",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "keyboard"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "keyboard",
+        "title": "Magic Keyboard",
+        "productFamily": "magic-keyboard",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/shop/mac/accessories/mice-keyboards",
+        "features": "low aluminium body, white square keys and extended space bar",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "magic-keyboard.png"
+    },
+    {
+      "id": "magic-mouse",
+      "kind": "retail-prop",
+      "svg": "magic-mouse.svg",
+      "sha256": "e0d0db6228a972a080ca33a827ee5af1624e16e074e460bb3610c91d3455294a",
+      "recipe": {
+        "id": "magic-mouse",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "mouse"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "mouse",
+        "title": "Magic Mouse",
+        "productFamily": "magic-mouse",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/shop/mac/accessories/mice-keyboards",
+        "features": "smooth seamless white multitouch top, no visible scroll wheel or split buttons",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "magic-mouse.png"
+    },
+    {
+      "id": "apple-pencil",
+      "kind": "retail-prop",
+      "svg": "apple-pencil.svg",
+      "sha256": "8bd5934b5354e66c1c289bfd380a00e0490541b1cb2e1003f875deacacab2b12",
+      "recipe": {
+        "id": "apple-pencil",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "stylus"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "stylus",
+        "title": "Apple Pencil",
+        "productFamily": "apple-pencil",
+        "brand": "Apple",
+        "reference": "https://www.apple.com.cn/apple-pencil/",
+        "features": "white elongated pencil with narrow tip and flat side",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "apple-pencil.png"
+    },
+    {
+      "id": "iphone-display-stand",
+      "kind": "retail-prop",
+      "svg": "iphone-display-stand.svg",
+      "sha256": "24bdb69fd41211ce5b94a8a233a930323b7791372836a27fa35bd6e8469bc4e1",
+      "recipe": {
+        "id": "iphone-display-stand",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "phone-stand"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "phone-stand",
+        "title": "iPhone 体验展架",
+        "productFamily": "iphone-display-stand",
+        "brand": "Apple-compatible-unbranded",
+        "reference": "https://www.apple.com.cn/iphone-18-pro/",
+        "features": "display fixture with the existing iPhone 18 Pro geometry",
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "iphone-display-stand.png"
+    },
+    {
+      "id": "shopping-bag",
+      "kind": "retail-prop",
+      "svg": "shopping-bag.svg",
+      "sha256": "17e3fec47679dd0ff27c60c7486cccaebe37af62c687b5b5ab0bcf902f8cfefd",
+      "recipe": {
+        "id": "shopping-bag",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "shopping-bag"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "shopping-bag",
+        "title": "购物袋",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "shopping-bag.png"
+    },
+    {
+      "id": "stock-box",
+      "kind": "retail-prop",
+      "svg": "stock-box.svg",
+      "sha256": "d33be738ed059b38935c6e66577a7492411c2f0ebf68ba5a875ac0ea49ee23b3",
+      "recipe": {
+        "id": "stock-box",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "stock-box"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "stock-box",
+        "title": "库存包装盒",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "stock-box.png"
+    },
+    {
+      "id": "price-tag",
+      "kind": "retail-prop",
+      "svg": "price-tag.svg",
+      "sha256": "96f040eeb9eebd4b57e434dad3abd5a4f7857e0844abddc66fb3fa958e0dbc2b",
+      "recipe": {
+        "id": "price-tag",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "price-tag"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "price-tag",
+        "title": "商品价签",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "price-tag.png"
+    },
+    {
+      "id": "receipt",
+      "kind": "retail-prop",
+      "svg": "receipt.svg",
+      "sha256": "01eb27b7744c0b583601b71a35ac9edb1b1e18d94a7736ee999f8bc567379d54",
+      "recipe": {
+        "id": "receipt",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "receipt"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "receipt",
+        "title": "服务凭单",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "receipt.png"
+    },
+    {
+      "id": "name-badge",
+      "kind": "retail-prop",
+      "svg": "name-badge.svg",
+      "sha256": "0079e6f3269a184c356205845138f6e8d775ed4299df5d9dcf8fdc68dcc76916",
+      "recipe": {
+        "id": "name-badge",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "name-badge"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "name-badge",
+        "title": "工作胸牌",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "name-badge.png"
+    },
+    {
+      "id": "display-table",
+      "kind": "retail-prop",
+      "svg": "display-table.svg",
+      "sha256": "10298f6017b958bd936715ac918da43f36d8afe5280f3466f265691e3aedda2a",
+      "recipe": {
+        "id": "display-table",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "display-table"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "display-table",
+        "title": "体验桌",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "display-table.png"
+    },
+    {
+      "id": "stool",
+      "kind": "retail-prop",
+      "svg": "stool.svg",
+      "sha256": "d73ace083678a4b77296bb6d3a9ec3ee82e6947379d5e1cc4ee1075527222e1a",
+      "recipe": {
+        "id": "stool",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "stool"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "stool",
+        "title": "体验凳",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "stool.png"
+    },
+    {
+      "id": "accessory-wall",
+      "kind": "retail-prop",
+      "svg": "accessory-wall.svg",
+      "sha256": "9c437bac295278ada882005e434a228620e75ac64126ba7052c423abc6a5a1c0",
+      "recipe": {
+        "id": "accessory-wall",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "accessory-wall"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "accessory-wall",
+        "title": "配件陈列墙",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "accessory-wall.png"
+    },
+    {
+      "id": "service-counter",
+      "kind": "retail-prop",
+      "svg": "service-counter.svg",
+      "sha256": "49f1e1f03d6a03648b27921d59d3d98ccbc63ba85253681547efda2c34f04deb",
+      "recipe": {
+        "id": "service-counter",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "service-counter"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "service-counter",
+        "title": "服务台",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "service-counter.png"
+    },
+    {
+      "id": "store-sign",
+      "kind": "retail-prop",
+      "svg": "store-sign.svg",
+      "sha256": "4224fcdd6a9b2a6814ea532c55750863d26c18b733f52c3faa9cab348aa110e7",
+      "recipe": {
+        "id": "store-sign",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "store-sign"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "store-sign",
+        "title": "门头标牌",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "store-sign.png"
+    },
+    {
+      "id": "monitor-sign",
+      "kind": "retail-prop",
+      "svg": "monitor-sign.svg",
+      "sha256": "f77ddcc4aeba7c2f7109261588addc4b1efe04c6f2bd40dfdec1d72b580d1bbb",
+      "recipe": {
+        "id": "monitor-sign",
+        "kind": "retail-prop",
+        "sceneId": "asset",
+        "data": {
+          "object": "monitor-sign"
+        }
+      },
+      "description": {
+        "kind": "retail-prop",
+        "object": "monitor-sign",
+        "title": "信息屏",
+        "productFamily": null,
+        "brand": "store-fixture",
+        "reference": null,
+        "features": null,
+        "accuracy": "editable teaching schematic; not engineering dimensions or exact product specification"
+      },
+      "png": "monitor-sign.png"
+    },
+    {
+      "id": "adult-stand-neutral",
+      "kind": "retail-person",
+      "svg": "adult-stand-neutral.svg",
+      "sha256": "4db5e307a66d3bd3cb3c674c6ae45a89db43c5e6646c8664d828ce2a91d8221b",
+      "recipe": {
+        "id": "adult-stand-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "stand",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "stand",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-stand-neutral.png"
+    },
+    {
+      "id": "adult-stand-smile",
+      "kind": "retail-person",
+      "svg": "adult-stand-smile.svg",
+      "sha256": "d0ccf64c0de82be0072163713fbed2de48621d3d689a8dbb5fc3df13fcebaef0",
+      "recipe": {
+        "id": "adult-stand-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "stand",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "stand",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-stand-smile.png"
+    },
+    {
+      "id": "adult-stand-concern",
+      "kind": "retail-person",
+      "svg": "adult-stand-concern.svg",
+      "sha256": "9bd9be1387fee2164bf7b8b2372dda55300b9fe930fad62aa8eb4956261a01e7",
+      "recipe": {
+        "id": "adult-stand-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "stand",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "stand",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-stand-concern.png"
+    },
+    {
+      "id": "adult-stand-curious",
+      "kind": "retail-person",
+      "svg": "adult-stand-curious.svg",
+      "sha256": "5d627467f2314c3562fd9566ced78006e09eb4899e8d6d1431ead61769ea93c3",
+      "recipe": {
+        "id": "adult-stand-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "stand",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "stand",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-stand-curious.png"
+    },
+    {
+      "id": "adult-stand-relieved",
+      "kind": "retail-person",
+      "svg": "adult-stand-relieved.svg",
+      "sha256": "d0ccf64c0de82be0072163713fbed2de48621d3d689a8dbb5fc3df13fcebaef0",
+      "recipe": {
+        "id": "adult-stand-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "stand",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "stand",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-stand-relieved.png"
+    },
+    {
+      "id": "adult-welcome-neutral",
+      "kind": "retail-person",
+      "svg": "adult-welcome-neutral.svg",
+      "sha256": "53c026e17ccb740612d90846bc38af9f3ec1e7ee935de456e29249a2ce98c0be",
+      "recipe": {
+        "id": "adult-welcome-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "welcome",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "welcome",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-welcome-neutral.png"
+    },
+    {
+      "id": "adult-welcome-smile",
+      "kind": "retail-person",
+      "svg": "adult-welcome-smile.svg",
+      "sha256": "fde0fe0e9689e97bd6dd9d55a52adc460c9df7ef4ad1c361896b28607be00834",
+      "recipe": {
+        "id": "adult-welcome-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "welcome",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "welcome",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-welcome-smile.png"
+    },
+    {
+      "id": "adult-welcome-concern",
+      "kind": "retail-person",
+      "svg": "adult-welcome-concern.svg",
+      "sha256": "7782b27297e49ae158f9e670eab52c64bcce4ada5caac42e3ef3923c39d7b985",
+      "recipe": {
+        "id": "adult-welcome-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "welcome",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "welcome",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-welcome-concern.png"
+    },
+    {
+      "id": "adult-welcome-curious",
+      "kind": "retail-person",
+      "svg": "adult-welcome-curious.svg",
+      "sha256": "cfb5a1e1e6dec1299937968eae0d989638533ab6c9f4474bf0f50a62032b8c00",
+      "recipe": {
+        "id": "adult-welcome-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "welcome",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "welcome",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-welcome-curious.png"
+    },
+    {
+      "id": "adult-welcome-relieved",
+      "kind": "retail-person",
+      "svg": "adult-welcome-relieved.svg",
+      "sha256": "fde0fe0e9689e97bd6dd9d55a52adc460c9df7ef4ad1c361896b28607be00834",
+      "recipe": {
+        "id": "adult-welcome-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "welcome",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "welcome",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-welcome-relieved.png"
+    },
+    {
+      "id": "adult-question-neutral",
+      "kind": "retail-person",
+      "svg": "adult-question-neutral.svg",
+      "sha256": "a6f0ee5b1604df627b59bce641b2ba66290d9ee46b302b367e454a2f1b547886",
+      "recipe": {
+        "id": "adult-question-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "question",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "question",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-question-neutral.png"
+    },
+    {
+      "id": "adult-question-smile",
+      "kind": "retail-person",
+      "svg": "adult-question-smile.svg",
+      "sha256": "5f23e22d68a10ecb75754aff549165dce69865d8d9027b666e9292aee7817262",
+      "recipe": {
+        "id": "adult-question-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "question",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "question",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-question-smile.png"
+    },
+    {
+      "id": "adult-question-concern",
+      "kind": "retail-person",
+      "svg": "adult-question-concern.svg",
+      "sha256": "79800ac01635ea4bac5636d2dca164fca5ab89f413733f7ecf5a2a78434e6057",
+      "recipe": {
+        "id": "adult-question-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "question",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "question",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-question-concern.png"
+    },
+    {
+      "id": "adult-question-curious",
+      "kind": "retail-person",
+      "svg": "adult-question-curious.svg",
+      "sha256": "0a74bbe91378c49df0811a85da9d29506091b38e0f629f9e83f589c5a317a92f",
+      "recipe": {
+        "id": "adult-question-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "question",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "question",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-question-curious.png"
+    },
+    {
+      "id": "adult-question-relieved",
+      "kind": "retail-person",
+      "svg": "adult-question-relieved.svg",
+      "sha256": "5f23e22d68a10ecb75754aff549165dce69865d8d9027b666e9292aee7817262",
+      "recipe": {
+        "id": "adult-question-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "question",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "question",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-question-relieved.png"
+    },
+    {
+      "id": "adult-point-neutral",
+      "kind": "retail-person",
+      "svg": "adult-point-neutral.svg",
+      "sha256": "833e353c88be50f53405d6e3beee299870db3793f576775b94f57738cdd7b079",
+      "recipe": {
+        "id": "adult-point-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "point",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "point",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-point-neutral.png"
+    },
+    {
+      "id": "adult-point-smile",
+      "kind": "retail-person",
+      "svg": "adult-point-smile.svg",
+      "sha256": "1c1f7ecd5fbb8395eac598002a5a77e5c728b886023990cb3658635eea5a624b",
+      "recipe": {
+        "id": "adult-point-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "point",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "point",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-point-smile.png"
+    },
+    {
+      "id": "adult-point-concern",
+      "kind": "retail-person",
+      "svg": "adult-point-concern.svg",
+      "sha256": "8c388748f523aa4a373d1a0b522f3e23e33cffd568129c30e6ea6c4452248dd6",
+      "recipe": {
+        "id": "adult-point-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "point",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "point",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-point-concern.png"
+    },
+    {
+      "id": "adult-point-curious",
+      "kind": "retail-person",
+      "svg": "adult-point-curious.svg",
+      "sha256": "932bf80f7a4e47371c6fbfe6ca41b100a18055c94dc8e0a6af4babbb06ee4253",
+      "recipe": {
+        "id": "adult-point-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "point",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "point",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-point-curious.png"
+    },
+    {
+      "id": "adult-point-relieved",
+      "kind": "retail-person",
+      "svg": "adult-point-relieved.svg",
+      "sha256": "1c1f7ecd5fbb8395eac598002a5a77e5c728b886023990cb3658635eea5a624b",
+      "recipe": {
+        "id": "adult-point-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "point",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "point",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-point-relieved.png"
+    },
+    {
+      "id": "adult-listen-neutral",
+      "kind": "retail-person",
+      "svg": "adult-listen-neutral.svg",
+      "sha256": "af23f3fc20e6f4439cd9db294ebdeb50ada327a96c3ccaec19591cea4037ecd8",
+      "recipe": {
+        "id": "adult-listen-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "listen",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "listen",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-listen-neutral.png"
+    },
+    {
+      "id": "adult-listen-smile",
+      "kind": "retail-person",
+      "svg": "adult-listen-smile.svg",
+      "sha256": "989063333eaf430fb7f2715aec712774dac011f4ab6027cbfb44c35b0ad25bde",
+      "recipe": {
+        "id": "adult-listen-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "listen",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "listen",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-listen-smile.png"
+    },
+    {
+      "id": "adult-listen-concern",
+      "kind": "retail-person",
+      "svg": "adult-listen-concern.svg",
+      "sha256": "20e58528447c091ada724beffe528164d038ab026440e9a7198114e0ff2a6f2b",
+      "recipe": {
+        "id": "adult-listen-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "listen",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "listen",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-listen-concern.png"
+    },
+    {
+      "id": "adult-listen-curious",
+      "kind": "retail-person",
+      "svg": "adult-listen-curious.svg",
+      "sha256": "d13671800fce667ccbfa8b3009073be7730cdef20234ba120ce6faf426273e52",
+      "recipe": {
+        "id": "adult-listen-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "listen",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "listen",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-listen-curious.png"
+    },
+    {
+      "id": "adult-listen-relieved",
+      "kind": "retail-person",
+      "svg": "adult-listen-relieved.svg",
+      "sha256": "989063333eaf430fb7f2715aec712774dac011f4ab6027cbfb44c35b0ad25bde",
+      "recipe": {
+        "id": "adult-listen-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "adult",
+          "pose": "listen",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "adult",
+        "pose": "listen",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "adult-listen-relieved.png"
+    },
+    {
+      "id": "senior-stand-neutral",
+      "kind": "retail-person",
+      "svg": "senior-stand-neutral.svg",
+      "sha256": "0cb725e5de59bd138d2e592cdae01dddfde464655e0030f4ee2b604ff92a4ca3",
+      "recipe": {
+        "id": "senior-stand-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "stand",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "stand",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-stand-neutral.png"
+    },
+    {
+      "id": "senior-stand-smile",
+      "kind": "retail-person",
+      "svg": "senior-stand-smile.svg",
+      "sha256": "f44f09fe3e73bfabda97560d0e13633b4d5d123f74ace66a9f4220628461ef83",
+      "recipe": {
+        "id": "senior-stand-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "stand",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "stand",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-stand-smile.png"
+    },
+    {
+      "id": "senior-stand-concern",
+      "kind": "retail-person",
+      "svg": "senior-stand-concern.svg",
+      "sha256": "9ae89c4453b43e9933b7120a6a46eb983adf70dc3793f4d5c7258f432a4506a3",
+      "recipe": {
+        "id": "senior-stand-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "stand",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "stand",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-stand-concern.png"
+    },
+    {
+      "id": "senior-stand-curious",
+      "kind": "retail-person",
+      "svg": "senior-stand-curious.svg",
+      "sha256": "e5dadb2f577a16a8490935b2cf71681f0e6ffd22a9cf396e35c242acff8a85db",
+      "recipe": {
+        "id": "senior-stand-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "stand",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "stand",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-stand-curious.png"
+    },
+    {
+      "id": "senior-stand-relieved",
+      "kind": "retail-person",
+      "svg": "senior-stand-relieved.svg",
+      "sha256": "f44f09fe3e73bfabda97560d0e13633b4d5d123f74ace66a9f4220628461ef83",
+      "recipe": {
+        "id": "senior-stand-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "stand",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "stand",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-stand-relieved.png"
+    },
+    {
+      "id": "senior-welcome-neutral",
+      "kind": "retail-person",
+      "svg": "senior-welcome-neutral.svg",
+      "sha256": "770afc45244bd5223d99cdba30168c6e8b00fdbd226b5ee686ff2d2c8b3f212f",
+      "recipe": {
+        "id": "senior-welcome-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "welcome",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "welcome",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-welcome-neutral.png"
+    },
+    {
+      "id": "senior-welcome-smile",
+      "kind": "retail-person",
+      "svg": "senior-welcome-smile.svg",
+      "sha256": "e21a32759ebf6c07be54eb61285508ff48891de0acf6fd1162e47b3bf27bf517",
+      "recipe": {
+        "id": "senior-welcome-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "welcome",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "welcome",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-welcome-smile.png"
+    },
+    {
+      "id": "senior-welcome-concern",
+      "kind": "retail-person",
+      "svg": "senior-welcome-concern.svg",
+      "sha256": "5d53271a501ddde511e97d2cf951390d7925b609295873448532833f6ee2d097",
+      "recipe": {
+        "id": "senior-welcome-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "welcome",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "welcome",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-welcome-concern.png"
+    },
+    {
+      "id": "senior-welcome-curious",
+      "kind": "retail-person",
+      "svg": "senior-welcome-curious.svg",
+      "sha256": "c61314a5bc851cfab30bed5e3b7020756fde3a6a1708347d1e15577dd08e0cb2",
+      "recipe": {
+        "id": "senior-welcome-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "welcome",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "welcome",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-welcome-curious.png"
+    },
+    {
+      "id": "senior-welcome-relieved",
+      "kind": "retail-person",
+      "svg": "senior-welcome-relieved.svg",
+      "sha256": "e21a32759ebf6c07be54eb61285508ff48891de0acf6fd1162e47b3bf27bf517",
+      "recipe": {
+        "id": "senior-welcome-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "welcome",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "welcome",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-welcome-relieved.png"
+    },
+    {
+      "id": "senior-question-neutral",
+      "kind": "retail-person",
+      "svg": "senior-question-neutral.svg",
+      "sha256": "20d2c880c72126dc4b0515594b5271926bec2b96d86dd9d0332258f84ce41114",
+      "recipe": {
+        "id": "senior-question-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "question",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "question",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-question-neutral.png"
+    },
+    {
+      "id": "senior-question-smile",
+      "kind": "retail-person",
+      "svg": "senior-question-smile.svg",
+      "sha256": "c11582c3556f35cd904ee00a840d6708cc4aeda018bcb63502f3bc842d581dff",
+      "recipe": {
+        "id": "senior-question-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "question",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "question",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-question-smile.png"
+    },
+    {
+      "id": "senior-question-concern",
+      "kind": "retail-person",
+      "svg": "senior-question-concern.svg",
+      "sha256": "54754ccc65473da8bcdcca09b3425433c2667f99513bdaed6d953432cffdcc1d",
+      "recipe": {
+        "id": "senior-question-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "question",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "question",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-question-concern.png"
+    },
+    {
+      "id": "senior-question-curious",
+      "kind": "retail-person",
+      "svg": "senior-question-curious.svg",
+      "sha256": "4fade18a41c9a66dd085d7cf97bda1e89081c5b1869edb7049d4dea0c5f255ad",
+      "recipe": {
+        "id": "senior-question-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "question",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "question",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-question-curious.png"
+    },
+    {
+      "id": "senior-question-relieved",
+      "kind": "retail-person",
+      "svg": "senior-question-relieved.svg",
+      "sha256": "c11582c3556f35cd904ee00a840d6708cc4aeda018bcb63502f3bc842d581dff",
+      "recipe": {
+        "id": "senior-question-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "question",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "question",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-question-relieved.png"
+    },
+    {
+      "id": "senior-point-neutral",
+      "kind": "retail-person",
+      "svg": "senior-point-neutral.svg",
+      "sha256": "82b6e8a48c769937fb77581674a5339e542ad68a2eba51dee98605488d35c6fa",
+      "recipe": {
+        "id": "senior-point-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "point",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "point",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-point-neutral.png"
+    },
+    {
+      "id": "senior-point-smile",
+      "kind": "retail-person",
+      "svg": "senior-point-smile.svg",
+      "sha256": "40bd4033ca649716773cf44c297dead9e275d85fecaacba7c651408e50e93fb5",
+      "recipe": {
+        "id": "senior-point-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "point",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "point",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-point-smile.png"
+    },
+    {
+      "id": "senior-point-concern",
+      "kind": "retail-person",
+      "svg": "senior-point-concern.svg",
+      "sha256": "ecd2151746a08ad38fcb2a79312bfc7bde7765a8e79785bd57b575b1cc4f24c6",
+      "recipe": {
+        "id": "senior-point-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "point",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "point",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-point-concern.png"
+    },
+    {
+      "id": "senior-point-curious",
+      "kind": "retail-person",
+      "svg": "senior-point-curious.svg",
+      "sha256": "105192d50628cee75266d58bc5353793c65537fa94d1e411d6e01b5ed44945d8",
+      "recipe": {
+        "id": "senior-point-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "point",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "point",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-point-curious.png"
+    },
+    {
+      "id": "senior-point-relieved",
+      "kind": "retail-person",
+      "svg": "senior-point-relieved.svg",
+      "sha256": "40bd4033ca649716773cf44c297dead9e275d85fecaacba7c651408e50e93fb5",
+      "recipe": {
+        "id": "senior-point-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "point",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "point",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-point-relieved.png"
+    },
+    {
+      "id": "senior-listen-neutral",
+      "kind": "retail-person",
+      "svg": "senior-listen-neutral.svg",
+      "sha256": "924042b278fc70e31757f268ee947fced0630f9e90be913930a4749151d58ade",
+      "recipe": {
+        "id": "senior-listen-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "listen",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "listen",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-listen-neutral.png"
+    },
+    {
+      "id": "senior-listen-smile",
+      "kind": "retail-person",
+      "svg": "senior-listen-smile.svg",
+      "sha256": "f32d284c8da88a730e8c00addb705bec4a0258161220bac1c4fa71235920cb64",
+      "recipe": {
+        "id": "senior-listen-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "listen",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "listen",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-listen-smile.png"
+    },
+    {
+      "id": "senior-listen-concern",
+      "kind": "retail-person",
+      "svg": "senior-listen-concern.svg",
+      "sha256": "78e75095504c237f3f23d96805efdafbd8ffb75a38d9842dbb70e3557e480454",
+      "recipe": {
+        "id": "senior-listen-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "listen",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "listen",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-listen-concern.png"
+    },
+    {
+      "id": "senior-listen-curious",
+      "kind": "retail-person",
+      "svg": "senior-listen-curious.svg",
+      "sha256": "c6cc1698ffb2bac6c319e716e52db86a9c8f1f60461e7e59a98f75eda3daba1c",
+      "recipe": {
+        "id": "senior-listen-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "listen",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "listen",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-listen-curious.png"
+    },
+    {
+      "id": "senior-listen-relieved",
+      "kind": "retail-person",
+      "svg": "senior-listen-relieved.svg",
+      "sha256": "f32d284c8da88a730e8c00addb705bec4a0258161220bac1c4fa71235920cb64",
+      "recipe": {
+        "id": "senior-listen-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "senior",
+          "pose": "listen",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "senior",
+        "pose": "listen",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "senior-listen-relieved.png"
+    },
+    {
+      "id": "child-stand-neutral",
+      "kind": "retail-person",
+      "svg": "child-stand-neutral.svg",
+      "sha256": "2c97298c67a1e6c5bb10551ad90295992e5c3c54b39106787cdcbb648916699a",
+      "recipe": {
+        "id": "child-stand-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "stand",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "stand",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-stand-neutral.png"
+    },
+    {
+      "id": "child-stand-smile",
+      "kind": "retail-person",
+      "svg": "child-stand-smile.svg",
+      "sha256": "a7e0d880d2096f1acccf626a5f7ad0b6c07a7b123dc620c408f3048c6c2a4048",
+      "recipe": {
+        "id": "child-stand-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "stand",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "stand",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-stand-smile.png"
+    },
+    {
+      "id": "child-stand-concern",
+      "kind": "retail-person",
+      "svg": "child-stand-concern.svg",
+      "sha256": "5821c7693a1cf59fde46e3f5ab2b62b628c932edeba6fae2485d8b5fbfaed9e2",
+      "recipe": {
+        "id": "child-stand-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "stand",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "stand",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-stand-concern.png"
+    },
+    {
+      "id": "child-stand-curious",
+      "kind": "retail-person",
+      "svg": "child-stand-curious.svg",
+      "sha256": "478140b8ef77f0eb7daaf91be8b90d21a4a716ccea57845779eb79c30b1ea53a",
+      "recipe": {
+        "id": "child-stand-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "stand",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "stand",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-stand-curious.png"
+    },
+    {
+      "id": "child-stand-relieved",
+      "kind": "retail-person",
+      "svg": "child-stand-relieved.svg",
+      "sha256": "a7e0d880d2096f1acccf626a5f7ad0b6c07a7b123dc620c408f3048c6c2a4048",
+      "recipe": {
+        "id": "child-stand-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "stand",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "stand",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-stand-relieved.png"
+    },
+    {
+      "id": "child-welcome-neutral",
+      "kind": "retail-person",
+      "svg": "child-welcome-neutral.svg",
+      "sha256": "b60097606d2c9459ee72f351ca3ab463e7600019276a52a5714f01ffc8f68036",
+      "recipe": {
+        "id": "child-welcome-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "welcome",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "welcome",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-welcome-neutral.png"
+    },
+    {
+      "id": "child-welcome-smile",
+      "kind": "retail-person",
+      "svg": "child-welcome-smile.svg",
+      "sha256": "5e6c666d6e79e90462bdf7c9d9f10334356bf3ddc51b01472d3cbf0c53cdbf3a",
+      "recipe": {
+        "id": "child-welcome-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "welcome",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "welcome",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-welcome-smile.png"
+    },
+    {
+      "id": "child-welcome-concern",
+      "kind": "retail-person",
+      "svg": "child-welcome-concern.svg",
+      "sha256": "aea95371f5bd5a10e70b8d073cabc276c3045d5d0be5124aeec50a53244b333a",
+      "recipe": {
+        "id": "child-welcome-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "welcome",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "welcome",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-welcome-concern.png"
+    },
+    {
+      "id": "child-welcome-curious",
+      "kind": "retail-person",
+      "svg": "child-welcome-curious.svg",
+      "sha256": "13c99dbcd2ec60861a0f45b55c1d389375b44ac58228d27281a5a740fad0a1fb",
+      "recipe": {
+        "id": "child-welcome-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "welcome",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "welcome",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-welcome-curious.png"
+    },
+    {
+      "id": "child-welcome-relieved",
+      "kind": "retail-person",
+      "svg": "child-welcome-relieved.svg",
+      "sha256": "5e6c666d6e79e90462bdf7c9d9f10334356bf3ddc51b01472d3cbf0c53cdbf3a",
+      "recipe": {
+        "id": "child-welcome-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "welcome",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "welcome",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-welcome-relieved.png"
+    },
+    {
+      "id": "child-question-neutral",
+      "kind": "retail-person",
+      "svg": "child-question-neutral.svg",
+      "sha256": "013221785e1c97826c34afa61b901ced3f0f2134da4fdf26a25b65a2a19d6100",
+      "recipe": {
+        "id": "child-question-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "question",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "question",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-question-neutral.png"
+    },
+    {
+      "id": "child-question-smile",
+      "kind": "retail-person",
+      "svg": "child-question-smile.svg",
+      "sha256": "950bf0f2c0b752248bb2eab870f13500e211ae6b53964b7e68f4a7751c271af2",
+      "recipe": {
+        "id": "child-question-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "question",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "question",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-question-smile.png"
+    },
+    {
+      "id": "child-question-concern",
+      "kind": "retail-person",
+      "svg": "child-question-concern.svg",
+      "sha256": "7b32c7c43a533961f00ef3759fde4c835221cb151fd275eaf0830ab5540cb052",
+      "recipe": {
+        "id": "child-question-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "question",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "question",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-question-concern.png"
+    },
+    {
+      "id": "child-question-curious",
+      "kind": "retail-person",
+      "svg": "child-question-curious.svg",
+      "sha256": "ff78e79d2354570fb22098a7700d27b67e322338676ad62ecb83407d41350d4b",
+      "recipe": {
+        "id": "child-question-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "question",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "question",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-question-curious.png"
+    },
+    {
+      "id": "child-question-relieved",
+      "kind": "retail-person",
+      "svg": "child-question-relieved.svg",
+      "sha256": "950bf0f2c0b752248bb2eab870f13500e211ae6b53964b7e68f4a7751c271af2",
+      "recipe": {
+        "id": "child-question-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "question",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "question",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-question-relieved.png"
+    },
+    {
+      "id": "child-point-neutral",
+      "kind": "retail-person",
+      "svg": "child-point-neutral.svg",
+      "sha256": "aa46483d16e6196d444efc08c7638e9d05648103683b2af87fc5b755bfaf26c0",
+      "recipe": {
+        "id": "child-point-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "point",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "point",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-point-neutral.png"
+    },
+    {
+      "id": "child-point-smile",
+      "kind": "retail-person",
+      "svg": "child-point-smile.svg",
+      "sha256": "236f8e61301c421823e43842b7407d243a51518a0550b432b550095663b9677c",
+      "recipe": {
+        "id": "child-point-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "point",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "point",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-point-smile.png"
+    },
+    {
+      "id": "child-point-concern",
+      "kind": "retail-person",
+      "svg": "child-point-concern.svg",
+      "sha256": "715b382b6316fba16c32f773a52504af7d33b43e346308b37d0b6f29b003d39b",
+      "recipe": {
+        "id": "child-point-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "point",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "point",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-point-concern.png"
+    },
+    {
+      "id": "child-point-curious",
+      "kind": "retail-person",
+      "svg": "child-point-curious.svg",
+      "sha256": "5c566535fda048d920020d5a4acf995a1011d33b7aa97830adceb8d53778da3f",
+      "recipe": {
+        "id": "child-point-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "point",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "point",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-point-curious.png"
+    },
+    {
+      "id": "child-point-relieved",
+      "kind": "retail-person",
+      "svg": "child-point-relieved.svg",
+      "sha256": "236f8e61301c421823e43842b7407d243a51518a0550b432b550095663b9677c",
+      "recipe": {
+        "id": "child-point-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "point",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "point",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-point-relieved.png"
+    },
+    {
+      "id": "child-listen-neutral",
+      "kind": "retail-person",
+      "svg": "child-listen-neutral.svg",
+      "sha256": "47d880c2437e435c4dd6ec02f541d095285daee4fe09c28e602d34af5e25c6f4",
+      "recipe": {
+        "id": "child-listen-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "listen",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "listen",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-listen-neutral.png"
+    },
+    {
+      "id": "child-listen-smile",
+      "kind": "retail-person",
+      "svg": "child-listen-smile.svg",
+      "sha256": "0a8889892b6788fdc10d19bc5f8195175ca1343c4d02faff23476e0565db422f",
+      "recipe": {
+        "id": "child-listen-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "listen",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "listen",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-listen-smile.png"
+    },
+    {
+      "id": "child-listen-concern",
+      "kind": "retail-person",
+      "svg": "child-listen-concern.svg",
+      "sha256": "7591b9dceeaafc73077b61df02169d874423547e06f60ca3965ede3b283a284e",
+      "recipe": {
+        "id": "child-listen-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "listen",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "listen",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-listen-concern.png"
+    },
+    {
+      "id": "child-listen-curious",
+      "kind": "retail-person",
+      "svg": "child-listen-curious.svg",
+      "sha256": "1a3d0f7fab7d14512b6cfa95e31ecb2b22e0a0ab19bd13b3aa3633200ec942c4",
+      "recipe": {
+        "id": "child-listen-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "listen",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "listen",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-listen-curious.png"
+    },
+    {
+      "id": "child-listen-relieved",
+      "kind": "retail-person",
+      "svg": "child-listen-relieved.svg",
+      "sha256": "0a8889892b6788fdc10d19bc5f8195175ca1343c4d02faff23476e0565db422f",
+      "recipe": {
+        "id": "child-listen-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "child",
+          "pose": "listen",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "child",
+        "pose": "listen",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "child-listen-relieved.png"
+    },
+    {
+      "id": "business-customer-stand-neutral",
+      "kind": "retail-person",
+      "svg": "business-customer-stand-neutral.svg",
+      "sha256": "2a2e66efbced5adb86c9f7bb7daba178434db7f1bdfece09787f546c3274cede",
+      "recipe": {
+        "id": "business-customer-stand-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "stand",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "stand",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-stand-neutral.png"
+    },
+    {
+      "id": "business-customer-stand-smile",
+      "kind": "retail-person",
+      "svg": "business-customer-stand-smile.svg",
+      "sha256": "8a8428b244674f30e3687456412fbcc792bd3a7a9803b2bfba6511b9255d2495",
+      "recipe": {
+        "id": "business-customer-stand-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "stand",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "stand",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-stand-smile.png"
+    },
+    {
+      "id": "business-customer-stand-concern",
+      "kind": "retail-person",
+      "svg": "business-customer-stand-concern.svg",
+      "sha256": "d6024ccd35d211cad5f74af7a1edd80cb8f3321df765bd03559dd4f0eef01c86",
+      "recipe": {
+        "id": "business-customer-stand-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "stand",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "stand",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-stand-concern.png"
+    },
+    {
+      "id": "business-customer-stand-curious",
+      "kind": "retail-person",
+      "svg": "business-customer-stand-curious.svg",
+      "sha256": "ddbf337d0cd78f11e1531f99022bb4307843574c9cb6743fd7e70068d4b1ee3c",
+      "recipe": {
+        "id": "business-customer-stand-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "stand",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "stand",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-stand-curious.png"
+    },
+    {
+      "id": "business-customer-stand-relieved",
+      "kind": "retail-person",
+      "svg": "business-customer-stand-relieved.svg",
+      "sha256": "8a8428b244674f30e3687456412fbcc792bd3a7a9803b2bfba6511b9255d2495",
+      "recipe": {
+        "id": "business-customer-stand-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "stand",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "stand",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-stand-relieved.png"
+    },
+    {
+      "id": "business-customer-welcome-neutral",
+      "kind": "retail-person",
+      "svg": "business-customer-welcome-neutral.svg",
+      "sha256": "8293f39ebd32c1d30ce6a42b5bdb033fedddbd426c62ecd6489a6b572bf0c6ec",
+      "recipe": {
+        "id": "business-customer-welcome-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "welcome",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "welcome",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-welcome-neutral.png"
+    },
+    {
+      "id": "business-customer-welcome-smile",
+      "kind": "retail-person",
+      "svg": "business-customer-welcome-smile.svg",
+      "sha256": "d0c664074cf2d44d4fcbf92bb7913cdd3ea5ed735114f44b7b885284ec0e05fc",
+      "recipe": {
+        "id": "business-customer-welcome-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "welcome",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "welcome",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-welcome-smile.png"
+    },
+    {
+      "id": "business-customer-welcome-concern",
+      "kind": "retail-person",
+      "svg": "business-customer-welcome-concern.svg",
+      "sha256": "489375dd7c601c661aaa74f45db87a5fd0135ac23f07b5d8b113365eaf00e79f",
+      "recipe": {
+        "id": "business-customer-welcome-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "welcome",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "welcome",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-welcome-concern.png"
+    },
+    {
+      "id": "business-customer-welcome-curious",
+      "kind": "retail-person",
+      "svg": "business-customer-welcome-curious.svg",
+      "sha256": "ee4b2af5f742a600fc829b2762f9bb75897b612486e7538b69756ca0b4f3b281",
+      "recipe": {
+        "id": "business-customer-welcome-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "welcome",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "welcome",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-welcome-curious.png"
+    },
+    {
+      "id": "business-customer-welcome-relieved",
+      "kind": "retail-person",
+      "svg": "business-customer-welcome-relieved.svg",
+      "sha256": "d0c664074cf2d44d4fcbf92bb7913cdd3ea5ed735114f44b7b885284ec0e05fc",
+      "recipe": {
+        "id": "business-customer-welcome-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "welcome",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "welcome",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-welcome-relieved.png"
+    },
+    {
+      "id": "business-customer-question-neutral",
+      "kind": "retail-person",
+      "svg": "business-customer-question-neutral.svg",
+      "sha256": "5516b933d95d2991b9cda78008c670bb4e156315584e4e3c96af7165136864bd",
+      "recipe": {
+        "id": "business-customer-question-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "question",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "question",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-question-neutral.png"
+    },
+    {
+      "id": "business-customer-question-smile",
+      "kind": "retail-person",
+      "svg": "business-customer-question-smile.svg",
+      "sha256": "324a92020a76cfe2167d2c1a45b6994d1207e8f71d38a296ea0a62405e948bfb",
+      "recipe": {
+        "id": "business-customer-question-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "question",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "question",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-question-smile.png"
+    },
+    {
+      "id": "business-customer-question-concern",
+      "kind": "retail-person",
+      "svg": "business-customer-question-concern.svg",
+      "sha256": "1786430cb98a5120486ae050e1034d4673732f37dbe07a270f0afed5d45a9422",
+      "recipe": {
+        "id": "business-customer-question-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "question",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "question",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-question-concern.png"
+    },
+    {
+      "id": "business-customer-question-curious",
+      "kind": "retail-person",
+      "svg": "business-customer-question-curious.svg",
+      "sha256": "7c1f8329fdc83a5beb010e17c24f626a2f4f112f1fbace1d73f0ce3d15f6fcbb",
+      "recipe": {
+        "id": "business-customer-question-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "question",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "question",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-question-curious.png"
+    },
+    {
+      "id": "business-customer-question-relieved",
+      "kind": "retail-person",
+      "svg": "business-customer-question-relieved.svg",
+      "sha256": "324a92020a76cfe2167d2c1a45b6994d1207e8f71d38a296ea0a62405e948bfb",
+      "recipe": {
+        "id": "business-customer-question-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "question",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "question",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-question-relieved.png"
+    },
+    {
+      "id": "business-customer-point-neutral",
+      "kind": "retail-person",
+      "svg": "business-customer-point-neutral.svg",
+      "sha256": "ce8f7bbfbc79438351cabd9365e689613162c30bdf15f60235d1be7a16ca3868",
+      "recipe": {
+        "id": "business-customer-point-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "point",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "point",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-point-neutral.png"
+    },
+    {
+      "id": "business-customer-point-smile",
+      "kind": "retail-person",
+      "svg": "business-customer-point-smile.svg",
+      "sha256": "305e59a9197bec993dfee3634cfadc01ed7953580b2c7d6f210eaa0f9887512b",
+      "recipe": {
+        "id": "business-customer-point-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "point",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "point",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-point-smile.png"
+    },
+    {
+      "id": "business-customer-point-concern",
+      "kind": "retail-person",
+      "svg": "business-customer-point-concern.svg",
+      "sha256": "d910e44623431548c54a7749648aba8d9b08fb4209df2b42af5eb4d5f3d688ab",
+      "recipe": {
+        "id": "business-customer-point-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "point",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "point",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-point-concern.png"
+    },
+    {
+      "id": "business-customer-point-curious",
+      "kind": "retail-person",
+      "svg": "business-customer-point-curious.svg",
+      "sha256": "7d3db93469291a2667109836974520dde2db06499e7ac1767a62df5cfc53054b",
+      "recipe": {
+        "id": "business-customer-point-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "point",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "point",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-point-curious.png"
+    },
+    {
+      "id": "business-customer-point-relieved",
+      "kind": "retail-person",
+      "svg": "business-customer-point-relieved.svg",
+      "sha256": "305e59a9197bec993dfee3634cfadc01ed7953580b2c7d6f210eaa0f9887512b",
+      "recipe": {
+        "id": "business-customer-point-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "point",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "point",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-point-relieved.png"
+    },
+    {
+      "id": "business-customer-listen-neutral",
+      "kind": "retail-person",
+      "svg": "business-customer-listen-neutral.svg",
+      "sha256": "6b3cf6081e2fd7721ff3a7d37fd2d4f23feedf07e4991cfdccec97be6c01a3d5",
+      "recipe": {
+        "id": "business-customer-listen-neutral",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "listen",
+          "mood": "neutral"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "listen",
+        "mood": "neutral",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-listen-neutral.png"
+    },
+    {
+      "id": "business-customer-listen-smile",
+      "kind": "retail-person",
+      "svg": "business-customer-listen-smile.svg",
+      "sha256": "52b7be343b1f8b5576d9145e989e63f2da18ce61fff1699f99c20a860ba4dba4",
+      "recipe": {
+        "id": "business-customer-listen-smile",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "listen",
+          "mood": "smile"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "listen",
+        "mood": "smile",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-listen-smile.png"
+    },
+    {
+      "id": "business-customer-listen-concern",
+      "kind": "retail-person",
+      "svg": "business-customer-listen-concern.svg",
+      "sha256": "906fdf54b94f0bba5110a3b37f93634821e06ba57b8ac80b70bbb4043f00cc4c",
+      "recipe": {
+        "id": "business-customer-listen-concern",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "listen",
+          "mood": "concern"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "listen",
+        "mood": "concern",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-listen-concern.png"
+    },
+    {
+      "id": "business-customer-listen-curious",
+      "kind": "retail-person",
+      "svg": "business-customer-listen-curious.svg",
+      "sha256": "4a91de77ed65d82a904709f7d13fdd9d662e679f6b50bef1677dbdb0b9b77f4a",
+      "recipe": {
+        "id": "business-customer-listen-curious",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "listen",
+          "mood": "curious"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "listen",
+        "mood": "curious",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-listen-curious.png"
+    },
+    {
+      "id": "business-customer-listen-relieved",
+      "kind": "retail-person",
+      "svg": "business-customer-listen-relieved.svg",
+      "sha256": "52b7be343b1f8b5576d9145e989e63f2da18ce61fff1699f99c20a860ba4dba4",
+      "recipe": {
+        "id": "business-customer-listen-relieved",
+        "kind": "retail-person",
+        "sceneId": "asset",
+        "data": {
+          "identity": "business-customer",
+          "pose": "listen",
+          "mood": "relieved"
+        }
+      },
+      "description": {
+        "kind": "retail-person",
+        "identity": "business-customer",
+        "pose": "listen",
+        "mood": "relieved",
+        "source": "code-drawn fictional customer; not an approved branded master or real employee"
+      },
+      "png": "business-customer-listen-relieved.png"
+    },
+    {
+      "id": "store-front",
+      "kind": "store-scene",
+      "svg": "store-front.svg",
+      "sha256": "6d9d534e31115c7697850ab0d49f2ba0aa1983b8c1e5ad73a4f4c3e6dd8d6ce4",
+      "recipe": {
+        "id": "store-front",
+        "kind": "store-scene",
+        "sceneId": "asset",
+        "data": {
+          "view": "front"
+        }
+      },
+      "description": {
+        "kind": "store-scene",
+        "view": "front",
+        "accuracy": "schematic inspired by retail layout; photo-linked variants live in the private user library",
+        "editable": [
+          "sign",
+          "screenTitle",
+          "display furniture",
+          "wall products",
+          "colors"
+        ]
+      },
+      "png": "store-front.png"
+    },
+    {
+      "id": "store-interior",
+      "kind": "store-scene",
+      "svg": "store-interior.svg",
+      "sha256": "a9c2fb1997117956547b3db93a762ff67b36faf16190cf66e567935864a485b8",
+      "recipe": {
+        "id": "store-interior",
+        "kind": "store-scene",
+        "sceneId": "asset",
+        "data": {
+          "view": "interior"
+        }
+      },
+      "description": {
+        "kind": "store-scene",
+        "view": "interior",
+        "accuracy": "schematic inspired by retail layout; photo-linked variants live in the private user library",
+        "editable": [
+          "sign",
+          "screenTitle",
+          "display furniture",
+          "wall products",
+          "colors"
+        ]
+      },
+      "png": "store-interior.png"
+    },
+    {
+      "id": "store-isometric",
+      "kind": "store-scene",
+      "svg": "store-isometric.svg",
+      "sha256": "f098e799dcabd37983892279136d06c519c0f96bd614116dc98d31d7be3a5afd",
+      "recipe": {
+        "id": "store-isometric",
+        "kind": "store-scene",
+        "sceneId": "asset",
+        "data": {
+          "view": "isometric"
+        }
+      },
+      "description": {
+        "kind": "store-scene",
+        "view": "isometric",
+        "accuracy": "schematic inspired by retail layout; photo-linked variants live in the private user library",
+        "editable": [
+          "sign",
+          "screenTitle",
+          "display furniture",
+          "wall products",
+          "colors"
+        ]
+      },
+      "png": "store-isometric.png"
+    }
+  ]
+}

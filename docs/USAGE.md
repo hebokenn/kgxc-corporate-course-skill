@@ -159,3 +159,11 @@ ZIP解压后可继续打开内置工作台。换电脑时仍需完成媒体运�
 交付前按[逐场视觉检查](../skills/corporate-training-motion/references/39-visual-hygiene.md)核对人物可见轮廓、对齐目标、箭头和动画结束状态。新工程默认启用逐场证据要求；返修须查全片同类复用对象，当前编码MP4重新取证。运行`visual_hygiene_check.py COURSE/project --video 当前候选.mp4`，按需用`measure_visible_bounds.py`辅助测量透明留白和实际偏移，不能把自动检查当审美评分。
 
 酷果课程默认保存至桌面`ai 制课/<课程名称>/`，视频、字幕与封面同放；旧版、小样分别归档，过程文件留在工程。用户另有交付位置时沿用其要求。整理移动保留字节校验，不擅自删除已有课程。
+
+## 100种动作、视觉风格与本地素材
+
+见[扩展调用说明](../skills/corporate-training-motion/references/40-library-direction-assets.md)。`course_tools.py motion-catalog/style-catalog/retail-catalog`查看实际条目，`recommend-visuals --intent "顾客 对话 操作"`按内容选择。`asset_library.py register/import-photo/stage`保留用户本地原件、按哈希暂存素材；新增产品登记Apple品牌或Apple适配信息。`register-style --file JSON`增加用户美术配方。原有课程确认流程不因扩充被重启。
+
+## 100种动作、视觉风格与本地素材
+
+见[扩展调用说明](../skills/corporate-training-motion/references/40-library-direction-assets.md)。`course_tools.py motion-catalog/style-catalog/retail-catalog`查看实际条目，`recommend-visuals --intent "顾客 对话 操作"`按内容选择。`asset_library.py register/import-photo/stage`保留用户本地原件、按哈希暂存素材；新增产品登记Apple品牌或Apple适配信息。`register-style --file JSON`增加用户美术配方。原有课程确认流程不因扩充被重启。

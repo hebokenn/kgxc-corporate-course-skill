@@ -12,7 +12,7 @@
  C.beginFrame=f=>{C.calls=[];C.currentFrame=f};
  C.before=(c,n,f)=>{
   for(const e of n.effects||[]){if(!baseKinds.includes(e.type)&&!registry[e.type])throw Error('未实现动效 '+e.type);trace(n,e,f)}
-  baseBefore(c,n,f);for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='before')a.fn(c,n,e,pof(e,f),raw(e,f),f)}
+  baseBefore(c,n,f);if((n.effects||[]).some(e=>e.type==='scroll-window')){c.beginPath();c.rect(0,0,n.width||960,n.height||300);c.clip()}for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='before')a.fn(c,n,e,pof(e,f),raw(e,f),f)}
  };
  C.text=(c,n,f,fps)=>{for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='text'){a.fn(c,n,e,pof(e,f),raw(e,f),f);return true}}return baseText(c,n,f,fps)};
  C.path=(c,n,f)=>{if(typeof n.drawProgress==='number'){partial(c,n,n.drawProgress);return true}for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='path'){a.fn(c,n,e,pof(e,f),raw(e,f),f);return true}}return basePath(c,n,f)};
@@ -62,6 +62,7 @@
  register('swimlane-transfer','before',(c,n,e,p)=>{const split=e.split??.5;if(p<split)c.translate(0,(e.dy??180)*p/split);else c.translate((e.dx??600)*(p-split)/(1-split),e.dy??180)});
  register('parallel-sync','children',(items,n,e,p)=>items.map((o,i)=>{const q=clamp((p-(e.delays?.[i]??i*.12))/(1-(e.delays?.[i]??i*.12)));return {...o,x:mix(o.x||0,e.to?.[i]?.[0]??500,q),y:mix(o.y||0,e.to?.[i]?.[1]??200,q)}}));
  register('evidence-attach','children',(items,n,e,p)=>ordered(items,e,p,(o,q,i)=>({...o,x:(o.x||0)+(1-q)*(e.dx??-160),opacity:(o.opacity??1)*q})));
+ C.registerAction=register;
  C.runtimeCatalog=()=>[...baseKinds,...Object.keys(registry)].sort();
  C.resetAssets=()=>{meshes=new Map()};
 })();

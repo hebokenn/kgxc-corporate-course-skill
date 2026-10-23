@@ -1,0 +1,989 @@
+{
+  "schema": "course-visual-styles/1",
+  "styles": [
+    {
+      "id": "retail-toon",
+      "title": "门店卡通讲师",
+      "layout": "presenter",
+      "family": "角色讲解",
+      "tags": [
+        "role-play",
+        "explanation"
+      ],
+      "palette": [
+        "#f5f0df",
+        "#244c54",
+        "#cd6b46",
+        "#90b6b6"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "大轮廓、完整人物、实体体验桌；知识点与指向同场",
+      "motions": [
+        "presenter-gesture",
+        "dialogue",
+        "callout"
+      ],
+      "source": {
+        "name": "Crash Course",
+        "url": "https://thecrashcourse.com/",
+        "example": "https://www.youtube.com/@crashcourse",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "scene-toon",
+      "title": "生活场景动画",
+      "layout": "scene",
+      "family": "情境演示",
+      "tags": [
+        "role-play",
+        "service"
+      ],
+      "palette": [
+        "#eef2e7",
+        "#274947",
+        "#cf9861",
+        "#94b9a6"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "店内全景、人物位置与物件所有权可追踪",
+      "motions": [
+        "handoff",
+        "drag-drop",
+        "queue-enqueue"
+      ],
+      "source": {
+        "name": "TED-Ed",
+        "url": "https://www.ted.com/about/programs/ted-ed",
+        "example": "https://www.youtube.com/@TEDEd",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "flat-cosmos",
+      "title": "几何矢量科普",
+      "layout": "cosmos",
+      "family": "动画演示",
+      "tags": [
+        "concept",
+        "causality"
+      ],
+      "palette": [
+        "#18264d",
+        "#f7edcb",
+        "#f4a658",
+        "#70c4ce"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "嵌套尺度、几何隐喻、前后景分层，不借用参考角色",
+      "motions": [
+        "orbit-revolve",
+        "split-merge",
+        "branch-grow"
+      ],
+      "source": {
+        "name": "Kurzgesagt",
+        "url": "https://kurzgesagt.org/",
+        "example": "https://www.youtube.com/@kurzgesagt",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "pen-whiteboard",
+      "title": "钢笔白板",
+      "layout": "whiteboard",
+      "family": "内容讲解",
+      "tags": [
+        "process",
+        "causality"
+      ],
+      "palette": [
+        "#faf9f0",
+        "#253b3e",
+        "#d76641",
+        "#749b8d"
+      ],
+      "font": "CourseHand",
+      "outline": 3,
+      "rules": "笔迹、箭头和连续知识地图，按讲解逐笔显露",
+      "motions": [
+        "signature-write",
+        "draw-on",
+        "chain-link"
+      ],
+      "source": {
+        "name": "RSA Animate",
+        "url": "https://www.thersa.org/videos/rsa-animate-changing-paradigms/",
+        "example": "https://www.youtube.com/@RSAorg",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "chalk-blackboard",
+      "title": "粉笔黑板",
+      "layout": "chalk",
+      "family": "内容讲解",
+      "tags": [
+        "formula",
+        "concept"
+      ],
+      "palette": [
+        "#193e3c",
+        "#f5f3d7",
+        "#e8c76e",
+        "#77b9ac"
+      ],
+      "font": "CourseHand",
+      "outline": 3,
+      "rules": "深色黑板、彩粉笔式线路、推导留痕",
+      "motions": [
+        "line-plot",
+        "brace-draw",
+        "correct-replace"
+      ],
+      "source": {
+        "name": "3Blue1Brown",
+        "url": "https://www.3blue1brown.com/",
+        "example": "https://www.youtube.com/@3blue1brown",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "handdrawn-story",
+      "title": "手绘绘本",
+      "layout": "storybook",
+      "family": "角色讲解",
+      "tags": [
+        "role-play",
+        "story"
+      ],
+      "palette": [
+        "#f6ecd6",
+        "#654c42",
+        "#c27655",
+        "#7e9b83"
+      ],
+      "font": "CourseHand",
+      "outline": 3,
+      "rules": "大幅单场景、圆润角色、少字旁注、手绘轮廓",
+      "motions": [
+        "page-turn",
+        "dialogue",
+        "evidence-attach"
+      ],
+      "source": {
+        "name": "TED-Ed",
+        "url": "https://www.ted.com/about/programs/ted-ed",
+        "example": "https://www.youtube.com/@TEDEd",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "paper-cut",
+      "title": "纸雕层叠",
+      "layout": "papercut",
+      "family": "动画演示",
+      "tags": [
+        "structure",
+        "concept"
+      ],
+      "palette": [
+        "#f4e7ce",
+        "#4e5d55",
+        "#cc8762",
+        "#91aaa1"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "独立纸层、可见叠压、折角，前后层次固定",
+      "motions": [
+        "paper-fold",
+        "explode",
+        "assemble"
+      ],
+      "source": {
+        "name": "TED-Ed",
+        "url": "https://www.ted.com/about/programs/ted-ed",
+        "example": "https://www.youtube.com/@TEDEd",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "collage-documentary",
+      "title": "证据拼贴",
+      "layout": "collage",
+      "family": "证据讲解",
+      "tags": [
+        "evidence",
+        "case"
+      ],
+      "palette": [
+        "#ebe5d9",
+        "#292e35",
+        "#bd4f3a",
+        "#9bafa9"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "照片框、来源条、纸条、标记与实物证据并置",
+      "motions": [
+        "evidence-attach",
+        "compare-wipe",
+        "marker"
+      ],
+      "source": {
+        "name": "The Pudding",
+        "url": "https://pudding.cool/",
+        "example": "https://www.youtube.com/@ThePudding",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "comic-panels",
+      "title": "漫画分镜",
+      "layout": "comic",
+      "family": "角色讲解",
+      "tags": [
+        "role-play",
+        "case"
+      ],
+      "palette": [
+        "#fff2d8",
+        "#243b44",
+        "#da7651",
+        "#9cb9bc"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "多格镜头、说话方与气泡归属、动作前后分格",
+      "motions": [
+        "dialogue",
+        "tab-switch",
+        "quiz-feedback"
+      ],
+      "source": {
+        "name": "Crash Course",
+        "url": "https://thecrashcourse.com/",
+        "example": "https://www.youtube.com/@crashcourse",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "isometric-store",
+      "title": "等距门店",
+      "layout": "isometric",
+      "family": "场景演示",
+      "tags": [
+        "space",
+        "service"
+      ],
+      "palette": [
+        "#eff0e5",
+        "#344e5a",
+        "#c8a270",
+        "#88b6b2"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "空间轴一致、柜台与墙体层次、动线可见",
+      "motions": [
+        "lane-distribute",
+        "path-follow",
+        "swimlane-transfer"
+      ],
+      "source": {
+        "name": "Animagraffs",
+        "url": "https://animagraffs.com/",
+        "example": "https://www.youtube.com/@animagraffs",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "technical-blueprint",
+      "title": "工程蓝图",
+      "layout": "blueprint",
+      "family": "结构演示",
+      "tags": [
+        "structure",
+        "process"
+      ],
+      "palette": [
+        "#173d60",
+        "#def1ed",
+        "#e6bd6c",
+        "#67b8c8"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "网格、编号、结构轮廓与尺寸式引线，标明示意",
+      "motions": [
+        "scan",
+        "connector-reroute",
+        "route-progress"
+      ],
+      "source": {
+        "name": "Animagraffs",
+        "url": "https://animagraffs.com/",
+        "example": "https://www.youtube.com/@animagraffs",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "technical-cutaway",
+      "title": "结构剖面",
+      "layout": "cutaway",
+      "family": "结构演示",
+      "tags": [
+        "structure",
+        "mechanism"
+      ],
+      "palette": [
+        "#edf0e7",
+        "#344c51",
+        "#d5945c",
+        "#8bbab7"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "同物件的整体与拆层对应，剖面与能量流并列",
+      "motions": [
+        "explode",
+        "magnify",
+        "flow-token"
+      ],
+      "source": {
+        "name": "Branch Education",
+        "url": "https://www.branch.education/",
+        "example": "https://www.youtube.com/@BranchEducation",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "soft-volume",
+      "title": "软质立体插画",
+      "layout": "soft",
+      "family": "动画演示",
+      "tags": [
+        "concept",
+        "service"
+      ],
+      "palette": [
+        "#eee8e3",
+        "#4c4954",
+        "#d49a8d",
+        "#aebac6"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "圆角体块、柔和体积渐变、明确接触阴影；当前为2.5D",
+      "motions": [
+        "spring-compress",
+        "assemble",
+        "focus-isolate"
+      ],
+      "source": {
+        "name": "TED-Ed",
+        "url": "https://www.ted.com/about/programs/ted-ed",
+        "example": "https://www.youtube.com/@TEDEd",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "lowpoly-diorama",
+      "title": "低多边形沙盘",
+      "layout": "lowpoly",
+      "family": "场景演示",
+      "tags": [
+        "space",
+        "simulation"
+      ],
+      "palette": [
+        "#e7ede4",
+        "#344c54",
+        "#c6a17b",
+        "#7ca89c"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "可辨面的几何家具、正交视角；可升级本地Blender",
+      "motions": [
+        "rotate-inspect",
+        "orbit-revolve",
+        "sort"
+      ],
+      "source": {
+        "name": "Branch Education",
+        "url": "https://www.branch.education/",
+        "example": "https://www.youtube.com/@BranchEducation",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "pixel-quest",
+      "title": "像素任务",
+      "layout": "pixel",
+      "family": "流程演示",
+      "tags": [
+        "process",
+        "practice"
+      ],
+      "palette": [
+        "#182a3e",
+        "#e7e7cb",
+        "#d8aa5f",
+        "#7eb6aa"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "整数像素、关卡站点、任务道具、完成反馈",
+      "motions": [
+        "pixel-walk",
+        "progress-segments",
+        "check-draw"
+      ],
+      "source": {
+        "name": "Red Blob Games",
+        "url": "https://www.redblobgames.com/",
+        "example": "https://www.redblobgames.com/pathfinding/a-star/introduction.html",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "data-editorial",
+      "title": "数据新闻",
+      "layout": "data",
+      "family": "内容讲解",
+      "tags": [
+        "quantity",
+        "comparison"
+      ],
+      "palette": [
+        "#f8f4ea",
+        "#253c44",
+        "#c96343",
+        "#8ba9a6"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "数据为主角、统一基线、来源与单位、克制注释",
+      "motions": [
+        "dot-aggregate",
+        "histogram-bin",
+        "ratio-normalize"
+      ],
+      "source": {
+        "name": "The Pudding",
+        "url": "https://pudding.cool/",
+        "example": "https://www.youtube.com/@ThePudding",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "math-dark",
+      "title": "暗场数学图解",
+      "layout": "math",
+      "family": "内容讲解",
+      "tags": [
+        "formula",
+        "quantity"
+      ],
+      "palette": [
+        "#161d2b",
+        "#e9ede9",
+        "#e8b564",
+        "#70bfb5"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "坐标与变量保持同一颜色映射、对象连续变换",
+      "motions": [
+        "line-plot",
+        "scatter-converge",
+        "pie-sector"
+      ],
+      "source": {
+        "name": "3Blue1Brown",
+        "url": "https://www.3blue1brown.com/",
+        "example": "https://www.youtube.com/@3blue1brown",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "ui-lab",
+      "title": "界面操作实验台",
+      "layout": "ui",
+      "family": "操作演示",
+      "tags": [
+        "operation",
+        "troubleshoot"
+      ],
+      "palette": [
+        "#edf2ee",
+        "#274956",
+        "#d39752",
+        "#8ab3b1"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "固定设备视窗、实际点击目标与状态变化、放大局部",
+      "motions": [
+        "cursor-click",
+        "scroll-window",
+        "toggle-switch"
+      ],
+      "source": {
+        "name": "Red Blob Games",
+        "url": "https://www.redblobgames.com/",
+        "example": "https://www.redblobgames.com/pathfinding/a-star/introduction.html",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "photo-annotation",
+      "title": "实拍标注",
+      "layout": "photo",
+      "family": "现场讲解",
+      "tags": [
+        "evidence",
+        "space"
+      ],
+      "palette": [
+        "#efeee6",
+        "#284950",
+        "#d3a05b",
+        "#8aac9e"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "实拍作上下文，矢量框线绑定具体位置；照片从本地素材库取",
+      "motions": [
+        "magnify",
+        "spotlight",
+        "callout"
+      ],
+      "source": {
+        "name": "Animagraffs",
+        "url": "https://animagraffs.com/",
+        "example": "https://www.youtube.com/@animagraffs",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "minimal-type",
+      "title": "极简内容排版",
+      "layout": "minimal",
+      "family": "内容讲解",
+      "tags": [
+        "explanation",
+        "policy"
+      ],
+      "palette": [
+        "#f7f4e9",
+        "#263c3d",
+        "#b86d4e",
+        "#a7beb4"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "大字与留白、关键对象大比例、层级不靠卡片堆叠",
+      "motions": [
+        "text-rise",
+        "underline",
+        "correct-replace"
+      ],
+      "source": {
+        "name": "The Pudding",
+        "url": "https://pudding.cool/",
+        "example": "https://www.youtube.com/@ThePudding",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "ink-map",
+      "title": "纸本墨线图解",
+      "layout": "ink",
+      "family": "内容讲解",
+      "tags": [
+        "concept",
+        "causality"
+      ],
+      "palette": [
+        "#f5efdc",
+        "#43594f",
+        "#b4875e",
+        "#a3b3a2"
+      ],
+      "font": "CourseHand",
+      "outline": 3,
+      "rules": "纸纹、双线轮廓、节点枝干、墨线留痕",
+      "motions": [
+        "branch-grow",
+        "tree-collapse",
+        "signature-write"
+      ],
+      "source": {
+        "name": "Rough.js",
+        "url": "https://roughjs.com/",
+        "example": "https://github.com/rough-stuff/rough",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "kinetic-type",
+      "title": "动态文字讲解",
+      "layout": "kinetic",
+      "family": "内容讲解",
+      "tags": [
+        "definition",
+        "contrast"
+      ],
+      "palette": [
+        "#e8c883",
+        "#243c45",
+        "#b6503d",
+        "#f2efe4"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "文字块成为比较对象，字距、大小与位置体现逻辑",
+      "motions": [
+        "cell-update",
+        "rank-reorder",
+        "card-flip"
+      ],
+      "source": {
+        "name": "Crash Course",
+        "url": "https://thecrashcourse.com/",
+        "example": "https://www.youtube.com/@crashcourse",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "flow-map",
+      "title": "流程地图",
+      "layout": "flowmap",
+      "family": "流程演示",
+      "tags": [
+        "process",
+        "handoff"
+      ],
+      "palette": [
+        "#edf1e4",
+        "#2a4d4c",
+        "#cca05d",
+        "#92b8b1"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "地图式路线、角色泳道、跨边界交接，终点可检查",
+      "motions": [
+        "arrow-travel",
+        "dependency-unlock",
+        "swimlane-transfer"
+      ],
+      "source": {
+        "name": "Red Blob Games",
+        "url": "https://www.redblobgames.com/",
+        "example": "https://www.redblobgames.com/pathfinding/a-star/introduction.html",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    },
+    {
+      "id": "simulation-board",
+      "title": "规则推演沙盘",
+      "layout": "simulation",
+      "family": "动画演示",
+      "tags": [
+        "simulation",
+        "decision"
+      ],
+      "palette": [
+        "#f3eedf",
+        "#334e53",
+        "#cf9865",
+        "#9ebcb4"
+      ],
+      "font": "CourseHan",
+      "outline": 3,
+      "rules": "个体身份可追踪、规则先说明、逐轮状态与结果并列",
+      "motions": [
+        "grid-deal",
+        "cluster-pack",
+        "queue-dequeue"
+      ],
+      "source": {
+        "name": "Nicky Case",
+        "url": "https://ncase.me/",
+        "example": "https://ncase.me/trust/",
+        "checked": "2026-10-23",
+        "basis": "official portfolio or project page; adapted design inference, not a claim of full-video playback"
+      },
+      "implementation": "editable graph recipe / absolute frames",
+      "mutable": [
+        "palette",
+        "font",
+        "outline",
+        "layout",
+        "rules",
+        "motions",
+        "tags"
+      ]
+    }
+  ]
+}
