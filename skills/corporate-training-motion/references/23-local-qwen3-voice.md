@@ -26,3 +26,5 @@ python3 SKILL_DIR/scripts/qwen3_tts.py --profile B2-clone --ref-audio REFERENCE.
 输出不存在才生成，真实参数和原声/交付哈希写入 WAV 旁 JSON。长文用少量完整语义段，保持相同配置并实听衔接；首尾、数字、百分比和练习全文覆盖必须核对，尤其检查每段最后一句是否完整。缺尾可在同一声线条件下增加后续上下文作保护，实际核对后裁去保护语句；不得插值补字幕来掩盖缺失口播。token 上限和 ASR 不能替代听校。相同 seed 不证明声音身份稳定。改变声音方案先出本课实际有声小样，沿用仍有效的确认，不改已有冻结录音。
 
 完整切换、模型安装、克隆、改声及速度示例随发布仓库 `docs/VOICE.md` 提供；本技能内的实际参数源是 `assets/voice/profiles.json` 和 `scripts/qwen3_tts.py`。
+
+后期提速或升调按[最终声音与时间线检查](37-cover-and-delivery-finish.md)执行，明确相对输入版本，避免重复加速；旁白升调不改变音乐音高，字幕与画面共用映射。

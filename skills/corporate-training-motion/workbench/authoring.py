@@ -46,7 +46,7 @@ def init_project(project, skill_root):
     atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.1',semanticRequired=True))
     from craft_quality import policy as craft_policy
     doc['qualityPolicy']=craft_policy()
-    atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,createdBy='5.4.0'))
+    atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,createdBy='5.5.0'))
     atomic(p/'workbench.json',doc)
     return doc
 

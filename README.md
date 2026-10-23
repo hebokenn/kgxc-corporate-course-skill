@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.4.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.4.0/kgxc-course-suite-v5.4.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.5.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.5.0/kgxc-course-suite-v5.5.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.5.0：封面、首尾口播与后期时间线一起交付
+
+完整视频新增独立封面门槛：在320×180缩略图中检查课程名、构图和原版Logo，并核实实际视频首帧或播放器poster。缺少当前版本封面记录、旧视频哈希、只有一张图片而未接入播放器的候选，不算完成。旧冻结工程保留原约定。
+
+新增可复用后期工具，将画面、语音、字幕和章节按同一基准提速，支持只升旁白音调、保持音乐音高，保留原版和分轨；首尾固定话术需从实际编码片段核对。倍率、音调和封面美术服从当前用户选择，不把某一课的1.1倍或升调值设成通用规则。
+
+[封面与后期用法](skills/corporate-training-motion/references/37-cover-and-delivery-finish.md) · [验证范围](docs/V5.5.0-VERIFICATION.md)。技术检查不代替实际审美观察、试听或最终用户认可。新增外来经验的批判吸收规则：不照搬其他课程的speaker、CPS、F0或EQ参数；按实际时间锚点检查音画衔接，结束语先语义查重。
 
 ## 5.4.0：课程清楚、画面美观、配音自然，分别复核
 
@@ -363,7 +371,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.3.0 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.3.0/kgxc-course-suite-v5.3.0.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.5.0 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.5.0/kgxc-course-suite-v5.5.0.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 
@@ -384,9 +392,9 @@ kgxc-course resume ./courses/my-course
 
 完整安装首次需要联网下载媒体依赖和本地 B2 VoiceDesign 模型，目前完整环境验证范围为 macOS Apple 芯片。只安装 WorkBuddy 使用 `--agent workbuddy`。
 
-安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.3.0` 与 `elearning-course-design 2.0.1`，日常只需调用统一课程入口。
+安装器保护已有自改 Skill；明确替换时添加 `--replace-skill`，先备份再更新。联合包包含 `corporate-training-motion 5.5.0` 与 `elearning-course-design 2.0.1`，日常只需调用统一课程入口。
 
-[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.3.0/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
+[SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.5.0/SHA256SUMS) · [依赖说明](docs/DEPENDENCIES.md) · [完整安装与使用指南](docs/USAGE.md)
 
 </details>
 

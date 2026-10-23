@@ -37,3 +37,5 @@
 新工程默认 `qualityPolicy.required=true`，并保存 `craft-contract.json`。最终候选导出后，`qa/craft-review.json` 绑定真实视频与文档 SHA，含 `schema=course-craft-review/1`、`status=reviewed`、实际 `reviewer/scope`、六项 `aesthetics` 观察、`voice` 的四项依据及实际 `reviewScope`、`compositionDecisions`、`unresolvedIssues`。`evidenceFrames` 来自当前编码视频，记录 `path/sha256/sourceFrame/origin=encoded-video/observation`，覆盖正文早、中、晚段。检查器核对真实编码像素，不能用预览图代替。
 
 此记录与逐段导演复核共同使用。它不替代逐字稿确认、小样确认、整课技术检查或最终用户认可，也不使既有冻结工程自动失效。旧工程继续使用原约定；用户要求提高制作质量时，可在保留原稿与有效确认的前提下显式采用本规则。
+
+新视频同时默认启用独立[封面检查](37-cover-and-delivery-finish.md)：课程名、缩略图、品牌一致性和首帧或播放器接入须有当前候选证据。速度、音调和品牌首尾口播的修订按同一规范执行。

@@ -1,0 +1,50 @@
+# 封面与最终声音、时间线检查
+
+完整视频交付与后期修订按此执行。保留原始配音、批准版本和可编辑工程；只调整封面或声音时，不重写课程。项目要求的欢迎语和结束语须实际说出，Logo、母版或字幕不能代替口播。
+
+## 封面
+
+比较已编码标题帧与独立标题封面，选择缩略图下课程名更清楚、与内容和美术更一致的一种。制作端完成普通选择，不额外要求用户确认。不要选只有Logo、黑场、转场中间态、播放控件或标题尚未出现的帧。不把某一课的配色和插画强加给所有课程。
+
+保存至少1280×720的16:9独立PNG/JPEG，并实际查看320×180缩略图：课程名是否能读、主次与留白是否合适、原版Logo是否正确、是否带播放器边框。网页设置真实poster；用户希望独立MP4默认画面有标题时，可在授权范围内把封面短暂显示于视频起点并自然衔接。MP4附加封面元数据不能保证所有播放器采用；网页poster也不能冒称改了视频首帧。
+
+新视频默认 `qualityPolicy.coverRequired=true`，其完整候选须有 `qa/cover-review.json`：
+
+- `schema=course-cover-review/1`、`status=reviewed`、当前 `title/videoSha256`。
+- 工程相对的 `coverPath/coverSha256`、`thumbnailPath/thumbnailSha256`。
+- `reviewer/scope`，以及分别说明 `titleLegibility/courseConsistency/brandIntegrity/composition/thumbnailObservation` 的实际观察。
+- `mode=first-frame` 或 `mode=player-poster`；后者另写 `pagePath`。问题写入 `unresolvedIssues`。
+
+运行 `python3 SKILL_DIR/scripts/cover_check.py COURSE/project --video 当前候选.mp4 --out COURSE/project/qa/cover-check.json`。它检查当前文件、版本、尺寸、标题字段、真实首帧像素或播放器接线，并接入新工程完整视频的工艺门槛。它不能自动识别汉字正确性或评判审美，制作端必须真的看过封面和缩略图。旧冻结工程不自动迁移。
+
+## 声音与时间线
+
+先明确倍率相对于哪版输入并保存哈希。用户要求1.1倍时，画面、口播、动效、字幕、章节与首尾范围一起映射，交付播放器用1×，避免只改控件或重复加速。单纯提速默认保音高；用户要求更明亮时才小幅升调，可先采用约半个至一个半音并核对效果，保持讲师身份和自然普通话。具体倍率与音调属于当前课程，不是通用固定值。
+
+旁白与音乐/音效分轨处理。升调仅作用于旁白，音乐保留音高；首尾新增口播沿用同一已确认speaker/参考录音，再统一应用本次声音参数。核对尾字、爆音、响度、拼接和发音，不用另一种声音补品牌语。
+
+`scripts/finish_media.py PLAN.json` 支持已对齐的 `video/srt/speech/bed/cover` 输入、全片 `rate`、仅旁白 `pitch_semitones`、新输出视频和字幕、头尾新增字幕与透明文字图层。新增字幕时间写输入时间线，只映射一次；拒绝重叠字幕、未对齐分轨与覆盖原输出。它保留现有画面和字幕、在首帧显示封面，输出MP4/SRT并完整解码。路径相对于计划文件，例如：
+
+```json
+{
+  "video": "approved.mp4", "srt": "approved.srt",
+  "speech": "aligned-speech.wav", "bed": "aligned-music-sfx.wav",
+  "cover": "course-cover.png",
+  "output_video": "course-r2.mp4", "output_srt": "course-r2.srt",
+  "rate": 1.1, "pitch_semitones": 0, "fps": 30,
+  "cover_hold_seconds": 0.65, "cover_fade_seconds": 0.35,
+  "added_captions": []
+}
+```
+
+以上是参数示例。输出 `.finish.json` 记录基准、参数、哈希、时长和解码范围。保留原始可编辑来源和后期计划，不能把派生MP4包装成原生导演对象。本工具不代替教学设计或语音内容检查。
+
+## 从实际交付文件复核
+
+从最终编码视频提取首尾有声片段，核对实际欢迎/结束语、完整尾字、字幕和音乐衔接。记录提取范围、片段哈希、真实转写/试听方法及最终视频哈希；不能只搜索稿件/SRT或检查母版存在。ASR只证明相应内容线索，不能写成已人工听过，不能代表语气或审美已获用户认可。
+
+核对成片、独立封面、字幕和播放器指向同一版本，按项目交付路径保存并核对副本哈希。检查受影响的首尾、正文早中晚段与章节跳转。技术通过、制作端观察与用户最终验收分别记录。
+
+## 结束语先查重再合成
+
+检查正文末段、固定包装和新增口播的实际语义，只保留一次完整收尾。已有“这节课就到这里，谢谢大家”时，不在片尾机械再加一句同义结束语；按用户要求保留、整合或替换，不自动改已确认内容。`finish_media.py`对可能重复的结束语给出content_warnings，须结合真实文本和成片处理，不能仅凭工具生成成功交付。警告不自动删字，也不代替语义判断。

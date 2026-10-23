@@ -147,3 +147,9 @@ python3 skills/corporate-training-motion/scripts/course_tools.py craft-check --s
 ZIP解压后可继续打开内置工作台。换电脑时仍需完成媒体运行环境安装，不能把ZIP理解为无需环境的独立应用。已有课程不因安装/更新Skill自动迁移或重新渲染。
 
 约9秒的[技术样例MP4](media/course-demo.mp4)适合了解实际画面、Aiden配音与字幕；其长度仅用于验证制作链路。
+
+## 5.5.0 完整课封面与后期修订
+
+完整视频交付包含清楚的课程标题封面；在实际320×180缩略图中看过，并核实MP4首帧或播放器poster。新工程默认启用封面检查，复核记录绑定当前封面、视频和实际观察。参见[完整约定及命令](../skills/corporate-training-motion/references/37-cover-and-delivery-finish.md)。
+
+用户要求提速、升调或补首尾话术时，保留原版，以同一输入时间线处理语音、画面和字幕，单独保留音乐/音效。`finish_media.py`输出实际参数与哈希回执；首尾话术必须从最终视频实际有声片段核对，不能只查稿件。后期计划和原始导演工程一同保存，派生MP4不冒称原生可编辑对象。

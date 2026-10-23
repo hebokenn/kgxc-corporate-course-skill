@@ -101,3 +101,7 @@ python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
 长课优先少量完整语义段，保持同一配置，听校衔接；不要机械逐句换声。达到 token 上限时脚本拒绝提交交付音频。核对首句、末句、计算数字、百分比、练习问答及全文覆盖后再排画面；未达到上限同样可能漏读。WAV 相邻 JSON 保存真实模型提交、参数、原声/交付哈希、参考哈希和待试听状态。
 
 上述模型方式与 [Qwen3-TTS 官方说明](https://github.com/QwenLM/Qwen3-TTS)、[MLX Audio 实现](https://github.com/Blaizzy/mlx-audio)对应；本包固定版本，不自动追随上游变动。仅本地生成，无静默云服务替换。
+
+## 5.5.0 提速、升调与首尾话术
+
+提速默认保音高；用户要求声音更明亮时，小幅调整旁白音调，音乐与音效保留音高。先记录基准版本，避免对已经处理的声音重复加速。新增品牌欢迎语和结束语使用已确认的同一speaker/参考音频，从最终编码片段核对完整发音和字幕。字幕、动效、章节跳转与整片共用同一时间映射。具体用法见[后期规范](../skills/corporate-training-motion/references/37-cover-and-delivery-finish.md)。

@@ -9,7 +9,8 @@ from scaffold import create
 
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def fixture():
-    return dict(width=64,height=36,fps=6,sourceDurationFrames=18,introFrames=0,bodyEndFrame=18,qualityPolicy=policy(),holds=[],cuts=[],
+    legacy_policy=policy();legacy_policy.pop('coverRequired')  # This fixture isolates the v5.4 craft contract.
+    return dict(width=64,height=36,fps=6,sourceDurationFrames=18,introFrames=0,bodyEndFrame=18,qualityPolicy=legacy_policy,holds=[],cuts=[],
         scenes=[dict(id='S'+str(j),sourceStartFrame=j*3,sourceEndFrame=j*3+3) for j in range(6)],
         sceneGraph=dict(nodes=[dict(id='node'+str(j),sceneId='S'+str(j),type='text',text='内容'+str(j),x=j*80,y=20,fontSize=24) for j in range(6)]))
 
@@ -27,7 +28,7 @@ class CompositionTests(unittest.TestCase):
     def test_new_course_defaults_and_marker_cannot_be_deleted(self):
         with tempfile.TemporaryDirectory() as t:
             c=Path(t)/'course';create(c);p=c/'project';d=json.loads((p/'workbench.json').read_text())
-            self.assertTrue(d['qualityPolicy']['required']);self.assertTrue((p/'craft-contract.json').is_file())
+            self.assertTrue(d['qualityPolicy']['required']);self.assertTrue(d['qualityPolicy']['coverRequired']);self.assertTrue((p/'craft-contract.json').is_file())
             d.pop('qualityPolicy')
             with self.assertRaisesRegex(ValueError,'不能删除 qualityPolicy'):require(d,p)
     def test_legacy_projects_remain_opt_in(self):

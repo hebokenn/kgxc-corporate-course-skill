@@ -14,3 +14,5 @@ Logo保持原字形、比例、色彩、透明边缘，按可见边界布局。�
 本发布包内置已批准R5/R8的无损背景、原配乐、字体和可替换标题合成器。运行 `python3 scripts/bookends.py --title 课程名称 --subtitle 可选副标题 --out 当前课程/project/assets/brand/bookends` 生成当课片段及1080p30适配副本，不再要求开发者工作区的course-bookends目录。背景、Logo、动作和配乐沿用批准版本；只有课名和可选副标题变化，生成后检查标题及声音衔接。历史母版工程只用作来源记录，不作为新安装的运行依赖。
 
 请安装Blender：<https://www.blender.org/download/>，用于打开和修改 `assets/bookends/blender/` 内的R5/R8三维源工程。例行更换课名不必重新渲染三维。随包Blender工程已打包外部图片，包含几何与灯光，不冒称每个原始后期工序都可在Blender单独复刻。
+
+首尾声音不能只查字幕或母版。完整交付前按[封面与最终声音检查](37-cover-and-delivery-finish.md)提取当前成片实际有声片段，核对完整问候与结束语，并记录当前视频哈希和真实检查范围。
