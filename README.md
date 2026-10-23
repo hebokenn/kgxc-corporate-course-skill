@@ -6,9 +6,13 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.7.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.2/kgxc-course-suite-v5.7.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.7.3](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.3/kgxc-course-suite-v5.7.3.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.7.3：总部授课立场与导航显示边界
+
+酷果课程代表总部团队发展中心直接讲工作要求、操作、服务和管理动作，来源核验留在制作记录；全稿、字幕、标题与练习分别复核，不能只做来源关键词替换。章节导航仅在正式教学小节中显示，封面、品牌片头、导入、目录、总结和片尾隐藏；编码视频另查真实显隐边界。
 
 ## 5.7.2：发音、目录与成片同步复查
 
@@ -411,7 +415,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.7.2 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.2/kgxc-course-suite-v5.7.2.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.7.3 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.3/kgxc-course-suite-v5.7.3.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 
