@@ -261,6 +261,9 @@ class LegacyCourse:
             status = self.status(); gate = next((g for g in status['gates'] if g['id'] == key), None)
             if not gate or not gate['ready']: raise ValueError('本阶段尚不能确认：' + '；'.join(gate['reasons'] if gate else ['未知阶段']))
             self._snapshot(state)
+            if key == 'pilot' and getattr(self, 'modern', lambda: False)():
+                from visual_identity import capture
+                state['visual_palette'] = capture(read(self.project/'workbench.json', {}), self._artifact_hashes('pilot', state), self.project)
             state['gates'][key] = dict(at=now(), evidence=str(evidence), actor=actor,
                                       sha256=self._gate_hash(key, read(self.plan_file), state))
             self._commit(state, 'stage_confirmed', dict(gate=key, evidence=evidence, actor=actor))
@@ -510,6 +513,9 @@ class Course(LegacyCourse):
                 basis['motion_language']=doc.get('motionPlan',{}).get('language')
                 basis['protected_effects']=sorted(doc.get('motionPlan',{}).get('protectedEffects',[]))
         if visual_scope:basis['style_scope']='visual'
+        if state.get('visual_palette'):
+            from visual_identity import digest
+            basis['visual_palette_sha256'] = digest(state['visual_palette'])
         return basis
 
     def _artifact_hashes(self, key, state):
@@ -559,6 +565,9 @@ class Course(LegacyCourse):
             files=self._artifact_hashes(key,state)
             if not files or any(f['sha256'] is None for f in files):errors.append('尚未生成本阶段实际产物')
             reviewed=key=='pilot' and state.get('gates',{}).get('pilot',{}).get('sha256')==self._gate_hash('pilot',plan,state)
+            if reviewed and state.get('visual_palette'):
+                from visual_identity import check as check_palette
+                errors.extend(check_palette(read(self.project/'workbench.json', {}), state['visual_palette']))
             if key in ['pilot','final'] and not reviewed and state.get(key+'_context')!=self._video_context(state):errors.append('样片或成片与当前逐字稿、风格或画面版本不一致，请重新生成')
         if key=='final' and state.get('artifacts',{}).get('final'):
             from motion_quality import director_review

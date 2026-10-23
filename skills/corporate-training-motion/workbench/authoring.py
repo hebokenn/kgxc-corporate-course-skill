@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -37,7 +37,7 @@ def init_project(project, skill_root):
     doc=dict(schema='course-workbench/1',revision=0,status='draft',title='待输入课程名称',fps=30,width=1920,height=1080,
              adapter='scene-graph-v1',sourceDurationFrames=1,introFrames=0,bodyEndFrame=1,
              font='native/assets/fonts/CourseHan.woff',media=dict(audio=None,intro=None,outro=None),
-             holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#f3f2ec',nodes=[]),
+             holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#ffffff',nodes=[]),
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
              audio=dict(gain=1,voice='B2 清亮平和教学男声 · 尚未生成配音',speed=1))
     doc['characterPolicy']=dict(required=True,scope='known company masters require their original uniform mark')

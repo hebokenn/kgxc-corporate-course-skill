@@ -125,12 +125,13 @@ class BranchTests(unittest.TestCase):
         doc['sceneGraph']['nodes'][0]['effects'].append(dict(type='marker',startFrame=60,endFrame=75))
         atomic(self.course.project/'workbench.json',doc);self.course.require_video('pilot')
         self.assertEqual(json.loads(self.course.state_file.read_text())['gates']['pilot'],receipt)
-        for key in ['voice','caption','runtime','visual']:
+        for key in ['voice','caption','runtime','visual','palette']:
             with self.subTest(change=key):
                 changed=copy.deepcopy(doc);new_plan=copy.deepcopy(data)
                 if key=='voice':changed['audio']['voice']='另一声音'
                 elif key=='caption':changed['captionStyle']['fontSize']=64
                 elif key=='runtime':(native/'scene-engine.js').write_text('// changed runtime')
+                elif key=='palette':changed['sceneGraph']['background']='#eef1ed'
                 else:new_plan['styles'][1]['visual']['typography']='另一字体体系'
                 atomic(self.course.project/'workbench.json',changed);atomic(self.course.project/'director-plan.json',new_plan)
                 with self.assertRaises(ValueError):self.course.require_video('pilot')
