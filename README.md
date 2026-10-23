@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.7.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.0/kgxc-course-suite-v5.7.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.7.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.1/kgxc-course-suite-v5.7.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.7.1：随视觉风格设计的课程导航
+
+后续视频课程包含画面底部的课程进度条；两节及以上必须有目录页和每节独立标题页，单节课可省略目录与小节标题页。进度条随所选视觉风格调整配色、字体、线条、材质和标记形式，同一课程内保持统一，不能所有课程套同一个外观。
+
+目录、标题页、正文与当前进度共用章节表，进度依据实际成片时轴同步并避让字幕。三种风格预览及有声小样显示对应导航，完整视频检查实际编码画面。原稿已分节并有开场路线时只补画面设计，不机械重写口播；旧课不自动重制。这是制作规则更新，不宣称渲染器新增了自动导航功能。
+
+[导航与章节要求](skills/corporate-training-motion/references/03-visual.md#课程导航与章节呈现) · [使用指南](docs/USAGE.md)。
 
 ## 5.7.0：100种业务动作、24种视觉方案与空间约束
 
@@ -399,7 +407,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.6.0 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.0/kgxc-course-suite-v5.7.0.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.7.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.1/kgxc-course-suite-v5.7.1.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 
