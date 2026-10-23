@@ -171,3 +171,7 @@ ZIP解压后可继续打开内置工作台。换电脑时仍需完成媒体运�
 新工程默认要求逐场 `physicalSupport` 与 `typography` 观察，实际编码画面需绑定当前候选。人物按alpha可见轮廓和脚底定位；设备登记contactAnchor并通过supportBinding绑定桌面supportSurface；文字避让使用textExclusion，说明和标签保留独立行。运行时检测已登记接触点脱离或文字侵入后阻止该帧。仍须看当前画面，检查姿态、复杂遮挡及动作最大外延；不能将通过的坐标检查当作自动视觉验收。见[逐场规则](../skills/corporate-training-motion/references/39-visual-hygiene.md)。
 
 `asset_library.py register/import-photo/stage`保留本地原件并按哈希暂存素材。产品登记Apple品牌或无品牌Apple适配信息。实拍标注同时提供photoSize和带label/归一化point的annotations，并核对箭头所指物件。`register-style --file JSON`增加用户美术配方；全新动作、材质和物件须先实现、再登记实际可见示例与相应检查。原有课程的确认与冻结文件按原记录保留。
+
+## 发音及导航返修
+
+制作端先列英文名称与缩写的发音表，字幕保持标准拼写；必要的大小写、语言模式和别名只作用于记录过的配音输入。优先在同一已确认声音下重生成整句，并从实际编码视频核对所有重复位置。目录把正式章节名、短标签与口播问题逐项对应，节选进度不推测未采样章节时间。局部返修核对实际服务的课程路径、revision与编辑器源码，再检查当前导出。ASR、截图和技术检测均不代替实际试听或用户认可。

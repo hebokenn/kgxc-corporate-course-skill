@@ -6,9 +6,13 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.7.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.1/kgxc-course-suite-v5.7.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.7.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.2/kgxc-course-suite-v5.7.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.7.2：发音、目录与成片同步复查
+
+英文名称区分整词与字母缩写；标准字幕与配音输入分开记录，优先用相同声音重生成完整语义段，并从编码MP4核对全部重复位置。目录的章节名与口播任务逐项对应，当前高亮及章节进度使用同一实际时间线；返修先确认正在服务的课程编辑器与源码。某次有效参数不成为所有课程的默认，也不自动重配冻结录音。详见[配音指南](docs/VOICE.md)与[使用指南](docs/USAGE.md)。
 
 ## 5.7.1：随视觉风格设计的课程导航
 
@@ -407,7 +411,7 @@ kgxc-course resume ./courses/my-course
 
 ## 安装或更新
 
-**[下载 v5.7.1 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.1/kgxc-course-suite-v5.7.1.zip)** → 解压 → 双击 **安装或更新.command**。
+**[下载 v5.7.2 可安装更新包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.2/kgxc-course-suite-v5.7.2.zip)** → 解压 → 双击 **安装或更新.command**。
 
 默认更新 Codex 和 WorkBuddy 中的两个课程模块，保留现有媒体、配音环境和个人选择。更新后开启新对话，调用 `$corporate-training-motion`。
 

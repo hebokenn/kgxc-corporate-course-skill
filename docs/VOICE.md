@@ -105,3 +105,7 @@ python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
 ## 5.5.0 提速、升调与首尾话术
 
 提速默认保音高；用户要求声音更明亮时，小幅调整旁白音调，音乐与音效保留音高。先记录基准版本，避免对已经处理的声音重复加速。新增品牌欢迎语和结束语使用已确认的同一speaker/参考音频，从最终编码片段核对完整发音和字幕。字幕、动效、章节跳转与整片共用同一时间映射。具体用法见[后期规范](../skills/corporate-training-motion/references/37-cover-and-delivery-finish.md)。
+
+## 英文名称与缩写
+
+Mac等产品词按英文整词处理，SN、RFID等按语境核对字母读法。保留逐字稿和字幕的标准写法，TTS输入别名、语言模式及大小写单独记录。当前声音中测试完整混合语言句子，不把某次 auto/小写方案设成全局默认；优先用相同speaker或参考录音重生成语义段，避免孤词拼接残留音节。复核最终MP4中每次出现的位置、尾字及左右衔接，ASR仅作辅助。详见[技能发音规则](../skills/corporate-training-motion/references/23-local-qwen3-voice.md#英文名称与缩写的实际读法)。
