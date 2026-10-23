@@ -137,6 +137,8 @@ def validate(doc, project):
             raise ValueError('场景ID或时间轴无效')
         previous=b;scene_ids.add(scene['id'])
     if doc['adapter']=='scene-graph-v1' or doc.get('rendering',{}).get('route')=='motion-canvas':
+        from character_performance import validate_assets
+        validate_assets(doc,project)
         from authoring import graph_errors
         errors=graph_errors(doc)
         if errors:raise ValueError('; '.join(errors))

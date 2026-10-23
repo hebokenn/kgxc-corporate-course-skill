@@ -120,6 +120,7 @@ class MotionRuntimeTests(unittest.TestCase):
         self.doc=self.fixture.ready(dict(sceneGraph=graph(),rendering=dict(route='auto'),
             assets=[dict(id='sample',path='assets/red.svg')]))
         self.space=Workspace(self.p)
+        http.server.ThreadingHTTPServer.request_queue_size=128
         self.server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);self.server.workspace=self.space
         threading.Thread(target=self.server.serve_forever,daemon=True).start()
         self.url=f'http://127.0.0.1:{self.server.server_address[1]}'

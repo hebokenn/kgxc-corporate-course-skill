@@ -21,14 +21,14 @@ def walk(nodes):
 def library_digest(root=None):
     root=Path(root) if root else Path(__file__).resolve().parent
     h=hashlib.sha256()
-    for name in ['motion/effects.js','motion/teaching-effects.js','motion/retail-effects.js','motion/surface-materials.js','motion/m1-mesh.js','teaching_modules.py','motion_catalog.py','starter/scene-engine.js']:
+    for name in ['motion/effects.js','motion/teaching-effects.js','motion/retail-effects.js','motion/surface-materials.js','motion/m1-mesh.js','motion/character-performance.js','character_performance.py','performance-profiles.json','motion_evidence.py','teaching_modules.py','motion_catalog.py','starter/scene-engine.js']:
         h.update(name.encode());h.update((root/name).read_bytes())
     return h.hexdigest()
 
 
 def policy():
     return dict(schema='course-motion-policy/1',required=True,librarySha256=library_digest(),
-                longStaticWarningSeconds=8,semanticRequired=True,acceptance='technical evidence plus continuous visual review; user acceptance separate')
+                longStaticWarningSeconds=8,semanticRequired=True,stateProofRequired=True,acceptance='technical evidence plus continuous visual review; user acceptance separate')
 
 
 def runtime_digest(project,doc):
@@ -90,6 +90,11 @@ def preflight(doc):
                 if max(a,e['startFrame'])<min(z,e['endFrame']):effect_intervals.append((e['startFrame'],e['endFrame']))
             for e in n.get('motion',[]):
                 if e.get('from')!=e.get('to') and max(a,e['startFrame'])<min(z,e['endFrame']):effect_intervals.append((e['startFrame'],e['endFrame']))
+        for object_id in objects:
+            n=nodes.get(object_id,{})
+            keys=n.get('performance',{}).get('keys',[])
+            for left,right in zip(keys,keys[1:]):
+                if left.get('values')!=right.get('values')and max(a,left['frame'])<min(z,right['frame']):effect_intervals.append((left['frame'],right['frame']))
         if native:
             proof=b.get('implementation',{})
             if not proof.get('source') or not proof.get('function'):errors.append('原生路线须登记真实源码/函数及运行回执 '+bid)
@@ -98,7 +103,10 @@ def preflight(doc):
         uncovered=intervals_subtract((a,z),effect_intervals)
         if any(y-x>1 for x,y in uncovered):errors.append('动作窗口长于实际动作；请补齐过程或明确读图停留 '+bid)
         actions.append(b);coverage.extend((max(a,x),min(z,y)) for x,y in effect_intervals if max(a,x)<min(z,y))
-    if not actions:errors.append('没有实际教学主体动作')
+    reference_only=doc.get('motionPolicy',{}).get('stateProofRequired')and all(s.get('presentation',{}).get('mode')in ['reference','navigation','brand']for s in doc['scenes'])
+    if not actions and not reference_only:errors.append('没有实际教学主体动作')
+    from motion_evidence import inspect as inspect_states
+    errors.extend(inspect_states(doc,nodes))
     for cue in ([] if doc.get('motionPolicy',{}).get('semanticRequired') else doc.get('captions',[])):
         from timeline import segments
         spans=segments(dict(doc,holds=doc.get('holds',[])))
@@ -128,6 +136,7 @@ def require(doc,project=None):
         raise ValueError('本工程要求逐段动效检查；不能删除 motionPolicy 绕过检查')
     if project and (Path(project)/'motion-contract.json').is_file():
         marker=json.loads((Path(project)/'motion-contract.json').read_text())
+        if marker.get('stateProofRequired')and not doc.get('motionPolicy',{}).get('stateProofRequired'):raise ValueError('本工程要求对象状态与编码像素证明，不能删除 stateProofRequired')
         if marker.get('semanticRequired') and not doc.get('motionPolicy',{}).get('semanticRequired'):
             raise ValueError('本工程要求口播与对象状态对应；不能删除 semanticRequired 绕过检查')
     report=preflight(doc)
@@ -178,9 +187,10 @@ def audit_encoded(video,doc,first,last):
     import numpy as np
     if not doc.get('motionPolicy',{}).get('required') and not doc.get('motionPlan'):
         return dict(status='legacy-not-opted-in')
-    fps=doc.get('fps',30);w,h=424,160;duration=(last-first)/fps
+    from motion_samples import subject_roi
+    roi=subject_roi(doc);fps=doc.get('fps',30);w,h=424,160;duration=(last-first)/fps
     cmd=['ffmpeg','-v','error','-ss',str(first/fps),'-i',str(video),'-t',str(duration),
-         '-vf',f'fps=2,crop=1696:640:112:270,scale={w}:{h},format=gray','-f','rawvideo','-']
+         '-vf',f'fps=2,crop={roi[2]}:{roi[3]}:{roi[0]}:{roi[1]},scale={w}:{h},format=gray','-f','rawvideo','-']
     # Exported video begins at zero, independently of the source timeline.
     cmd[4]='0'
     raw=subprocess.check_output(cmd);frames=np.frombuffer(raw,dtype=np.uint8).reshape(-1,h,w)
@@ -204,7 +214,7 @@ def audit_encoded(video,doc,first,last):
     if start is not None and times[-1]-times[start]>=warn:static.append(dict(start=round(float(times[start]),3),end=round(float(times[-1]),3),sceneId=scene_at(source_times[start])))
     beats=doc['motionPlan']['beats']
     from motion_samples import action_phase_audit
-    proofs,failures=action_phase_audit(video,doc,first,last)
+    proofs,failures=([],[])if doc.get('motionPolicy',{}).get('stateProofRequired')else action_phase_audit(video,doc,first,last)
     unresolved=[]
     for run in static:
         holds=[s for s in segments(dict(doc,holds=doc.get('holds',[]))) if s['kind']=='hold']
@@ -216,5 +226,5 @@ def audit_encoded(video,doc,first,last):
         if not run['intentional']:unresolved.append(run)
     return dict(schema='course-encoded-motion-audit/1',status='fail' if failures else 'review-required' if unresolved else 'pass',
                 failures=failures,actionProofs=proofs,longStaticRuns=static,unresolvedStaticRuns=unresolved,
-                sampleFps=2,subjectROI=[112,270,1696,640],motionQuota=None,
+                sampleFps=2,subjectROI=roi,motionQuota=None,
                 scope='actual encoded subject pixels; low-change flags need review, not a universal motion-rate target')

@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_pose.py','company_characters.py','device_models.py']:
+    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_performance.py','performance-profiles.json','motion_evidence.py','character_pose.py','company_characters.py','device_models.py']:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -43,7 +43,7 @@ def init_project(project, skill_root):
     doc['characterPolicy']=dict(required=True,scope='known company masters require their original uniform mark')
     from motion_quality import policy
     doc['motionPolicy']=policy()
-    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.2.1',semanticRequired=True))
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.8.0',semanticRequired=True,stateProofRequired=True))
     from craft_quality import policy as craft_policy
     doc['qualityPolicy']=craft_policy();doc['qualityPolicy']['spatialReviewRequired']=True
     atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,visualHygieneRequired=True,spatialReviewRequired=True,createdBy='5.7.0'))
@@ -87,6 +87,9 @@ def graph_errors(doc):
     text_ids={n['id'] for n in nodes if n.get('type')=='text'}
     for n in nodes:
         if any(identifier not in text_ids for rule in ['enclosesTextIds','nonOverlappingTextIds'] for identifier in n.get(rule,[])):errors.append('布局约束引用不存在的文字 '+n['id'])
+    from character_performance import errors as performance_errors
+    for node in nodes:
+        if node.get('performance'):errors.extend(performance_errors(node,doc))
     from render_routes import effect_errors, requirements
     if doc.get('rendering',{}).get('route')=='motion-canvas':errors.extend(effect_errors(doc))
     elif requirements(doc):errors.append('当前简易画布不能实现所需动效；先选择 motion-canvas 或实际自定义渲染')

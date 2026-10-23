@@ -143,6 +143,9 @@ def phone(recipe,scene):
 def actor(recipe,scene):
     from character_rig import pose_angles
     b=Drawing(recipe,scene);d=recipe.get('data',{});identity=d.get('identity','C01');rig=d.get('rig')
+    if d.get('performance'):
+        from character_performance import compile_actor
+        return compile_actor(recipe,scene)
     if identity in ['S01','S02','COACH']:
         if not d.get('headAsset'):raise ValueError('须使用该门店角色自己的原图')
         staff=identity in ['S01','S02'];w,h=(737.28,1024) if staff else (1024,1536)
@@ -249,7 +252,7 @@ def parcel(recipe,scene):
 
 
 def catalog():return dict(schema='course-content-assets/1',phone=dict(models=['iphone-18-pro'],views=['front','back','side'],screens=list(SCREENS),ui='editable teaching illustration; use verified screenshots for exact OS operation training'),
-    actor=dict(identities=list(IDENTITIES)+['S01','S02','COACH'],poses=['rest','welcome','listen','question'],contactPoses=['C01-phone-use-v2'],expressions=list(MOODS),scope='role-specific uniform mark required; own-identity contact pose required for holding'),
+    actor=dict(identities=list(IDENTITIES)+['S01','S02','COACH'],poses=['rest','welcome','listen','question'],contactPoses=['C01-phone-use-v2'],expressions=list(MOODS),registeredPerformance=dict(identities=['C01','S01'],channels=['concern','relief','gazeX','gazeY','nod','head','left','right','leftFore','fore','leftHand','hand'],method='stage-performance; own profile and actual target IDs'),scope='role-specific uniform mark required; own-identity contact pose required for holding'),
     document=dict(formats=['sheet','ticket'],editable=['title','subtitle','rows','footer']),parcel=dict(editable=['label','serial']),
     retail=__import__('retail_assets').catalog(), implementation='ordinary editable graph nodes; no separate preview renderer')
 

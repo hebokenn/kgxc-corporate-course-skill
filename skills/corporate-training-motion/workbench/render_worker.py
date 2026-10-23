@@ -21,6 +21,11 @@ def main():
           '-t',str(count/a.fps),'-movflags','+faststart',str(output)]
     metrics={};captured=0;motion_calls={};layout_checks={};layout_frames=0
     document=json.loads((a.directory/'document.json').read_text())
+    from motion_evidence import requests as proof_requests,verify as verify_objects
+    requests=proof_requests(document,a.first,a.last)if document.get('motionPolicy',{}).get('stateProofRequired')else[]
+    requested={};captures={};proof_dir=a.directory/'object-proof';proof_dir.mkdir(exist_ok=True)
+    for request in requests:
+        for phase in request['frames']:requested.setdefault(phase['display'],[]).append((request,phase))
     with sync_playwright() as pw, (a.directory/'encoder.log').open('w') as log:
         browser=pw.chromium.launch(headless=True,**browser_options())
         page=browser.new_page(viewport=dict(width=1920,height=1080));errors=[]
@@ -46,6 +51,13 @@ def main():
         try:
             for f in range(a.first,a.last):
                 data=page.evaluate('''async ({frame,old})=>{const r=window.courseRenderer,key=r.key(frame);if(key===old)return {key};const result=await r.drawFrame(frame);return {...result,jpeg:r.canvas.toDataURL('image/jpeg',.96).split(',')[1]}}''',dict(frame=f,old=last_key))
+                if f in requested:
+                    for request,phase in requested[f]:
+                        proof=page.evaluate('''async ({frame,ids})=>{const r=window.courseRenderer,b=r.native.courseWorkbench;if(typeof b.objectReceipt!=='function'||typeof b.isolate!=='function')throw Error('当前引擎缺少对象隔离与状态回执');await r.drawFrame(frame);const states=b.objectReceipt(),base=r.canvas.toDataURL('image/png').split(',')[1];let hidden;try{b.isolate(ids);await r.drawFrame(frame);hidden=r.canvas.toDataURL('image/png').split(',')[1]}finally{b.isolate([]);await r.drawFrame(frame)}return {states,base,hidden}}''',dict(frame=f,ids=request['objects']))
+                        paths={}
+                        for kind in ['base','hidden']:
+                            file=proof_dir/(str(len(captures))+'-'+kind+'.png');file.write_bytes(base64.b64decode(proof[kind]));paths[kind]=str(file)
+                        captures[(request['id'],phase['source'])]=dict(states=proof['states'],**paths)
                 if data.get('jpeg'):
                     buffer=base64.b64decode(data['jpeg']);captured+=1
                     if data.get('caption'):metrics[data['caption']['id']]=data['caption']
@@ -73,7 +85,10 @@ def main():
     assert abs(float(probe['format']['duration'])-count/a.fps)<.09
     subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(output),'-f','null','-'],check=True)
     from motion_quality import audit_encoded
+    object_proof=verify_objects(output,requests,captures,proof_dir)if requests else dict(status='not-required'if not document.get('motionPolicy',{}).get('stateProofRequired')else'pass',events=[])
+    if object_proof['status']=='fail':raise ValueError('对象状态与编码像素验证失败：'+str(object_proof['failures']))
     motion_audit=audit_encoded(output,document,a.first,a.last)
+    motion_audit['objectStateProof']=object_proof
     motion_audit['runtimeCalls']=list(motion_calls.values())
     if document.get('motionPolicy',{}).get('required'):
         from timeline import segments
@@ -90,7 +105,7 @@ def main():
         raise ValueError('编码成片动效未通过：'+json.dumps(dict(failures=motion_audit.get('failures',[]),unresolved=motion_audit.get('unresolvedStaticRuns',[])),ensure_ascii=False)+'；候选和证据保留在本次导出目录，未登记为完成')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,
+                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,
                 layoutAudit=dict(status='pass' if layout_checks else 'not-declared',checkedRenderedStates=layout_frames,rules=list(layout_checks.values()),scope='declared text enclosure and row separation, not all possible visual collisions'),renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))

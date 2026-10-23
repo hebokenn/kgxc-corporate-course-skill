@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.7.5](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.7.5/kgxc-course-suite-v5.7.5.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.8.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.0/kgxc-course-suite-v5.8.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.8.0：人物反应、视线与对象证据
+
+C01顾客与S01店员各自的原图标定接入正式工作台：眉眼连续形变、闭口情绪、视线、独立眨眼、短促点头和已验证范围的关节动作，共用预览、编辑与MP4导出。它属于正面二维演出，不承诺自然行走、接物或逐音素口型；其他人物需重新标定。
+
+导演从动态分镜、实际对象和工作动词编排起态、过程、结果与反应。新工程按明确状态断言与目标隔离像素检查最终MP4；字幕高度参与排除，整场observe不能豁免需要演示的内容。结果能停稳读清，技术、工艺和用户认可分别保留。已有冻结课程不自动重渲染。
+
+[导演与人物演出用法](skills/corporate-training-motion/references/41-direction-and-performance.md) · [使用指南](docs/USAGE.md)。本次公共发布仅含通用源码、已有角色资产与合成测试，不包含私人课程、音频或成片。
 
 ## 5.7.5：白色工作台与实际配色检查
 

@@ -16,7 +16,7 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
@@ -54,7 +54,7 @@ def main(argv=None):
         if aa.video:result['review']=review(aa.project,doc,aa.video)
         print(json.dumps(result,ensure_ascii=False,indent=2))
         return 2 if result.get('review',{}).get('status')=='pending' else 0
-    if args.command in ['asset-catalog','compile-assets','stage-character-rig','stage-contact-pose','stage-company-character']:
+    if args.command in ['asset-catalog','compile-assets','stage-character-rig','stage-contact-pose','stage-company-character','stage-performance']:
         if args.dry_run and args.command!='asset-catalog':parser.error('本素材命令不支持 --dry-run；未执行写入。先用 asset-catalog 查看能力')
         from content_assets import catalog,expand
         if args.command=='asset-catalog':
@@ -63,12 +63,15 @@ def main(argv=None):
         else:
             ap=argparse.ArgumentParser(description='Code-authored content assets in the actual course graph')
             if args.command=='compile-assets':ap.add_argument('--spec',type=Path,required=True)
-            else:ap.add_argument('course',type=Path);ap.add_argument('--identity',choices=['M1','S01','S02','COACH'] if args.command=='stage-company-character' else ['C01','C02','C03'],required=True)
+            else:ap.add_argument('course',type=Path);ap.add_argument('--identity',choices=['C01','S01'] if args.command=='stage-performance' else ['M1','S01','S02','COACH'] if args.command=='stage-company-character' else ['C01','C02','C03'],required=True)
             ap.add_argument('--out',type=Path,required=True);aa=ap.parse_args(rest)
             if aa.out.exists():ap.error('输出已存在，保留既有文件；指定新的 --out')
             if args.command=='compile-assets':result=expand(json.loads(aa.spec.read_text()))
             elif args.command=='stage-character-rig':
                 from character_rig import stage
+                result=stage(aa.identity,aa.course,ROOT)
+            elif args.command=='stage-performance':
+                from character_performance import stage
                 result=stage(aa.identity,aa.course,ROOT)
             elif args.command=='stage-contact-pose':
                 from character_pose import stage_pose

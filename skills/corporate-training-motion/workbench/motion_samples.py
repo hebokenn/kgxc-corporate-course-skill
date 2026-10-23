@@ -8,12 +8,21 @@ def balanced_sum(terms):
     return '('+balanced_sum(terms[:m])+'+'+balanced_sum(terms[m:])+')'
 
 
-def decode_selected(video,frame_indices,width=424,height=160):
+def subject_roi(doc):
+    width=doc.get('width',1920);height=doc.get('height',1080);s=doc.get('captionStyle',{})
+    bottom=min(height-170,s.get('y',height-90)-s.get('fontSize',42)/2-s.get('strokeWidth',8)-12)
+    roi=doc.get('motionPolicy',{}).get('subjectROI',[112,270,width-224,max(2,int(bottom)-270)])
+    if len(roi)!=4 or any(type(v)is not int for v in roi)or min(roi)<0 or min(roi[2:])<2 or roi[0]+roi[2]>width or roi[1]+roi[3]>height:raise ValueError('教学主体检测范围无效')
+    return roi
+
+
+def decode_selected(video,frame_indices,width=424,height=160,roi=None):
     import numpy as np
     indices=sorted(set(frame_indices))
     if not indices:return {}
+    roi=roi or [112,270,1696,640]
     expression=balanced_sum(['eq(n,'+str(f)+')' for f in indices])
-    command=['ffmpeg','-v','error','-i',str(video),'-vf',"select='"+expression+"',crop=1696:640:112:270,scale="+str(width)+':'+str(height)+',format=gray',
+    command=['ffmpeg','-v','error','-i',str(video),'-vf',"select='"+expression+"',crop="+':'.join(str(v)for v in [roi[2],roi[3],roi[0],roi[1]])+",scale="+str(width)+':'+str(height)+',format=gray',
              '-fps_mode','vfr','-f','rawvideo','-']
     raw=subprocess.check_output(command);pictures=np.frombuffer(raw,dtype=np.uint8).reshape(-1,height,width)
     if len(pictures)!=len(indices):raise ValueError('实际动作帧解码数量不匹配')
@@ -38,7 +47,7 @@ def action_phase_audit(video,doc,first,last):
             for source in sorted({x,x+(y-x)//2,y-1}):indices.append(a+source-source_a-first)
         if not indices:continue
         indices=sorted(set(indices));all_indices.update(indices);requests.append((beat,indices))
-    pictures=decode_selected(video,all_indices);proofs=[];failures=[]
+    pictures=decode_selected(video,all_indices,roi=subject_roi(doc));proofs=[];failures=[]
     for beat,indices in requests:
         counts=[]
         for x,y in zip(indices,indices[1:]):

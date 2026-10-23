@@ -110,7 +110,7 @@ class RigAndRenderTests(unittest.TestCase):
                 # The public adapter is also the renderer's actual editing path.
                 page.evaluate('async d=>{await window.courseRenderer.load(d)}',changed);self.assertNotEqual(draw(24),frames[24])
                 # Half-body crop should leave the lower body background untouched.
-                self.assertEqual(page.evaluate('Array.from(window.courseRenderer.ctx.getImageData(290,910,1,1).data)')[:3],[243,242,236])
+                self.assertEqual(page.evaluate('Array.from(window.courseRenderer.ctx.getImageData(290,910,1,1).data)')[:3],page.evaluate('Array.from(window.courseRenderer.ctx.getImageData(20,910,1,1).data)')[:3])
                 browser.close()
         finally:server.shutdown();server.server_close()
 

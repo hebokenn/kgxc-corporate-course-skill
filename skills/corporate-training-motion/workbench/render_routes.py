@@ -22,6 +22,7 @@ EFFECTS = {
     'mesh-gradient': 'UI.mesh: deterministic moving gradient background',
     'camera': 'CAM.apply: world camera with editable objects',
     'surface-material': 'Deterministic texture, lighting and physical surface treatment',
+    'character-performance': 'Registered source-texture facial gaze, reaction and joint channels',
     'easing': 'MO: analytical easing and spring functions',
 }
 EFFECTS.update({key:value['purpose'] for key,value in CATALOG.items()})
@@ -36,6 +37,8 @@ V570_PRECONTACT_ENGINE_SHA256='a5e3814a041ef0413437002465ed22e1af1b13ccb9c970213
 V560_ENGINE_SHA256 = '28f6588cbce71292c3a80047a2dc29123a4bd16fbaebcba03c9648971149ca0d'
 V560_ENTRY_SHA256 = '96eae29cbacf95a61c2a5de6615df2cb8bc744e657d5b86e7208808712b49fa9'
 PRIOR_ENTRY_SHA256 = '83f2035f70b5148e0de613b93d225abaf1827e77852cb90377f821fc1b9e40c3'
+V575_ENTRY_SHA256 = '5c7e9c76e27242794013b17539eb478d82fdcc5b86ed6caae51643a5a667c4d7'
+V575_ENGINE_SHA256 = '9eafb57edf402b53a7e28d5cbcb7d7c12dc392627e36e9b19ab6e0a23568f59f'
 LEGACY_ENGINE_SHA256 = '07eebcc6d8a0f29e3f619f29d74f8ce136dadcdc558043c3ee03bb8753fc30a7'
 
 
@@ -64,6 +67,7 @@ def requirements(spec):
     result = set(requested)
     graph = spec.get('sceneGraph', {})
     for node in walk(graph.get('nodes', [])):
+        if node.get('performance'):result.add('character-performance')
         if node.get('surface'):result.add('surface-material')
         for effect in node.get('effects', []):
             result.add(effect.get('type', 'unknown-effect'))
@@ -124,6 +128,8 @@ def effect_errors(spec):
             errors.append('一个文字对象只选择一种入场方式 '+node['id'])
         for e in effects:
             kind = e.get('type')
+            if kind=='character-performance':
+                errors.append('人物演出通过 image.performance 数据绑定，不是 effects 标签');continue
             if kind not in EFFECTS or kind in ['gradient', 'mesh-gradient', 'camera', 'easing']:
                 errors.append('未知节点动效 '+str(kind))
                 continue
@@ -161,6 +167,9 @@ def effect_errors(spec):
         for a in node.get('motion', []):
             if a.get('ease', 'smooth') not in EASES:
                 errors.append('未知缓动 '+str(a.get('ease')))
+    from character_performance import errors as performance_errors
+    for node in walk(graph.get('nodes',[])):
+        if node.get('performance'):errors.extend(performance_errors(node,spec))
     paints = [graph.get('background')]
     for node in walk(graph.get('nodes', [])):
         paints.extend([node.get('fill'), node.get('stroke')])
@@ -225,7 +234,7 @@ def prepare(project, selection, skill_root):
     managed = (base/'motion/index.html').read_bytes()
     engine=p/'native/scene-engine.js'
     recognized=engine.is_file() and hashlib.sha256(engine.read_bytes()).hexdigest() in {
-        LEGACY_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        LEGACY_ENGINE_SHA256,V575_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
     if selection['route'] == 'native-canvas':
         if not entry.is_file() or entry.read_bytes() in [starter, managed] and recognized:
             raise ValueError('尚未提供实际自定义渲染器；默认画布不能冒充 native-canvas')
@@ -234,11 +243,11 @@ def prepare(project, selection, skill_root):
         if entry.read_bytes() != starter:
             raise ValueError('已有其他 native 源码，保留实现并选择对应路线，不自动覆盖')
         return
-    if entry.read_bytes() not in [starter, managed] and hashlib.sha256(entry.read_bytes()).hexdigest() not in [PRIOR_ENTRY_SHA256,V560_ENTRY_SHA256] or not recognized:
+    if entry.read_bytes() not in [starter, managed] and hashlib.sha256(entry.read_bytes()).hexdigest() not in [PRIOR_ENTRY_SHA256,V560_ENTRY_SHA256,V575_ENTRY_SHA256] or not recognized:
         raise ValueError('已有自定义 native 源码，不能自动覆盖；请沿用 native-canvas')
     (p/'native/motion').mkdir(exist_ok=True)
     stage_libraries(skill_root, p/'native/motion/lib')
-    for name in ['effects.js','teaching-effects.js','retail-effects.js','surface-materials.js','m1-mesh.js']:
+    for name in ['effects.js','teaching-effects.js','retail-effects.js','surface-materials.js','m1-mesh.js','character-performance.js']:
         shutil.copy2(base/'motion'/name,p/'native/motion'/name)
     shutil.copy2(base/'starter/scene-engine.js', p/'native/scene-engine.js')
     entry.write_bytes(managed)
@@ -272,8 +281,8 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
         d['revision']=old['revision']+1;validate(d,p)
         entry=(p/'native/index.html').read_bytes()
         engine=p/'native/scene-engine.js'
-        hashes={LEGACY_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
-        if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] and hashlib.sha256(entry).hexdigest() not in [PRIOR_ENTRY_SHA256,V560_ENTRY_SHA256] or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
+        hashes={LEGACY_ENGINE_SHA256,V575_ENGINE_SHA256,V570_PRECONTACT_ENGINE_SHA256,V560_ENGINE_SHA256,PRIOR_ENGINE_SHA256,CONTENT_ASSETS_PRIOR_ENGINE_SHA256,LAYOUT_PRIOR_ENGINE_SHA256,hashlib.sha256((base/'starter/scene-engine.js').read_bytes()).hexdigest()}
+        if entry not in [(base/'starter/index.html').read_bytes(),(base/'motion/index.html').read_bytes()] and hashlib.sha256(entry).hexdigest() not in [PRIOR_ENTRY_SHA256,V560_ENTRY_SHA256,V575_ENTRY_SHA256] or not engine.is_file() or hashlib.sha256(engine.read_bytes()).hexdigest() not in hashes:
             raise ValueError('检测到自定义native源码，未覆盖；请保留实现并手动接入所需库')
         if dry_run:return dict(route=selection,currentRevision=old['revision'],nextRevision=d['revision'],dryRun=True)
         backup=p/'workbench-history'/('renderer-'+str(old['revision'])+'-'+uuid.uuid4().hex[:8])
