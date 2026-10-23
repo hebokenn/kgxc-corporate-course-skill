@@ -144,6 +144,33 @@ class BranchTests(unittest.TestCase):
         d=self.video_ready();self.assertEqual(self.course.status()['stage'],'pilot')
         self.course.relative(d['styles'][1]['preview_file']).write_text('<svg xmlns="http://www.w3.org/2000/svg"><text>改变画面</text></svg>')
         self.assertEqual(self.course.status()['gates'][2]['status'],'stale')
+    def test_freezing_exported_pilot_keeps_verified_range_for_palette_confirmation(self):
+        self.visual_ready()
+        from test_visual_identity import document
+        doc=document()
+        doc['sceneGraph']['nodes'].append(dict(id='unseen',type='rect',sceneId='B',fill='#eef1ed'))
+        atomic(self.course.project/'workbench.json',doc)
+        self.audiovisual();source=self.course.project/'sample.mp4'
+        atomic(source.with_suffix('.json'),dict(video_sha256=sha(source),range=dict(firstFrame=0,lastFrame=30)))
+        self.course.register('pilot',['sample.mp4'],self.course.status()['revision'])
+        frozen=self.course.relative(self.course.status()['artifacts']['pilot'][0])
+        self.assertTrue(frozen.with_suffix('.json').is_file())
+        source.with_suffix('.json').unlink()
+        self.course.confirm('pilot',self.course.status()['revision'],'QA确认实际有声范围，非业务批准',actor='qa-operator')
+        lock=json.loads(self.course.state_file.read_text())['visual_palette']
+        self.assertEqual(lock['scope'],'exported pilot source intervals')
+        self.assertNotIn('#eef1ed',lock['palette']['surface'])
+        gate=next(g for g in self.course.status()['gates'] if g['id']=='pilot')
+        self.assertTrue(any('配色偏离已确认小样' in reason for reason in gate['reasons']))
+        with self.assertRaises(ValueError):
+            self.course.require_video('pilot')
+    def test_mismatched_export_metadata_cannot_define_frozen_pilot_palette_range(self):
+        self.visual_ready();self.audiovisual()
+        source=self.course.project/'sample.mp4'
+        atomic(source.with_suffix('.json'),dict(video_sha256='wrong-video',range=dict(firstFrame=0,lastFrame=30)))
+        self.course.register('pilot',['sample.mp4'],self.course.status()['revision'])
+        frozen=self.course.relative(self.course.status()['artifacts']['pilot'][0])
+        self.assertFalse(frozen.with_suffix('.json').exists())
     def test_audio_only_cannot_pass_audiovisual_pilot(self):
         self.video_ready();p=self.course.project/'sample.wav';p.write_bytes(b'RIFF')
         with self.assertRaisesRegex(ValueError,'画面小样'):self.course.register('pilot',['sample.wav'],self.course.status()['revision'])

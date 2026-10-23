@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "5.7.4",
+  "version": "5.7.5",
   "usage": "KGXC course production suite",
   "files": {
-    "INSTALL.md": "635f01dede23df7bfd5eddbb949d6ff5836ad44fd1ffe914ed12cd8cc6c482a8",
-    "SKILL.md": "610c1b0b18eef5f52e3ba44862bd156cb14fed7cecad7e426df29da9ee66e3ed",
+    "INSTALL.md": "31a5e6dd637383f3d8961a879b6bce6bbf155e66e195058681252b5bb2fce068",
+    "SKILL.md": "9d1d8290dd2dbb22b88fcc4ae6245e3d7478ce51d60cf1ff11de4cfb1dbe9808",
     "agents/openai.yaml": "db58f0a41561394f1b38dbd80b863e342555629e35e4e5d9c24fad3df92f70f6",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",
@@ -1033,7 +1033,7 @@
     "libraries/web/templates/engine.html": "db00f75d5657f41906419bbc3599d78e72160433a83265bca5eb53aff601b874",
     "references/01-evidence.md": "9478a98141821bd56ad45ad1fc10ad11ed9619410bf921edcc82e419c4c2187b",
     "references/02-teaching.md": "ce780211979dcec8e8143f9a9071473ab6a5b9963a1c961c6bdcdc121e40a6d5",
-    "references/03-visual.md": "02f3fd091be2016040753b81ea82fbf5c238a6c64f53b1ff6d163e83d04952a1",
+    "references/03-visual.md": "d4d2a0db3ba26e7d73e8e3e11a389d83585456e4cac055dcf73a67f3b2b3cf55",
     "references/04-storyboard.md": "ecc7836cec718379488977659984432742cc00af7d5627bb4cd70f7d78dd0a5f",
     "references/05-render-pipeline.md": "5f86ed916ac50d8c854f7e6ab26bb6472c9267e8fc114e342d2b4c3777752240",
     "references/06-qa.md": "dedbc9dbb998092c61d405e163476a6caa9354437819d78db36a17d9f7926d00",
@@ -1104,7 +1104,7 @@
     "scripts/scaffold.py": "3a64260b4d4ad3f3c4c40e16a0b2ae83732f74b5ed1bbb9f0459c0fd89fa5805",
     "scripts/single_line_subtitles.py": "e20fe821a630bfd38ae4a76bfc557103902223902198a6f98276995f5c03f95b",
     "scripts/stage_surface_assets.py": "b20fff3def1757ddabedfd2aba0ba15e54bb11813c69ae4fd0153e8d169cd1a7",
-    "scripts/test_branch_workflow.py": "b5068111bcf66f2087172fea241a5316059ebd7e783ceb2f1e45a1798ea3b642",
+    "scripts/test_branch_workflow.py": "eab048eae813028e469359ecd72ecfeecda0dbb2ebb8e1f51c3609464dffa59f",
     "scripts/test_character_assets.py": "61b9537e43ef6dd4687c275ecfb096300ba802ee863f15b62e65deba882ebf4f",
     "scripts/test_content_assets.py": "7823662035667c8fc5592a553bb6d76022f659eb6060d485c0260b8a70eaf74e",
     "scripts/test_continue_and_sound.py": "bd10a126ac66fe60b4c97196f099cb1339200520b68cf80870c7c89b6920015f",
@@ -1189,6 +1189,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "9174751176ca8356b2c641d77674f110ddedbd9bf2c5f65e1e515d5c31b180a4",
-    "workbench/workflow.py": "3cced1182929142e9404626034925530e4e56d469e71a1cc9fd7e3b044ee6ac4"
+    "workbench/workflow.py": "5bc6fe47162bb8c14682eab47488fc6deb055cb4736f584b5567ca7186a97887"
   }
 }

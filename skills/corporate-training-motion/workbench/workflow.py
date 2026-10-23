@@ -290,6 +290,9 @@ class LegacyCourse:
                 if p.is_relative_to(self.root/'delivery'):
                     dest=self.project/'qa/reviews'/key/(sha(p)[:12]+'-'+p.name);ensure_dir(dest.parent)
                     if not dest.exists():shutil.copy2(p,dest)
+                    sidecar=p.with_suffix('.json')
+                    if key=='pilot' and p.suffix.lower()=='.mp4' and sidecar.is_file() and read(sidecar).get('video_sha256')==sha(p):
+                        shutil.copy2(sidecar,dest.with_suffix('.json'))
                     name=str(dest.relative_to(self.project))
                 stable.append(name)
             state['artifacts'][key] = stable; self._commit(state, 'artifacts_registered', dict(gate=key, paths=stable))
@@ -671,6 +674,9 @@ class Course(LegacyCourse):
             for name in paths:
                 path=self.relative(name);dest=self.project/'qa/reviews'/key/(sha(path)[:12]+'-'+path.name);ensure_dir(dest.parent)
                 if path!=dest and not dest.exists():shutil.copy2(path,dest)
+                sidecar=path.with_suffix('.json')
+                if key=='pilot' and path.suffix.lower()=='.mp4' and sidecar.is_file() and read(sidecar).get('video_sha256')==sha(path) and sidecar!=dest.with_suffix('.json'):
+                    shutil.copy2(sidecar,dest.with_suffix('.json'))
                 stable.append(str(dest.relative_to(self.project)))
             if key=='courseware':
                 target=self.root/'delivery/courseware/课程逐字稿.md';ensure_dir(target.parent);target.write_text(self.script()['text'],encoding='utf-8')
