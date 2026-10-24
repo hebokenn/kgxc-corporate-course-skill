@@ -6,9 +6,15 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.8.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.1/kgxc-course-suite-v5.8.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.8.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.2/kgxc-course-suite-v5.8.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.8.2：按内容导演与关键时刻复核
+
+自动恢复交接现在明确连接人物演出与按内容导演方法。新增 `direction-check`，从当前工程的口播、对象、动作、人物姿态、镜头/标签边界和时间映射生成检查计划；不使用某一课的布局、帧号、角色组合或动作数量作为模板。已有状态、编码像素、工艺与真实验收边界保持。
+
+[制作方法](skills/corporate-training-motion/references/42-content-directed-production.md) · [验证范围](docs/V5.8.2-VERIFICATION.md)
 
 ## 5.8.1：长课程对象证据的批量解码
 

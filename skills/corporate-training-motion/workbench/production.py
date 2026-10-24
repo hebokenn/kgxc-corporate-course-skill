@@ -23,12 +23,14 @@ def handoff(project,status):
     action='configure' if doc.get('status')=='draft' else 'upgrade-renderer' if current=='scene-graph' and selection.get('route')=='motion-canvas' else 'continue-current-renderer'
     if not selection.get('ready'):action='resolve-specific-renderer-gap'
     if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
-    return dict(active=True,automatic=True,current_route=current,route_audit=selection,
+    from direction_review import continuation
+    return dict(active=True,automatic=True,current_route=current,route_audit=selection,direction=continuation(doc),
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
         available_effects=sorted(capabilities()['effects']),teaching_modules=capabilities()['teaching_modules'],motion_catalog_count=capabilities()['executable_motion_count'],
         motion_quality=__import__('motion_quality').preflight(doc),
         craft_quality=__import__('craft_quality').analyze(doc),
-        next_steps=['执行36号课程工艺规范：清楚与美观分别复核，声音自然、标准、干脆、连贯；查看实际画面并修正，不以数量和自评分当质量',
+        next_steps=['先读取42号按内容导演方法与41号人物演出：用当前逐字稿安排信息变化、焦点、人物意图/视线/反应、镜头理由和独立动作/读图时长；不导入示例课程模板。direction-check按实际动作、姿态、变换/标签边界给取证候选帧，实际复看后补峰值',
+            '执行36号课程工艺规范：清楚与美观分别复核，声音自然、标准、干脆、连贯；查看实际画面并修正，不以数量和自评分当质量',
             '执行32号整课动效规范：真实模块、逐段旁白覆盖、编码主体与运行回执、绑定当前候选的逐段导演复核；不能简化后标记完成',
             '根据当前逐字稿与导演对象变化补齐能力要求，执行选路并落到实际画面，不停在分析或等待用户给技术指令',
             '基础图解可保留简易画布；复杂动效接入动效画布；特殊画面保留实际原生实现，不忽略未实现要求',

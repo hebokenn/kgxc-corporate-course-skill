@@ -192,3 +192,13 @@ ZIP解压后可继续打开内置工作台。换电脑时仍需完成媒体运�
 ### 5.8.1 长课程批量证据
 
 对象验收与动作采样共用平衡的帧选择表达式，支持数百实际编码证据帧。新增900帧/300事件的合成视频回归；不以减少证据、放慢动作或字幕变化规避验收。此项是验证器修复，旧课不自动重渲染。
+
+### 5.8.2 按当前内容继续导演
+
+新课和视觉返修先读[按内容导演方法](../skills/corporate-training-motion/references/42-content-directed-production.md)。`resume` 的 `production_handoff.direction` 自动提供入口与当前场景概览；普通制作选择由AI依据当前逐字稿、对象和有效美术规范完成，不让用户选底层渲染参数。
+
+```sh
+python3 SKILL_DIR/scripts/course_tools.py direction-check --spec COURSE/project/workbench.json --out NEW_REVIEW_PLAN.json
+```
+
+报告保留当前逐句目的、对象和真实动作，选取动作/表演、显隐与变换边界、停稳和下一场的源帧及编辑后帧。它仅生成检查候选，不从关键词强配模板，也不修改工程。制作端补充实际峰值，检查正常速度演出及最终编码结果，仍须完成原有工艺与交付检查；计划存在不等于审美或用户通过。
