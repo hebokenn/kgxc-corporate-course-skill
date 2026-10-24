@@ -24,12 +24,22 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def resolve(config, profile=None, model=None):
+def resolve(config, profile=None, model=None, library=None):
     """Explicit selection resets model-specific settings; runtime paths stay local."""
     selected = profile or config.get('profile') or config.get('voice_id') or CATALOG['default']
-    if selected not in CATALOG['profiles']:
-        raise ValueError('Unknown profile; use --list-voices or a supported profile with --instruct-file')
-    spec = CATALOG['profiles'][selected]
+    private = selected not in CATALOG['profiles']
+    if private:
+        from voice_library import load
+        try:
+            path, local = load(library or config_dir()/'voices', selected)
+        except (OSError, ValueError, KeyError) as exc:
+            raise ValueError('Unknown or changed local voice; use --list-voices or voice_library.py') from exc
+        spec = dict(CATALOG['profiles']['B2-clone'], voice_id=selected, language='auto',
+                    reference_audio=str(path/'reference.wav'), reference_text=str(path/'reference.txt'),
+                    reference_sha256=local['audio_sha256'], delivery_rate=local['delivery_rate'],
+                    description=local['label'], private_local_only=True)
+    else:
+        spec = CATALOG['profiles'][selected]
     data = dict(provider='qwen3_tts', **CATALOG['generation'], **spec)
     data.update(profile=selected, voice_id=spec.get('voice_id', selected))
     entry = CATALOG['models'][data['mode']]
@@ -39,6 +49,9 @@ def resolve(config, profile=None, model=None):
             data[key] = config[key]
     if profile is None or selected == config.get('profile', config.get('voice_id')):
         data.update(config)
+    if private:
+        data.update(spec, profile=selected)
+        data.pop('instruct', None)
     if model:
         data['model'] = str(model.expanduser())
     else:
@@ -64,6 +77,8 @@ def parser():
     p.add_argument('--instruct-file', type=Path)
     p.add_argument('--delivery-rate', type=float, help='Pitch-preserving delivery tempo; raw generation stays 1.0')
     p.add_argument('--seed', type=int)
+    p.add_argument('--gender', choices=['male','female'], help='Resolve the user-selected local default for this gender')
+    p.add_argument('--voice-library', type=Path, default=config_dir()/'voices')
     p.add_argument('--max-tokens', type=int)
     p.add_argument('--list-voices', action='store_true')
     p.add_argument('--set-default', action='store_true', help='Save selected profile locally, with a configuration backup')
@@ -74,15 +89,27 @@ def parser():
 def main():
     p = parser(); args = p.parse_args()
     if args.list_voices:
-        print(json.dumps(CATALOG, ensure_ascii=False, indent=2)); return
+        from voice_library import read_defaults, load
+        catalog = dict(CATALOG)
+        catalog['local_defaults'] = read_defaults(args.voice_library)
+        catalog['local_profiles'] = [load(args.voice_library, d.name)[1] for d in sorted(args.voice_library.iterdir()) if d.is_dir() and (d/'profile.json').is_file()] if args.voice_library.exists() else []
+        print(json.dumps(catalog, ensure_ascii=False, indent=2)); return
     stored = json.loads(args.config.read_text()) if args.config.exists() else {}
     if args.voice and args.profile:
         p.error('Choose --voice or --profile')
+    if args.gender and (args.voice or args.profile or args.ref_audio):
+        p.error('Choose --gender or an explicit voice/reference')
     if bool(args.ref_audio) != bool(args.ref_text_file):
         p.error('Reference cloning needs both --ref-audio and --ref-text-file')
     selection = args.voice or args.profile or ('B2-clone' if args.ref_audio else None)
+    if args.gender:
+        from voice_library import read_defaults
+        defaults = read_defaults(args.voice_library)
+        if args.gender not in defaults:
+            p.error('No local default for this gender; register and select voices first')
+        selection = defaults[args.gender]
     try:
-        cfg = resolve(stored, selection, args.model)
+        cfg = resolve(stored, selection, args.model, args.voice_library)
     except ValueError as exc:
         p.error(str(exc))
     if args.ref_audio:

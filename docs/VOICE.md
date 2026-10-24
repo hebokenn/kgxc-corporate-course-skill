@@ -109,3 +109,30 @@ python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
 ## 英文名称与缩写
 
 Mac等产品词按英文整词处理，SN、RFID等按语境核对字母读法。保留逐字稿和字幕的标准写法，TTS输入别名、语言模式及大小写单独记录。当前声音中测试完整混合语言句子，不把某次 auto/小写方案设成全局默认；优先用相同speaker或参考录音重生成语义段，避免孤词拼接残留音节。复核最终MP4中每次出现的位置、尾字及左右衔接，ASR仅作辅助。详见[技能发音规则](../skills/corporate-training-motion/references/23-local-qwen3-voice.md#英文名称与缩写的实际读法)。
+
+## 本地参考声音库（5.8.3）
+
+用户明确要求从参考片增加声音时，将干净参考WAV与逐句对应文本注册到Skill外的本地配置目录。保存源文件时间码；注册只是配置成功，音色是否满意仍以实际样段试听为准。
+
+```sh
+python3 SKILL_DIR/scripts/voice_library.py register --id teaching-female --audio REFERENCE.wav --text REFERENCE.txt --label "教学参考女声" --origin "用户提供参考片及已核对时间码"
+python3 SKILL_DIR/scripts/voice_library.py list
+python3 SKILL_DIR/scripts/voice_library.py generate --id teaching-female --text-file SAMPLE.txt --out SAMPLE.wav --dry-run
+python3 SKILL_DIR/scripts/voice_library.py generate --id teaching-female --text-file SAMPLE.txt --out SAMPLE.wav
+```
+
+已存在ID不覆盖，参考哈希改变会阻止生成。生成复用现有Qwen3-TTS Base与本地运行配置；注册不会切换默认男声。注册库不进入GitHub源码或安装包。Base依赖参考的声音特征，不支持VoiceDesign情绪指令；重新设计的候选可能改变音色，不能当作已保留原音色。
+
+自然、专业的讲述需要问题句与总结句的起伏、适度重音和清楚的逻辑，不用整段升调、拖音或长空白冒充情感。详见[参考片方法与能力边界](../skills/corporate-training-motion/references/43-reference-teaching-and-voice.md)。
+
+用户明确命名并选为默认后：
+
+```sh
+python3 SKILL_DIR/scripts/voice_library.py set-defaults --male MALE_ID --female FEMALE_ID --evidence "用户明确选择的原话"
+python3 SKILL_DIR/scripts/voice_library.py defaults
+python3 SKILL_DIR/scripts/qwen3_tts.py --gender male --dry-run
+python3 SKILL_DIR/scripts/qwen3_tts.py --gender female --dry-run
+python3 SKILL_DIR/scripts/qwen3_tts.py --voice FEMALE_ID --text-file SAMPLE.txt --out SAMPLE.wav
+```
+
+默认配置和原voice.json先备份，再保留运行时路径更新主声音。新课程按本地选择建立声音元数据；干净安装没有私有库时仍使用B2。后续安装升级不覆写这些个人配置。
