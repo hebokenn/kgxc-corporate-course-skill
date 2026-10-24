@@ -6,9 +6,13 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.8.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.0/kgxc-course-suite-v5.8.0.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.8.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.1/kgxc-course-suite-v5.8.1.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.8.1：长课程对象证据的批量解码
+
+对象证据复用已有平衡表达式，修复数百提帧条件直接相加导致的FFmpeg解析深度失败。新增900个实际编码帧、300个对象事件的合成回归；不减少证据、不放慢动作，也不改变人物演出、视听或用户验收的边界。
 
 ## 5.8.0：人物反应、视线与对象证据
 

@@ -62,7 +62,8 @@ def verify(video,requests,captures,out):
  from PIL import Image
  out=Path(out);out.mkdir(parents=True,exist_ok=True);indices=sorted({f['encoded']for r in requests for f in r['frames']})
  if not indices:return dict(status='pass',events=[],scope='no retained action events; static-reference approval remains separate')
- expression='+'.join('eq(n\\,%d)'%i for i in indices);folder=out/'encoded';folder.mkdir(exist_ok=True)
+ from motion_samples import balanced_sum
+ expression=balanced_sum(['eq(n\\,%d)'%i for i in indices]);folder=out/'encoded';folder.mkdir(exist_ok=True)
  subprocess.run(['ffmpeg','-v','error','-y','-i',str(video),'-vf','select='+expression,'-fps_mode','vfr',str(folder/'%06d.png')],check=True)
  files=sorted(folder.glob('*.png'));assert len(files)==len(indices);encoded=dict(zip(indices,files));events=[];failures=[]
  for r in requests:

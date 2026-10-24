@@ -12,6 +12,20 @@ import test_new_course_workbench as fixture
 activate()
 
 class StateEvidenceTests(unittest.TestCase):
+ def test_full_course_hundreds_of_object_proof_frames_decode(self):
+  from PIL import Image,ImageDraw
+  with tempfile.TemporaryDirectory()as tmp:
+   p=Path(tmp);hidden=p/'hidden.png';Image.new('RGB',(64,64),'white').save(hidden)
+   for i,x in enumerate([8,24,40]):
+    im=Image.new('RGB',(64,64),'white');ImageDraw.Draw(im).rectangle((x,20,x+10,35),fill='red');im.save(p/f'{i}.png')
+   video=p/'many.mp4';subprocess.run(['ffmpeg','-v','error','-y','-stream_loop','-1','-framerate','30','-i',str(p/'%d.png'),'-frames:v','900','-c:v','libx264','-preset','ultrafast','-threads','2','-pix_fmt','yuv420p',str(video)],check=True)
+   requests=[];captures={}
+   for j in range(300):
+    identifier='A'+str(j);frames=[]
+    for i,x in enumerate([8,24,40]):
+     f=j*3+i;frames.append(dict(source=f,display=f,encoded=f));captures[(identifier,f)]=dict(base=str(p/f'{i}.png'),hidden=str(hidden),states={'item':{'x':x}})
+    requests.append(dict(id=identifier,objects=['item'],frames=frames,stateChecks=[dict(sourceFrame=j*3,objectId='item',property='x',op='eq',expected=8),dict(sourceFrame=j*3+2,objectId='item',property='x',op='eq',expected=40)]))
+   result=verify(video,requests,captures,p/'proof');self.assertEqual(result['status'],'pass');self.assertEqual(len(result['events']),300)
  def test_new_default_requires_bound_states_and_cannot_delete_marker(self):
   self.assertTrue(policy()['stateProofRequired'])
   from test_motion_quality import linked_fixture

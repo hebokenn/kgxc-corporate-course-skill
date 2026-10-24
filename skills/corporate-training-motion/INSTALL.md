@@ -1,6 +1,6 @@
 # 安装与更新
 
-本版为5.8.0联合更新包，包含corporate-training-motion 5.8.0和elearning-course-design 2.0.1。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
+本版为5.8.1联合更新包，包含corporate-training-motion 5.8.1和elearning-course-design 2.0.1。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
 
 解压完整更新包，双击“安装或更新.command”。默认更新两个宿主的技能，保留已有媒体和配音环境；检测到自改同名Skill会先保留并提示。也可在解压目录运行：
 
@@ -24,3 +24,5 @@
 5.7.5补充总部团队发展中心的授课立场、学员可见来源解读措辞复核，以及课程导航的正文显示边界。不自动改写既有课程；本次授权返工在当前工程单独处理。
 
 5.8.0接入C01/S01原纹理表情、视线与反应编排，新增动态分镜与对象状态/编码像素证据；参阅[导演与人物演出](references/41-direction-and-performance.md)。旧课保留冻结版本，其他人物先标定自身。
+
+5.8.1修复长课程批量对象证据的FFmpeg表达式解析上限；900帧合成回归验证提帧与状态检查，保留5.8.0的人物和对象门槛。
