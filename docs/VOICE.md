@@ -136,3 +136,15 @@ python3 SKILL_DIR/scripts/qwen3_tts.py --voice FEMALE_ID --text-file SAMPLE.txt 
 ```
 
 默认配置和原voice.json先备份，再保留运行时路径更新主声音。新课程按本地选择建立声音元数据；干净安装没有私有库时仍使用B2。后续安装升级不覆写这些个人配置。
+
+### 5.8.4 中文命名与直接调用
+
+已注册的本地声音可通过 `--voice` 直接调用，不再被公共预设列表限制。ID允许1至64个英文字母、中文汉字、数字、下划线或连字符，例如 `示例讲师`；斜线、点号和路径形式会被拒绝。
+
+```sh
+python3 SKILL_DIR/scripts/voice_library.py register --id 示例讲师 --audio REFERENCE.wav --text REFERENCE.txt --label "示例讲师" --origin "已获授权且核对文本的参考"
+python3 SKILL_DIR/scripts/qwen3_tts.py --voice 示例讲师 --dry-run
+python3 SKILL_DIR/scripts/qwen3_tts.py --voice 示例讲师 --text-file SAMPLE.txt --out SAMPLE.wav
+```
+
+这里的名字是示例，不是内置音色；先注册相应参考。单次 `--voice` 不改变已选默认男女声。升级不移动或覆盖Skill外的私有库；换机需要另外迁移获授权的参考WAV、对应文本及profile。干净安装仍使用公共B2默认方案。

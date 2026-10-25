@@ -6,9 +6,17 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.8.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.2/kgxc-course-suite-v5.8.2.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.8.4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.4/kgxc-course-suite-v5.8.4.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.8.4：中文命名声音可直接调用
+
+修复 `qwen3_tts.py --voice 名称` 只接受公共预设、拦截私有命名声音的问题；已注册的英文或中文声音ID均可按名称调用。默认男女声、参考哈希核验、单次选声与默认配置继续分别保存，升级保留个人设置。
+
+公共源码与安装包只包含通用调用能力和合成测试，不分发个人参考录音或本机声音身份。其他机器需注册或单独迁移获授权的私有库。
+
+[声音用法](docs/VOICE.md) · [验证范围](docs/V5.8.4-VERIFICATION.md)
 
 ## 5.8.3：参考片讲解方法与本地声音库
 

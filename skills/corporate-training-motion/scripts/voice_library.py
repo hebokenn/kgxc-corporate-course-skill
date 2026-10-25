@@ -20,8 +20,8 @@ def sha(path):
 
 
 def entry(root, name):
-    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}', name):
-        raise ValueError('Use a voice id of 1-64 letters, digits, underscores or hyphens')
+    if not re.fullmatch(r'[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff_-]{0,63}', name):
+        raise ValueError('Use a voice id of 1-64 letters, Chinese characters, digits, underscores or hyphens')
     path = root / name
     if path.is_symlink():
         raise ValueError('Voice directory must not be a symlink')

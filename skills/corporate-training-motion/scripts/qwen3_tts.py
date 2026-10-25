@@ -68,7 +68,7 @@ def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--config', type=Path, default=DEFAULT_CONFIG)
     p.add_argument('--profile', choices=list(CATALOG['profiles']))
-    p.add_argument('--voice', choices=[k for k,v in CATALOG['profiles'].items() if v['mode']=='custom_voice'], help='Preset override for this invocation')
+    p.add_argument('--voice', help='Preset or verified private local voice name for this invocation')
     p.add_argument('--model', type=Path, help='Already downloaded local model folder')
     p.add_argument('--text-file', type=Path)
     p.add_argument('--out', type=Path)

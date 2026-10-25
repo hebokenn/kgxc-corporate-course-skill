@@ -104,6 +104,20 @@ class LocalVoiceTests(unittest.TestCase):
         self.assertEqual(actual['delivery_rate'], 1.0)
         self.assertFalse(any(self.p.glob('*.wav.json')))
 
+    def test_chinese_named_voice_cli_uses_verified_reference_without_changing_defaults(self):
+        self.add('示例讲师')
+        config = self.p/'voice.json'
+        config.write_text('{"profile":"B2"}')
+        before = config.read_bytes()
+        result = subprocess.run([sys.executable,str(ROOT/'scripts/qwen3_tts.py'),'--config',str(config),'--voice-library',str(self.root),'--voice','示例讲师','--dry-run'],check=True,capture_output=True,text=True)
+        actual = json.loads(result.stdout)
+        self.assertEqual(actual['voice_id'],'示例讲师')
+        self.assertEqual(actual['mode'],'clone')
+        self.assertEqual(Path(actual['reference_audio']).read_bytes(),self.audio.read_bytes())
+        self.assertEqual(config.read_bytes(),before)
+        for name in ['示例讲师/../escape','示例讲师\\escape','..','/示例讲师','示例讲师.name']:
+            with self.assertRaises(ValueError):self.add(name)
+
     def test_missing_default_reference_does_not_change_primary_config(self):
         self.add('male')
         config = self.p/'voice.json'
