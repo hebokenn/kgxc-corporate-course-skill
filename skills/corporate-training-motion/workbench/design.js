@@ -1,5 +1,9 @@
+import {startActivity} from '/activity.js';
 const $ = id => document.getElementById(id);
 let status, lastRevision = -1, lastStateKey = null, planDirty = false, coursewareDirty = false, directorDirty = false;
+let refreshTask = null, refreshTimer = null;
+let serviceDisconnected = false;
+startActivity(()=>planDirty||coursewareDirty||directorDirty);
 const labels = {open:'待确认',confirmed:'已确认',stale:'内容已变，需复核',delivered:'已交付'};
 const gateLabel = gate => (gate.delivery||gate.needs_artifact)&&gate.status==='open'?'待生成':labels[gate.status];
 const dispositions = {core:'主课',optional:'选学',job_aid:'工作工具',separate:'另成专题',omit:'本课不展开'};
@@ -68,11 +72,20 @@ function renderReviews(){
   }return row;
  }));
 }
-async function refresh(manual=false){try{
- const next=await api('/api/workflow'), changed=next.state_key!==lastStateKey;status=next;
+async function refresh(manual=false){
+ if(manual)serviceDisconnected=false;
+ if(refreshTask)return refreshTask;
+ refreshTask=(async()=>{try{
+ const next=await api('/api/workflow'), changed=next.state_key!==lastStateKey;status=next;serviceDisconnected=false;
  if(changed||manual){render();lastRevision=next.revision;lastStateKey=next.state_key;const c=await api('/api/script');if(!coursewareDirty)$('courseware').value=c.text;}
- $('connection').textContent='已保存 · r'+status.revision;
-}catch(e){$('connection').textContent='连接中断，可重新打开工作台';if(manual)note(e.message,true);}}
+ $('connection').textContent='已保存 · r'+status.revision+(status.stage==='complete'?' · 空闲 2 分钟后工作台自动关闭':'');
+ }catch(e){serviceDisconnected=true;$('connection').textContent=status?.stage==='complete'?'课程已完成，工作台已断开；再次编辑请从课程目录打开':'连接中断，可重新打开工作台';if(manual)note(e.message,true);}})();
+ try{return await refreshTask;}finally{refreshTask=null;}
+}
+function scheduleRefresh(){
+ clearTimeout(refreshTimer);
+ if(!document.hidden&&!serviceDisconnected)refreshTimer=setTimeout(async()=>{await refresh();scheduleRefresh();},6000);
+}
 $('plan-data').oninput=()=>{planDirty=true;};$('courseware').oninput=()=>{coursewareDirty=true;$('courseware-dirty').textContent='有未保存修改';};
 $('save-plan').onclick=async()=>{try{status=await api('/api/workflow/design',{plan:JSON.parse($('plan-data').value),baseRevision:status.revision});planDirty=false;render();lastRevision=status.revision;note('课程设计已保存，关联的旧确认会提示复核。');}catch(e){note(e.message,true);}};
 $('save-courseware').onclick=async()=>{try{status=await api('/api/workflow/script',{text:$('courseware').value,baseRevision:status.revision});coursewareDirty=false;$('courseware-dirty').textContent='已保存';render();lastRevision=status.revision;note('逐字稿已保存。关联确认会按当前版本重新判断，独立课件仍保留。');}catch(e){note(e.message,true);}};
@@ -123,6 +136,9 @@ $('choose-branch').onclick=async()=>{try{const selected=document.querySelector('
 $('choose-style').onclick=async()=>{try{const selected=document.querySelector('input[name="video-style"]:checked');if(!selected||!$('style-evidence').value.trim()){note('请选择视觉风格，并记录确认说明。',true);return;}status=await api('/api/workflow/style',{id:selected.value,evidence:$('style-evidence').value,baseRevision:status.revision});render();lastRevision=status.revision;note('视觉风格已保存，动效继续按各段内容设计。下一步生成有声画面小样。');}catch(e){note(e.message,true);}};
 $('director-data').oninput=()=>{directorDirty=true;};
 $('save-director').onclick=async()=>{try{status=await api('/api/workflow/director',{director:JSON.parse($('director-data').value),baseRevision:status.revision});directorDirty=false;render();lastRevision=status.revision;note('导演方案已保存，三个风格等待明确选择。');}catch(e){note(e.message,true);}};
-$('refresh').onclick=()=>refresh(true);
+$('refresh').onclick=()=>refresh(true).then(scheduleRefresh);
 window.addEventListener('beforeunload',e=>{if(planDirty||coursewareDirty||directorDirty){e.preventDefault();e.returnValue='';}});
-if(location.protocol==='file:'){note('请从课程目录双击“打开课程工作台.command”，使用实际本地地址打开工作台。');$('connection').textContent='请从课程工程启动';}else{await refresh(true);setInterval(()=>refresh(),6000);}
+if(location.protocol==='file:'){note('请从课程目录双击“打开课程工作台.command”，使用实际本地地址打开工作台。');$('connection').textContent='请从课程工程启动';}else{
+ document.addEventListener('visibilitychange',async()=>{clearTimeout(refreshTimer);if(!document.hidden){await refresh();scheduleRefresh();}});
+ await refresh(true);scheduleRefresh();
+}

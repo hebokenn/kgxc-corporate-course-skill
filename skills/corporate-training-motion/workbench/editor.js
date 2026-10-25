@@ -1,10 +1,12 @@
 import {displayFrame,sourceFrame,totalFrames} from '/renderer.js';
 import {segments,rippleCut} from '/timeline.js';
+import {startActivity} from '/activity.js';
 const $=id=>document.getElementById(id),clone=x=>structuredClone(x);
 let doc,revision=0,dirty=false,frame=0,selectedCaption='',selectedScene='',selectedField='',selectedAsset='';
 let undo=[],redo=[],wave,renderer,renderPending=null,rendering=false,playing=false,audioKey='',scale=1,dragging=false;
 let editSerial=0,saveTask=null,mediaTask=null,loadingRenderer=false,rendererDirty=false;
 let cutStart=0,cutEnd=30,previewEnd=null,playRequest=0;
+startActivity(()=>dirty,()=>playing);
 const audio=$('audio');
 const seconds=f=>f/doc.fps;
 const source=f=>sourceFrame(f,doc.holds,doc.cuts);

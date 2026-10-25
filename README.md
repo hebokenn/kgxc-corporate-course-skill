@@ -6,9 +6,15 @@
 
 看文字怎样排、信息怎样对应、步骤怎样推进、人物怎样配合知识点。给AI一份原始资料，从课程设计到独立课件或有声视频，把知识做成可以讲、可以看、可以继续改的作品。
 
-**[安装 Skill v5.8.4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.4/kgxc-course-suite-v5.8.4.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
+**[安装 Skill v5.8.5](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.5/kgxc-course-suite-v5.8.5.zip)** · [下载全部展示视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑样片工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip) · [使用指南](docs/USAGE.md)
 
 支持 **Codex / WorkBuddy** · [17个独立播放器](docs/SHOWCASE.md) · [开始做第一门课](#开始做第一门课)
+
+## 5.8.5：完成课程后自动释放工作台
+
+课程完成、无导出任务且空闲两分钟后，服务端自动退出。页面状态轮询不续命，未变化的视频复用复核结果，并发请求共用一次检查。排队、渲染、编码、打包与结果落盘均受保护；未保存编辑、播放或下载会延后退出。需要返修时从课程目录重新打开，工程、交付和确认记录保留。
+
+[工作台规则](skills/corporate-training-motion/references/27-content-workbench.md#完成后的自动关闭) · [验证范围](docs/V5.8.5-VERIFICATION.md)
 
 ## 5.8.4：中文命名声音可直接调用
 

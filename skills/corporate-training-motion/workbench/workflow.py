@@ -43,10 +43,8 @@ def hashed(data):
 
 
 def sha(path):
-    h = hashlib.sha256()
-    with Path(path).open('rb') as f:
-        for b in iter(lambda: f.read(1024 * 1024), b''): h.update(b)
-    return h.hexdigest()
+    from performance_cache import sha as cached_sha
+    return cached_sha(path)
 
 
 class LegacyCourse:
@@ -133,7 +131,7 @@ class LegacyCourse:
                 p = self.relative(name)
                 value.append(dict(path=name, sha256=sha(p) if p.is_file() else None))
             if key=='visual':
-                from authoring import native_fingerprint
+                from performance_cache import native_fingerprint
                 document=read(self.project/'workbench.json',{})
                 value.append(dict(native=native_fingerprint(self.project),
                     drawing={k:document.get(k) for k in ['sceneGraph','fields','assets','media','scenes']}))
@@ -492,7 +490,7 @@ class Course(LegacyCourse):
         return self.status()
 
     def _video_context(self, state=None):
-        from authoring import native_fingerprint
+        from performance_cache import native_fingerprint
         state=state or read(self.state_file)
         return dict(script_sha256=self.script_sha(),director_sha256=self._director_proof()['sha256'],
             style=state.get('selected_style'),workbench=hashed(read(self.project/'workbench.json',{})),native=native_fingerprint(self.project))
@@ -573,7 +571,7 @@ class Course(LegacyCourse):
                 errors.extend(check_palette(read(self.project/'workbench.json', {}), state['visual_palette']))
             if key in ['pilot','final'] and not reviewed and state.get(key+'_context')!=self._video_context(state):errors.append('样片或成片与当前逐字稿、风格或画面版本不一致，请重新生成')
         if key=='final' and state.get('artifacts',{}).get('final'):
-            from motion_quality import director_review
+            from performance_cache import director_review
             target=self.relative(state['artifacts']['final'][0])
             if target.is_file():errors.extend(director_review(self.project,read(self.project/'workbench.json'),target)['errors'])
         errors.extend(('待解决：' if p.get('kind')=='issue' else '待选择：')+p['id'] for p in pending if p.get('gate')==key)
@@ -771,7 +769,8 @@ def open_course(root, open_browser=True):
     url = server.get('url', '')
     try:
         identity = local_json(url + '/api/identity')
-        if identity.get('course_id') != read(course.state_file)['course_id'] or identity.get('version') != VERSION or identity.get('course_root')!=str(course.root): url = ''
+        from lifecycle import POLICY
+        if identity.get('course_id') != read(course.state_file)['course_id'] or identity.get('version') != VERSION or identity.get('course_root')!=str(course.root) or identity.get('lifecycle_policy')!=POLICY: url = ''
     except (ValueError, OSError): url = ''
     if not url:
         ensure_dir(record.parent); log = record.parent / 'workbench-service.log'
