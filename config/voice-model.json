@@ -1,12 +1,16 @@
 {
-  "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16",
-  "revision": "7d3824abff87e49756bb0f83fb5411de75d160c4",
-  "voice": "B2",
-  "profile": "B2",
-  "mode": "voice_design",
+  "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
+  "revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48",
+  "voice": "didi",
+  "profile": "didi",
+  "mode": "clone",
   "speed": 1.0,
-  "delivery_rate": 1.1,
+  "delivery_rate": 1.0,
   "source": "https://github.com/QwenLM/Qwen3-TTS",
   "runtime": "mlx-audio",
-  "download": "automatic during full install; optional preset/clone model only when selected"
+  "download": "automatic Base model during full install; didi and pipi share this model; other variants on explicit selection",
+  "recommended_defaults": {
+    "male": "didi",
+    "female": "pipi"
+  }
 }

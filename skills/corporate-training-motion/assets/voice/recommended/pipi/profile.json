@@ -1,0 +1,14 @@
+{
+  "schema": "local-reference-voice/1",
+  "id": "pipi",
+  "label": "pipi｜推荐教学女声，清楚亲切、适合讲解",
+  "gender": "female",
+  "mode": "clone",
+  "audio_sha256": "f7faa3a4ba42139a7cc358d83dc838cb4b498795be059ff9739ad1ef109764b0",
+  "text_sha256": "9997f519512bd15be3c7e4e1b48bef28cb53534c5d221a012b1ab5fab2302c3d",
+  "delivery_rate": 1.0,
+  "private_local_only": false,
+  "recommended": true,
+  "distribution": "bundled reference authorized by the publisher for public GitHub source and installable package on 2026-10-26",
+  "review_status": "publisher_selected_recommendation; each course still needs an audition"
+}

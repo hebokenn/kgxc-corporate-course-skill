@@ -5,6 +5,7 @@ import unittest
 import wave
 from voice_library import register, load, generate_command, set_defaults, read_defaults
 from qwen3_tts import resolve, ROOT
+from unittest.mock import patch
 import subprocess
 import sys
 
@@ -126,6 +127,49 @@ class LocalVoiceTests(unittest.TestCase):
         with self.assertRaises(OSError):
             set_defaults(self.root, 'male', 'missing', 'male', 'Explicit test user selection')
         self.assertEqual(config.read_bytes(), before)
+
+    def test_clean_defaults_use_both_recommendations_without_writing_config(self):
+        defaults = read_defaults(self.root)
+        self.assertEqual((defaults['male'], defaults['female']), ('didi', 'pipi'))
+        self.assertFalse((self.p/'voice-defaults.json').exists())
+        self.assertFalse(self.root.exists())
+
+    def test_clean_gender_cli_needs_no_private_voice_registration(self):
+        for gender, identity in [('male', 'didi'), ('female', 'pipi')]:
+            with self.subTest(gender=gender):
+                result = subprocess.run([sys.executable, str(ROOT/'scripts/qwen3_tts.py'), '--config', str(self.p/'absent.json'), '--voice-library', str(self.root), '--gender', gender, '--dry-run'],check=True,capture_output=True,text=True)
+                actual = json.loads(result.stdout)
+                self.assertEqual(actual['profile'], identity)
+                self.assertTrue(Path(actual['reference_audio']).is_file())
+                self.assertFalse(actual['private_local_only'])
+        self.assertFalse(self.root.exists())
+
+    def test_personal_same_name_overrides_bundled_voice_and_remains_private(self):
+        self.add('didi')
+        actual = resolve({}, 'didi', library=self.root)
+        self.assertEqual(Path(actual['reference_audio']), self.root/'didi/reference.wav')
+        self.assertTrue(actual['private_local_only'])
+        self.assertFalse(actual['recommended'])
+        (self.root/'didi/reference.txt').write_text('changed')
+        with self.assertRaises(ValueError):
+            resolve({}, 'didi', library=self.root)
+
+    def test_selecting_recommendations_does_not_modify_bundled_profiles(self):
+        bundle = ROOT/'assets/voice/recommended'
+        before = {p:p.read_bytes() for p in bundle.glob('*/profile.json')}
+        set_defaults(self.root, 'didi', 'pipi', 'female', 'Explicit fixture selection')
+        self.assertEqual(json.loads((self.p/'voice.json').read_text())['profile'], 'pipi')
+        self.assertEqual(read_defaults(self.root)['default_gender'], 'female')
+        self.assertEqual(before, {p:p.read_bytes() for p in before})
+        self.assertFalse(self.root.exists())
+
+    def test_changed_bundled_reference_fails_instead_of_silent_fallback(self):
+        import shutil
+        bundle = self.p/'bundled'
+        shutil.copytree(ROOT/'assets/voice/recommended', bundle)
+        (bundle/'pipi/reference.txt').write_text('changed reference transcript')
+        with patch('voice_library.BUNDLED', bundle), self.assertRaises(ValueError):
+            read_defaults(self.root)
 
 
 if __name__ == '__main__': unittest.main()

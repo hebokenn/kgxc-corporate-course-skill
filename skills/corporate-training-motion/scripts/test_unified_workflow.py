@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from unittest.mock import patch
 from check_visual_plan import check_scenes
 from check_course_completeness import map_errors
 from single_line_subtitles import prepare, validate, identity
@@ -31,10 +32,11 @@ def run():
     assert validate([{**cues[0], 'text': '带标点。'}])
     with tempfile.TemporaryDirectory() as tmp:
         base = Path(tmp)
-        create(base/'course')
+        with patch.dict('os.environ', {'COURSE_CONFIG_DIR': str(base/'clean-config')}):
+            create(base/'course')
         cfg = json.loads((base/'course/project/project.json').read_text())
-        assert cfg['voice']['voice_id'] == 'B2' and cfg['voice']['speed'] == 1.0
-        assert cfg['voice']['mode'] == 'voice_design' and cfg['voice']['delivery_rate'] == 1.1 and bool(cfg['voice']['instruct']) and not cfg['subtitles']['punctuation']
+        assert cfg['voice']['voice_id'] == 'didi' and cfg['voice']['speed'] == 1.0
+        assert cfg['voice']['mode'] == 'clone' and cfg['voice']['delivery_rate'] == 1.0 and 'instruct' not in cfg['voice'] and not cfg['subtitles']['punctuation']
         assert cfg['subtitles']['single_line'] and not cfg['process_visual_default']['map_required']
         assert cfg['titles']['policy'] == 'choose_by_content'
         dest = base/'web'
@@ -60,7 +62,7 @@ def run():
         result = subprocess.run([sys.executable, str(ROOT/'scripts/course_tools.py'), 'workbench',
                                  '--dry-run', 'serve', 'editable-course'],check=True,capture_output=True,text=True)
         assert json.loads(result.stdout)[1:] == [str(ROOT/'scripts/workbench.py'),'serve','editable-course']
-    print('PASS: non-map handoff, selected-map validation, single-line punctuation-free subtitles, B2 original generation and 1.1 delivery, content titles, overwrite protection and internal dispatch')
+    print('PASS: non-map handoff, selected-map validation, single-line punctuation-free subtitles, clean-install didi clone at 1.0 delivery, content titles, overwrite protection and internal dispatch')
 
 
 if __name__ == '__main__':

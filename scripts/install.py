@@ -104,7 +104,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--skill-only',action='store_true');p.add_argument('--skip-voice',action='store_true');p.add_argument('--replace-skill',action='store_true');p.add_argument('--uninstall',action='store_true')
     p.add_argument('--dest',type=Path)
-    p.add_argument('--voice-profile',help='Select B2, a preset such as Aiden, or B2-clone; preserves existing choice when omitted')
+    p.add_argument('--voice-profile',help='Select didi/pipi, B2, another preset or clone; preserves existing choice when omitted')
     p.add_argument('--agent',choices=['codex','workbuddy','both'],default='both')
     p.add_argument('--data-dir',type=Path,default=Path(os.environ.get('XDG_DATA_HOME',str(Path.home()/'.local/share')))/'kgxc-course')
     p.add_argument('--config-dir',type=Path,default=Path(os.environ.get('COURSE_CONFIG_DIR',str(Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/NAME))))

@@ -14,7 +14,7 @@
 | 编码、剪辑、混音、探测 | ffmpeg、ffprobe | 实测9.0.2；缺项时尝试已有 Homebrew；[FFmpeg 官方](https://ffmpeg.org/download.html)、[Homebrew](https://brew.sh/) |
 | 插画、字体、波形、布局与运动 QA、换课片头 | numpy2.5.4、Pillow12.3.0、SciPy1.18.1、fontTools4.67.0、OpenCV5.0.0.93 | 具体传递依赖见 `requirements.lock`，安装到独立媒体环境 |
 | 新文本配音 | [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS)，MLX Audio0.5.9、MLX/MLX Metal0.32.4、transformers5.20.1、soundfile0.14.0等 | 默认完整安装自动创建单独配音环境，依赖及传递依赖见 `requirements-voice.lock`；实测 Apple 芯片本地推理；[运行器官方说明](https://github.com/Blaizzy/mlx-audio) |
-| 配音模型 | `mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16` | 固定提交 `7d3824abff87e49756bb0f83fb5411de75d160c4`；完整安装从[模型仓库](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16)下载约4.2GB，权重在用户数据目录，不放 Git；B2 原始生成1.0、保音高交付1.1；其他预设与参考克隆需相应变体，见[配音指南](VOICE.md) |
+| 配音模型 | `mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16` | 固定提交 `a6eb4f68e4b056f1215157bb696209bc82a6db48`；完整新安装从[模型仓库](https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16)准备 Base 权重，didi / pipi 共用；推荐参考随包，生成与交付默认1.0。模型在用户数据目录，不放 Git；B2 VoiceDesign 与其他预设按主动选择准备相应变体，见[配音指南](VOICE.md) |
 | 品牌包装换课名 | 包内批准R5/R8背景、原配乐、中文字体、跟踪参数、`scripts/bookends.py` | 无需开发者的外部工程。保持背景动作和音乐，更换课名；重编码会产生正常编码差异，不承诺视频字节与历史片段相同 |
 | 三维源工程修改 | Blender5.2.2 LTS已验证 | 请人工从[官方入口](https://www.blender.org/download/)安装；内置两份已打包外部图片的 `.blend`；一般换课名用合成器，无需重渲三维 |
 

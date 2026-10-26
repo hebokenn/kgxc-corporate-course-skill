@@ -39,7 +39,7 @@ def init_project(project, skill_root):
              font='native/assets/fonts/CourseHan.woff',media=dict(audio=None,intro=None,outro=None),
              holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#ffffff',nodes=[]),
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
-             audio=dict(gain=1,voice='B2 清亮平和教学男声 · 尚未生成配音',speed=1))
+             audio=dict(gain=1,voice='didi 推荐教学男声 · 尚未生成配音',speed=1))
     doc['characterPolicy']=dict(required=True,scope='known company masters require their original uniform mark')
     from motion_quality import policy
     doc['motionPolicy']=policy()
@@ -113,7 +113,7 @@ def configure(course, spec_path):
     from render_routes import plan,prepare,bind_fields
     selection=plan(spec)
     if not selection['ready']:raise ValueError('; '.join(selection['errors']))
-    d['rendering']=selection;d['adapter']=selection['adapter'];d['audio']['voice']=spec.get('voice','B2 清亮平和教学男声 · 以实际配音文件为准')
+    d['rendering']=selection;d['adapter']=selection['adapter'];d['audio']['voice']=spec.get('voice','didi 推荐教学男声 · 以实际配音文件为准')
     if spec.get('font'):d['font']=spec['font']
     d['assets']=[dict(id=a['id'],label=a.get('label',a['id']),path=a['path'],originalPath=a['path']) for a in spec.get('assets',[])]
     if selection['route'] in ['scene-graph','motion-canvas']:

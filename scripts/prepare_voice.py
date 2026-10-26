@@ -12,9 +12,10 @@ import wave
 def main():
     p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--data',type=Path,required=True);p.add_argument('--config',type=Path,required=True);p.add_argument('--skill',type=Path,required=True);p.add_argument('--profile');a=p.parse_args()
     from huggingface_hub import snapshot_download
+    sys.path.insert(0,str(a.skill/'scripts'))
     spec=importlib.util.spec_from_file_location('course_tts',a.skill/'scripts/qwen3_tts.py');adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(adapter)
     current=json.loads(a.config.read_text()) if a.config.exists() else {}
-    configuration=adapter.resolve(current,a.profile)
+    configuration=adapter.resolve(current,a.profile,library=a.config.parent/'voices')
     model=adapter.CATALOG['models'][configuration['mode']]
     folder=a.data/'voice';folder.mkdir(parents=True,exist_ok=True)
     local=Path(configuration['model']).expanduser()
@@ -31,7 +32,7 @@ def main():
         for file in [audio,sidecar,audio.with_name('setup-test.raw.wav')]:
             if file.exists():file.unlink()
         text=folder/'setup-test.txt';text.write_text('现在计算客流 一百位顾客中有二十位成交 转化率是百分之二十\n')
-        subprocess.run([sys.executable,str(a.skill/'scripts/qwen3_tts.py'),'--config',str(check_config),'--text-file',str(text),'--out',str(audio)],check=True)
+        subprocess.run([sys.executable,str(a.skill/'scripts/qwen3_tts.py'),'--config',str(check_config),'--voice-library',str(a.config.parent/'voices'),'--text-file',str(text),'--out',str(audio)],check=True)
         meta=json.loads(sidecar.read_text())
         if meta['profile']!=configuration['profile']:raise ValueError('配音探针与所选声音不一致')
         with wave.open(str(audio),'rb') as w:

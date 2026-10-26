@@ -48,7 +48,8 @@ def doctor(media_only=False):
         fingerprint=hashlib.sha256((json.dumps(candidate,ensure_ascii=False,indent=2)+'\n').encode()).hexdigest()
         audio=proof_path.parent/'setup-test.wav'
         voice_ok=proof.get('status')=='pass' and proof.get('configuration_sha256')==fingerprint and audio.is_file() and proof.get('audio_sha256')==hashlib.sha256(audio.read_bytes()).hexdigest() and Path(voice.get('model','')).is_dir() and Path(voice.get('python','')).is_file()
-    voice_label=voice.get('profile',voice.get('voice_id','B2')) if voice_path.is_file() else 'B2'
+    from qwen3_tts import CATALOG
+    voice_label=voice.get('profile',voice.get('voice_id',CATALOG['default'])) if voice_path.is_file() else CATALOG['default']
     item('Qwen3-TTS / '+voice_label,voice_ok,voice_label+' 短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
     report=dict(skill='corporate-training-motion',version='5.3.0',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
     report['full_ready']=report['media_ready'] and voice_ok

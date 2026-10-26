@@ -1,150 +1,145 @@
-# 配音：默认 B2，也可换声或克隆
+# 配音：推荐 didi 男声、pipi 女声，可试听、调整与克隆
 
-[返回首页](../README.md) · [使用指南](USAGE.md)
+[返回主页](../README.md) · [使用指南](USAGE.md) · [安装与依赖](DEPENDENCIES.md)
 
-新配音默认 **B2｜清亮平和教学男声**。它来自《门店销售转化率提升》中用户确认的 B2：有精神、亲切、讲步骤清楚，语调适中。B2 是合成声音方案，不指向某位真实人物。默认不限制选择：可用其他预设、用文字设计声音，也可用自己的参考音频克隆。
+## 推荐声音与试听
 
-本版新安装默认 B2；更新已有安装时保留个人已选声音。要主动切换现有默认，运行下面的设置命令，或完整安装加 `--voice-profile B2`。当前课程的录音和已冻结课程不会随默认设置改变。
+从 **v5.8.6** 起，完整新安装默认推荐 **didi 男声、pipi 女声**；未指定性别时使用 didi。这是制作者选过、较适合常见培训讲解的两套声音，方便先开始制作，再按课程需要调整。推荐不限制你的选择：可切换男女声、其他预设、文字设计的新音色或自己的参考克隆。
 
-## 5.4.0 的配音制作要求
+两套声音的参考 WAV、准确逐字文本和配置均随源码及安装包提供。完整安装准备同一个本地 Qwen3-TTS Base 模型，即可使用两者，无需另找参考录音或填写 TTS API Key。仅复制 Skill 的 `--skill-only` 安装仍需已有媒体及配音环境。
 
-- **自然**：使用普通、正常的培训讲述，平实、亲切，不拖长音，不夸张表演、过度煽情或逐字重读，句尾及时收住。
-- **标准**：标准普通话，专业名词、数字、单位和缩写准确；结合真实语境核对。
-- **干脆**：语句利落，停顿帮助理解，速度不能太慢。以已确认的实际小样为准，不把一个倍率硬套不同生成结果。
-- **连贯**：长课沿用同一已确认 speaker 或参考音频，以完整语义段连续生成，检查声线、语气、响度和接缝。每段重新做 VoiceDesign，即使描述和 seed 相同，也不能保证同一声线；可以先确认一次设计声线，再用其干净片段与准确文本进行 Base 参考克隆。
+| 推荐声音 | 适合先尝试的场景 | 试听及对照 | 调用 |
+| --- | --- | --- | --- |
+| didi · 教学男声 | 任务说明、步骤讲解、重点提醒；声音清晰轻亮，有自然起伏 | [试听 MP3](media/voices/didi-audition.mp3)、[WAV](media/voices/didi-audition.wav) | `--gender male` 或 `--voice didi` |
+| pipi · 教学女声 | 课程导入、概念解释、服务情境；声音清楚亲切 | [试听 MP3](media/voices/pipi-audition.mp3)、[WAV](media/voices/pipi-audition.wav) | `--gender female` 或 `--voice pipi` |
 
-逐句核对内容是否完整，特别是每个生成段的最后一句。缺尾需要补录；可提供同声线的后续语境，在真实边界裁掉辅助内容。不能把缺失口播用字幕补齐。保留生成原声、实际处理参数和复核范围；ASR 与电平检查不等于实际听校。既有冻结配音不自动修改。完整规则见[课程工艺](../skills/corporate-training-motion/references/36-course-craft.md)。
+[双播放器试听页](media/voices/audition.html)需下载该目录后打开；GitHub 源码页不会执行 HTML。两段试听使用[同一段通用文案](media/voices/audition.txt)，均为 AI 合成，以 `1.0` 交付倍率生成。先比较音色、语气、发音与节奏，再用自己的课程内容试听。推荐是制作起点，不代表不同文本下的效果完全一致。
 
-## 用对话修改
+**已有安装升级保留个人选择与原录音。** 如果你以前选择了 B2、Aiden 或自己的声音，升级不会强制改成 didi。B2 VoiceDesign、B2-clone 与其他预设继续可用；历史课程不自动重新配音。
 
-- “这门课使用默认 B2。”
-- “这门课改用 Aiden，保持原速；先给实际试听。”
-- “用我提供的参考录音和逐字文本克隆配音，先做短样。”
-- “B2 再平和一点，重音轻一些；先用同一段内容试听。”
-- “把这个声音设为以后新课默认。”只有这类明确要求才修改全局默认；一次课程另选只影响该次生成。
+## 先用自然语言选择
 
-## 三种生成方式
+- “这门课用推荐男声 didi，先给一段含提问、步骤和英文名称的试听。”
+- “这门课改用 pipi 女声，语速稍快一点，先比较同一段文案。”
+- “保留这个音色，把停顿和重音调整得更适合这句话。”
+- “用我有权使用的这段录音及准确文本克隆，先做短样。”
+- “把这个声音设为以后新课默认。”只有明确要求保存默认时才改变个人设置；本次另选只作用于本次生成。
 
-| 方式 | 模型变体 | 用途 |
-|---|---|---|
-| 默认 B2 / 文字改音色 | VoiceDesign | 根据固定中文描述生成教学男声，也可修改描述 |
-| 其他预设 | CustomVoice | Aiden、Dylan、Eric、Ryan、Uncle_Fu、Vivian、Serena、Ono_Anna、Sohee |
-| 自己克隆 / B2 参考克隆 | Base | 参考音频加逐字文本；`B2-clone` 使用包内 B2 参考 |
+同一讲师尽量使用同一已确认参考或预设，以完整语义段生成。真实课程中的数字、专业词、英文名称、句尾与接缝仍要试听核对；字幕、ASR 和电平检查各有用途，不代替听感判断。
 
-三种方式由同一脚本实际路由。权重不包含在 ZIP 中；完整安装只下载选中的模型。另选方式需提前安装对应模型。模型版本与声音配置在 [profiles.json](../skills/corporate-training-motion/assets/voice/profiles.json)，非敏感本机路径在 `~/.config/corporate-training-motion/voice.json`，也可用 `COURSE_CONFIG_DIR` 指定配置目录。
+## 命令行开始使用
 
-## 命令行切换
-
-以下命令在解压后的 `kgxc-course-suite/` 或仓库根目录执行；`approved.txt` 是实际已确认的口播正文。输出必须使用新文件名，脚本不会覆盖旧录音。
+先在终端指定实际安装目录。Codex 默认路径如下；WorkBuddy 使用 `$HOME/.workbuddy/skills/corporate-training-motion`，自定义安装则替换为实际路径。
 
 ```sh
-# 仅查看声音、模型、默认参数，不下载或生成
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py --list-voices
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py --profile B2 --dry-run
-
-# 本次用 B2，不修改个人默认
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --profile B2 --text-file approved.txt --out B2.wav
-
-# 将 B2 设为以后默认；自动备份原 voice.json
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py --profile B2 --set-default
-
-# 本次换成预设 Aiden；采用该预设自然交付速度 1.0
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --voice Aiden --text-file approved.txt --out aiden.wav
+SKILL_DIR="$HOME/.agents/skills/corporate-training-motion"
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --list-voices
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --gender male --dry-run
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --gender female --dry-run
 ```
 
-模型未准备时运行完整安装，例如 `./install.sh --voice-profile Aiden`；这是明确选择并安装该声音，保留其他已下载模型。`--skill-only` 只更新技能文件，不下载权重，也不改个人默认。安装环境尚未准备时先按[依赖说明](DEPENDENCIES.md)完成准备。
-
-优先级为：本次命令参数 → 指定配置文件/个人配置 → 包内 B2。使用 `--profile` 或 `--voice` 会切到对应模型变体，不会把 B2 的 VoiceDesign 模型误配给 Aiden。已有课程继续沿用已确认声音。
-
-## 克隆自己的配音
-
-准备一段干净、单人、自然说话的参考 WAV，建议约 5–15 秒；另存一份与参考音频一致的逐字文本 `my-reference.txt`。这是制作建议，不是模型的硬性时长限制。使用自己的声音或有权使用的声音；参考音频留在本机，脚本不上传。
+`--dry-run` 只核对最终选择、参考文件、模型及参数，不合成、不下载、不改默认。将本段口播写入 UTF-8 的 `sample.txt`，再生成；输出文件名应使用新的名字，脚本会保护已有录音。
 
 ```sh
-# 首次准备 Base 模型和配音环境，也会生成 B2 参考克隆探针
-./install.sh --voice-profile B2-clone
-
-# 本次改用自己的参考音频，不修改个人默认
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --profile B2-clone --ref-audio my-reference.wav \
-  --ref-text-file my-reference.txt --text-file approved.txt --out my-voice.wav
-
-# 想以后都用这个参考，增加 --set-default
-# 想恢复默认，运行 --profile B2 --set-default
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --gender male --text-file sample.txt --out didi-sample.wav
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --gender female --text-file sample.txt --out pipi-sample.wav
 ```
 
-`B2-clone` 是可选路径，使用 [B2 原始参考](../skills/corporate-training-motion/assets/voice/B2-reference.wav)和[对应文本](../skills/corporate-training-motion/assets/voice/B2-reference.txt)。当前整课批准的是 B2 VoiceDesign；克隆后的相似度、发音和末句完整性须另试听，不能把配置相同当成同一声音的证明。
+`--gender` 优先使用你保存的该性别默认，没有个人配置时用随包的 didi / pipi。`--voice didi`、`--voice pipi` 是本次明确选择；如果你已在私有库注册同名声音，个人版本优先，损坏时会报错，不静默换回另一套参考。
 
-## 调整音色、语速和生成长度
+## 怎样调试语速、节奏和发音
 
-B2 的固定描述、模型提交和 seed 保存在 `profiles.json`。默认 `temperature=0.65`、`top_p=0.9`、`repetition_penalty=1.05`、`seed=20261020`、非流式。模型原始生成速度为 **1.0**；B2 的交付默认 **1.1 倍保音高加速**，与已确认课程一致。原始 WAV 始终保留为 `.raw.wav`，工作台播放仍是 1×，不应再次叠加 1.1 倍。
+先取一段完整而有代表性的课程文字，保留原样对照，每次只改变一个因素。先检查文字是否适合讲述，再判断声音需要什么调整。
+
+| 想调整的效果 | 建议做法 | 需要注意 |
+| --- | --- | --- |
+| 略快或略慢 | 用 `--delivery-rate` 调整交付倍率，例如 `1.05` 稍快、`0.95` 稍慢 | didi / pipi 默认 `1.0`；倍率越大越快，使用保音高处理，原声另存，避免再次叠加提速 |
+| 提问、提醒和总结的节奏 | 调整完整句子的表达、标点、分句及参考录音，比较同一段内容 | Base 克隆主要跟随参考表现；不能用不支持的情绪指令承诺保持原音色又精确改变表演 |
+| 尝试另一个生成结果 | 保留同一参考，使用另一个 `--seed` | 相同参数也不保证每次主观听感完全一致；先试听再选 |
+| 产品名称、字母缩写或数字读错 | 保留标准讲稿与字幕，为配音输入单独记录读法或别名，重生成完整语义段 | 如 Mac 与 SN 的读法不同；检查所有重复位置及前后接缝 |
+| 换一种音色 | 另选预设、VoiceDesign 或参考克隆 | 音色设计与原音色克隆是不同路径，新候选应分别试听 |
+| 句尾缺字或段落太长 | 检查实际音频，拆成较少的完整语义段；必要时合理提高 `--max-tokens` 后重生 | 上限参数不保证内容完整，不能用字幕补齐缺失口播 |
+
+例如，保持 didi 音色，比较原速与略快版本：
 
 ```sh
-# 本次恢复原始速度，不改音调
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --profile B2 --delivery-rate 1.0 --text-file approved.txt --out B2-natural.wav
-
-# 将新的完整声音描述写入 voice-description.txt，再做试听
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --profile B2 --instruct-file voice-description.txt \
-  --text-file approved.txt --out B2-revised.wav
-
-# 少量较长语义段可提高上限；不是保证完整性
-python3 skills/corporate-training-motion/scripts/qwen3_tts.py \
-  --profile B2 --max-tokens 7000 --text-file section.txt --out section.wav
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice didi --delivery-rate 1.0 --text-file sample.txt --out didi-rate-100.wav
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice didi --delivery-rate 1.05 --text-file sample.txt --out didi-rate-105.wav
 ```
 
-声音描述决定 VoiceDesign 的音色与表达；改“平和、从容、重音轻一些”比直接改音高更贴近本次需求。`--seed` 可调整采样；同一描述、seed 和版本也不保证每次音色主观完全一致。预设模式也可用描述调整风格；Base 克隆的音色来自参考音频，不接受 `--instruct-file`。
+原始生成速度保持 `1.0`。有后期变速时，`.raw.wav` 保留原录音，输出 WAV 是实际交付速度，旁边 JSON 记录参数与哈希。工作台用正常 `1×` 播放，不再次乘相同倍率。整课后期提速或升调需同步画面、字幕与章节，见[后期与时间线规则](../skills/corporate-training-motion/references/37-cover-and-delivery-finish.md)。
 
-长课优先少量完整语义段，保持同一配置，听校衔接；不要机械逐句换声。达到 token 上限时脚本拒绝提交交付音频。核对首句、末句、计算数字、百分比、练习问答及全文覆盖后再排画面；未达到上限同样可能漏读。WAV 相邻 JSON 保存真实模型提交、参数、原声/交付哈希、参考哈希和待试听状态。
+## 怎样换预设或用文字设计音色
 
-上述模型方式与 [Qwen3-TTS 官方说明](https://github.com/QwenLM/Qwen3-TTS)、[MLX Audio 实现](https://github.com/Blaizzy/mlx-audio)对应；本包固定版本，不自动追随上游变动。仅本地生成，无静默云服务替换。
+| 路径 | 对应模型 | 用途 |
+| --- | --- | --- |
+| didi / pipi、个人参考克隆、B2-clone | Base | 以参考音频和准确文本复用声音特征 |
+| Aiden、Dylan、Eric、Ryan、Uncle_Fu、Vivian、Serena、Ono_Anna、Sohee | CustomVoice | 选择现有预设；需准备该模型变体 |
+| B2 与文字改声 | VoiceDesign | 用描述生成新的候选音色；需准备该模型变体 |
 
-## 5.5.0 提速、升调与首尾话术
-
-提速默认保音高；用户要求声音更明亮时，小幅调整旁白音调，音乐与音效保留音高。先记录基准版本，避免对已经处理的声音重复加速。新增品牌欢迎语和结束语使用已确认的同一speaker/参考音频，从最终编码片段核对完整发音和字幕。字幕、动效、章节跳转与整片共用同一时间映射。具体用法见[后期规范](../skills/corporate-training-motion/references/37-cover-and-delivery-finish.md)。
-
-## 英文名称与缩写
-
-Mac等产品词按英文整词处理，SN、RFID等按语境核对字母读法。保留逐字稿和字幕的标准写法，TTS输入别名、语言模式及大小写单独记录。当前声音中测试完整混合语言句子，不把某次 auto/小写方案设成全局默认；优先用相同speaker或参考录音重生成语义段，避免孤词拼接残留音节。复核最终MP4中每次出现的位置、尾字及左右衔接，ASR仅作辅助。详见[技能发音规则](../skills/corporate-training-motion/references/23-local-qwen3-voice.md#英文名称与缩写的实际读法)。
-
-## 本地参考声音库（5.8.3）
-
-用户明确要求从参考片增加声音时，将干净参考WAV与逐句对应文本注册到Skill外的本地配置目录。保存源文件时间码；注册只是配置成功，音色是否满意仍以实际样段试听为准。
+完整安装默认准备 Base。想用其他变体时，先在解压后的安装包目录执行相应安装命令：
 
 ```sh
-python3 SKILL_DIR/scripts/voice_library.py register --id teaching-female --audio REFERENCE.wav --text REFERENCE.txt --label "教学参考女声" --origin "用户提供参考片及已核对时间码"
-python3 SKILL_DIR/scripts/voice_library.py list
-python3 SKILL_DIR/scripts/voice_library.py generate --id teaching-female --text-file SAMPLE.txt --out SAMPLE.wav --dry-run
-python3 SKILL_DIR/scripts/voice_library.py generate --id teaching-female --text-file SAMPLE.txt --out SAMPLE.wav
+./install.sh --voice-profile Aiden
+./install.sh --voice-profile B2
 ```
 
-已存在ID不覆盖，参考哈希改变会阻止生成。生成复用现有Qwen3-TTS Base与本地运行配置；注册不会切换默认男声。注册库不进入GitHub源码或安装包。Base依赖参考的声音特征，不支持VoiceDesign情绪指令；重新设计的候选可能改变音色，不能当作已保留原音色。
+这是明确选择并准备相应声音的安装操作，会保留已下载模型。之后仍可单次指定 `--voice didi` 或 `--voice pipi`。离线生成不自动下载缺少的模型。
 
-自然、专业的讲述需要问题句与总结句的起伏、适度重音和清楚的逻辑，不用整段升调、拖音或长空白冒充情感。详见[参考片方法与能力边界](../skills/corporate-training-motion/references/43-reference-teaching-and-voice.md)。
-
-用户明确命名并选为默认后：
+把想要的新音色描述写入 `voice-style.txt`，例如“成年培训讲师，标准普通话，清晰亲切，语气自然，句尾干脆”。先生成新的短样比较：
 
 ```sh
-python3 SKILL_DIR/scripts/voice_library.py set-defaults --male MALE_ID --female FEMALE_ID --evidence "用户明确选择的原话"
-python3 SKILL_DIR/scripts/voice_library.py defaults
-python3 SKILL_DIR/scripts/qwen3_tts.py --gender male --dry-run
-python3 SKILL_DIR/scripts/qwen3_tts.py --gender female --dry-run
-python3 SKILL_DIR/scripts/qwen3_tts.py --voice FEMALE_ID --text-file SAMPLE.txt --out SAMPLE.wav
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --profile B2 --instruct-file voice-style.txt --delivery-rate 1.0 --text-file sample.txt --out designed-sample.wav
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice Aiden --text-file sample.txt --out aiden-sample.wav
 ```
 
-默认配置和原voice.json先备份，再保留运行时路径更新主声音。新课程按本地选择建立声音元数据；干净安装没有私有库时仍使用B2。后续安装升级不覆写这些个人配置。
+`--instruct-file` 用于支持指令的模式；本工具在 Base 克隆模式会拒绝它。反复独立设计即使描述和 seed 相同，也可能有音色变化；选中一个设计声线后，可保留干净录音与逐字文本，再用 Base 克隆维持后续参考。模式区别见 [Qwen3-TTS 官方说明](https://github.com/QwenLM/Qwen3-TTS#readme)。
 
-### 5.8.4 中文命名与直接调用
+## 怎样克隆自己的声音
 
-已注册的本地声音可通过 `--voice` 直接调用，不再被公共预设列表限制。ID允许1至64个英文字母、中文汉字、数字、下划线或连字符，例如 `示例讲师`；斜线、点号和路径形式会被拒绝。
+准备你有权使用的短参考录音，优先选择单人、干净、完整语义片段；避免音乐、混响、多人重叠、削波和被截断的词。另备 UTF-8 文本，准确写出参考音频里真正说出的内容。参考文本描述录音，`sample.txt` 则是要新合成的内容，两者用途不同。
+
+如果原件是其他音频格式，可以先转换成便于处理的 WAV，原件继续保留：
 
 ```sh
-python3 SKILL_DIR/scripts/voice_library.py register --id 示例讲师 --audio REFERENCE.wav --text REFERENCE.txt --label "示例讲师" --origin "已获授权且核对文本的参考"
-python3 SKILL_DIR/scripts/qwen3_tts.py --voice 示例讲师 --dry-run
-python3 SKILL_DIR/scripts/qwen3_tts.py --voice 示例讲师 --text-file SAMPLE.txt --out SAMPLE.wav
+ffmpeg -n -i my-recording.m4a -ac 1 -ar 24000 my-reference.wav
 ```
 
-这里的名字是示例，不是内置音色；先注册相应参考。单次 `--voice` 不改变已选默认男女声。升级不移动或覆盖Skill外的私有库；换机需要另外迁移获授权的参考WAV、对应文本及profile。干净安装仍使用公共B2默认方案。
+只在这一次使用参考，不改变默认：
+
+```sh
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --profile B2-clone --ref-audio my-reference.wav --ref-text-file my-reference.txt --delivery-rate 1.0 --text-file sample.txt --out my-clone-sample.wav
+```
+
+想以后按名称复用，就注册到私有本地库：
+
+```sh
+python3 "$SKILL_DIR/scripts/voice_library.py" register --id my-teacher --audio my-reference.wav --text my-reference.txt --label "我的教学声音" --origin "本人提供或已获授权的参考录音" --delivery-rate 1.0
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice my-teacher --dry-run
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice my-teacher --text-file sample.txt --out my-teacher-sample.wav
+```
+
+也支持中文名称，例如 `示例讲师`；ID 为 1–64 个英文字母、汉字、数字、下划线或连字符，不使用路径。注册保存参考副本与哈希，不覆盖同名项、不自动改默认。原参考改变会报错，修订时用新的 ID 注册并重新试听。
+
+## 怎样保存默认、恢复推荐
+
+本次单独换声使用 `--voice` 即可。如果明确想把当前主声音保存为以后默认，先试听再执行：
+
+```sh
+python3 "$SKILL_DIR/scripts/qwen3_tts.py" --voice pipi --set-default
+```
+
+要分别保存男女声并选择未指定性别时的主声音，使用：
+
+```sh
+python3 "$SKILL_DIR/scripts/voice_library.py" set-defaults --male didi --female pipi --default-gender male --evidence "我选择 didi 为默认男声、pipi 为默认女声"
+python3 "$SKILL_DIR/scripts/voice_library.py" defaults
+```
+
+恢复推荐的男女声名称组合也可使用上面的命令；同名私有参考仍按个人优先，不会被删除或覆盖。把相应 ID 替换为已注册私有声音，即可建立自己的男女声组合。选择会备份原 `voice.json` 与已有默认配置，保留本机运行环境；不会重录历史课程，也不会改写随包参考文件。
+
+## 文件、隐私和实际验证
+
+这次明确公开的推荐素材仅为 didi / pipi 的参考 WAV、逐字文本、通用配置和通用试听；其他个人录音、参考片、声音库及课程原件继续留在本地，不随公共包发布。参考路径在安装后解析到包内资源，不依赖制作者电脑。私有库换机时需另行迁移获授权的参考 WAV、文本与 profile。
+
+声音参数、参考哈希、模型模式、音频解码和安装检查属于技术验证；ASR 可辅助检查内容。音色喜好、自然度和当前课程的适配仍应实际试听。本版实际验证范围见 [v5.8.6 验证记录](V5.8.6-VERIFICATION.md)。

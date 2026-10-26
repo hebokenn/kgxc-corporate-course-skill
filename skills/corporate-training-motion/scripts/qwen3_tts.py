@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline B2 narration, selectable presets, voice design and reference cloning."""
+"""Offline didi/pipi recommendations, presets, voice design and cloning."""
 import argparse
 import datetime
 import hashlib
@@ -27,17 +27,20 @@ def sha(path):
 def resolve(config, profile=None, model=None, library=None):
     """Explicit selection resets model-specific settings; runtime paths stay local."""
     selected = profile or config.get('profile') or config.get('voice_id') or CATALOG['default']
-    private = selected not in CATALOG['profiles']
-    if private:
-        from voice_library import load
+    recommended = {CATALOG['recommended_defaults'][gender] for gender in ['male', 'female']}
+    reference_voice = selected not in CATALOG['profiles'] or selected in recommended
+    if reference_voice:
+        from voice_library import reference
         try:
-            path, local = load(library or config_dir()/'voices', selected)
+            path, local = reference(library or config_dir()/'voices', selected)
         except (OSError, ValueError, KeyError) as exc:
-            raise ValueError('Unknown or changed local voice; use --list-voices or voice_library.py') from exc
+            raise ValueError('Unknown or changed reference voice; use --list-voices or voice_library.py') from exc
         spec = dict(CATALOG['profiles']['B2-clone'], voice_id=selected, language='auto',
                     reference_audio=str(path/'reference.wav'), reference_text=str(path/'reference.txt'),
-                    reference_sha256=local['audio_sha256'], delivery_rate=local['delivery_rate'],
-                    description=local['label'], private_local_only=True)
+                    reference_sha256=local['audio_sha256'], reference_text_sha256=local['text_sha256'],
+                    delivery_rate=local['delivery_rate'], description=local['label'],
+                    private_local_only=local.get('private_local_only', True),
+                    recommended=local.get('recommended', False))
     else:
         spec = CATALOG['profiles'][selected]
     data = dict(provider='qwen3_tts', **CATALOG['generation'], **spec)
@@ -49,7 +52,7 @@ def resolve(config, profile=None, model=None, library=None):
             data[key] = config[key]
     if profile is None or selected == config.get('profile', config.get('voice_id')):
         data.update(config)
-    if private:
+    if reference_voice:
         data.update(spec, profile=selected)
         data.pop('instruct', None)
     if model:
@@ -68,7 +71,7 @@ def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--config', type=Path, default=DEFAULT_CONFIG)
     p.add_argument('--profile', choices=list(CATALOG['profiles']))
-    p.add_argument('--voice', help='Preset or verified private local voice name for this invocation')
+    p.add_argument('--voice', help='Recommended didi/pipi, preset or verified personal voice for this invocation')
     p.add_argument('--model', type=Path, help='Already downloaded local model folder')
     p.add_argument('--text-file', type=Path)
     p.add_argument('--out', type=Path)
@@ -77,7 +80,7 @@ def parser():
     p.add_argument('--instruct-file', type=Path)
     p.add_argument('--delivery-rate', type=float, help='Pitch-preserving delivery tempo; raw generation stays 1.0')
     p.add_argument('--seed', type=int)
-    p.add_argument('--gender', choices=['male','female'], help='Resolve the user-selected local default for this gender')
+    p.add_argument('--gender', choices=['male','female'], help='Use personal gender default, or recommended didi/pipi')
     p.add_argument('--voice-library', type=Path, default=config_dir()/'voices')
     p.add_argument('--max-tokens', type=int)
     p.add_argument('--list-voices', action='store_true')
@@ -116,6 +119,7 @@ def main():
         if cfg['mode'] != 'clone': p.error('Reference audio requires a clone profile')
         cfg.update(reference_audio=str(args.ref_audio.expanduser().resolve()), reference_text=str(args.ref_text_file.expanduser().resolve()))
         cfg.pop('reference_sha256', None)
+        cfg.pop('reference_text_sha256', None)
         cfg['voice_id'] = 'reference-clone'
     if args.instruct_file:
         if cfg['mode'] == 'clone': p.error('Clone timbre comes from reference audio; use VoiceDesign for voice instructions')
@@ -138,6 +142,8 @@ def main():
         reference = dict(audio_sha256=sha(cfg['reference_audio']), text_sha256=sha(cfg['reference_text']))
         if cfg.get('reference_sha256') and reference['audio_sha256'] != cfg['reference_sha256']:
             p.error('Bundled reference changed; select an explicit reference instead')
+        if cfg.get('reference_text_sha256') and reference['text_sha256'] != cfg['reference_text_sha256']:
+            p.error('Reference transcript changed; select an explicit reference instead')
         if not Path(cfg['reference_text']).read_text().strip(): p.error('Reference transcript is empty')
     if args.dry_run:
         print(json.dumps(cfg, ensure_ascii=False, indent=2)); return

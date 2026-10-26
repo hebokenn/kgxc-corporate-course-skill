@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep reference voices in a private local library and reuse verified bytes."""
+"""Use bundled recommendations or verified private reference voices."""
 import argparse
 import datetime
 import hashlib
@@ -13,6 +13,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'workbench'))
 from runtime import config_dir
+BUNDLED = ROOT / 'assets/voice/recommended'
 
 
 def sha(path):
@@ -66,13 +67,23 @@ def load(root, name):
     return path, data
 
 
+def reference(root, name):
+    """Personal registrations override recommendations without rewriting either."""
+    personal = entry(root, name)
+    if personal.exists():
+        return load(root, name)
+    return load(BUNDLED, name)
+
+
 def read_defaults(root):
     path = root.parent / 'voice-defaults.json'
     if not path.exists():
-        return {}
-    data = json.loads(path.read_text())
+        catalog = json.loads((ROOT / 'assets/voice/profiles.json').read_text())
+        data = dict(catalog['recommended_defaults'], source='bundled-recommendations')
+    else:
+        data = json.loads(path.read_text())
     for gender in ['male', 'female']:
-        load(root, data[gender])
+        reference(root, data[gender])
     if data.get('default_gender') not in ['male', 'female']:
         raise ValueError('Invalid default gender')
     return data
@@ -81,7 +92,7 @@ def read_defaults(root):
 def set_defaults(root, male, female, default_gender, evidence, samples=None):
     if default_gender not in ['male', 'female'] or not evidence.strip():
         raise ValueError('Provide default gender and explicit user selection evidence')
-    selected = {gender: load(root, name) for gender, name in [('male', male), ('female', female)]}
+    selected = {gender: reference(root, name) for gender, name in [('male', male), ('female', female)]}
     stamp = datetime.datetime.now().astimezone().isoformat()
     suffix = datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')
     defaults_file = root.parent / 'voice-defaults.json'
@@ -97,9 +108,12 @@ def set_defaults(root, male, female, default_gender, evidence, samples=None):
         config.pop(key, None)
     config.update(profile=spec['id'], voice_id=spec['id'], mode='clone', language='auto',
                   delivery_rate=spec['delivery_rate'], reference_audio=str(path / 'reference.wav'),
-                  reference_text=str(path / 'reference.txt'), reference_sha256=spec['audio_sha256'])
+                  reference_text=str(path / 'reference.txt'), reference_sha256=spec['audio_sha256'],
+                  reference_text_sha256=spec['text_sha256'])
     voice_file.write_text(json.dumps(config, ensure_ascii=False, indent=2) + '\n')
     for gender, (path, spec) in selected.items():
+        if path.parent.resolve() != root.resolve():
+            continue  # Bundled profiles are immutable; selection evidence stays local.
         spec.update(review_status='user_selected_as_default', approval_evidence=evidence, selected_at=stamp)
         if samples and samples.get(gender):
             spec['approved_sample_sha256'] = sha(samples[gender])
@@ -109,7 +123,7 @@ def set_defaults(root, male, female, default_gender, evidence, samples=None):
 
 
 def generate_command(root, name, text, out, config=None, rate=None, tokens=4096):
-    path, data = load(root, name)
+    path, data = reference(root, name)
     if not text.is_file() or not text.read_text().strip():
         raise ValueError('Provide nonempty synthesis text')
     for p in [out, out.with_suffix(out.suffix + '.json'), out.with_suffix(out.suffix + '.voice.json')]:
@@ -161,7 +175,8 @@ def main(argv=None):
         if args.command == 'register':
             result = register(root, args.id, args.audio, args.text, args.label, args.origin, args.delivery_rate)
         elif args.command == 'list':
-            result = [load(root, p.name)[1] for p in sorted(root.iterdir()) if p.is_dir() and (p / 'profile.json').is_file()] if root.exists() else []
+            names = {p.name for base in [BUNDLED, root] if base.exists() for p in base.iterdir() if p.is_dir() and (p / 'profile.json').is_file()}
+            result = [reference(root, name)[1] for name in sorted(names)]
         elif args.command == 'defaults':
             result = read_defaults(root)
         elif args.command == 'set-defaults':

@@ -1,0 +1,14 @@
+{
+  "schema": "local-reference-voice/1",
+  "id": "didi",
+  "label": "didi｜推荐教学男声，清晰轻亮、自然起伏",
+  "gender": "male",
+  "mode": "clone",
+  "audio_sha256": "763c83fd8d5c1729723d58f5324c22d9952b10613a6524827e3651e5b5028a9b",
+  "text_sha256": "e1db240aca35744ce755a3fc4c76590fb267aecc21c64b74bfa133b33c8c59ec",
+  "delivery_rate": 1.0,
+  "private_local_only": false,
+  "recommended": true,
+  "distribution": "bundled reference authorized by the publisher for public GitHub source and installable package on 2026-10-26",
+  "review_status": "publisher_selected_recommendation; each course still needs an audition"
+}

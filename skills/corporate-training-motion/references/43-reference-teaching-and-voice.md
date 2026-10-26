@@ -57,6 +57,6 @@ python3 SKILL_DIR/scripts/voice_library.py generate --id teaching-female --text-
 
 默认保存在Skill外的配置目录 `voices/`。参考文本须逐句对应裁段，记录源文件与首尾；ASR可定位，仍核对字幕或实际声音，避免把下一句首音裁进参考。参考含背景音乐时不声称已完成分离，先选择较干净的人声区间并试听实际克隆。注册成功只证明配置可调用，音色相似度、发音与最终用户认可仍待实际试听。
 
-用户明确命名并指定默认男女声后，用 `voice_library.py set-defaults --male 男声ID --female 女声ID --evidence 实际选择原话` 保存。此命令备份原voice.json与默认配置，保留本地运行时路径；未指定性别时使用选定的主声音。`qwen3_tts.py --gender male|female`调用相应默认，`--voice 名称`直接调用命名声音。公共安装不包含这些私有名字的参考音频；干净安装仍使用B2，已有本地默认随升级保留。
+用户明确命名并指定默认男女声后，用 `voice_library.py set-defaults --male 男声ID --female 女声ID --evidence 实际选择原话` 保存。此命令备份原voice.json与默认配置，保留本地运行时路径；未指定性别时使用选定的主声音。`qwen3_tts.py --gender male|female`调用相应默认，`--voice 名称`直接调用命名声音。公共安装包含本次明确授权的didi/pipi推荐参考；干净安装推荐男声didi、女声pipi，默认讲述为didi。其他私有参考不入包，已有本地默认随升级保留。
 
-声音ID支持1至64个英文字母、中文汉字、数字、下划线或连字符，例如 `teaching-male` 或 `示例讲师`；不接受路径。注册后可直接运行 `qwen3_tts.py --voice 示例讲师 --dry-run` 核对所选参考。一次指定不改变默认。升级保留用户配置；换机器须另行迁移用户授权的私有参考库，公共包不会提供这些声音。
+声音ID支持1至64个英文字母、中文汉字、数字、下划线或连字符，例如 `teaching-male` 或 `示例讲师`；不接受路径。注册后可直接运行 `qwen3_tts.py --voice 示例讲师 --dry-run` 核对所选参考。一次指定不改变默认。升级保留用户配置；换机器须另行迁移用户授权的私有参考库，公共包仅提供已授权的didi/pipi推荐参考，不提供其他私有声音。

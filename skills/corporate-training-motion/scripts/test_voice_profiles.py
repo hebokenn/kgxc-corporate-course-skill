@@ -11,9 +11,13 @@ from qwen3_tts import resolve,ROOT,CATALOG
 from scaffold import create
 
 class VoiceProfileTests(unittest.TestCase):
-    def test_clean_install_resolves_approved_b2(self):
-        c=resolve({});self.assertEqual(c['profile'],'B2');self.assertEqual(c['mode'],'voice_design');self.assertEqual(c['delivery_rate'],1.1)
-        self.assertIn('VoiceDesign',c['model']);self.assertEqual(c['speed'],1.0);self.assertEqual(c['seed'],20261020)
+    def test_clean_install_resolves_recommended_didi(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c=resolve({},library=Path(tmp)/'voices')
+        self.assertEqual(c['profile'],'didi');self.assertEqual(c['mode'],'clone');self.assertEqual(c['delivery_rate'],1.0)
+        self.assertIn('Base',c['model']);self.assertEqual(c['speed'],1.0);self.assertEqual(c['seed'],20261020)
+        self.assertFalse(c['private_local_only']);self.assertTrue(c['recommended'])
+        self.assertTrue(Path(c['reference_audio']).is_relative_to(ROOT/'assets/voice/recommended'))
     def test_preset_override_resets_model_style_and_speed(self):
         old={**resolve({}),'model':'/example/voice-design','python':'/example/python','model_paths':{'custom_voice':'/example/preset'}}
         c=resolve(old,'Aiden');self.assertEqual(c['mode'],'custom_voice');self.assertEqual(c['model'],'/example/preset');self.assertIsNone(c['instruct']);self.assertEqual(c['delivery_rate'],1.0)

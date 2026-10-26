@@ -1,6 +1,6 @@
 {
   "schema": "course-voice-profiles/1",
-  "default": "B2",
+  "default": "didi",
   "generation": {
     "temperature": 0.65,
     "top_p": 0.9,
@@ -122,11 +122,44 @@
       "instruct": null,
       "seed": 20261019,
       "delivery_rate": 1.0
+    },
+    "didi": {
+      "mode": "clone",
+      "voice_id": "didi",
+      "description": "didi｜推荐教学男声，清晰轻亮、自然起伏",
+      "language": "auto",
+      "reference_audio": "recommended/didi/reference.wav",
+      "reference_text": "recommended/didi/reference.txt",
+      "reference_sha256": "763c83fd8d5c1729723d58f5324c22d9952b10613a6524827e3651e5b5028a9b",
+      "reference_text_sha256": "e1db240aca35744ce755a3fc4c76590fb267aecc21c64b74bfa133b33c8c59ec",
+      "seed": 20261020,
+      "delivery_rate": 1.0,
+      "recommended": true,
+      "gender": "male"
+    },
+    "pipi": {
+      "mode": "clone",
+      "voice_id": "pipi",
+      "description": "pipi｜推荐教学女声，清楚亲切、适合讲解",
+      "language": "auto",
+      "reference_audio": "recommended/pipi/reference.wav",
+      "reference_text": "recommended/pipi/reference.txt",
+      "reference_sha256": "f7faa3a4ba42139a7cc358d83dc838cb4b498795be059ff9739ad1ef109764b0",
+      "reference_text_sha256": "9997f519512bd15be3c7e4e1b48bef28cb53534c5d221a012b1ab5fab2302c3d",
+      "seed": 20261020,
+      "delivery_rate": 1.0,
+      "recommended": true,
+      "gender": "female"
     }
   },
   "reference": {
     "origin": "user-selected synthetic VoiceDesign B2; not a real-person identity",
     "sha256": "2ca620f1f2a3c59de931ef29089c73859ee5075b29f31d710ffc5a3f80e6d6df",
     "date": "2026-10-21"
+  },
+  "recommended_defaults": {
+    "male": "didi",
+    "female": "pipi",
+    "default_gender": "male"
   }
 }

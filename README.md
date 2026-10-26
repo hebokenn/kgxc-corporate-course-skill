@@ -10,7 +10,7 @@
 
 **教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 本地配音 · 可恢复编辑工作台**
 
-[下载当前安装包 v5.8.5](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.5/kgxc-course-suite-v5.8.5.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
+[下载当前安装包 v5.8.6](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.6/kgxc-course-suite-v5.8.6.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
 
 [能交付什么](#它能帮你做什么) · [适用场景](#适合哪些培训场景) · [能力与价值](#核心能力与实际价值) · [制作流程](#一门课怎样完成) · [安装或更新](#安装或更新) · [版本更新](#版本更新)
 
@@ -92,15 +92,22 @@
 
 ### 5. 先试听声音，再让语气、发音和动作配合内容
 
-新安装默认使用本地 **B2 清亮平和教学男声**；可另选预设、用文字设计音色，或使用有授权的参考音频与对应文本克隆。课程先看有声小样，确认实际语速、语气、专业词和画面配合，再推进完整制作。
+完整新安装推荐 **didi 男声、pipi 女声**，未指定性别时使用 didi。这是我们选过、较适合常见培训讲解的两套推荐声音，参考音频、逐字文本和配置均随包提供；准备同一本地 Base 模型后即可直接生成。你可以按自己的课程和听感换声、调速、设计新音色或克隆参考，已有个人默认在升级时继续保留。
+
+| 推荐语音 | 可先尝试的用途 | 同文案试听 |
+| --- | --- | --- |
+| didi · 男声 | 任务说明、步骤讲解与重点提醒，清晰轻亮、有自然起伏 | [点击试听 didi](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/didi-audition.mp3) · [下载 WAV](docs/media/voices/didi-audition.wav) |
+| pipi · 女声 | 课程导入、概念解释与服务情境，清楚亲切 | [点击试听 pipi](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/pipi-audition.mp3) · [下载 WAV](docs/media/voices/pipi-audition.wav) |
+
+两段均为 AI 合成，使用[同一段通用文案](docs/media/voices/audition.txt)、1.0 交付倍率，方便对照；也可下载[双播放器试听页](docs/media/voices/audition.html)后离线比较。推荐是开始制作的起点，正式课程仍先听包含本课内容的小样，再确认声音、语速与画面配合。
 
 长课尽量沿用同一已确认声线，按完整语义段组织配音，检查响度、接缝和尾字。提问、邀请、提醒与总结按句意安排自然起伏；英文名称与字母缩写分别核对，字幕保留标准写法。适合含有设备名称、SN 等专业词的课程，避免字幕正确但实际读音仍有问题。
 
-本地声音库支持注册中文或英文名称，分别保存默认男女声；以后可以按名字调用，减少重复准备参考的工作。单次选声、个人默认与课程既有录音分别保存。参考克隆的效果需要试听，Base 克隆的表达主要取决于参考音频；重新设计音色的候选也要单独比较。
+本地声音库支持注册中文或英文名称，分别保存默认男女声；以后可以按名字调用，减少重复准备参考的工作。单次选声、个人默认与课程既有录音分别保存。保持音色时可先调句子、标点、分段与交付速度；要用文字描述另一种音色，选 VoiceDesign；要复用自己的录音，选 Base 参考克隆。二者的模型和控制方式分别说明，新候选仍需试听。
 
 动作音效库包含 **15 类动作、45 个常用 WAV**，可配合点击、落位、确认和提醒，并按局部人声避让。你可以先试听音效，再决定密度与留白，让声音帮助辨认动作。
 
-[配音与命名声音用法](docs/VOICE.md) · [动作音效及逐项试听](docs/SOUND.md) · [有声动作试听片](docs/media/natural-ui-audition.mp4)
+[试听、语速与发音调试、换声及克隆指南](docs/VOICE.md) · [动作音效及逐项试听](docs/SOUND.md) · [有声动作试听片](docs/media/natural-ui-audition.mp4)
 
 ### 6. 让学员知道学到哪里，让成品方便上架
 
@@ -194,11 +201,11 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 ## 安装或更新
 
-**[下载 v5.8.5 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.5/kgxc-course-suite-v5.8.5.zip) → 解压 → 双击“安装或更新.command”。**
+**[下载 v5.8.6 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.6/kgxc-course-suite-v5.8.6.zip) → 解压 → 双击“安装或更新.command”。**
 
-默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 5.8.5` 与 `elearning-course-design 2.0.1`；升级保留个人配置，已有课程和录音按原记录继续使用。
+默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 5.8.6` 与 `elearning-course-design 2.0.1`；升级保留个人配置，已有课程和录音按原记录继续使用。
 
-完整媒体环境目前的验证范围为 **macOS Apple 芯片**。首次完整安装需要联网准备媒体依赖及约 4.2GB 的本地默认配音模型，建议预留至少 10GB 空间；使用已登录的 Codex 或 WorkBuddy。默认录音、编辑、渲染和导出在本地运行，无需额外 TTS API Key；AI 账号与其他另选服务按你的实际配置使用。
+完整媒体环境目前的验证范围为 **macOS Apple 芯片**。首次完整安装需要联网准备媒体依赖及数 GB 的本地 Base 配音模型，建议预留至少 10GB 空间；使用已登录的 Codex 或 WorkBuddy。默认录音、编辑、渲染和导出在本地运行，无需额外 TTS API Key；AI 账号与其他另选服务按你的实际配置使用。
 
 <details>
 <summary>命令行安装、已有环境更新与检查</summary>
@@ -225,7 +232,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 需要修改三维源工程时，按依赖说明准备 Blender。换课名使用包内标题合成器，一般无需重渲三维。
 
-[v5.8.5 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.5/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
+[v5.8.6 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.8.6/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
 
 </details>
 
@@ -265,7 +272,7 @@ kgxc-course resume ./courses/my-course
 
 日常制作通过 Codex / WorkBuddy 对话和本机浏览器工作台完成。公共仓库提供通用方法、脚本与配套资源；品牌与配套素材用于酷果星创内部课程，使用素材前可查看[第三方与素材说明](THIRD_PARTY_NOTICES.md)。
 
-默认媒体制作在本地运行。私人课程原件、门店实拍、个人参考录音、私有声音库、凭据和模型权重不随公共安装包分发；换机使用私有声音时，需要另行迁移相应获授权参考。AI 宿主和另选外部服务的数据处理范围以实际配置为准。
+默认媒体制作在本地运行。随包公开的声音素材仅为本次明确授权的 didi / pipi 推荐参考及通用试听；其他私人课程原件、门店实拍、个人录音、私有声音库、凭据和模型权重不随公共安装包分发；换机使用私有声音时，需要另行迁移相应获授权参考。AI 宿主和另选外部服务的数据处理范围以实际配置为准。
 
 WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付、确认保存和短技术视频导出；各次功能更新的验证范围分别记录。短片、自动回归与安装检查各有用途，任意长课的创作质量和学习效果仍需结合真实课程审阅。安装更新保留历史冻结工程，不会自动重制旧课。
 
@@ -280,10 +287,11 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 
 ## 版本更新
 
-当前稳定版为 **v5.8.5**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+当前稳定版为 **v5.8.6**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
 
 | 版本 | 主要变化 | 带来的使用价值 |
 | --- | --- | --- |
+| 5.8.6 | 随包 didi 男声、pipi 女声推荐参考与同文案试听；默认性别选声、调试和克隆指南 | 完整新安装即可使用推荐声音，后续可自行换声，升级保留个人选择 |
 | 5.8.5 | 工作台缓存、并发检查复用、隐藏页面暂停轮询；完成后空闲自动退出 | 减少重复复核和后台占用，保护导出与未保存编辑，返修可重新打开 |
 | 5.8.4 | 已注册的中文、英文命名声音可直接调用 | 用熟悉的名称选声，分别保留个人默认与本次选择 |
 | 5.8.3 | 参考片讲解方法、人物回应与本地声音库 | 把服务情境组织成可理解的演示，复用自己已准备的参考声音 |

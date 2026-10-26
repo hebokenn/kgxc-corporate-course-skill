@@ -1,6 +1,6 @@
 # 本地默认声音与可选配音
 
-优先使用用户后来明确选择的本地默认声音。`qwen3_tts.py --gender male|female`分别解析已保存的默认男女声；`--voice 名称`可直接调用本地注册声音。没有本地命名选择时，沿用2026-10-21确认的 **B2 清亮平和教学男声**。实际方案为 Qwen3-TTS VoiceDesign，固定描述、模型提交、seed 及 1.1 倍保音高交付参数在 `assets/voice/profiles.json`。原始生成速度 1.0，原 WAV 保留；工作台播放 1×，不重复加速。
+优先使用用户后来明确选择的本地默认声音。没有个人选择时，随包推荐男声 **didi**、女声 **pipi**，未指定性别时用didi；`qwen3_tts.py --gender male|female`选择相应默认，`--voice didi|pipi`单次指定。两套参考WAV、准确文本与配置位于 `assets/voice/recommended/`，完整安装准备同一Qwen3-TTS Base模型后可直接使用。它们是推荐起点，支持后续调试、换声和个人参考克隆。原始生成与推荐交付倍率均为1.0；既有用户与冻结课程保持原声音。B2 VoiceDesign及其1.1倍方案继续作为可选项保留。
 
 这是默认选项，不是唯一选项。本次明确另选、个人已保存的声音和既有批准录音优先。脚本支持 CustomVoice 的九个预设、VoiceDesign 文字改声，以及 Base 参考音频克隆。不得把所有模式硬编码成 Aiden 或同一模型；默认配置在 Skill 外，权重不入工程/发布包。
 
@@ -31,7 +31,7 @@ python3 SKILL_DIR/scripts/qwen3_tts.py --voice Aiden --text-file APPROVED.txt --
 python3 SKILL_DIR/scripts/qwen3_tts.py --profile B2-clone --ref-audio REFERENCE.wav --ref-text-file REFERENCE.txt --text-file APPROVED.txt --out CLONE.wav
 ```
 
-一次另选只作用于该次；明确“以后默认”才使用 `--set-default`，自动备份配置。更改音色用 `--instruct-file`；交付语速用 `--delivery-rate`；本地模型路径用 `--model`。克隆参考和逐字文本必须对应。完整安装可用 `--voice-profile` 准备对应模型；离线生成时不下载或换供应商。
+一次另选只作用于该次；明确“以后默认”才使用 `--set-default`，自动备份配置。文字设计音色用支持指令模式的 `--instruct-file`，didi/pipi的Base克隆不接受该参数；交付语速用 `--delivery-rate`；本地模型路径用 `--model`。克隆参考和逐字文本必须对应。完整安装可用 `--voice-profile` 准备对应模型；离线生成时不下载或换供应商。
 
 输出不存在才生成，真实参数和原声/交付哈希写入 WAV 旁 JSON。长文用少量完整语义段，保持相同配置并实听衔接；首尾、数字、百分比和练习全文覆盖必须核对，尤其检查每段最后一句是否完整。缺尾可在同一声线条件下增加后续上下文作保护，实际核对后裁去保护语句；不得插值补字幕来掩盖缺失口播。token 上限和 ASR 不能替代听校。相同 seed 不证明声音身份稳定。改变声音方案先出本课实际有声小样，沿用仍有效的确认，不改已有冻结录音。
 

@@ -1,0 +1,53 @@
+{
+  "schema": "recommended-voice-auditions/1",
+  "version": "5.8.6",
+  "ai_generated": true,
+  "voices": [
+    {
+      "voice": "didi",
+      "mode": "clone",
+      "model_repository": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
+      "model_revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48",
+      "duration_seconds": 15.623125,
+      "delivery_rate": 1.0,
+      "reference": {
+        "audio_sha256": "763c83fd8d5c1729723d58f5324c22d9952b10613a6524827e3651e5b5028a9b",
+        "text_sha256": "e1db240aca35744ce755a3fc4c76590fb267aecc21c64b74bfa133b33c8c59ec"
+      },
+      "text_sha256": "dc2d40904485a47d8ca5b01b48f216d7545c844b30fc640dee40333fa643a4c3",
+      "wav_sha256": "7be5fb2383b50785f179648dc02b5777531fb880cf35dba8a35604f91dd8cbd9",
+      "mp3_sha256": "b673de340b381dff7d5518effd40cc71c9e16be9266cc714c4e8a0671ac5bc2b",
+      "personal_library_used": false,
+      "content": "same generic teaching text in audition.txt",
+      "review_status": "technical generation and decoding checked; listener preference remains individual",
+      "checks": {
+        "wav_and_mp3_full_decode": true,
+        "whole_clip_local_asr": "content and final sentence checked; ASR homophones are not authoritative",
+        "human_listening_claimed": false
+      }
+    },
+    {
+      "voice": "pipi",
+      "mode": "clone",
+      "model_repository": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
+      "model_revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48",
+      "duration_seconds": 20.72,
+      "delivery_rate": 1.0,
+      "reference": {
+        "audio_sha256": "f7faa3a4ba42139a7cc358d83dc838cb4b498795be059ff9739ad1ef109764b0",
+        "text_sha256": "9997f519512bd15be3c7e4e1b48bef28cb53534c5d221a012b1ab5fab2302c3d"
+      },
+      "text_sha256": "dc2d40904485a47d8ca5b01b48f216d7545c844b30fc640dee40333fa643a4c3",
+      "wav_sha256": "178fc36992337bfaba1e5f1a01169c3e5ce7af9c25c2f678890fd0887c94b9f6",
+      "mp3_sha256": "a7181ead6419e7d5b87657b6c05f03d324e06033b35ad91326da9a03e0166df4",
+      "personal_library_used": false,
+      "content": "same generic teaching text in audition.txt",
+      "review_status": "technical generation and decoding checked; listener preference remains individual",
+      "checks": {
+        "wav_and_mp3_full_decode": true,
+        "whole_clip_local_asr": "content and final sentence checked; ASR homophones are not authoritative",
+        "human_listening_claimed": false
+      }
+    }
+  ]
+}
