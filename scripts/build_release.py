@@ -7,11 +7,18 @@ import subprocess
 import sys
 import zipfile
 
+from check_readme import ReadmeStructureError, check_readme
+
 ROOT=Path(__file__).resolve().parents[1]
 NAME='corporate-training-motion'
 
 
 def main():
+    try:
+        check_readme(ROOT/'README.md')
+    except (ReadmeStructureError, OSError, UnicodeError) as error:
+        print(f'打包已阻止：{ROOT / "README.md"}: {error}',file=sys.stderr)
+        return 1
     version=(ROOT/'VERSION').read_text().strip()
     for name in [NAME,'elearning-course-design']:
         skill=ROOT/'skills'/name;manifest=skill/'package-manifest.json'
@@ -36,4 +43,4 @@ def main():
     print(json.dumps(dict(version=version,files=len(candidates)+1,zip=archive.name,bytes=archive.stat().st_size,sha256=digest),indent=2))
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':raise SystemExit(main())
