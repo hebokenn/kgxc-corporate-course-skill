@@ -276,6 +276,7 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 | 动作、角色与内容素材 | [动作指南](docs/MOTION.md)、[角色指南](docs/CHARACTERS.md)、[内容素材](docs/CONTENT-ASSETS.md) |
 | 公开样片与实际来源 | [17 支独立播放器](docs/SHOWCASE.md)、[演示素材说明](docs/media/README.md) |
 | 验证覆盖与实际限制 | [WorkBuddy 原生验收](docs/V5-VERIFICATION.md)、[人物与导演更新](docs/V5.8.2-VERIFICATION.md)、[声音库更新](docs/V5.8.4-VERIFICATION.md)、[工作台性能与自动关闭](docs/V5.8.5-VERIFICATION.md) |
+| 维护主页与发布新版本 | [Skill 发布流程与主页检查清单](docs/RELEASING.md) |
 
 ## 版本更新
 
