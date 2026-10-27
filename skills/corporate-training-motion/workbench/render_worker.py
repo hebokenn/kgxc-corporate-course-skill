@@ -21,6 +21,8 @@ def main():
           '-t',str(count/a.fps),'-movflags','+faststart',str(output)]
     metrics={};captured=0;motion_calls={};layout_checks={};layout_frames=0
     document=json.loads((a.directory/'document.json').read_text())
+    from reading_pacing import RuntimeAudit
+    reading_audit=RuntimeAudit(document,a.first,a.last)
     from motion_evidence import requests as proof_requests,verify as verify_objects
     requests=proof_requests(document,a.first,a.last)if document.get('motionPolicy',{}).get('stateProofRequired')else[]
     requested={};captures={};proof_dir=a.directory/'object-proof';proof_dir.mkdir(exist_ok=True)
@@ -58,6 +60,10 @@ def main():
                         for kind in ['base','hidden']:
                             file=proof_dir/(str(len(captures))+'-'+kind+'.png');file.write_bytes(base64.b64decode(proof[kind]));paths[kind]=str(file)
                         captures[(request['id'],phase['source'])]=dict(states=proof['states'],**paths)
+                if document.get('readingPolicy',{}).get('required'):
+                    if 'readingReceipt'not in data:
+                        data.update(page.evaluate('async f=>await window.courseRenderer.drawFrame(f)',f))
+                    reading_audit.consume(f,data.get('sourceFrame',f),data.get('readingReceipt',[]))
                 if data.get('jpeg'):
                     buffer=base64.b64decode(data['jpeg']);captured+=1
                     if data.get('caption'):metrics[data['caption']['id']]=data['caption']
@@ -103,9 +109,12 @@ def main():
     (a.directory/'motion-audit.json').write_text(json.dumps(motion_audit,ensure_ascii=False,indent=2))
     if motion_audit['status'] in ['fail','review-required']:
         raise ValueError('编码成片动效未通过：'+json.dumps(dict(failures=motion_audit.get('failures',[]),unresolved=motion_audit.get('unresolvedStaticRuns',[])),ensure_ascii=False)+'；候选和证据保留在本次导出目录，未登记为完成')
+    reading=reading_audit.result()
+    (a.directory/'reading-audit.json').write_text(json.dumps(reading,ensure_ascii=False,indent=2))
+    if reading['status']=='fail':raise ValueError('实际成片文字阅读未通过：'+'；'.join(reading['errors'])+'；候选保留，未登记为小样或成片')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,
+                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,readingPacing=reading,
                 layoutAudit=dict(status='pass' if layout_checks else 'not-declared',checkedRenderedStates=layout_frames,rules=list(layout_checks.values()),scope='declared text enclosure and row separation, not all possible visual collisions'),renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))

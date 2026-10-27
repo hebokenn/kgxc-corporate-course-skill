@@ -12,7 +12,7 @@
  C.beginFrame=f=>{C.calls=[];C.currentFrame=f};
  C.before=(c,n,f)=>{
   for(const e of n.effects||[]){if(!baseKinds.includes(e.type)&&!registry[e.type])throw Error('未实现动效 '+e.type);trace(n,e,f)}
-  baseBefore(c,n,f);if((n.effects||[]).some(e=>e.type==='scroll-window')){c.beginPath();c.rect(0,0,n.width||960,n.height||300);c.clip()}for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='before')a.fn(c,n,e,pof(e,f),raw(e,f),f)}
+  baseBefore(c,n,f);if((n.effects||[]).some(e=>e.type==='scroll-window')){C.clipRect(c,[0,0,n.width||960,n.height||300])}for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='before')a.fn(c,n,e,pof(e,f),raw(e,f),f)}
  };
  C.text=(c,n,f,fps)=>{for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='text'){a.fn(c,n,e,pof(e,f),raw(e,f),f);return true}}return baseText(c,n,f,fps)};
  C.path=(c,n,f)=>{if(typeof n.drawProgress==='number'){partial(c,n,n.drawProgress);return true}for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='path'){a.fn(c,n,e,pof(e,f),raw(e,f),f);return true}}return basePath(c,n,f)};
@@ -35,9 +35,11 @@
  register('sort','children',(items,n,e,p)=>targets(items,e,p));
  register('group-collect','children',(items,n,e,p)=>items.map((o,i)=>{const q=MO.smooth(clamp(p*(1+items.length*.09)-i*.09)),a=e.from[i],b=e.to[i];return {...o,x:mix(a[0],b[0],q),y:mix(a[1],b[1],q),scaleX:mix(1,e.scale??1,q),scaleY:mix(1,e.scale??1,q)}}));
  register('branch-grow','children',(items,n,e,p)=>ordered(items,e,p,(o,v)=>({...reveal(o,v),...(o.type==='path'?{drawProgress:v}:{})})));
- register('compare-wipe','before',(c,n,e,p)=>{c.beginPath();c.rect(0,0,(n.width||100)*p,n.height||100);c.clip();c.strokeStyle=e.color||'#ad7846';c.lineWidth=3;c.beginPath();c.moveTo((n.width||100)*p,0);c.lineTo((n.width||100)*p,n.height||100);c.stroke()});
+ register('compare-wipe','before',(c,n,e,p)=>{C.clipRect(c,[0,0,(n.width||100)*p,n.height||100]);c.strokeStyle=e.color||'#ad7846';c.lineWidth=3;c.beginPath();c.moveTo((n.width||100)*p,0);c.lineTo((n.width||100)*p,n.height||100);c.stroke()});
  register('correct-replace','text',(c,n,e,p)=>{const h=(n.fontSize||48)*1.5;c.save();c.beginPath();c.rect(-4,-4,n.width||800,h);c.clip();c.fillText(e.fromText,0,-h*p);c.fillText(n.text,0,h*(1-p));c.restore()});
- register('count-up','text',(c,n,e,p)=>{const value=Number.parseFloat(String(n.text).replace(/,/g,''));if(!Number.isFinite(value))throw Error('累计终值须为数字 '+n.id);const k=e.decimals??0;drawNumber(c,n,mix(e.from??0,value,p).toFixed(k)+(e.suffix||''))});
+ const counterText=(n,e,p)=>{const value=Number.parseFloat(String(n.text).replace(/,/g,''));if(!Number.isFinite(value))throw Error('累计终值须为数字 '+n.id);return mix(e.from??0,value,p).toFixed(e.decimals??0)+(e.suffix||'')};
+ C.readingText=(n,f)=>{const e=(n.effects||[]).find(e=>e.type==='count-up');return e?counterText(n,e,pof(e,f)):String(n.text||'')};
+ register('count-up','text',(c,n,e,p)=>drawNumber(c,n,counterText(n,e,p)));
  register('odometer','text',(c,n,e,p)=>{const target=String(n.text),size=n.fontSize||48,h=size*1.35;let x=0;c.save();c.beginPath();c.rect(0,-2,n.width||800,h);c.clip();for(const ch of target){const w=c.measureText(ch).width;if(/\d/.test(ch)){const digit=Number(ch),v=p*(10+digit),base=Math.floor(v);for(let j=0;j<2;j++)c.fillText(String((base+j)%10),x,(j-(v-base))*h)}else c.fillText(ch,x,0);x+=w}c.restore()});
  register('bar-grow','before',(c,n,e,p)=>{if(e.axis==='y'){c.translate(0,(n.height||100)*(1-p));c.scale(1,Math.max(.0001,p))}else c.scale(Math.max(.0001,p),1)});
  register('ring-progress','shape',(c,n,e,p)=>{c.beginPath();c.arc(0,0,(n.width||180)/2,-Math.PI/2,-Math.PI/2+Math.PI*2*p*(e.fraction??1));c.strokeStyle=e.color||n.stroke||'#327967';c.lineWidth=e.lineWidth??18;c.lineCap='round';c.stroke()});

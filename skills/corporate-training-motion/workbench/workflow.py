@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.9.0'
+VERSION = '5.9.1'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -440,7 +440,7 @@ class Course(LegacyCourse):
                     if 'selection_receipt' in prior:segment['selection_receipt']=prior['selection_receipt']
                 else:
                     segment['selected']=None;segment.pop('selection_receipt',None)
-            report=check(candidate,self.script()['text'],self.script_sha(),read(self.plan_file))
+            report=check(candidate,self.script()['text'],self.script_sha(),read(self.plan_file),reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required')))
             if report['errors']:raise ValueError('；'.join(report['errors']))
             self._snapshot(state);atomic(self.project/'storyboard.json',candidate)
             export_html(candidate,self.project/'storyboard.html')
@@ -667,7 +667,7 @@ class Course(LegacyCourse):
             errors.extend('待解决：'+p['id'] for p in pending if block in p.get('blocking_for',[]) and p.get('gate') in upstream)
         elif key=='storyboard':
             from storyboard import check
-            report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan)
+            report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan,reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required')))
             errors.extend(report['errors']);errors.extend('待选择分镜：'+sid for sid in report['pending'])
         elif key=='style':errors.extend(self._director_proof()['errors'])
         else:
@@ -730,7 +730,7 @@ class Course(LegacyCourse):
         if self.storyboard_mode():
             from storyboard import check, check_samples, basis as board_basis
             result.update(pilot_is_current=any(g['id']=='pilot' and g['ready'] for g in gates),sampling_valid=bool(self.sample_plan()) and not check_samples(self.storyboard(),self.sample_plan()),storyboard_sha256=board_basis(self.storyboard()),planning_workflow='storyboard-v1',storyboard=self.storyboard(),sampling=self.sample_plan(),
-                storyboard_report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan),selected_style=None)
+                storyboard_report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan,reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required'))),selected_style=None)
             if stage=='pilot' and not self.sample_plan():result['next_action']='分镜已确认，先分层随机抽取三个完整片段，再生成动态小样'
         result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
         result['director_review_status']=state.get('director_review_status')

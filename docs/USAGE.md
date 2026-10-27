@@ -72,6 +72,18 @@ python3 skills/corporate-training-motion/scripts/course_tools.py craft-check --s
 
 检查结果和缺口留在工程中，完成实际修正再复看受影响部分；不要求无限返工或重复确认。配音遵守自然培训语气、标准普通话、干脆节奏与统一声线。旧工程保留原约定，已确认小样和历史冻结文件不自动失效。见[课程工艺规则](../skills/corporate-training-motion/references/36-course-craft.md)与[配音指南](VOICE.md)。
 
+## 文字与信息阅读节奏
+
+新视频的分镜每种备选都列出信息组、动作时间、完整停稳阅读时间、焦点顺序与结果保留。构图中的 `readingPlan` 绑定真实文字，`readingPolicy` 与工程标记防止删检查绕过；导出前与实际渲染均检查连续稳定曝光，不能把运动、淡入或多段零碎空档算作读完。
+
+```sh
+python3 skills/corporate-training-motion/scripts/course_tools.py reading-check --spec COURSE/project/workbench.json
+# 明确要求旧课返修时才启用，保存真实依据
+python3 skills/corporate-training-motion/scripts/course_tools.py reading-enable COURSE --evidence 实际返修授权
+```
+
+检查按文字量给工程估算下限，制作端根据陌生术语、字段、比较和判断任务增加时间。原有小样确认流程保留；完整候选补正常速度的实际阅读复核，自动通过不等于学员理解。详见[阅读计划、实际曝光与复核数据](../skills/corporate-training-motion/references/45-reading-and-information-pacing.md)。
+
 ## 4. 打开工作台
 
 新课建档和继续制作默认会启动并打开工作台。也可以直接对Codex或WorkBuddy说：

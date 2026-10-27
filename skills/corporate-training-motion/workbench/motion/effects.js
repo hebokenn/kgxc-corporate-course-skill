@@ -15,9 +15,10 @@
   if(typeof g.background==='object'){c.fillStyle=C.paint(c,g.background);c.fillRect(0,0,1920,1080);return true}return false;
  };
  C.camera=(c,camera)=>{if(camera)CAM.apply(c,{x:camera.x??960,y:camera.y??540,z:camera.zoom??1,r:(camera.rotation||0)*Math.PI/180})};
+ C.clipRect=(c,box)=>{c.beginPath();c.rect(...box);c.clip();C.onReadingClip?.(c,box)};
  C.before=(c,n,f)=>{
   for(const e of n.effects||[]){const p=progress(e,f),w=n.width??100,h=n.height??100;
-   if(e.type==='mask-reveal'){c.beginPath();if(e.direction==='left')c.rect(w*(1-p),0,w*p,h);else if(e.direction==='up')c.rect(0,h*(1-p),w,h*p);else if(e.direction==='down')c.rect(0,0,w,h*p);else c.rect(0,0,w*p,h);c.clip()}
+   if(e.type==='mask-reveal'){const box=e.direction==='left'?[w*(1-p),0,w*p,h]:e.direction==='up'?[0,h*(1-p),w,h*p]:e.direction==='down'?[0,0,w,h*p]:[0,0,w*p,h];C.clipRect(c,box)}
    if(e.type==='marker')TY.marker(c,0,0,w,h,p,e.color||'#ffe14d',e.skew??.18);
   }
  };

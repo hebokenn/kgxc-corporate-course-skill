@@ -1,6 +1,6 @@
 # 安装与更新
 
-本版为5.9.0联合更新包，包含corporate-training-motion 5.9.0和elearning-course-design 2.0.2。本版新视频先审阅全课逐段至少三种表现方案，分镜确认后随机抽取三个完整有声样段；旧工程按明确授权升级，保留有效逐字稿与历史文件。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
+本版为5.9.1联合更新包，包含corporate-training-motion 5.9.1和elearning-course-design 2.0.2。新视频默认加入独立信息阅读设计、导出前稳定时间检查和实际渲染曝光检查；详见[阅读与信息节奏](references/45-reading-and-information-pacing.md)。本版新视频先审阅全课逐段至少三种表现方案，分镜确认后随机抽取三个完整有声样段；旧工程按明确授权升级，保留有效逐字稿与历史文件。适用于macOS Apple芯片的现有Codex/WorkBuddy课程环境。
 
 解压完整更新包，双击“安装或更新.command”。默认更新两个宿主的技能，保留已有媒体和配音环境；检测到自改同名Skill会先保留并提示。也可在解压目录运行：
 

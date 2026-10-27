@@ -10,7 +10,7 @@
 
 **教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 本地配音 · 可恢复编辑工作台**
 
-[下载当前安装包 v5.9.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.0/kgxc-course-suite-v5.9.0.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
+[下载当前安装包 v5.9.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.1/kgxc-course-suite-v5.9.1.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
 
 [能交付什么](#它能帮你做什么) · [适用场景](#适合哪些培训场景) · [能力与价值](#核心能力与实际价值) · [制作流程](#一门课怎样完成) · [安装或更新](#安装或更新) · [版本更新](#版本更新)
 
@@ -61,6 +61,8 @@
 收货课可以让订单字段与商品标签逐项对应；指标课可以把记录聚合成分子、分母；服务课可以让人物提问、观察和回应。不同知识点使用适合的表达，让学员有机会看清“怎么发生”和“结果是什么”。动作数量用于提供选择，不要求每门课凑齐。
 
 已有参考片方法可用于“讲师引题—情境演示—回到要点”“说—听—回应”“聚焦当前对象”和“逐项对照”。学习其组织方法后，用本课内容及已确认美术重新实现。普通操作保持利落，讲解时长由内容、示范和读图需要共同决定。
+
+**字段与流程课还会单独安排阅读节奏。** 分镜列出每组新增文字、要读懂的任务、动作时间、完整停稳后的阅读时间，以及后续需要回看的结果。比如任务卡可以移动，责任人与日期先在稳定位置读清；前一步留下摘要，后一步不必靠记忆补全。导出会按真实文字、父容器运动、替换、剪切与渲染曝光检查，拦住“卡片动完了，文字却只剩一瞬”的候选。工程估算用于发现明显不足，不能代替正常速度首次观看和学员理解判断。[具体方法与检查命令](skills/corporate-training-motion/references/45-reading-and-information-pacing.md)
 
 [动作与调用方法](docs/MOTION.md) · [按内容导演](skills/corporate-training-motion/references/42-content-directed-production.md) · [参考片讲解方法](skills/corporate-training-motion/references/43-reference-teaching-and-voice.md)
 
@@ -203,7 +205,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 ## 安装或更新
 
-**[下载 v5.9.0 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.0/kgxc-course-suite-v5.9.0.zip) → 解压 → 双击“安装或更新.command”。**
+**[下载 v5.9.1 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.1/kgxc-course-suite-v5.9.1.zip) → 解压 → 双击“安装或更新.command”。**
 
 默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 5.9.0` 与 `elearning-course-design 2.0.2`；升级保留个人配置，已有课程和录音按原记录继续使用。
 
@@ -234,7 +236,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 需要修改三维源工程时，按依赖说明准备 Blender。换课名使用包内标题合成器，一般无需重渲三维。
 
-[v5.9.0 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.0/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
+[v5.9.1 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.9.1/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
 
 </details>
 
@@ -290,7 +292,13 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 
 ## 版本更新
 
-当前稳定版为 **v5.9.0**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+当前稳定版为 **v5.9.1**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+
+### 5.9.1：独立检查文字阅读与信息保留
+
+- 分镜分别设计信息组、动作与稳定阅读、焦点顺序和旧信息保留；新课默认启用阅读契约。
+- 导出前计算实际文字、父容器运动、替换、剪切和停留，渲染时再检查完整曝光与位置；缺少回执或时间不足不登记为当前视频。
+- 工程下限、实际渲染和正常速度首次观看分别验收；旧课只读诊断，明确返修后启用，不自动重做或代填认可。[验证范围](docs/verification-v5.9.1.md)
 
 | 版本 | 主要变化 | 带来的使用价值 |
 | --- | --- | --- |

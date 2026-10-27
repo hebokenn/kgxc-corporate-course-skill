@@ -84,6 +84,7 @@ class DirectionTests(unittest.TestCase):
             init_project(p,ROOT)
             with wave.open(str(p/'audio/synthetic-silence.wav'),'wb')as w:w.setnchannels(1);w.setsampwidth(2);w.setframerate(48000);w.writeframes(b'\0\0'*(48000*6))
             spec=fixture();spec.update(title='异内容技术验证 无配音教学结论',media=dict(audio='audio/synthetic-silence.wav',intro=None,outro=None),assets=[],rendering=dict(route='auto'))
+            spec['readingPlan']=dict(schema='course-reading-plan/1',groups=[],referenceTextIds=[],noNewTextReason='本夹具检查图形对象动作和状态，没有正文阅读任务')
             from authoring import walk
             for n in walk(spec['sceneGraph']['nodes']):
                 if n['id']in ['person-slot','record']:n['fill']='#536d83'

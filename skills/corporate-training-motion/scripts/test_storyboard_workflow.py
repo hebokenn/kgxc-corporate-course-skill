@@ -24,12 +24,13 @@ def fixture(course):
                         cost='低' if letter=='A' else '中', risk_note='检查动作前中后',
                         difference='比较信息关系而不是换色 '+letter, characters=i==1)
                    for letter, method in [('A','对象对应'),('B','前后对照'),('C','条件路径')]]
+        for o in options:o['reading_design']=dict(information_groups=[dict(screen_text='核对项目',read_task='看清当前核对项',motion_seconds=.6,stable_read_seconds=3,retention='保留到本段反馈')],focus_order=['当前项目','动作','结果'])
         segments.append(dict(id=f'S{i+1}',unit_id='U',source_paragraph_ids=[p['id']],script_excerpt=p['text'],
                              teaching_goal='核对当前任务',kind=['concept','scenario','operation'][i%3],
                              risk='high' if i==2 else 'normal',options=options,recommended='A',
                              recommendation_reason='对应工作任务且已有素材',selected=None,
                              assessment_ids=['A'] if i==len(source)-1 else []))
-    return dict(schema=SCHEMA,script_sha256=course.script_sha(),
+    return dict(schema=SCHEMA,reading_contract='reading-pacing-v1',script_sha256=course.script_sha(),
                 visual_direction=dict(palette='白与蓝',typography='中文黑体',graphics='物件与角色',atmosphere='清楚'),
                 presentation_policy=dict(concept_characters=False,scenario_characters=True),segments=segments)
 
@@ -85,6 +86,19 @@ class StoryboardTests(unittest.TestCase):
                 elif mutation=='duplicate':d['segments'][1]['source_paragraph_ids']=['P001']
                 else:d['segments'][0]['script_excerpt']='摘要不能冒充完整原稿'
                 with self.assertRaises(ValueError):self.course.save_storyboard(d,self.course.status()['revision'])
+
+    def test_reading_contract_requires_every_alternative_to_plan_information(self):
+        board=fixture(self.course)
+        def report():return check(board,self.course.script()['text'],self.course.script_sha(),self.course.status()['plan'],reading_required=True)
+        self.assertTrue(report()['ok'],report())
+        option=board['segments'][0]['options'][2];saved=option.pop('reading_design')
+        self.assertTrue(any('独立信息组'in e for e in report()['errors']))
+        option['reading_design']=saved;saved['information_groups'][0]['stable_read_seconds']=.2
+        self.assertTrue(any('估算下限'in e for e in report()['errors']))
+        saved['information_groups']=[];self.assertTrue(any('没有新增正文'in e for e in report()['errors']))
+        saved['no_new_text_reason']='用物件状态对照理解，无新增正文'
+        self.assertTrue(report()['ok'],report())
+        board.pop('reading_contract');self.assertTrue(any('reading_contract'in e for e in report()['errors']))
 
     def test_three_distinct_alternatives_and_person_policy(self):
         self.enable();data=fixture(self.course)

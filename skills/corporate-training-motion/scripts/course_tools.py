@@ -16,13 +16,27 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='reading-check':
+        ap=argparse.ArgumentParser(description='Actual stable text exposure, reading focus and retention; read-only diagnosis')
+        ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--out',type=Path);aa=ap.parse_args(rest)
+        from reading_pacing import inspect
+        result=inspect(json.loads(aa.spec.read_text()),force=True)
+        if aa.out:
+            if args.dry_run or aa.out.exists()or aa.out.resolve()==aa.spec.resolve():ap.error('保留已有文件；检查不改工程，指定新的 --out')
+            aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+        print(json.dumps(result,ensure_ascii=False,indent=2));return 2 if result['status']=='fail'else 0
+    if args.command=='reading-enable':
+        ap=argparse.ArgumentParser();ap.add_argument('course',type=Path);ap.add_argument('--evidence',required=True);aa=ap.parse_args(rest)
+        if args.dry_run:ap.error('启用阅读契约是显式修改；使用 reading-check 先只读检查')
+        from reading_pacing import enable
+        print(json.dumps(enable(aa.course,aa.evidence),ensure_ascii=False,indent=2));return 0
     if args.command=='direction-check':
         ap=argparse.ArgumentParser(description='Read-only content inventory and critical-frame candidates, not creative approval')
         ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--out',type=Path);aa=ap.parse_args(rest)

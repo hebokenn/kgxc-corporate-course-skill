@@ -125,6 +125,7 @@ function renderStoryboard(){
   for(const option of segment.options||[]){
    const card=el('article',null,'style-card');card.append(el('h4',option.id+' · '+option.method+(segment.recommended===option.id?' · 推荐':'')));
    for(const [key,label] of [['opening','开始'],['action','画面变化'],['result','结果'],['focus','观看焦点'],['difference','方案差异'],['feasibility','实现条件'],['cost','预计成本'],['risk_note','需检查']])card.append(el('p',label+'：'+option[key]));
+   if(option.reading_design){const rd=option.reading_design;card.append(el('p','焦点顺序：'+(rd.focus_order||[]).join(' → ')));for(const g of rd.information_groups||[])card.append(el('p','信息组：'+g.screen_text+'；读懂：'+g.read_task+'；动作 '+g.motion_seconds+'秒，完整停稳阅读 '+g.stable_read_seconds+'秒；保留：'+g.retention));if(!(rd.information_groups||[]).length)card.append(el('p',rd.no_new_text_reason||''))}
    card.append(el('p',option.characters?'使用人物':'不使用人物','meta'));
    const choice=el('label',null,'option'),radio=document.createElement('input');radio.type='radio';radio.name='shot-'+segment.id;radio.value=option.id;radio.checked=segment.selected===option.id;
    choice.append(radio,el('span','采用 '+option.id));card.append(choice);grid.append(card);

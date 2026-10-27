@@ -19,6 +19,7 @@ export class CourseRenderer{
   }else{
    const bridge=this.native.courseWorkbench;if(!bridge||bridge.version!==1||typeof bridge.apply!=='function'||typeof bridge.seek!=='function')throw Error('课程缺少统一工作台桥接接口');
    if(d.layoutPolicy?.required&&typeof bridge.layoutReceipt!=='function')throw Error('缺少实际文字与标注边界检查，不能忽略布局约束');
+   if(d.readingPolicy?.required&&typeof bridge.readingReceipt!=='function')throw Error('缺少实际文字曝光与位置回执 readingReceipt，不能用动作回执代替阅读检查');
    this.bindingReceipt=await bridge.apply(structuredClone(d));
    for(const [key,items]of [['fields',d.fields],['assets',d.assets]]){const got=this.bindingReceipt?.[key];if(!Array.isArray(got)||items.some(x=>!got.includes(x.id)))throw Error('课程引擎没有应用全部可编辑'+key)}
   }
@@ -38,6 +39,8 @@ export class CourseRenderer{
   let motionReceipt=[];if(kind==='native'&&d.motionPolicy?.required){if(typeof this.native.courseWorkbench.motionReceipt!=='function')throw Error('实际引擎未提供动效运行回执，不得通过改路线绕过检查');motionReceipt=this.native.courseWorkbench.motionReceipt()}
   const layoutReceipt=kind==='native'&&typeof this.native.courseWorkbench?.layoutReceipt==='function'?this.native.courseWorkbench.layoutReceipt():[];
   const bad=layoutReceipt.filter(r=>r.violations?.length);if(bad.length)throw Error('画面布局检查失败，源帧 '+source+'：'+bad.map(r=>r.objectId+' '+r.violations.join('；')).join('；'));
-  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame),motionReceipt,layoutReceipt};
+  const readingReceipt=kind==='native'&&d.readingPolicy?.required?this.native.courseWorkbench.readingReceipt():[];
+  if(metric)for(const r of readingReceipt){const a=r.bounds,b=metric.bounds;if(Math.min(a[2],b[2])-Math.max(a[0],b[0])>2&&Math.min(a[3],b[3])-Math.max(a[1],b[1])>2){r.occluded=true;r.captionOverlap=metric.id}}
+  this.frameNumber=frame;this.lastMetric=metric;return {frame,sourceFrame:source,kind,caption:metric,key:this.key(frame),motionReceipt,layoutReceipt,readingReceipt};
  }
 }

@@ -62,3 +62,6 @@ python3 SKILL_DIR/scripts/course_tools.py direction-check --spec COURSE/project/
 ## 后续课程的迁移检查
 
 新课使用当前自己的逐字稿、原始资料、对象、风格和真实时间轴，不导入旧课分镜生成器。确认全课分镜后分层随机抽三个完整片段，保存候选池与种子再测试，不能挑好看或容易的片段代替；结果应表现出当前任务的关系，而不是只改旧例标题。验证一段操作能动，不代表对话、统计或阅读都适用同一做法。工具的合成回归只证明入口、采样和编码契约，不承诺新课自动达到审美或学习效果。
+
+
+文字及信息更新按[阅读与信息节奏](45-reading-and-information-pacing.md)独立编排与检查；恢复时读取 `production_handoff.reading_pacing`，不要把动作间空档或通用“读图”理由当作实际阅读证据。

@@ -59,7 +59,7 @@ def paragraphs(text):
     return result
 
 
-def check(board, script_text, script_sha, design):
+def check(board, script_text, script_sha, design,reading_required=False):
     errors = []
     if not isinstance(board, dict):
         return dict(ok=False, errors=['分镜须为对象'], pending=[])
@@ -67,6 +67,8 @@ def check(board, script_text, script_sha, design):
         errors.append('分镜格式须为 ' + SCHEMA)
     if board.get('script_sha256') != script_sha:
         errors.append('分镜未绑定当前逐字稿')
+    if reading_required and board.get('reading_contract')!='reading-pacing-v1':errors.append('新课分镜须声明 reading_contract=reading-pacing-v1，并分别设计动作与信息阅读')
+    reading_required=reading_required or board.get('reading_contract')=='reading-pacing-v1'
     visual = board.get('visual_direction', {})
     if not isinstance(visual, dict) or any(not str(visual.get(k, '')).strip()
             for k in ['palette', 'typography', 'graphics', 'atmosphere']):
@@ -124,6 +126,21 @@ def check(board, script_text, script_sha, design):
                     errors.append(sid + '/' + oid + ' 缺少 ' + key)
             if not isinstance(option.get('characters'), bool):
                 errors.append(sid + '/' + oid + ' 须声明是否使用人物')
+            if reading_required:
+                from reading_pacing import estimate
+                import math
+                rd=option.get('reading_design',{});groups=rd.get('information_groups')if isinstance(rd,dict)else None
+                if not isinstance(groups,list):errors.append(sid+'/'+oid+' 缺少独立信息组、动作时长、稳定读图时长与保留设计')
+                elif not groups and not str(rd.get('no_new_text_reason','')).strip():errors.append(sid+'/'+oid+' 没有新增正文时须说明如何用图像理解')
+                else:
+                    for group in groups:
+                        if not isinstance(group,dict):errors.append(sid+'/'+oid+' 信息组须为对象');continue
+                        for key in ['screen_text','read_task','retention']:
+                            if not isinstance(group.get(key),str)or not group[key].strip():errors.append(sid+'/'+oid+' 信息组缺少 '+key)
+                        for key in ['motion_seconds','stable_read_seconds']:
+                            if type(group.get(key))not in [int,float]or not math.isfinite(group[key])or group[key]<0:errors.append(sid+'/'+oid+' 信息组时长无效 '+key)
+                        if type(group.get('stable_read_seconds'))in [int,float]and group['stable_read_seconds']<estimate([group.get('screen_text','')]):errors.append(sid+'/'+oid+' 稳定阅读时长低于该组文字的估算下限')
+                if not isinstance(rd,dict)or not isinstance(rd.get('focus_order'),list)or not rd.get('focus_order')or any(not isinstance(v,str)or not v.strip()for v in rd['focus_order']):errors.append(sid+'/'+oid+' 缺少依次推进的观看焦点')
             policy = board.get('presentation_policy', {})
             if segment.get('kind') == 'concept' and policy.get('concept_characters') is False and option.get('characters'):
                 errors.append(sid + '/' + oid + ' 概念段按本课约定不使用人物')
@@ -278,11 +295,15 @@ def export_html(board, path):
         alternatives = []
         for o in s['options']:
             title = o['id']+' · '+o['method']+(' · 推荐' if o['id']==s['recommended'] else '')
+            rd=o.get('reading_design',{});reading=''
+            if rd:
+                reading='<p><b>焦点顺序：</b>'+esc(' → '.join(rd.get('focus_order',[])))+'</p>'+''.join('<p><b>信息组：</b>'+esc(g.get('screen_text',''))+'<br>读懂什么：'+esc(g.get('read_task',''))+'<br>动作 '+esc(g.get('motion_seconds'))+'秒；完整停稳阅读 '+esc(g.get('stable_read_seconds'))+'秒<br>保留：'+esc(g.get('retention',''))+'</p>'for g in rd.get('information_groups',[]))
+                if not rd.get('information_groups'):reading+='<p>'+esc(rd.get('no_new_text_reason',''))+'</p>'
             alternatives.append('<section><h3>'+esc(title)+'</h3>'+''.join(
                 '<p><b>'+label+'</b>'+esc(o[key])+'</p>' for key,label in [
                 ('opening','开始：'),('action','画面变化：'),('result','结果：'),('focus','观看焦点：'),
                 ('difference','方案差异：'),('feasibility','实现条件：'),('cost','预计成本：'),('risk_note','需检查：')])+
-                '<p class="tag">'+('使用人物' if o['characters'] else '不使用人物')+'</p></section>')
+                reading+'<p class="tag">'+('使用人物' if o['characters'] else '不使用人物')+'</p></section>')
         index.append('<a href="#'+esc(s['id'])+'">'+esc(s['id']+' '+s['teaching_goal'])+'</a>')
         rows.append('<article id="'+esc(s['id'])+'"><h2>'+esc(s['id']+' · '+s['teaching_goal'])+'</h2><p class="meta">'+
             esc(s['unit_id']+' / '+kinds.get(s['kind'],s['kind'])+' / '+('需重点验证' if s['risk']=='high' else '常规风险')+' / '+', '.join(s['source_paragraph_ids']))+

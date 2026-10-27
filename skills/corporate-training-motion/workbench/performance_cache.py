@@ -104,7 +104,7 @@ def _review_files(project, video):
             for item in value:
                 collect(item)
 
-    for name in ['director-review.json', 'craft-review.json', 'cover-review.json', 'visual-hygiene-review.json']:
+    for name in ['director-review.json', 'craft-review.json', 'cover-review.json', 'visual-hygiene-review.json','reading-review.json']:
         path = project/'qa'/name
         files.append(path)
         try:

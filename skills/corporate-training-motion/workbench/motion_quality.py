@@ -57,9 +57,11 @@ def intervals_subtract(interval,covered):
 
 
 def preflight(doc):
+    from reading_pacing import inspect as reading_inspect
+    reading=reading_inspect(doc)
     enabled=bool(doc.get('motionPolicy',{}).get('required'))
     plan=doc.get('motionPlan',{});errors=[]
-    if not enabled and not plan:return dict(status='legacy-not-opted-in',errors=[],scope='frozen course left unchanged')
+    if not enabled and not plan:return dict(status='fail'if reading['errors']else'legacy-not-opted-in',errors=reading['errors'],readingPacing=reading,scope='frozen course left unchanged')
     if plan.get('schema')!=SCHEMA:return dict(status='fail',errors=['缺少逐段动作计划 motionPlan；不能用效果名称或短小样代替整课编排'])
     if not plan.get('language'):errors.append('缺少本课动作编排标识；它不限制可组合的动作类型')
     nodes={n['id']:n for n in walk(doc.get('sceneGraph',{}).get('nodes',[]))}
@@ -123,13 +125,15 @@ def preflight(doc):
     if protected-actual:errors.append('明确保留的核心动作在整课中缺失 '+', '.join(sorted(protected-actual)))
     from semantic_motion import inspect as inspect_semantics
     semantic=inspect_semantics(doc,nodes);errors.extend(semantic['errors'])
+    errors.extend(reading['errors'])
     from craft_quality import analyze
     return dict(status='fail' if errors else 'pass',errors=errors,actions=len(actions),beats=len(beats),semantic=semantic,craft=analyze(doc),
-                actualEffects=sorted(actual),librarySha256=doc.get('motionPolicy',{}).get('librarySha256'),
+                actualEffects=sorted(actual),librarySha256=doc.get('motionPolicy',{}).get('librarySha256'),readingPacing=reading,
                 scope='implementation and narration coverage; encoded motion and visual review still required')
 
 
 def require(doc,project=None):
+    from reading_pacing import require as require_reading
     if project and (Path(project)/'craft-contract.json').is_file() and not doc.get('qualityPolicy',{}).get('required'):
         raise ValueError('本工程要求独立审美与声音复核，不能删除 qualityPolicy')
     if project and (Path(project)/'motion-contract.json').is_file() and not doc.get('motionPolicy',{}).get('required'):
@@ -139,6 +143,7 @@ def require(doc,project=None):
         if marker.get('stateProofRequired')and not doc.get('motionPolicy',{}).get('stateProofRequired'):raise ValueError('本工程要求对象状态与编码像素证明，不能删除 stateProofRequired')
         if marker.get('semanticRequired') and not doc.get('motionPolicy',{}).get('semanticRequired'):
             raise ValueError('本工程要求口播与对象状态对应；不能删除 semanticRequired 绕过检查')
+    require_reading(doc,project)
     report=preflight(doc)
     if report['status']=='fail':raise ValueError('整课动效检查未通过：'+'; '.join(report['errors'][:16]))
     return report
@@ -179,7 +184,9 @@ def director_review(project,doc,video):
             if type(frame.get('sourceFrame')) is not int or not s['sourceStartFrame']<=frame['sourceFrame']<s['sourceEndFrame']:errors.append('复核画面不属于当前场景 '+s['id'])
     from craft_quality import review as craft_review
     craft=craft_review(p,doc,video);errors.extend(craft['errors'])
-    return dict(status='pass' if not errors else 'pending',errors=errors,craft=craft,scope='bound director evidence; human listening and user acceptance separate')
+    from reading_pacing import review as reading_review
+    reading=reading_review(p,doc,video);errors.extend(reading['errors'])
+    return dict(status='pass' if not errors else 'pending',errors=errors,craft=craft,readingPacing=reading,scope='bound director evidence; human listening and user acceptance separate')
 
 
 def audit_encoded(video,doc,first,last):
