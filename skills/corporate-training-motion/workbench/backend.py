@@ -358,6 +358,10 @@ class Workspace:
                 course=Course(self.root)
                 if course.modern():
                     course.require_video('pilot' if key=='final' else 'style')
+                    if course.storyboard_mode():
+                        from storyboard import check_bindings
+                        issues=check_bindings(course.storyboard(),course.sample_plan(),doc,first,last,full=key=='final')
+                        if issues:raise ValueError('；'.join(issues))
                     render_context=course._video_context()
                 else:
                     if purpose:raise ValueError('旧工程沿原导出规则，不指定导出用途')
@@ -406,6 +410,14 @@ class Workspace:
                               document_sha256=digest(directory/'document.json'),video_sha256=digest(video),
                               subtitles_sha256=digest(srt),review='technical_export_verified; content/user acceptance pending',
                               verification=read(directory/'verification.json'))
+                if (self.project/'course-state.json').is_file():
+                    from workflow import Course
+                    planning_course=Course(self.root)
+                    if planning_course.storyboard_mode():
+                        from storyboard import basis, digest as plan_digest
+                        metadata['storyboard_sampling']=dict(storyboard_sha256=basis(planning_course.storyboard()),
+                            sample_plan_sha256=plan_digest(planning_course.sample_plan()),document_sha256=digest(self.file),
+                            native_sha256=native_hash,bindings=doc.get('storyboardBindings'))
                 atomic(video.with_suffix('.json'),metadata)
                 packages=self.root/'packages';ensure_dir(packages)
                 archive=packages/f'editable-r{revision}-{job_id}.zip'
@@ -577,6 +589,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     if path=='/api/workflow/courseware':return self.json(course.save_courseware(data['text'],data['baseRevision']))
                     if path=='/api/workflow/script':return self.json(course.save_script(data['text'],data['baseRevision']))
                     if path=='/api/workflow/branch':return self.json(course.select_branch(data['branch'],data['baseRevision'],data['evidence'],actor='workbench'))
+                    if path=='/api/workflow/planning':return self.json(course.enable_storyboard(data['baseRevision'],data['evidence'],actor='workbench'))
+                    if path=='/api/workflow/storyboard':return self.json(course.save_storyboard(data['storyboard'],data['baseRevision']))
+                    if path=='/api/workflow/shot':return self.json(course.choose_shot(data['id'],data['option'],data['baseRevision'],data['evidence']))
+                    if path=='/api/workflow/sample':return self.json(course.sample_storyboard(data['baseRevision'],data.get('seed'),data.get('redraw',False),data.get('evidence','')))
                     if path=='/api/workflow/director':return self.json(course.save_director(data['director'],data['baseRevision']))
                     if path=='/api/workflow/style':return self.json(course.select_style(data['id'],data['baseRevision'],data['evidence']))
                 raise ValueError('未知课程操作')

@@ -107,7 +107,7 @@ def configure(course, spec_path):
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
     spec=expand(read(spec_path));d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets','visualStyles'] if k in spec})
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','teachingModules','contentAssets','visualStyles','storyboardBindings'] if k in spec})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
     if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') or n.get('textExclusion') or n.get('supportBinding') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure, row separation and declared character exclusion on each rendered state')
     from render_routes import plan,prepare,bind_fields
@@ -121,6 +121,10 @@ def configure(course, spec_path):
     elif d['adapter']=='seek-bridge-v1':d['fields']=spec.get('fields',[])
     else:raise ValueError('新课只使用通用场景图或统一seek桥接，不使用国补专用适配器')
     validate(d,p)
+    if (p/'course-state.json').is_file() and course.storyboard_mode():
+        from storyboard import check_bindings
+        issues=check_bindings(course.storyboard(),course.sample_plan(),d,full=course.status()['stage']=='final')
+        if issues:raise ValueError('；'.join(issues))
     if not d['media'].get('audio'):raise ValueError('尚未接入实际混音；保留可打开的草稿，不能标为可导出')
     actual=float(json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',str(safe(p,d['media']['audio']))]))['format']['duration'])
     if abs(actual-d['sourceDurationFrames']/30)>.12:raise ValueError('课程时间轴与真实混音时长不一致；请先按实际音轨对齐')

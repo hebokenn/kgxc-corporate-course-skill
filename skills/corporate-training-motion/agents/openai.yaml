@@ -1,4 +1,4 @@
 interface:
   display_name: "酷果星创课程设计与制作"
-  short_description: "设计或继续课程，恢复有效确认，视频自动选路与选音并交付可编辑产物"
-  default_prompt: "使用 $corporate-training-motion 设计或继续制作当前课程，恢复有效确认，视频主动选择适合内容的渲染与动作音效，完成当前阶段并保存可编辑产物。"
+  short_description: "设计或继续课程，逐段比较分镜，三段随机有声预览后制作整课"
+  default_prompt: "使用 $corporate-training-motion 设计或继续制作当前课程，恢复有效确认，视频先交付全课逐段至少三种表现方案，确认后分层随机抽取三个完整有声样段，完成当前阶段并保存可编辑产物。"

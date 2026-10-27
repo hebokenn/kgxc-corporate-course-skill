@@ -100,11 +100,63 @@ function mediaPreview(path,container){
  if(path.toLowerCase().endsWith('.mp4')){const video=document.createElement('video');video.controls=true;video.preload='metadata';video.src='/course-file?path='+encodeURIComponent(path);video.setAttribute('aria-label','配音与画面小样播放器');container.append(video);}
  container.append(fileLink(path,'打开文件：'+path.split('/').at(-1)));
 }
+function renderStoryboard(){
+ const enabled=status.planning_workflow==='storyboard-v1';
+ let panel=$('storyboard-panel');
+ if(!panel){panel=el('section',null,'section');panel.id='storyboard-panel';$('video-production').prepend(panel);}
+ panel.hidden=!enabled;
+ $('director-beats').closest('section').hidden=enabled;
+ $('style-options').closest('section').hidden=enabled;
+ $('director-data').closest('details').hidden=enabled;
+ if(!enabled)return;
+ if(document.activeElement?.closest('#storyboard-panel')&&status.revision===lastRevision)return;
+ panel.replaceChildren(el('h3','全课内容演绎与分镜'));
+ panel.append(el('p','先比较每个教学片段至少三种表现，确定全课分镜后再抽取三个完整片段生成有声动态小样。','hint'));
+ const board=status.storyboard||{}, report=status.storyboard_report||{};
+ const v=board.visual_direction||{};
+ if(Object.keys(v).length){const art=el('details');art.append(el('summary','共用美术候选'));for(const [key,label] of [['palette','配色'],['typography','字体'],['graphics','图形与材质'],['atmosphere','气质']])if(v[key])art.append(el('p',label+'：'+v[key],'meta'));panel.append(art);}
+ panel.append(el('p','逐字稿段落 '+(report.paragraph_count||0)+' · 教学片段 '+(report.segment_count||0)+' · 画面方案 '+(report.option_count||0)+' · 待选择 '+(report.pending||[]).length,'badge'));
+ if((board.segments||[]).length)panel.append(fileLink('storyboard.html','打开全课分镜对照表'));
+ const list=el('div');
+ for(const segment of board.segments||[]){
+  const box=el('details',null,'storyboard-segment'),sum=el('summary',segment.id+' · '+segment.teaching_goal+' · '+(segment.selected?'已选 '+segment.selected:'待选择'));
+  box.dataset.segment=segment.id;box.append(sum,el('blockquote',segment.script_excerpt),el('p','类型：'+({concept:'概念讲解',scenario:'人物情境',operation:'过程演示',practice:'练习反馈'}[segment.kind]||segment.kind)+'；'+(segment.risk==='high'?'需重点验证':'常规风险'),'meta'));
+  const grid=el('div',null,'style-grid');
+  for(const option of segment.options||[]){
+   const card=el('article',null,'style-card');card.append(el('h4',option.id+' · '+option.method+(segment.recommended===option.id?' · 推荐':'')));
+   for(const [key,label] of [['opening','开始'],['action','画面变化'],['result','结果'],['focus','观看焦点'],['difference','方案差异'],['feasibility','实现条件'],['cost','预计成本'],['risk_note','需检查']])card.append(el('p',label+'：'+option[key]));
+   card.append(el('p',option.characters?'使用人物':'不使用人物','meta'));
+   const choice=el('label',null,'option'),radio=document.createElement('input');radio.type='radio';radio.name='shot-'+segment.id;radio.value=option.id;radio.checked=segment.selected===option.id;
+   choice.append(radio,el('span','采用 '+option.id));card.append(choice);grid.append(card);
+  }
+  box.append(grid,el('p','推荐依据：'+segment.recommendation_reason));
+  const noteInput=document.createElement('textarea');noteInput.rows=2;noteInput.setAttribute('aria-label',segment.id+' 分镜选择说明');noteInput.placeholder='可补充选择理由';box.append(noteInput);
+  const save=el('button','保存本段选择');save.onclick=async()=>{try{const chosen=box.querySelector('input:checked');if(!chosen){note('请选择本段的画面方案。',true);return;}
+   status=await api('/api/workflow/shot',{id:segment.id,option:chosen.value,evidence:segment.id+' 选择 '+chosen.value+(noteInput.value.trim()?'：'+noteInput.value.trim():''),baseRevision:status.revision});render();lastRevision=status.revision;note('本段选择已保存；全部选择后请确认全课分镜。');
+  }catch(e){note(e.message,true);}};box.append(save);
+  if(segment.selection_receipt)box.append(el('p',segment.selection_receipt.evidence,'receipt'));
+  list.append(box);
+ }
+ panel.append(list);
+ const evidence=document.createElement('textarea');evidence.setAttribute('aria-label','全课分镜确认说明');evidence.placeholder='记录对整课分镜与美术方向的意见；也可明确采用全部推荐方案';evidence.id='storyboard-evidence';panel.append(evidence);
+ const bulk=el('button','采用全部推荐方案');bulk.disabled=!(board.segments||[]).length;bulk.onclick=async()=>{try{if(!evidence.value.trim()){note('请填写采用推荐方案的说明。',true);return;}status=await api('/api/workflow/shot',{id:'all',option:'recommended',evidence:evidence.value,baseRevision:status.revision});render();lastRevision=status.revision;note('推荐方案已按你的选择保存，仍需确认全课分镜。');}catch(e){note(e.message,true);}};panel.append(bulk);
+ const gate=status.gates.find(g=>g.id==='storyboard'),confirm=el('button','确认全课分镜','primary');confirm.disabled=!gate?.ready;confirm.onclick=async()=>{try{if(!evidence.value.trim()){note('请填写对当前全课分镜的确认说明。',true);return;}status=await api('/api/workflow/confirm',{gate:'storyboard',evidence:evidence.value,baseRevision:status.revision});render();lastRevision=status.revision;note('全课分镜已确认，下一步分层抽样。');}catch(e){note(e.message,true);}};panel.append(confirm);
+ if(gate?.status==='confirmed')panel.append(el('p',gate.receipt.evidence,'receipt'));
+ const sampling=el('section');sampling.append(el('h4','三个样段的抽样计划'));
+ const draw=el('button','分层随机抽取三个片段');draw.disabled=gate?.status!=='confirmed'||(!!status.sampling?.selections&&status.sampling.storyboard_sha256===status.storyboard_sha256);draw.onclick=async()=>{try{status=await api('/api/workflow/sample',{baseRevision:status.revision});render();lastRevision=status.revision;note('抽样已保存，制作端将按这三个完整片段生成小样。');}catch(e){note(e.message,true);}};sampling.append(draw);
+ for(const item of status.sampling?.selections||[])sampling.append(el('p',item.segment_id+' / '+item.option_id+' · '+item.reason));
+ if(status.sampling?.selections&&status.sampling.storyboard_sha256!==status.storyboard_sha256)sampling.append(el('p','以下为旧抽样记录，分镜已改变；本轮须重新抽样。','hint'));
+ if(status.sampling?.selections){sampling.append(el('p',status.sampling.scope,'hint'));if(status.sampling.uncovered_kinds?.length)sampling.append(el('p','未抽中表现类型：'+status.sampling.uncovered_kinds.join('、'),'meta'));if(status.sampling.unsampled_high_risk_ids?.length)sampling.append(el('p','未抽中的高风险片段仍需生产验证：'+status.sampling.unsampled_high_risk_ids.join('、'),'meta'));}
+ panel.append(sampling);
+ const detail=el('details');detail.append(el('summary','制作人员：分镜数据'));
+ const data=document.createElement('textarea');data.rows=12;data.setAttribute('aria-label','分镜数据');data.value=JSON.stringify(board,null,2);detail.append(data);
+ const importButton=el('button','保存分镜数据');importButton.onclick=async()=>{try{status=await api('/api/workflow/storyboard',{storyboard:JSON.parse(data.value),baseRevision:status.revision});render();lastRevision=status.revision;note('分镜已保存，尚未确认的选择仍待审阅。');}catch(e){note(e.message,true);}};detail.append(importButton);panel.append(detail);
+}
 function renderProduction(){
  const modern=status.workflow_schema===2,branch=status.branch;
  $('production-title').textContent=branch==='courseware'?'课件制作与交付':branch==='video'?'导演与视频制作':'制作与交付';
  $('branch-badge').textContent=branch==='courseware'?'独立课件':branch==='video'?'视频':'待选择';
- $('production-summary').textContent=branch==='courseware'?'按已确认逐字稿独立制作课件，供讲授或自行录制。交付课件与逐字稿后，本次制作完成；以后仍可启动视频。':branch==='video'?'导演从已确认逐字稿和原始素材设计视频。先确认三个风格之一，再确认配音与画面小样，随后制作完整视频。':'结构与逐字稿确认后，在待你确认页选择课件或视频。';
+ $('production-summary').textContent=status.planning_workflow==='storyboard-v1'&&branch==='video'?'先确定全课内容演绎与分镜，再分层抽取三个完整片段验证动态、配音和字幕，确认后制作整课。':branch==='courseware'?'按已确认逐字稿独立制作课件，供讲授或自行录制。交付课件与逐字稿后，本次制作完成；以后仍可启动视频。':branch==='video'?'导演从已确认逐字稿和原始素材设计视频。先确认三个风格之一，再确认配音与画面小样，随后制作完整视频。':'结构与逐字稿确认后，在待你确认页选择课件或视频。';
  $('production-script').replaceChildren();if(status.plan.script_file)$('production-script').append(fileLink(status.plan.script_file,'查看当前逐字稿'));
  $('video-production').hidden=modern&&branch!=='video';
  const director=status.director||{};
@@ -123,7 +175,9 @@ function renderProduction(){
  $('choose-style').disabled=!activeStyle?.ready;
  $('style-receipt').textContent=validStyle?activeStyle.receipt.at+'\n'+activeStyle.receipt.evidence:status.selected_style?'原风格涉及内容变更，请重新查看并确认。':'';
  $('pilot-preview').replaceChildren();for(const path of status.artifacts.pilot||[])mediaPreview(path,$('pilot-preview'));
- if(!(status.artifacts.pilot||[]).length)$('pilot-preview').append(el('p','风格确认后生成本课有声画面小样。','empty'));
+ if(!(status.artifacts.pilot||[]).length)$('pilot-preview').append(el('p',status.planning_workflow==='storyboard-v1'?'全课分镜确认后生成本次抽中的三个完整有声样段。':'风格确认后生成本课有声画面小样。','empty'));
+ if(status.planning_workflow==='storyboard-v1'&&!status.pilot_is_current)$('pilot-preview').replaceChildren(el('p','本轮三个有声样段尚未生成；请先审阅分镜并按抽样计划制作。历史小样继续保留。','empty'));
+ renderStoryboard();
  if(!directorDirty)$('director-data').value=JSON.stringify(director,null,2);
  $('deliveries').replaceChildren(...empty((status.deliveries||[]).map(d=>{const box=el('div',null,'unit');box.append(el('h4',(d.branch==='courseware'?'课件与逐字稿':'完整视频')+' · '+d.at),el('p',d.evidence+(d.script_sha256!==status.script_sha256?' · 对应此前版本逐字稿':''),'meta'));for(const f of d.files)box.append(fileLink(f.path,'下载 '+f.path.split('/').at(-1)));return box;}),'交付完成后，文件和记录会显示在这里。'));
  for(const job of status.jobs||[])if(job.status==='complete'&&job.video&&(status.artifacts.final||[]).some(p=>p.endsWith(job.video.split('/').at(-1)))){

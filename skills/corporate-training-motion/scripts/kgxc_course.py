@@ -15,6 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'workbench'))
 from runtime import activate, tools, config_dir, browser_options
 activate()
+from workflow import VERSION
 
 
 def doctor(media_only=False):
@@ -51,7 +52,7 @@ def doctor(media_only=False):
     from qwen3_tts import CATALOG
     voice_label=voice.get('profile',voice.get('voice_id',CATALOG['default'])) if voice_path.is_file() else CATALOG['default']
     item('Qwen3-TTS / '+voice_label,voice_ok,voice_label+' 短句生成已验证' if voice_ok else '配音尚未完成自动部署 请重跑完整安装 官方项目 https://github.com/QwenLM/Qwen3-TTS',False)
-    report=dict(skill='corporate-training-motion',version='5.3.0',media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
+    report=dict(skill='corporate-training-motion',version=VERSION,media_ready=all(x['status']=='ok' for x in result if x['required']),voice_ready=voice_ok,checks=result)
     report['full_ready']=report['media_ready'] and voice_ok
     for x in result:print(f'[{x["status"]}] {x["name"]}: {x["detail"]}')
     print('\n编辑导出环境：'+('就绪' if report['media_ready'] else '尚未就绪')+'；'+voice_label+' 配音：'+('就绪' if voice_ok else '尚未就绪'))
@@ -60,7 +61,7 @@ def doctor(media_only=False):
 
 
 def main():
-    workflow_commands={'start','resume','status','design','decide','checkpoint','package','review','script','director','branch','style'}
+    workflow_commands={'start','resume','status','design','decide','checkpoint','package','review','script','director','branch','style','planning','storyboard','choose-shot','sample'}
     if len(sys.argv)>1 and sys.argv[1] in workflow_commands:
         return subprocess.call([sys.executable,str(ROOT/'scripts/workflow.py'),*sys.argv[1:]])
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=sorted(workflow_commands|{'doctor','new','demo','serve','export','bookends','check'}));args,rest=p.parse_known_args()

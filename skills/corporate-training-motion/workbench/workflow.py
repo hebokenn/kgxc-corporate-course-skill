@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.3.0'
+VERSION = '5.9.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -95,8 +95,10 @@ class LegacyCourse:
 
     def _snapshot(self, state):
         folder = self.project / 'workflow-history'; ensure_dir(folder)
-        atomic(folder / (str(state['revision']).zfill(6) + '.json'),
-               dict(state=state, design_plan=read(self.plan_file)))
+        snapshot=dict(state=state,design_plan=read(self.plan_file))
+        for name in ['storyboard','storyboard-samples']:
+            if (self.project/(name+'.json')).is_file():snapshot[name]=read(self.project/(name+'.json'))
+        atomic(folder / (str(state['revision']).zfill(6) + '.json'),snapshot)
 
     @staticmethod
     def _subject(decision):
@@ -334,6 +336,21 @@ class Course(LegacyCourse):
     """v5 branches share an approved transcript; v4 courses retain their old contract."""
     COMMON = [('outline', '课程结构与讲解方法'), ('script', '逐字稿')]
     VIDEO = [('style', '导演画面与三个视觉风格'), ('pilot', '配音与画面小样'), ('final', '完整视频交付')]
+    STORYBOARD_VIDEO = [('storyboard', '内容演绎与全课分镜'), ('pilot', '三段抽样有声小样'), ('final', '完整视频交付')]
+
+    def storyboard_mode(self):
+        return read(self.state_file, {}).get('planning_workflow') == 'storyboard-v1'
+
+    def video_gates(self):
+        return self.STORYBOARD_VIDEO if self.storyboard_mode() else self.VIDEO
+
+    def storyboard(self):
+        value=read(self.project/'storyboard.json', {})
+        return value if isinstance(value,dict) else {}
+
+    def sample_plan(self):
+        value=read(self.project/'storyboard-samples.json', {})
+        return value if isinstance(value,dict) else {}
 
     def modern(self):
         return read(self.state_file, {}).get('schema') == 'course-workflow/2'
@@ -342,9 +359,9 @@ class Course(LegacyCourse):
         return 2 if self.modern() else 1
 
     def available_gates(self):
-        return self.COMMON + self.VIDEO + [('courseware', '课件交付')] if self.modern() else GATES
+        return self.COMMON + self.video_gates() + [('courseware', '课件交付')] if self.modern() else GATES
 
-    def init(self, title='新课程'):
+    def init(self, title='新课程', planning=None):
         if self.state_file.exists(): return self.status()
         with self.locked():
             if self.state_file.exists(): return self.status()
@@ -353,7 +370,8 @@ class Course(LegacyCourse):
                 handoff=dict(ready_for_courseware=False, ready_for_production=False)))
             atomic(self.state_file, dict(schema='course-workflow/2', version=VERSION, course_id=uuid.uuid4().hex,
                 revision=0, created_at=now(), updated_at=now(), gates={}, artifacts={}, journal=[],
-                branch=None, branch_history=[], deliveries=[], narration_status='not_started'))
+                branch=None, branch_history=[], deliveries=[], narration_status='not_started',
+                **({'planning_workflow': planning} if planning else {})))
         return self.status()
 
     def script(self):
@@ -394,6 +412,71 @@ class Course(LegacyCourse):
             if branch=='courseware':state['narration_status']='not_required'
             elif state.get('narration_status')=='not_required':state['narration_status']='not_started'
             self._commit(state,'branch_selected',receipt)
+        return self.status()
+
+    def enable_storyboard(self, expected, evidence, actor='chat'):
+        if not self.modern() or not str(evidence).strip():
+            raise ValueError('仅v5工程可显式升级，并须记录授权原话')
+        with self.locked():
+            state=read(self.state_file);self._revision(expected,state)
+            self._snapshot(state)
+            state['planning_workflow']='storyboard-v1'
+            self._commit(state,'storyboard_workflow_enabled',dict(evidence=evidence,actor=actor))
+        return self.status()
+
+    def save_storyboard(self, data, expected):
+        from storyboard import check, digest, export_html
+        if not self.storyboard_mode():raise ValueError('先显式启用内容演绎与分镜流程')
+        if not isinstance(data,dict) or not isinstance(data.get('segments'),list) or any(not isinstance(s,dict) for s in data.get('segments',[])):raise ValueError('分镜须包含教学片段对象列表')
+        with self.locked():
+            state=read(self.state_file);self._revision(expected,state);self.require_video('script')
+            old={s['id']:s for s in self.storyboard().get('segments',[])}
+            candidate=copy.deepcopy(data)
+            for segment in candidate.get('segments',[]):
+                prior=old.get(segment.get('id'),{})
+                subject=lambda x:{k:v for k,v in x.items() if k not in ['selected','selection_receipt']}
+                if prior and digest(subject(prior))==digest(subject(segment)):
+                    segment['selected']=prior.get('selected')
+                    if 'selection_receipt' in prior:segment['selection_receipt']=prior['selection_receipt']
+                else:
+                    segment['selected']=None;segment.pop('selection_receipt',None)
+            report=check(candidate,self.script()['text'],self.script_sha(),read(self.plan_file))
+            if report['errors']:raise ValueError('；'.join(report['errors']))
+            self._snapshot(state);atomic(self.project/'storyboard.json',candidate)
+            export_html(candidate,self.project/'storyboard.html')
+            self._commit(state,'storyboard_saved',dict(segments=report['segment_count']))
+        return self.status()
+
+    def choose_shot(self, identifier, option, expected, evidence, actor='workbench'):
+        from storyboard import export_html
+        if not self.storyboard_mode() or not str(evidence).strip():raise ValueError('请记录分镜选择依据')
+        with self.locked():
+            state=read(self.state_file);self._revision(expected,state);self.require_video('script')
+            board=self.storyboard()
+            selected=board.get('segments',[]) if identifier=='all' and option=='recommended' else [s for s in board.get('segments',[]) if s['id']==identifier]
+            if not selected:raise ValueError('片段不存在')
+            for segment in selected:
+                oid=segment['recommended'] if option=='recommended' else option
+                if oid not in [o['id'] for o in segment['options']]:raise ValueError('表现方案不存在')
+                segment['selected']=oid
+                segment['selection_receipt']=dict(at=now(),evidence=str(evidence),actor=actor)
+            self._snapshot(state);atomic(self.project/'storyboard.json',board)
+            export_html(board,self.project/'storyboard.html')
+            self._commit(state,'storyboard_choice_saved',dict(id=identifier,option=option,evidence=evidence,actor=actor))
+        return self.status()
+
+    def sample_storyboard(self, expected, seed=None, redraw=False, evidence=''):
+        from storyboard import basis, check_samples, draw
+        self.require_video('storyboard')
+        with self.locked():
+            state=read(self.state_file);self._revision(expected,state)
+            board=self.storyboard();old=self.sample_plan()
+            if old and not check_samples(board,old) and not redraw:
+                return self.status()
+            if old and redraw and not str(evidence).strip():raise ValueError('重新抽样须记录原因，不能反复抽到容易片段为止')
+            plan=draw(board,seed)
+            self._snapshot(state);atomic(self.project/'storyboard-samples.json',plan)
+            self._commit(state,'storyboard_sampled',dict(seed=plan['seed'],selections=plan['selections'],evidence=evidence))
         return self.status()
 
     def director(self):
@@ -492,6 +575,10 @@ class Course(LegacyCourse):
     def _video_context(self, state=None):
         from performance_cache import native_fingerprint
         state=state or read(self.state_file)
+        if self.storyboard_mode():
+            from storyboard import basis
+            return dict(script_sha256=self.script_sha(),storyboard_sha256=basis(self.storyboard()),samples=self.sample_plan(),
+                workbench=hashed(read(self.project/'workbench.json',{})),native=native_fingerprint(self.project))
         return dict(script_sha256=self.script_sha(),director_sha256=self._director_proof()['sha256'],
             style=state.get('selected_style'),workbench=hashed(read(self.project/'workbench.json',{})),native=native_fingerprint(self.project))
 
@@ -502,6 +589,20 @@ class Course(LegacyCourse):
         artifact, not an edit to the immutable reviewed MP4.
         """
         doc=read(self.project/'workbench.json',{});audio=doc.get('audio',{});proof=self._director_proof()
+        if self.storyboard_mode():
+            from motion_quality import runtime_digest
+            from storyboard import basis as board_basis, digest as plan_digest
+            assets={a['id']:a for a in doc.get('assets',[])}
+            sample_assets=[]
+            for identifier in state.get('pilot_asset_ids',[]):
+                item=assets.get(identifier,{})
+                path=item.get('path')
+                file=self.relative(path) if path else None
+                sample_assets.append(dict(id=identifier,path=path,sha256=sha(file) if file and file.is_file() else None))
+            return dict(script_sha256=self.script_sha(),storyboard_sha256=board_basis(self.storyboard()),samples=self.sample_plan(),
+                voice=audio.get('voice'),speed=audio.get('speed',1),gain=audio.get('gain',1),caption_style=doc.get('captionStyle'),
+                runtime=runtime_digest(self.project,doc) if doc.get('motionPolicy',{}).get('required') else None,
+                sample_assets=sample_assets,visual_palette_sha256=plan_digest(state['visual_palette']) if state.get('visual_palette') else None)
         visual_scope=self.director().get('style_scope')=='visual'
         basis=dict(script_sha256=self.script_sha(),director_sha256=proof.get('style_sha256',proof['sha256']),
             style=state.get('selected_style'),voice=audio.get('voice'),speed=audio.get('speed',1),
@@ -542,6 +643,9 @@ class Course(LegacyCourse):
         decisions=[dict(id=d['id'],subject=self._subject(d),selected=d.get('selected'),status=d.get('status')) for d in plan['decisions'] if d.get('gate','outline')==key]
         if key=='outline':data=dict(plan={k:plan.get(k) for k in ['sources','source_items','audience','performance_task','objectives','units','assessments']},sources=self._source_files(plan))
         elif key=='script':data=dict(script=self.script_sha(plan),assessments=plan['assessments'])
+        elif key=='storyboard':
+            from storyboard import basis
+            data=dict(storyboard_sha256=basis(self.storyboard()))
         elif key=='style':
             proof=self._director_proof();data=dict(director=proof.get('style_sha256',proof['sha256']),selected=state.get('selected_style'))
         elif key=='courseware':data=dict(script=self.script_sha(plan),files=self._artifact_hashes(key,state))
@@ -561,15 +665,24 @@ class Course(LegacyCourse):
             block='courseware' if key=='outline' else 'production'
             upstream=['outline'] if key=='outline' else ['outline','script']
             errors.extend('待解决：'+p['id'] for p in pending if block in p.get('blocking_for',[]) and p.get('gate') in upstream)
+        elif key=='storyboard':
+            from storyboard import check
+            report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan)
+            errors.extend(report['errors']);errors.extend('待选择分镜：'+sid for sid in report['pending'])
         elif key=='style':errors.extend(self._director_proof()['errors'])
         else:
             files=self._artifact_hashes(key,state)
             if not files or any(f['sha256'] is None for f in files):errors.append('尚未生成本阶段实际产物')
-            reviewed=key=='pilot' and state.get('gates',{}).get('pilot',{}).get('sha256')==self._gate_hash('pilot',plan,state)
+            reviewed=key=='pilot' and bool(state.get('gates',{}).get('pilot')) and state.get('gates',{}).get('pilot',{}).get('sha256')==self._gate_hash('pilot',plan,state)
             if reviewed and state.get('visual_palette'):
                 from visual_identity import check as check_palette
                 errors.extend(check_palette(read(self.project/'workbench.json', {}), state['visual_palette']))
             if key in ['pilot','final'] and not reviewed and state.get(key+'_context')!=self._video_context(state):errors.append('样片或成片与当前逐字稿、风格或画面版本不一致，请重新生成')
+        if key=='pilot' and self.storyboard_mode():
+            from storyboard import check_samples, check_bindings
+            errors.extend(check_samples(self.storyboard(),self.sample_plan()))
+            if state.get('artifacts',{}).get('pilot') and not reviewed:
+                errors.extend(check_bindings(self.storyboard(),self.sample_plan(),read(self.project/'workbench.json',{})))
         if key=='final' and state.get('artifacts',{}).get('final'):
             from performance_cache import director_review
             target=self.relative(state['artifacts']['final'][0])
@@ -584,13 +697,13 @@ class Course(LegacyCourse):
             result['production_handoff']=handoff(self.project,result)
             return result
         plan=read(self.plan_file);state=read(self.state_file);pending=self._pending(plan);branch=state.get('branch')
-        keys=self.COMMON+(self.VIDEO if branch=='video' else [('courseware','课件交付')] if branch=='courseware' else [])
+        keys=self.COMMON+(self.video_gates() if branch=='video' else [('courseware','课件交付')] if branch=='courseware' else [])
         gates=[];upstream=True
         for key,label in keys:
             receipt=state.get('gates',{}).get(key,{})
             errors=self._readiness(key,plan,state,pending);valid=bool(receipt and receipt.get('sha256')==self._gate_hash(key,plan,state) and upstream and not errors)
             delivery=key in ['courseware','final'];current='delivered' if delivery and valid else 'confirmed' if valid else 'stale' if receipt else 'open'
-            needs_artifact=(key=='script' and not self.script_sha(plan)) or (key=='style' and not self.director().get('styles')) or (key=='pilot' and not self._artifact_hashes(key,state))
+            needs_artifact=(key=='script' and not self.script_sha(plan)) or (key=='style' and not self.director().get('styles')) or (key=='storyboard' and not self.storyboard().get('segments')) or (key=='pilot' and not self._artifact_hashes(key,state))
             gates.append(dict(id=key,label=label,status=current,ready=upstream and not errors,reasons=errors,receipt=receipt,delivery=delivery,needs_artifact=needs_artifact))
             upstream=valid
         common=all(g['status']=='confirmed' for g in gates[:2]);complete=common and bool(branch) and upstream
@@ -600,11 +713,13 @@ class Course(LegacyCourse):
         elif stage=='branch':action='逐字稿已确认，请选择制作课件或视频'
         elif stage in ['courseware','final']:action='生成并交付课件与逐字稿' if stage=='courseware' else '小样已确认，可以生成完整视频'
         elif stage=='script' and not self.script_sha(plan):action='教学方案已确认，编写逐字稿供你审阅'
+        elif stage=='pilot' and self.storyboard_mode():action='分镜已确认，分层抽取并生成三个完整有声样段' if not self.sample_plan() else '按已保存抽样计划制作并审阅三个完整有声样段'
         elif stage=='pilot' and not state['artifacts'].get('pilot'):action='风格已确认，生成配音与画面小样供你审阅'
         elif stage=='pilot' and state.get('pilot_context')!=self._video_context(state):action='内容已变化，请重新生成配音与画面小样供你审阅'
+        elif stage=='storyboard':action='审阅全课逐段三种表现方案，确定分镜后再抽样'
         elif stage=='style':action='导演基于逐字稿提供三个风格，选择并确认画面方案'
         else:action='审阅并确认'+next(g['label'] for g in gates if g['id']==stage)
-        plan['handoff']=dict(ready_for_courseware=common,ready_for_production=common and branch=='video' and any(g['id']=='style' and g['status']=='confirmed' for g in gates))
+        plan['handoff']=dict(ready_for_courseware=common,ready_for_production=common and branch=='video' and any(g['id']==('storyboard' if self.storyboard_mode() else 'style') and g['status']=='confirmed' for g in gates))
         jobs=[{k:d.get(k) for k in ['id','status','video','srt','package','revision']} for p in sorted((self.project/'work/workbench/exports').glob('*/result.json')) for d in [read(p)]]
         narration=state.get('narration_status','not_started')
         if branch=='video' and narration=='not_required':narration='not_started'
@@ -612,17 +727,23 @@ class Course(LegacyCourse):
             branch=branch,branch_receipt=state.get('branch_receipt'),branch_history=state.get('branch_history',[]),selected_style=state.get('selected_style'),director=self.director(),script_sha256=self.script_sha(plan),
             deliveries=state.get('deliveries',[]),gates=gates,pending=pending,plan=plan,artifacts=state['artifacts'],jobs=jobs,source_files=self._source_files(plan),
             narration_status='not_required' if branch!='video' else 'ready' if complete else 'sample_ready' if any(g['id']=='pilot' and g['status'] in ['open','confirmed'] and g['ready'] for g in gates) else 'needs_regeneration' if state['artifacts'].get('pilot') else narration,updated_at=state['updated_at'])
+        if self.storyboard_mode():
+            from storyboard import check, check_samples, basis as board_basis
+            result.update(pilot_is_current=any(g['id']=='pilot' and g['ready'] for g in gates),sampling_valid=bool(self.sample_plan()) and not check_samples(self.storyboard(),self.sample_plan()),storyboard_sha256=board_basis(self.storyboard()),planning_workflow='storyboard-v1',storyboard=self.storyboard(),sampling=self.sample_plan(),
+                storyboard_report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan),selected_style=None)
+            if stage=='pilot' and not self.sample_plan():result['next_action']='分镜已确认，先分层随机抽取三个完整片段，再生成动态小样'
         result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
         result['director_review_status']=state.get('director_review_status')
         if stage=='final' and state.get('artifacts',{}).get('final') and state.get('director_review_status',{}).get('status')=='pending':result['next_action']='当前完整视频为候选；制作端完成逐段导演复核后登记，不重复渲染或代填用户认可'
         from production import handoff
         result['production_handoff']=handoff(self.project,result)
-        result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries']))
+        result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries'],storyboard=result.get('storyboard'),sampling=result.get('sampling')))
         return result
 
     def require(self,key):
         if not self.modern():return super().require(key)
         key={'content':'script','visual':'style'}.get(key,key)
+        if self.storyboard_mode() and key=='style':key='storyboard'
         gates=self.status()['gates'];ids=[g['id'] for g in gates]
         if key not in ids:raise ValueError('本分支没有该阶段：'+key)
         missing=[g['label'] for g in gates[:ids.index(key)+1] if g['status'] not in ['confirmed','delivered']]
@@ -639,6 +760,21 @@ class Course(LegacyCourse):
 
     def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None):
         if not self.modern():return super().register(key,paths,expected)
+        if self.storyboard_mode() and key in ['pilot','final']:
+            from storyboard import check_bindings, basis, digest
+            issues=check_bindings(self.storyboard(),self.sample_plan(),read(self.project/'workbench.json',{}),full=key=='final')
+            if issues:raise ValueError('；'.join(issues))
+            if key=='pilot':
+                from performance_cache import native_fingerprint
+                for name in paths:
+                    target=self.relative(name)
+                    if target.suffix.lower()!='.mp4':continue
+                    proof=read(target.with_suffix('.json'),{})
+                    expected_binding=dict(storyboard_sha256=basis(self.storyboard()),sample_plan_sha256=digest(self.sample_plan()),
+                                  document_sha256=sha(self.project/'workbench.json'),native_sha256=native_fingerprint(self.project),
+                                  bindings=read(self.project/'workbench.json',{}).get('storyboardBindings'))
+                    if proof.get('video_sha256')!=sha(target) or proof.get('storyboard_sampling')!=expected_binding:
+                        raise ValueError('抽样小样缺少与实际视频、分镜、时间线和生产源码绑定的导出记录')
         if key not in ['pilot','final','courseware']:raise ValueError('请用director保存导演方案，用script保存逐字稿')
         self.require_video('style' if key=='pilot' else 'pilot') if key!='courseware' else self.require('script')
         if key=='courseware' and read(self.state_file).get('branch')!='courseware':raise ValueError('请先选择课件分支')
@@ -680,6 +816,7 @@ class Course(LegacyCourse):
                 target=self.root/'delivery/courseware/课程逐字稿.md';ensure_dir(target.parent);target.write_text(self.script()['text'],encoding='utf-8')
                 stable.append('../'+str(target.relative_to(self.root)))
             state['artifacts'][key]=stable
+            if key=='pilot' and self.storyboard_mode():state['pilot_asset_ids']=[a['id'] for a in read(self.project/'workbench.json',{}).get('assets',[])]
             if context:state[key+'_context']=context
             quality_ready=True
             if key=='final':
@@ -699,6 +836,8 @@ class Course(LegacyCourse):
         if not self.modern():return super().brief()
         status=self.status();lines=[super().brief(),'当前分支：'+str(status['branch']),'已选视觉风格：'+str(status['selected_style']),
             '已交付：'+json.dumps(status['deliveries'],ensure_ascii=False),'导演输入：仅已确认逐字稿与原始素材；独立课件不进入视频制作']
+        if self.storyboard_mode():
+            lines += ['分镜覆盖：'+json.dumps(status['storyboard_report'],ensure_ascii=False),'抽样计划：'+json.dumps(status['sampling'],ensure_ascii=False)]
         lines += ['分支请求：'+json.dumps(receipt,ensure_ascii=False) for receipt in status['branch_history']]
         lines += ['审阅记录 '+gate['id']+'：'+json.dumps(gate['receipt'],ensure_ascii=False)
                   for gate in status['gates'] if gate['receipt']]
@@ -809,7 +948,11 @@ def main():
     a = sub.add_parser('design'); a.add_argument('course', type=Path); a.add_argument('--file', type=Path, required=True)
     a = sub.add_parser('decide'); a.add_argument('course', type=Path); a.add_argument('--id', required=True); a.add_argument('--option', required=True)
     a.add_argument('--evidence', required=True); a.add_argument('--actor', default='chat'); a.add_argument('--delegated', action='store_true')
-    all_gates=dict(GATES+Course.COMMON+Course.VIDEO+[('courseware','课件交付')])
+    all_gates=dict(GATES+Course.COMMON+Course.VIDEO+Course.STORYBOARD_VIDEO+[('courseware','课件交付')])
+    a=sub.add_parser('planning');a.add_argument('course',type=Path);a.add_argument('--evidence',required=True)
+    a=sub.add_parser('storyboard');a.add_argument('course',type=Path);a.add_argument('--file',type=Path,required=True)
+    a=sub.add_parser('choose-shot');a.add_argument('course',type=Path);a.add_argument('--id',required=True);a.add_argument('--option',required=True);a.add_argument('--evidence',required=True);a.add_argument('--actor',default='chat')
+    a=sub.add_parser('sample');a.add_argument('course',type=Path);a.add_argument('--seed');a.add_argument('--redraw',action='store_true');a.add_argument('--evidence',default='')
     for name in ['script','director']:
         a=sub.add_parser(name);a.add_argument('course',type=Path);a.add_argument('--file',type=Path,required=True)
     a=sub.add_parser('branch');a.add_argument('course',type=Path);a.add_argument('--type',choices=['courseware','video'],required=True);a.add_argument('--evidence',required=True);a.add_argument('--actor',default='chat')
@@ -845,6 +988,10 @@ def main():
         open_course(args.course, not args.no_open)
     elif args.command == 'resume': open_course(args.course, not args.no_open)
     elif args.command == 'status': print(json.dumps(course.status(), ensure_ascii=False, indent=2) if args.json else course.brief())
+    elif args.command == 'planning':print(json.dumps(course.enable_storyboard(course.status()['revision'],args.evidence),ensure_ascii=False,indent=2))
+    elif args.command == 'storyboard':print(json.dumps(course.save_storyboard(read(args.file),course.status()['revision']),ensure_ascii=False,indent=2))
+    elif args.command == 'choose-shot':print(json.dumps(course.choose_shot(args.id,args.option,course.status()['revision'],args.evidence,args.actor),ensure_ascii=False,indent=2))
+    elif args.command == 'sample':print(json.dumps(course.sample_storyboard(course.status()['revision'],args.seed,args.redraw,args.evidence),ensure_ascii=False,indent=2))
     elif args.command == 'design': print(json.dumps(course.save_plan(read(args.file), course.status()['revision']), ensure_ascii=False, indent=2))
     elif args.command == 'script':print(json.dumps(course.save_script(args.file.read_text(encoding='utf-8'),course.status()['revision']),ensure_ascii=False,indent=2))
     elif args.command == 'director':print(json.dumps(course.save_director(read(args.file),course.status()['revision']),ensure_ascii=False,indent=2))

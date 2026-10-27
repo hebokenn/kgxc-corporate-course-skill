@@ -12,14 +12,14 @@
 
 ## 新课制作顺序
 
-本页是**视频分支**的编辑与导出契约。共同前段和课件分支见[课程工作流](28-course-workflow.md)。先完成课程结构、逐字稿确认，再记录video分支；导演提供三个实际风格，用户确认画面与所选风格后才configure和导出有声小样。小样确认后才能导出完整视频，不能把课件页面作为渲染输入。
+本页是**视频分支**的编辑与导出契约。共同前段和课件分支见[课程工作流](28-course-workflow.md)。先完成课程结构、逐字稿确认，再记录video分支；5.9.0新流程先完成[全课逐段至少三种表现与分镜确认、三段分层随机抽样](44-storyboard-and-sampling.md)，才configure和导出这三个完整有声样段；未升级旧工程继续原director/style确认。小样确认后才能导出完整视频，不能把课件页面作为渲染输入。
 
 以下命令从Skill目录运行，COURSE和SPEC使用实际路径。中间的设计、导演和确认使用工作流页面或CLI保存真实答复，不省略前置确认：
 
 ```sh
 python3 scripts/kgxc_course.py start COURSE --title 课名 --source 原件
 # 在展示的工作台地址中查看可打开的初始草稿
-# 完成逐字稿、video分支、导演与风格确认后再配置视频
+# 完成逐字稿、video分支、全课分镜确认并抽样后再配置视频
 python3 scripts/workbench.py configure COURSE --spec COURSE/project/source/course-composition.json
 python3 scripts/check_workbench.py COURSE --runtime
 # 先导出代表片段，工作台确认有声画面小样后再导出完整视频

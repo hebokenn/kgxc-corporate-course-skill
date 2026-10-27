@@ -16,6 +16,7 @@ class NewCourseTests(unittest.TestCase):
     def ready(self, composition_overrides=None):
         # This shared fixture exercises the pre-5.1 authoring/approval contract.
         # The new mandatory motion path has separate real-render and negative tests.
+        historical_state=read(self.p/'course-state.json');historical_state.pop('planning_workflow',None);atomic(self.p/'course-state.json',historical_state)
         historical=read(self.p/'workbench.json');historical.pop('motionPolicy',None);atomic(self.p/'workbench.json',historical)
         (self.p/'motion-contract.json').unlink(missing_ok=True)
         course=Course(self.course);s=course.status();plan=s['plan']
@@ -44,6 +45,8 @@ class NewCourseTests(unittest.TestCase):
         path=self.p/'source/spec.json';atomic(path,{})
         with self.assertRaisesRegex(ValueError,'视频分支'):configure(self.course,path)
     def test_scaffold_is_openable_but_not_fake_finished_course(self):
+        self.assertTrue(Course(self.course).storyboard_mode())
+        self.assertEqual(Course(self.course).storyboard(),{})
         d=read(self.p/'workbench.json');validate(d,self.p)
         self.assertEqual(d['status'],'draft');self.assertEqual(d['adapter'],'scene-graph-v1');self.assertIsNone(d['media']['audio'])
         self.assertTrue((self.p/'editor/scripts/workbench.py').exists());self.assertTrue((self.p/'native/scene-engine.js').exists())

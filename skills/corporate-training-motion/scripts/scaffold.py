@@ -11,6 +11,7 @@ def create(destination):
  ensure_dir(destination)
  for name in ['inputs','project','delivery','packages','project/source','project/assets','project/audio','project/media','project/qa','project/work']:ensure_dir(destination/name)
  for p in (ROOT/'assets/templates').iterdir():
+  if p.name=='storyboard.json':continue  # New planning starts empty; old array template is not a current proposal.
   if p.is_file():shutil.copy2(p,destination/'project'/('qa' if p.name in {'assessment-status.json','visual-evidence.json'} else '')/p.name)
  shutil.copytree(ROOT/'assets/profiles/kgxc',destination/'project/assets/brand/kgxc')
  shutil.copytree(ROOT/'assets/sfx',destination/'project/audio/sfx')
@@ -29,12 +30,12 @@ def create(destination):
  (editor/'scripts').mkdir(parents=True)
  for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:shutil.copy2(ROOT/'scripts'/name,editor/'scripts'/name)
  from workflow import Course
- Course(destination).init()
+ Course(destination).init(planning='storyboard-v1')
  w={'layout_version':2,'current_version':None,'project_dir':'project','delivery_dir':'delivery','package_dir':'packages','retain_artifacts':[]}
  (destination/'workspace.json').write_text(json.dumps(w,ensure_ascii=False,indent=2)+'\n')
  launcher=destination/'打开课程工作台.command'
  launcher.write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")"\nexec python3 project/editor/scripts/workflow.py resume .\n');launcher.chmod(0o755)
- (destination/'README.md').write_text('# 企业培训课程\n\n双击“打开课程工作台.command”，或运行 python3 project/editor/scripts/workflow.py resume .\n\ninputs/ 原件；project/design-plan.json 教学设计与选择；project/course-state.json 进度与确认；project/workbench.json 画面与时间轴。新课先确认教学方案和逐字稿，再选择独立课件或导演视频。视频先确认三个风格与有声画面小样，再生成整片。\n')
+ (destination/'README.md').write_text('# 企业培训课程\n\n双击“打开课程工作台.command”，或运行 python3 project/editor/scripts/workflow.py resume .\n\ninputs/ 原件；project/design-plan.json 教学设计与选择；project/course-state.json 进度与确认；project/workbench.json 画面与时间轴。新课先确认教学方案和逐字稿，再选择独立课件或导演视频。视频先审阅全课每段至少三种表现方案，确认分镜后随机抽取三个完整片段制作有声动态小样，确认小样后再生成整片。\n')
  print('工程已建立（仅模板）：',destination)
 if __name__=='__main__':
  a=argparse.ArgumentParser(description=__doc__);a.add_argument('destination',type=Path);create(a.parse_args().destination)

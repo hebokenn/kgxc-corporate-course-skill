@@ -1,4 +1,6 @@
-# 分支课程工作流 v5
+# 分支课程工作流 v5.9
+
+当前新视频工程使用[全课分镜与三段抽样](44-storyboard-and-sampling.md)：逐字稿确认→全课每段至少三种表现→明确选择并确认分镜→分层随机三个完整有声样段→确认小样→整课。`storyboard-v1` 与旧 `course-workflow/2` 确认结构兼容；新建工程默认开启，现有工程须明确授权 `planning` 升级。下面关于三风格及 director/style 命令是**未升级旧工程**的兼容说明，不能代替新流程。
 
 共同前段：原始素材→ATD教学分析、推荐讲法和大纲→确认outline→逐字稿→确认script。逐字稿确认后，选择独立课件或导演视频。v5新工程使用course-workflow/2和design-plan schema_version=2；v4工程保持旧流程，不自动迁移。
 
@@ -37,7 +39,7 @@ python3 SKILL_DIR/scripts/kgxc_course.py review COURSE --gate pilot --evidence �
 
 前置模块是同一安装根目录下的elearning-course-design。每个核心单元有teaching_method和teaching_reason，显示推荐讲法与理由，并与目标、示范、练习和反馈对应。素材诊断与大纲放同一轮审阅；实际事实缺口才按范围澄清。
 
-设计用schema_version=2，stage为outline或script；script_file指向逐字稿。逐字稿只包含实际讲解、案例、练习引导、答案反馈、衔接与收束；来源与制作备注单列。保存不会自动确认。主要用户决策依然用decisions，gate可为outline/script/style/pilot；独立课件与完整视频是交付记录，不伪造为用户审阅。
+设计用schema_version=2，stage为outline或script；script_file指向逐字稿。逐字稿只包含实际讲解、案例、练习引导、答案反馈、衔接与收束；来源与制作备注单列。保存不会自动确认。主要用户决策依然用decisions，gate可为outline/script/storyboard/pilot；旧工程保留style；独立课件与完整视频是交付记录，不伪造为用户审阅。
 
 issues可加gate和branches，将只影响视频的素材问题限定到style或pilot及video分支；事实问题仍在共同前段处理。普通待选项可按当前阶段展示1—3项。已有明确需求与确认沿用，沉默和推荐不构成批准；用户授权按实际范围记录。
 
@@ -60,7 +62,8 @@ project/director-plan.json至少包含：
 - design-plan.json：教学分析、大纲、讲法、目标、练习、来源、选择。
 - source/transcript.md：两分支共享的逐字稿。
 - course-state.json：分支、确认、版本、产物和历次交付；工作流工具写入。
-- director-plan.json：视频专用导演与三风格方案。
+- storyboard.json / storyboard.html：新视频全课分镜数据与只读审阅表；storyboard-samples.json：可复现三段抽样。
+- director-plan.json：未升级旧视频的导演与三风格方案。
 - workbench.json：视频画面、音轨、字幕、时间轴。
 - workflow-history：变更前快照，保存历史依据。
 

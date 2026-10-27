@@ -9,10 +9,15 @@ def handoff(project,status):
     p=Path(project);branch=status.get('branch');stage=status.get('stage')
     active=stage!='complete' and (branch=='video' or branch is None and status.get('workflow_schema')!=2 and stage in ['visual','pilot','final'])
     if not active:return dict(active=False,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
+    if status.get('planning_workflow')=='storyboard-v1' and stage=='storyboard':
+        return dict(active=False,reason='先审阅全课内容演绎与分镜，逐片段至少三种表现；此时不生成完整配音或视频',
+                    action='review-whole-course-storyboard',coverage=status.get('storyboard_report'))
+    if status.get('planning_workflow')=='storyboard-v1' and stage=='pilot' and not status.get('sampling_valid'):
+        return dict(active=False,reason='分镜已确认；先分层随机抽取三个片段再制作',action='sample-storyboard')
     def read(path):return json.loads(path.read_text()) if path.is_file() else {}
     doc=read(p/'workbench.json');spec_path=next((p/x for x in ['source/course-composition.json','source/composition.json','source/spec.json'] if (p/x).is_file()),None)
     spec=read(spec_path) if spec_path else doc
-    director=read(p/'director-plan.json');requirements=director.get('rendering',{}).get('requiredEffects',[])
+    director={} if status.get('planning_workflow')=='storyboard-v1' else read(p/'director-plan.json');requirements=director.get('rendering',{}).get('requiredEffects',[])
     if requirements:
         spec=json.loads(json.dumps(spec));rendering=spec.setdefault('rendering',{})
         rendering['requiredEffects']=sorted(set(rendering.get('requiredEffects',[])+requirements))
@@ -24,7 +29,7 @@ def handoff(project,status):
     if not selection.get('ready'):action='resolve-specific-renderer-gap'
     if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
     from direction_review import continuation
-    return dict(active=True,automatic=True,current_route=current,route_audit=selection,direction=continuation(doc),
+    return dict(active=True,automatic=True,storyboard_file='storyboard.json' if status.get('planning_workflow')=='storyboard-v1' else None,sampling=status.get('sampling') if status.get('sampling_valid') else None,current_route=current,route_audit=selection,direction=continuation(doc),
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
         available_effects=sorted(capabilities()['effects']),teaching_modules=capabilities()['teaching_modules'],motion_catalog_count=capabilities()['executable_motion_count'],
         motion_quality=__import__('motion_quality').preflight(doc),

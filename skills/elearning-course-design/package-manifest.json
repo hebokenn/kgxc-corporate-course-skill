@@ -1,9 +1,9 @@
 {
   "name": "elearning-course-design",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "usage": "KGXC course production suite",
   "files": {
-    "SKILL.md": "97169b970a19929a43463ae921202f9af6b343aa03bc3dca8f1c2498b0994b96",
+    "SKILL.md": "155baeb9004f81594e3660c0d58236a59cbb8097b228daa2d0fcd9a707d8d3b4",
     "agents/openai.yaml": "6bd6b3a1baafcd281b63c7e8ec15dba4a4ff96c461c9ab7dd7170c7e551549b4",
     "assets/design-plan.json": "385550f0877f90a07530e44c154d87f09366d551b9cee642c16ad9cb3719df89",
     "references/decision-prompts.md": "7a1005c00845a79a58967c1e94068722d059c60b0e75191da2a558aa2e4562df",
