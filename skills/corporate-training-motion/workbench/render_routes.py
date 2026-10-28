@@ -259,13 +259,16 @@ def upgrade(course, spec_path, base_revision, dry_run=False):
     p=Path(course).resolve();p=p if (p/'workbench.json').is_file() else p/'project'
     base=Path(__file__).resolve().parent
     with LOCK:
-        old=read(p/'workbench.json');spec=read(spec_path)
+        old=read(p/'workbench.json')
+        from course_palette import bind,read_plan
+        spec=bind(read(spec_path),read_plan(p))
         if old['revision']!=base_revision:raise ValueError('工程已更新，请重新读入当前revision；未覆盖编辑')
         if old.get('status')!='ready' or old['adapter'] not in ['scene-graph-v1','seek-bridge-v1'] or old.get('rendering',{}).get('route','scene-graph') not in ['scene-graph','motion-canvas']:
             raise ValueError('自动升级只适用于已制作的通用场景图；保留其他原生实现')
         for key in ['sourceDurationFrames','media','scenes','captions','holds','cuts','font']:
             if key in spec and spec[key]!=old.get(key):raise ValueError('升级渲染器不改动已有时间轴、配音或字幕：'+key)
         d=copy.deepcopy(old);d['sceneGraph']=copy.deepcopy(spec['sceneGraph'])
+        if spec.get('coursePalette'):d['coursePalette']=spec['coursePalette']
         d['rendering']=spec.get('rendering',dict(route='auto'));selection=plan(d)
         if not selection['ready'] or selection['route']!='motion-canvas':
             raise ValueError('本命令升级为内置动效画布；其他需求请保留源码后实现实际自定义桥接：'+'; '.join(selection['errors']))

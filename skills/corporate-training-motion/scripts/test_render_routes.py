@@ -141,6 +141,27 @@ class MotionRuntimeTests(unittest.TestCase):
     def pixel(self,x,y):
         return self.page.evaluate('([x,y])=>Array.from(window.courseRenderer.ctx.getImageData(x,y,1,1).data)',[x,y])
 
+    def test_saved_light_and_dark_palette_reaches_real_canvas_pixels(self):
+        from course_palette import catalog, select, binding
+        from render_routes import bind_fields
+        import base64
+        for index, palette in enumerate([catalog()['palettes'][0], catalog()['palettes'][4]]):
+            saved=select(self.p,specified=palette,redraw=bool(index),evidence='QA explicit light/dark runtime fixture')
+            d=copy.deepcopy(self.doc);d['coursePalette']=binding(saved)
+            d['sceneGraph']=dict(background=palette['canvas'],nodes=[
+                dict(id='palette-title',type='text',sceneId='X',text='课程配色验证',x=120,y=110,fontSize=64,fill=palette['ink']),
+                dict(id='palette-swatch',type='rect',sceneId='X',x=120,y=280,width=600,height=200,fill=palette['accent'],effects=[dict(type='mask-reveal',startFrame=0,endFrame=24)])])
+            d['rendering']=dict(route='auto');d['rendering']=plan(d);d['adapter']=d['rendering']['adapter'];bind_fields(d);validate(d,self.p)
+            atomic(self.p/'workbench.json',d)
+            self.page.evaluate('async d=>window.courseRenderer.load(d)',d);self.draw(26)
+            rgb=lambda c:[int(c[i:i+2],16) for i in [1,3,5]]
+            self.assertEqual(self.pixel(50,50)[:3],rgb(palette['canvas']))
+            self.assertEqual(self.pixel(200,330)[:3],rgb(palette['accent']))
+            if os.environ.get('PALETTE_RENDER_PROOF_DIR'):
+                folder=Path(os.environ['PALETTE_RENDER_PROOF_DIR']);folder.mkdir(parents=True,exist_ok=True)
+                png=self.page.evaluate('window.courseRenderer.canvas.toDataURL("image/png")')
+                (folder/(palette['id']+'.png')).write_bytes(base64.b64decode(png.split(',',1)[1]))
+
     def test_effects_are_visible_editable_and_reverse_seek_is_identical(self):
         self.assertEqual(self.doc['rendering']['route'],'motion-canvas')
         self.assertEqual(len([f for f in self.doc['fields'] if f['objectId']=='heading']),1)

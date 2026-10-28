@@ -101,7 +101,7 @@
     ],
     "timing_review": "required_for_new_splits"
   },
-  "owning_skill": "corporate-training-motion@5.0.2",
+  "owning_skill": "corporate-training-motion@6.2.0",
   "titles": {
     "policy": "choose_by_content",
     "independent_from_subtitles": true

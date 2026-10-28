@@ -7,6 +7,8 @@ from sound import PALETTE,ROLES
 
 def handoff(project,status):
     p=Path(project);branch=status.get('branch');stage=status.get('stage')
+    from course_palette import read_plan
+    palette=read_plan(p)
     active=stage!='complete' and (branch=='video' or branch is None and status.get('workflow_schema')!=2 and stage in ['visual','pilot','final'])
     if not active:return dict(active=False,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
     if status.get('planning_workflow')=='storyboard-v1' and stage=='storyboard':
@@ -30,6 +32,7 @@ def handoff(project,status):
     if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
     from direction_review import continuation
     return dict(active=True,automatic=True,storyboard_file='storyboard.json' if status.get('planning_workflow')=='storyboard-v1' else None,sampling=status.get('sampling') if status.get('sampling_valid') else None,current_route=current,route_audit=selection,direction=continuation(doc),
+        palette_plan=palette,palette_policy='读取palette-plan.json；编译使用coursePalette；不按风格名称恢复灰绿，不重新抽色',
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
         available_effects=sorted(capabilities()['effects']),teaching_modules=capabilities()['teaching_modules'],motion_catalog_count=capabilities()['executable_motion_count'],
         motion_quality=__import__('motion_quality').preflight(doc),

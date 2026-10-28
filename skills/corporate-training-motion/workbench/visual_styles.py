@@ -53,7 +53,7 @@ def build(recipe,scene,style):
   n=b.text(k,v,x,y,size,color or ink,**kw);n.setdefault('width',1580-x);n.setdefault('height',size*1.6);c.append(n);return n
  def path(k,pts,color=None,width=5,**kw):n=b.path(k,'M'+' L'.join(f'{x},{y}' for x,y in pts),None,color or ink,width*style.get('outline',3)/3,points=pts,**kw);c.append(n);return n
  def object(k,x,y,scale=1,kind='tablet'):
-  r=dict(id=recipe['id']+'-'+k,sceneId=scene['id'],x=x,y=y,scale=scale,startFrame=a,endFrame=z,data=dict(object=kind,color=soft,screenColor=bg));n,_=prop(r,scene);c.append(n);return n
+  r=dict(id=recipe['id']+'-'+k,sceneId=scene['id'],x=x,y=y,scale=scale,startFrame=a,endFrame=z,data=dict(object=kind,color=soft,screenColor=bg));n,_=prop(r,scene);n['contentColorReason']='Apple设备或门店实物本色，区别于教学画布色板';c.append(n);return n
  def person(k,x,y,scale=.8,pose='point'):
   if data.get('actor'):
    from content_assets import actor
@@ -82,7 +82,7 @@ def build(recipe,scene,style):
  # Every layout changes object arrangement and material logic, not just colours.
  if layout in ['presenter','scene','storybook']:
   if layout=='scene':
-   n,_=store(dict(id=recipe['id']+'-store',sceneId=scene['id'],x=35,y=225,scale=.65,startFrame=a,endFrame=z,data=dict(view='interior',screenTitle='现场体验')),scene);c.append(n)
+   n,_=store(dict(id=recipe['id']+'-store',sceneId=scene['id'],x=35,y=225,scale=.65,startFrame=a,endFrame=z,data=dict(view='interior',screenTitle='现场体验')),scene);n['contentColorReason']='门店空间中的设施本色，区别于教学说明容器';c.append(n)
   elif layout=='storybook':
    for i in range(9):path('paper-line'+str(i),[[100,170+i*65],[1500,168+i*65]],soft,1)
    rect('page-edge',36,28,12,775,soft,radius=0)
@@ -126,7 +126,7 @@ def build(recipe,scene,style):
   rect('photo-mat',65,195,900,555,'#fffdf5',rotation=-.025)
   if photo:c.append(b.node('image','photo',x=90,y=220,width=850,height=490,assetId=photo,fit='contain'))
   else:
-   n,_=store(dict(id=recipe['id']+'-store',sceneId=scene['id'],x=90,y=220,scale=.53,startFrame=a,endFrame=z,data=dict(view='front')),scene);c.append(n)
+   n,_=store(dict(id=recipe['id']+'-store',sceneId=scene['id'],x=90,y=220,scale=.53,startFrame=a,endFrame=z,data=dict(view='front')),scene);n['contentColorReason']='门店建筑设施的物件本色，区别于教学说明容器';c.append(n)
   if layout=='photo':
    annotations=data.get('annotations',[])
    if not annotations or not data.get('photoSize'):raise ValueError('照片标注须绑定实际图像尺寸及逐物件标注点，不自动用课程步骤猜位置')
@@ -245,6 +245,7 @@ def build(recipe,scene,style):
    if 'shadow' in n.get('id',''):return
    n['surface']=style.get('surface','vector-clean')
    if layout=='isometric' and '-table' in n.get('id','') and n.get('fill') is not None and n['type']!='text':
+    n['contentColorReason']='实体体验桌木纹本色，区别于教学说明容器'
     n['fill']='#c2965d' if n['id'].endswith('-top') else '#997247' if n['id'].endswith('-edge') else '#b58a58'
    if layout=='blueprint' and '-main-' in n.get('id','') and n['type'] in ['path','rect','ellipse']:
     n['fill']=None;n['stroke']='#a8dce6';n['lineWidth']=2
@@ -261,7 +262,16 @@ def expand(spec):
   if not r.get('id') or r['id'] in seen:raise ValueError('风格场景ID缺失或重复')
   seen.add(r['id'])
   if r.get('style') not in rows or r.get('sceneId') not in scenes:raise ValueError('风格或场景尚未注册')
-  style=rows[r['style']];node=build(r,scenes[r['sceneId']],style);graph.setdefault('nodes',[]).append(node)
+  style=copy.deepcopy(rows[r['style']])
+  if result.get('coursePalette'):
+   p=result['coursePalette']['palette'];original=style['palette'];style['palette']=[p['canvas'],p['ink'],p['accent'],p['soft']]
+  node=build(r,scenes[r['sceneId']],style)
+  if result.get('coursePalette'):
+   from course_palette import remap_nodes
+   mapping=dict(zip(original,['canvas','ink','accent','soft']))
+   mapping.update({'#24403b':'ink','#4c4954':'ink','#def1ed':'ink','#ffffff':'surface','#d9af91':'secondary','#f6d69a':'surface','#bdcdb5':'soft','#e4b298':'surface','#e0e8d9':'soft','#e5d7bc':'surface'})
+   remap_nodes([node],p,mapping)
+  graph.setdefault('nodes',[]).append(node)
   manifest.append(dict(id=r['id'],styleId=style['id'],style=style,recipe=r,sha256=hashlib.sha256(json.dumps([style,r],sort_keys=True,ensure_ascii=False).encode()).hexdigest()))
  result['visualStyles']=manifest;return result
 

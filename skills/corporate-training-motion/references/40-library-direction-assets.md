@@ -9,6 +9,8 @@
 3. 先找业务对象和状态，再选动作。把“点击”“递交”“筛出”“归位”“核验”与实际旁白词句绑定；完成后停稳看结果，不把动作时长拉成旁白时长。
 4. 保存所选风格ID、配方、产品参考、实际素材ID和动作到构图及导演记录。`sceneGraph.styleScenes` 经普通场景图编译，与已有 `modules/materials/nodes` 混合使用；编译后节点是编辑真值，不恢复时重编译覆盖工作台改动。
 
+新课的配色与这些材质/构图配方分开：[先抽取并保存课程色板](47-course-palette.md)，编译时绑定 `coursePalette`。原配方色值保留用于目录及旧课，不能让 `scene-toon`、`editorial` 等名字重新带入灰绿默认色；同课混用构图仍沿用同一色板。
+
 常用映射：对话用 dialogue/tooltip-point；操作用 cursor-click/drag-drop/scroll-window；表单用 table-row-insert/cell-update/checklist-tick；信息流转用 handoff/lane-distribute/dependency-unlock；数量关系用 ratio-normalize/waterfall-step/funnel-narrow。`motion-catalog`每项附门店示例任务、可见结果与对象类别，便于按语义选用。8种文字与强调、89种教学动作及3种符号合计100种；缓动、配色和风格不另算动作。
 
 ## 24种可编译美术配方

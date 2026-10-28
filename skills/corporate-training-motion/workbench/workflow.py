@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.1.0'
+VERSION = '6.2.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -327,6 +327,8 @@ class LegacyCourse:
         lines += ['待解决 ' + p['id'] + '：' + p['question'] for p in s['pending']]
         lines += ['已登记产物：' + json.dumps(s['artifacts'], ensure_ascii=False),
                   '运行/完成任务：' + json.dumps(s['jobs'], ensure_ascii=False), '配音状态：' + s['narration_status']]
+        if s.get('palette_plan'):
+            p=s['palette_plan'];lines.append('课程配色（沿用，不重抽）：'+json.dumps(dict(name=p['palette']['name'],mode=p['mode'],palette=p['palette'],exclude=p['exclude']),ensure_ascii=False))
         if s.get('production_handoff',{}).get('active'):
             lines.append('制作接续（制作端自动执行）：'+json.dumps(s['production_handoff'],ensure_ascii=False))
         return '\n'.join(lines)
@@ -372,6 +374,14 @@ class Course(LegacyCourse):
                 revision=0, created_at=now(), updated_at=now(), gates={}, artifacts={}, journal=[],
                 branch=None, branch_history=[], deliveries=[], narration_status='not_started',
                 **({'planning_workflow': planning} if planning else {})))
+            if planning == 'storyboard-v1':
+                from course_palette import select, binding
+                palette = select(self.project)
+                doc = read(self.project/'workbench.json', {})
+                if 'sceneGraph' in doc:
+                    doc['coursePalette'] = binding(palette)
+                    doc['sceneGraph']['background'] = palette['palette']['canvas']
+                    atomic(self.project/'workbench.json', doc)
         return self.status()
 
     def script(self):
@@ -432,6 +442,12 @@ class Course(LegacyCourse):
             state=read(self.state_file);self._revision(expected,state);self.require_video('script')
             old={s['id']:s for s in self.storyboard().get('segments',[])}
             candidate=copy.deepcopy(data)
+            from course_palette import read_plan, binding
+            palette = read_plan(self.project)
+            if palette:
+                candidate['coursePalette'] = binding(palette)
+                p = palette['palette']
+                candidate.setdefault('visual_direction', {})['palette'] = f"{p['name']}：画布{p['canvas']}、文字{p['ink']}、强调{p['accent']}、辅助{p['secondary']}；按本课保存色板，恢复不重抽。"
             for segment in candidate.get('segments',[]):
                 prior=old.get(segment.get('id'),{})
                 subject=lambda x:{k:v for k,v in x.items() if k not in ['selected','selection_receipt']}
@@ -732,6 +748,8 @@ class Course(LegacyCourse):
             result.update(pilot_is_current=any(g['id']=='pilot' and g['ready'] for g in gates),sampling_valid=bool(self.sample_plan()) and not check_samples(self.storyboard(),self.sample_plan()),storyboard_sha256=board_basis(self.storyboard()),planning_workflow='storyboard-v1',storyboard=self.storyboard(),sampling=self.sample_plan(),
                 storyboard_report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan,reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required'))),selected_style=None)
             if stage=='pilot' and not self.sample_plan():result['next_action']='分镜已确认，先分层随机抽取三个完整片段，再生成动态小样'
+        from course_palette import read_plan
+        result['palette_plan'] = read_plan(self.project)
         result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
         result['director_review_status']=state.get('director_review_status')
         if stage=='final' and state.get('artifacts',{}).get('final') and state.get('director_review_status',{}).get('status')=='pending':result['next_action']='当前完整视频为候选；制作端完成逐段导演复核后登记，不重复渲染或代填用户认可'

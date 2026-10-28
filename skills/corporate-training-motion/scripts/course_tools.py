@@ -16,13 +16,26 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='palette-catalog':
+        if rest:parser.error('palette-catalog 不接受额外参数')
+        from course_palette import catalog
+        print(json.dumps(catalog(),ensure_ascii=False,indent=2));return 0
+    if args.command=='palette':
+        ap=argparse.ArgumentParser(description='Draw one course palette once, or reuse its saved selection')
+        ap.add_argument('course',type=Path);ap.add_argument('--exclude',action='append',choices=__import__('course_palette').FAMILIES)
+        ap.add_argument('--file',type=Path);ap.add_argument('--redraw',action='store_true');ap.add_argument('--evidence',default='')
+        aa=ap.parse_args(rest)
+        if args.dry_run:ap.error('使用 palette-catalog 查看候选；palette 会保存选色结果')
+        from course_palette import select
+        result=select(aa.course,aa.exclude,json.loads(aa.file.read_text()) if aa.file else None,aa.redraw,aa.evidence)
+        print(json.dumps(result,ensure_ascii=False,indent=2));return 0
     if args.command=='continuity-check':
         ap=argparse.ArgumentParser(description='Read-only planned pauses and real dry/encoded narration gaps; no automatic holds')
         ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--project',type=Path)

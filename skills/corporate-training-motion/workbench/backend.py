@@ -136,6 +136,9 @@ def validate(doc, project):
         if not isinstance(a,int) or not isinstance(b,int) or not 0 <= a < b <= doc['sourceDurationFrames'] or a<previous or scene['id'] in scene_ids:
             raise ValueError('场景ID或时间轴无效')
         previous=b;scene_ids.add(scene['id'])
+    from course_palette import check as palette_check, read_plan
+    palette_errors = palette_check(doc, read_plan(project))
+    if palette_errors:raise ValueError('; '.join(palette_errors))
     if doc['adapter']=='scene-graph-v1' or doc.get('rendering',{}).get('route')=='motion-canvas':
         from character_performance import validate_assets
         validate_assets(doc,project)
@@ -259,7 +262,7 @@ class Workspace:
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
-            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','narrationLinks','readingPolicy','readingPlan','continuityPolicy','continuityPlan','teachingModules']:
+            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','narrationLinks','readingPolicy','readingPlan','continuityPolicy','continuityPlan','teachingModules','coursePalette']:
                 if doc.get(key) != current.get(key):
                     raise ValueError('不可通过编辑器修改原始结构字段：'+key)
             if [(a['id'],a['originalPath']) for a in doc['assets']] != [(a['id'],a['originalPath']) for a in current['assets']]:

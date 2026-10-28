@@ -23,6 +23,8 @@ def native_fingerprint(project):
     # Only opted-in contracts add this module to the runtime file list.
     if marker.is_file() and json.loads(marker.read_text()).get('continuityRequired'):
         names.append('continuity_pacing.py')
+    if (root/'palette-plan.json').is_file():
+        names += ['course_palette.py', 'course-palettes.json']
     for name in names:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
@@ -101,6 +103,8 @@ def graph_errors(doc):
     from render_routes import effect_errors, requirements
     if doc.get('rendering',{}).get('route')=='motion-canvas':errors.extend(effect_errors(doc))
     elif requirements(doc):errors.append('当前简易画布不能实现所需动效；先选择 motion-canvas 或实际自定义渲染')
+    from course_palette import check as palette_check
+    errors.extend(palette_check(doc))
     return errors
 
 
@@ -114,8 +118,9 @@ def configure(course, spec_path):
         course.require_video('style') if course.modern() else course.require('content')
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
-    spec=expand(read(spec_path));d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings'] if k in spec})
+    from course_palette import read_plan, bind
+    spec=expand(bind(read(spec_path), read_plan(p)));d=copy.deepcopy(old)
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette'] if k in spec})
     if 'continuityPolicy' in spec:
         d['continuityPolicy'].update({k:spec['continuityPolicy'][k] for k in ['noiseFloorDB','gapSeconds'] if k in spec['continuityPolicy']})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)

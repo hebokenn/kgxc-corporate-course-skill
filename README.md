@@ -8,9 +8,9 @@
 
 ![实际成品画面：虚拟讲师、空间拆解、人物情境与字体动效](docs/media/capabilities-poster.jpg)
 
-**教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 花字与默认原库音效 · 本地配音 · 可恢复编辑工作台**
+**教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 新课随机配色并持续沿用 · 花字与默认原库音效 · 本地配音 · 可恢复编辑工作台**
 
-[下载当前安装包 v6.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/kgxc-course-suite-v6.1.0.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
+[下载当前安装包 v6.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.2.0/kgxc-course-suite-v6.2.0.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
 
 [能交付什么](#它能帮你做什么) · [适用场景](#适合哪些培训场景) · [能力与价值](#核心能力与实际价值) · [制作流程](#一门课怎样完成) · [安装或更新](#安装或更新) · [版本更新](#版本更新)
 
@@ -76,7 +76,11 @@
 
 全课分镜确认后，**分层随机抽取三个不同的完整片段**生成有声动态小样，优先覆盖情境、概念和剩余高风险实现。抽样保存种子、候选池和选择原因，恢复工程不会重抽；需要重抽时记录理由。三个片段使用与整课相同的生产代码、素材和时间线。小样确认后才制作整课，未抽中类型及高风险片段仍须逐段检查，目录、章节衔接及密集信息段也检查阅读与声音连续性，不能只挑好看的画面。
 
-内置 **24 种视觉方案**仍可用作配色、字体、材质和构图参考。旧工程保留原有效确认，明确要求升级后才切换流程。[全课分镜与三段抽样的具体用法](skills/corporate-training-motion/references/44-storyboard-and-sampling.md)
+系列课程不必反复套用同一种颜色。未指定品牌色的新课会从六套合格色板中随机抽取一套，默认候选不含绿色；可以直接说“这节课随机配色，不要绿色”或提供品牌色板。工具先排除禁用色，再保存候选池、种子和结果；同一课的分镜、图表、人物讲解与进度条沿用整套配色，恢复与重编译不重抽。用户指定和实际已确认小样优先，旧课程保留原画面。
+
+17 类教学构图与 24 种视觉方案通过同一份色板绑定，避免换了构图又回到固定灰绿；工作台与文稿审阅界面保持白色和中性灰。人物、设备与真实界面保留本色。[选色、禁用色与恢复的具体用法](skills/corporate-training-motion/references/47-course-palette.md)
+
+内置 **24 种视觉方案**仍可用作字体、材质和构图参考，目录中的旧配色不覆盖新课已保存色板。旧工程保留原有效确认，明确要求升级后才切换流程。[全课分镜与三段抽样的具体用法](skills/corporate-training-motion/references/44-storyboard-and-sampling.md)
 
 ![24 种视觉方案的实际构图与材质](docs/media/style-catalog-v5.7.jpg)
 
@@ -217,7 +221,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 ## 安装或更新
 
-**[下载 v6.1.0 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/kgxc-course-suite-v6.1.0.zip) → 解压 → 双击“安装或更新.command”。**
+**[下载 v6.2.0 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.2.0/kgxc-course-suite-v6.2.0.zip) → 解压 → 双击“安装或更新.command”。**
 
 默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 5.9.0` 与 `elearning-course-design 2.0.2`；升级保留个人配置，已有课程和录音按原记录继续使用。
 
@@ -248,7 +252,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 需要修改三维源工程时，按依赖说明准备 Blender。换课名使用包内标题合成器，一般无需重渲三维。
 
-[v6.1.0 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
+[v6.2.0 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.2.0/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
 
 </details>
 
@@ -304,7 +308,13 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 
 ## 版本更新
 
-当前稳定版为 **v6.1.0**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+当前稳定版为 **v6.2.0**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+
+### 6.2.0：新课随机选色，整课持续沿用
+
+- 未指定色板时自动抽取完整配色，默认候选不含绿色；禁用色、种子、候选池与结果保存，恢复不重抽。用户指定与实际已确认画面优先。
+- 新课的17类教学构图和24种视觉方案读取同一色板；检查画布、绑定与禁用色，避免模板默认灰绿重新出现。
+- 同步使用说明、安装包、安装副本和正式发布。[验证范围](docs/verification-v6.2.0.md)
 
 ### 6.1.0：花字跟随内容，默认使用已确定的原库音效
 

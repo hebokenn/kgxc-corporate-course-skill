@@ -275,7 +275,14 @@ def expand(spec):
         from retail_assets import prop,customer,store
         factories=dict(phone=phone,actor=actor,document=document,parcel=parcel,**{'retail-prop':prop,'retail-person':customer,'store-scene':store})
         if kind not in factories:raise ValueError('未实现的素材类型 '+str(kind))
-        node,description=factories[kind](recipe,scenes[sid]);node['zIndex']=recipe.get('zIndex',0);graph.setdefault('nodes',[]).append(node)
+        node,description=factories[kind](recipe,scenes[sid]);node['zIndex']=recipe.get('zIndex',0)
+        if result.get('coursePalette'):
+            if kind in ['phone','actor','retail-prop','retail-person','store-scene','parcel']:
+                node['contentColorReason']='已登记人物、设备、门店实物及屏幕内容的对象本色'
+            else:
+                from course_palette import remap_nodes
+                remap_nodes([node],result['coursePalette']['palette'],{INK:'ink',MUTED:'muted',GREEN:'accent',GOLD:'secondary',PAPER:'surface'})
+        graph.setdefault('nodes',[]).append(node)
         manifest.append(dict(id=identifier,kind=kind,source=recipe,sourceSha256=hashlib.sha256(json.dumps(recipe,ensure_ascii=False,sort_keys=True).encode()).hexdigest(),description=description,rootNodeId=node['id']))
     graph['nodes'].sort(key=lambda n:n.get('zIndex',0))
     result['contentAssets']=manifest

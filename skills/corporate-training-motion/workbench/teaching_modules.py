@@ -245,7 +245,12 @@ def expand(spec):
         if not module.get('id') or module['id'] in ids:raise ValueError('教学模块ID缺失或重复')
         ids.add(module['id'])
         if module.get('sceneId') not in scenes:raise ValueError('教学模块缺少实际场景')
-        built=Build(module,scenes[module['sceneId']]).build();nodes.extend(built)
+        built=Build(module,scenes[module['sceneId']]).build()
+        if result.get('coursePalette'):
+            from course_palette import remap_nodes
+            p=result['coursePalette']['palette']
+            remap_nodes(built,p,{INK:'ink',GREEN:'accent',RED:'error',GOLD:'secondary',PAPER:'canvas',MUTED:'muted','#fff':'surface','#102b24':'canvas','#102e3d':'canvas','#24244d':'canvas','#edf2e3':'ink','#a6c4b6':'muted'})
+        nodes.extend(built)
         manifest.append(dict(id=module['id'],module=module['module'],sceneId=module['sceneId'],
             source=module,compiledNodeIds=[n['id'] for n in built],
             sourceSha256=hashlib.sha256(json.dumps(module,ensure_ascii=False,sort_keys=True).encode()).hexdigest()))
