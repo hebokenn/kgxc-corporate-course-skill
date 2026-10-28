@@ -155,9 +155,9 @@
 
 约73秒的《回收价格异议处理》，展示弹出短词、条件便签、依据标记、平等选项和步骤划线怎样与旁白对应。22处花字中选择15次发声，末尾三问留给讲解；这组数量和密度只属于本样片。
 
-[![回收价格异议处理：花字与原库音效](docs/media/flower-native/poster.png)](https://github.com/hebokenn/kgxc-corporate-course-skill/blob/main/docs/media/flower-native/price-objection-native-sfx.mp4)
+[![回收价格异议处理：花字与原库音效](docs/media/flower-native/poster.png)](https://hebokenn.github.io/kgxc-corporate-course-skill/media/flower-native/)
 
-**[在GitHub查看样片](https://github.com/hebokenn/kgxc-corporate-course-skill/blob/main/docs/media/flower-native/price-objection-native-sfx.mp4)** · [下载有声MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/price-objection-native-sfx.mp4) · [对应字幕](docs/media/flower-native/price-objection-native-sfx.srt) · [音源、文件哈希与说明](docs/media/flower-native/README.md)
+**[在线播放样片](https://hebokenn.github.io/kgxc-corporate-course-skill/media/flower-native/)** · [下载有声MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/price-objection-native-sfx.mp4) · [对应字幕](docs/media/flower-native/price-objection-native-sfx.srt) · [音源、文件哈希与说明](docs/media/flower-native/README.md)
 
 保留这段既有画面、旁白与字幕，音效采用已确定的两款原库文件，不叠加旧音效。样片已按用户要求公开；它展示具体制作方法，业务条件仍需在使用时按实际情况核实。安装包已内置同一音源，供后续课程默认调用。
 

@@ -1,6 +1,6 @@
 # 花字与原库音效样片
 
-[返回主页](../../../README.md#实际演示) · [在GitHub查看MP4](price-objection-native-sfx.mp4) · [下载本版MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/price-objection-native-sfx.mp4) · [字幕](price-objection-native-sfx.srt)
+[返回主页](../../../README.md#实际演示) · [在线播放样片与音效](https://hebokenn.github.io/kgxc-corporate-course-skill/media/flower-native/) · [下载本版MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/price-objection-native-sfx.mp4) · [字幕](price-objection-native-sfx.srt)
 
 ![样片实际画面](poster.png)
 
