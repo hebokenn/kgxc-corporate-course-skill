@@ -5,11 +5,13 @@ import json
 import math
 from pathlib import Path
 import random
+import re
 import shutil
 import subprocess
 import wave
 
-PALETTE='natural-ui-v1'
+PALETTE='teaching-native-v1'
+NATURAL_PALETTE='natural-ui-v1'
 RATE=48000
 ROLES={'click':(.10,'轻触点击'),'build':(.30,'模块构建落位'),'move':(.34,'平滑移动'),
        'zoom-in':(.30,'放大推进'),'zoom-out':(.30,'缩小退回'),'appear':(.18,'轻盈出现'),
@@ -76,16 +78,19 @@ def build_palette(destination):
             assets.append(dict(id=f'{role}-{variant+1}',role=role,label=ROLES[role][1],path=name,
                 sha256=sha(path),peakSample=max(range(len(samples)),key=lambda i:abs(samples[i])),samples=len(samples),
                 source='kenney-interface-source/Audio/'+SOURCES[role][variant]+'.ogg',license='CC0-1.0'))
-    catalog=dict(id=PALETTE,sampleRate=RATE,channels=1,source='Kenney Interface Sounds; curated EQ, trims and tactile sequences; CC0-1.0',
+    catalog=dict(id=NATURAL_PALETTE,sampleRate=RATE,channels=1,source='Kenney Interface Sounds; curated EQ, trims and tactile sequences; CC0-1.0',
         selection='semantic role; stable per course and cue; no immediate same-role repeat',assets=assets)
     (destination/'palette.json').write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n')
     return catalog
 
 
 def palette_root(project=None,palette=PALETTE):
-    if palette not in [PALETTE,'soft-tactile-v1']:raise ValueError('未知音效库 '+str(palette))
+    if not isinstance(palette,str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}',palette):raise ValueError('无效音效库ID '+str(palette))
     local=Path(project)/'audio/sfx'/palette if project else None
-    if local and (local/'palette.json').is_file():return local
+    if local and (local/'palette.json').is_file():
+        local.resolve().relative_to(Path(project).resolve())
+        return local
+    if palette not in [PALETTE,NATURAL_PALETTE,'soft-tactile-v1']:raise ValueError('未知音效库 '+str(palette))
     installed=Path(__file__).resolve().parents[1]/'assets/sfx'/palette
     return installed if installed.is_dir() else Path(__file__).resolve().parents[2]/'audio/sfx'/palette
 
@@ -124,11 +129,12 @@ def make_plan(course,events_file,out=None,spec_file=None):
         if not isinstance(e.get('id'),str) or not e['id'] or e['id'] in ids:raise ValueError('音效事件ID缺失或重复')
         ids.add(e['id'])
         if type(e.get('frame')) is not int or not 0<=e['frame']<doc['sourceDurationFrames']:raise ValueError('音效事件须使用课程源时间轴内的整数frame')
-        if palette==PALETTE:e['role']=ALIASES.get(e.get('role'),e.get('role'))
+        if palette in [PALETTE,NATURAL_PALETTE]:e['role']=ALIASES.get(e.get('role'),e.get('role'))
         if e.get('align','peak') not in ['start','peak','end']:raise ValueError('align须为start/peak/end')
         if e.get('role') not in [*by_role,'none']:raise ValueError('未知音效角色 '+str(e.get('role')))
         gain=e.get('gainDb',0)
         if type(gain) not in [int,float] or not math.isfinite(gain) or not -18<=gain<=6:raise ValueError('音效gainDb须在-18到6之间')
+        if 'groupId' in e and (not isinstance(e['groupId'],str) or not e['groupId'].strip() or len(e['groupId'])>64):raise ValueError('音效groupId须为非空短文本')
     for e in sorted(events,key=lambda e:(e['frame'],e['id'])):
         role=e['role']
         if role=='none':skipped.append(dict(id=e['id'],reason='explicit silence'));continue
@@ -139,8 +145,14 @@ def make_plan(course,events_file,out=None,spec_file=None):
             if index<0:raise ValueError('assetId与动作角色不一致')
         last[role]=index;a=variants[index];asset=safe(p,'audio/sfx/'+palette+'/'+a['path'])
         if sha(asset)!=a['sha256']:raise ValueError('音效素材已变更，未覆盖用户音效 '+a['id'])
-        selected.append(dict(id=e['id'],frame=e['frame'],role=role,gainDb=e.get('gainDb',0),
-            assetId=a['id'],path=str(asset.relative_to(p)),sha256=a['sha256'],peakSample=a['peakSample'],align=e.get('align','peak')))
+        selected.append(dict(id=e['id'],frame=e['frame'],role=role,gainDb=e.get('gainDb',0)+a.get('gainDb',0),
+            assetId=a['id'],path=str(asset.relative_to(p)),sha256=a['sha256'],peakSample=a['peakSample'],align=e.get('align','peak'),
+            **({'groupId':e['groupId']} if 'groupId' in e else {})))
+    groups={}
+    for e in selected:
+        if 'groupId' not in e:continue
+        signature=(e['sha256'],e['gainDb'])
+        if groups.setdefault(e['groupId'],signature)!=signature:raise ValueError('平等音效组须使用同一素材与音量 '+e['groupId'])
     result=dict(schema='course-sfx/1',palette=palette,sampleRate=RATE,fps=doc['fps'],timeline_source=timeline_source,
         sourceDurationFrames=doc['sourceDurationFrames'],events=selected,skipped=skipped,
         listening='not yet reviewed in the course mix; no user acceptance inferred')
@@ -163,25 +175,37 @@ def mix(course,plan_file,narration,out,bind=False):
     if abs(len(base)//2-count)>RATE*.12:raise ValueError('实际旁白长度与课程源时间轴不一致')
     if len(base)<count*2:base.extend(array('f',[0.])*(count*2-len(base)))
     elif len(base)>count*2:del base[count*2:]
-    track=array('f',[0.])*(count*2)
+    track=array('f',[0.])*(count*2);prepared=[];group_gains={};group_sources={}
     for e in plan['events']:
         path=safe(p,e['path'])
         if sha(path)!=e['sha256']:raise ValueError('音效素材哈希已变化 '+e['assetId'])
         with wave.open(str(path),'rb') as w:
-            if (w.getframerate(),w.getnchannels(),w.getsampwidth())!=(RATE,1,2):raise ValueError('音效须为48kHz单声道PCM16')
+            channels=w.getnchannels()
+            if w.getframerate()!=RATE or channels not in [1,2] or w.getsampwidth()!=2:raise ValueError('音效须为48kHz单声道或立体声PCM16')
             clip=array('h');clip.frombytes(w.readframes(w.getnframes()))
+        frames=len(clip)//channels
         peak=round(e['frame']/timeline['fps']*RATE)
-        offset={'start':0,'peak':e['peakSample'],'end':len(clip)-1}[e.get('align','peak')];start=peak-offset
+        offset={'start':0,'peak':e['peakSample'],'end':frames-1}[e.get('align','peak')];start=peak-offset
         a=max(0,peak-int(.12*RATE))*2;b=min(count,peak+int(.12*RATE))*2
         voice_rms=math.sqrt(sum(x*x for x in base[a:b])/max(1,b-a))
         gain=10**(e['gainDb']/20)
         if voice_rms>.035:
             clip_rms=math.sqrt(sum((x/32768)**2 for x in clip)/max(1,len(clip)))
             gain=min(gain,voice_rms*.25/max(.0001,clip_rms))
-        for i,x in enumerate(clip):
+        if 'groupId' in e:
+            group=e['groupId'];signature=(e['sha256'],e['gainDb'])
+            if group_sources.setdefault(group,signature)!=signature:raise ValueError('平等音效组须使用同一素材与音量 '+group)
+            group_gains[group]=min(group_gains.get(group,gain),gain)
+        prepared.append((e,clip,channels,frames,start,gain))
+    applied=[]
+    for e,clip,channels,frames,start,gain in prepared:
+        if 'groupId' in e:gain=group_gains[e['groupId']]
+        applied.append(dict(id=e['id'],assetId=e['assetId'],gainDb=20*math.log10(max(gain,1e-12)),**({'groupId':e['groupId']} if 'groupId' in e else {})))
+        for i in range(frames):
             at=start+i
             if 0<=at<count:
-                value=x/32768*gain;track[at*2]+=value;track[at*2+1]+=value
+                track[at*2]+=clip[i*channels]/32768*gain
+                track[at*2+1]+=clip[i*channels+(channels-1)]/32768*gain
     combined=array('f',(a+b for a,b in zip(base,track)))
     peak=max((abs(x) for x in combined),default=0)
     if peak>.98:raise ValueError('混音会削波；降低相关音效gainDb后重混，不压低整段旁白')
@@ -191,7 +215,7 @@ def mix(course,plan_file,narration,out,bind=False):
     if sha(voice)!=voice_hash:raise ValueError('旁白源在混音期间变化，请重新核对')
     receipt=dict(palette=plan['palette'],narration=str(voice.relative_to(p)),narration_sha256=voice_hash,
         narration_source_unchanged=True,plan_sha256=sha(plan_file),mix=str(output.relative_to(p)),mix_sha256=sha(output),
-        sfxStem=str(stem.relative_to(p)),peak=peak,duration=count/RATE,events=len(plan['events']),
+        sfxStem=str(stem.relative_to(p)),peak=peak,duration=count/RATE,events=len(plan['events']),appliedGains=applied,
         listening='technical mix only; listen for timbre, fatigue, speech masking and actual audibility')
     if bind:
         if read(p/'workbench.json')!=doc:raise ValueError('混音期间工程已更新；已保留新文件，未改工作台绑定')

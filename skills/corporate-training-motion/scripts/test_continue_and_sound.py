@@ -16,7 +16,7 @@ import test_new_course_workbench as fixture_module
 from backend import read,atomic
 from workflow import Course,bundle_course
 from production import handoff
-from sound import PALETTE,ROLES,catalog,make_plan,mix,sha
+from sound import PALETTE,NATURAL_PALETTE,ROLES,catalog,make_plan,mix,sha
 
 
 class ContinuationSoundTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class ContinuationSoundTests(unittest.TestCase):
         self.doc=self.fixture.ready();self.course=Course(self.fixture.course)
     def tearDown(self):self.fixture.tearDown()
     def events(self):
-        data=dict(events=[dict(id=f'contact-{i}',frame=i*4,role='enter') for i in range(6)]+[dict(id='quiet',frame=28,role='none')])
+        data=dict(palette=NATURAL_PALETTE,events=[dict(id=f'contact-{i}',frame=i*4,role='enter') for i in range(6)]+[dict(id='quiet',frame=28,role='none')])
         path=self.p/'source/sfx-events.json';atomic(path,data);return path
 
     def test_resume_reports_new_route_requirements_without_changing_confirmations(self):
@@ -43,11 +43,11 @@ class ContinuationSoundTests(unittest.TestCase):
             self.assertFalse(handoff(self.p,status)['active'])
 
     def test_palette_has_actual_distinct_waveforms_and_valid_hashes(self):
-        data=catalog(self.p);self.assertEqual(len(data['assets']),45)
+        data=catalog(self.p,NATURAL_PALETTE);self.assertEqual(len(data['assets']),45)
         self.assertEqual({a['role'] for a in data['assets']},set(ROLES))
         self.assertEqual(len({a['sha256'] for a in data['assets']}),45)
         for a in data['assets']:
-            path=self.p/'audio/sfx'/PALETTE/a['path'];self.assertEqual(sha(path),a['sha256'])
+            path=self.p/'audio/sfx'/NATURAL_PALETTE/a['path'];self.assertEqual(sha(path),a['sha256'])
             with wave.open(str(path),'rb') as w:
                 self.assertEqual((w.getframerate(),w.getnchannels(),w.getsampwidth()),(48000,1,2))
                 samples=array('h');samples.frombytes(w.readframes(w.getnframes()))
@@ -97,7 +97,8 @@ class ContinuationSoundTests(unittest.TestCase):
         status=json.loads(subprocess.check_output(command,text=True));self.assertTrue(status['production_handoff']['active'])
         tools=destination/'project/editor/scripts/course_tools.py'
         result=json.loads(subprocess.check_output([sys.executable,str(tools),'sfx-catalog'],text=True))
-        self.assertEqual(result['id'],PALETTE);self.assertEqual(len(result['assets']),45)
+        self.assertEqual(result['id'],PALETTE);self.assertEqual(len(result['assets']),15)
+        self.assertEqual(len({a['sourceSha256'] for a in result['assets']}),2)
 
 
 if __name__=='__main__':unittest.main()

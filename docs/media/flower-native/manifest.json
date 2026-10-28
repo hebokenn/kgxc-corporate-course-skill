@@ -1,0 +1,48 @@
+{
+  "schema": "authorized-course-demo/1",
+  "title": "回收价格异议处理：花字与原库音效样片",
+  "publishedByUserRequest": "更新 skill，把这个样品也放在 GitHub",
+  "durationSeconds": 72.53333333333333,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "frames": 2176,
+  "flowerEvents": 22,
+  "soundEvents": 15,
+  "sources": [
+    {
+      "name": "提示音",
+      "creator": "黑罐头",
+      "id": "7888c6c8af55469792f3371251ac4f8e",
+      "url": "https://www.heycan.com/material?from=input&query=%E6%8F%90%E7%A4%BA%E9%9F%B3#soundEffect",
+      "originalSha256": "0e44878ef86e8a1b9f3f30e2ecb8e69f849cbd0748e03de160386ac0ce68dcff"
+    },
+    {
+      "name": "嘟咚，提示音1",
+      "creator": "黑罐头",
+      "id": "5a04b6d43e0743f5b9b74dc3e8cb2348",
+      "url": "https://www.heycan.com/material?from=input&query=%E5%98%9F%E5%92%9A%EF%BC%8C%E6%8F%90%E7%A4%BA%E9%9F%B31#soundEffect",
+      "originalSha256": "bdb886c9361538ad821ff8cd2026f119050dbd2be0c44c34a8c85e499cd5135c"
+    }
+  ],
+  "scope": "A selected independent teaching sample. No complete-course or universal business-rule acceptance is implied.",
+  "picturePacketsIdenticalToPriorPilot": true,
+  "narrationRetained": true,
+  "files": [
+    {
+      "path": "price-objection-native-sfx.mp4",
+      "sha256": "fe7a3cde07b6d1427127a568f6164d99e3b342f5639baa19faed7347b0a635d3",
+      "bytes": 6431752
+    },
+    {
+      "path": "price-objection-native-sfx.srt",
+      "sha256": "f6e6a6e1423d93df67b7c8c9bd5e70c9a399d0ae25d3a9562744fd20bf9923f9",
+      "bytes": 2430
+    },
+    {
+      "path": "poster.png",
+      "sha256": "caacc633639b7331abfc9a9093fe7bbac2a8f3ee3367d78311836c491e4da199",
+      "bytes": 590739
+    }
+  ]
+}

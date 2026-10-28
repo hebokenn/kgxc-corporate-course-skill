@@ -1,0 +1,32 @@
+{
+  "schema": "teaching-native-sources/1",
+  "palette": "teaching-native-v1",
+  "selectedOn": "2026-10-28",
+  "inclusionAuthorization": "把我的选定的这些内置到 skill 里，让安装 skill 的人默认用我确定的音效",
+  "defaultScope": "New course SFX; existing frozen plans and mixes stay unchanged.",
+  "processing": "Original MP3 bytes retained; rendering copies use 48 kHz stereo PCM16 decode/resample only. No EQ, pitch/time change, noise synthesis or added reverb.",
+  "clips": {
+    "ding": {
+      "title": "提示音",
+      "creator": "黑罐头",
+      "sourceAssetId": "7888c6c8af55469792f3371251ac4f8e",
+      "sourcePage": "https://www.heycan.com/material?from=input&query=%E6%8F%90%E7%A4%BA%E9%9F%B3#soundEffect",
+      "original": "ding-original.mp3",
+      "originalSha256": "0e44878ef86e8a1b9f3f30e2ecb8e69f849cbd0748e03de160386ac0ce68dcff",
+      "renderFile": "ding.wav",
+      "gainDb": -7,
+      "rights": "Third-party Heycan source; source rights and terms retained. No CC0 grant is asserted."
+    },
+    "dudong": {
+      "title": "嘟咚，提示音1",
+      "creator": "黑罐头",
+      "sourceAssetId": "5a04b6d43e0743f5b9b74dc3e8cb2348",
+      "sourcePage": "https://www.heycan.com/material?from=input&query=%E5%98%9F%E5%92%9A%EF%BC%8C%E6%8F%90%E7%A4%BA%E9%9F%B31#soundEffect",
+      "original": "dudong-original.mp3",
+      "originalSha256": "bdb886c9361538ad821ff8cd2026f119050dbd2be0c44c34a8c85e499cd5135c",
+      "renderFile": "dudong.wav",
+      "gainDb": -17,
+      "rights": "Third-party Heycan source; source rights and terms retained. No CC0 grant is asserted."
+    }
+  }
+}

@@ -41,6 +41,12 @@ Codex会建立 `inputs/`、`project/`、`delivery/`、`packages/`。先锁定原
 
 默认学员拿不到这些原件。Skill会先把表单名称、用途和当前要点讲清，并把完成任务必需的字段及条件放进课程；如确实会分发学员用材料，在任务中说明即可。逐字稿与画面复核见[学员上下文和改写示例](../skills/elearning-course-design/references/learner-context.md)。
 
+## 花字与默认音效
+
+新视频把花字设计并入全课分镜：选当前讲稿的行动、条件、依据、边界与总结，绑定原句、实际动画与稳定阅读，再决定提示音或静音。新音效直接使用包内已确定的叮与嘟咚，移动、划线和连续提问按组安排；平等选项保持同素材同增益。已有课程继续沿用冻结声音。可提出“按默认原库声音做这一段花字样片，保留原画面和旁白”，不必重新搜索音源。
+
+[默认音效及试听](SOUND.md) · [花字设计与实际事件](../skills/corporate-training-motion/references/46-flower-text-and-native-sfx.md) · [约73秒演示](media/flower-native/README.md)
+
 ## 3. 按阶段确认
 
 | 阶段 | 你重点看什么 | 确认后进入 |

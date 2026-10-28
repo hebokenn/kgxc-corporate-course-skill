@@ -1,32 +1,34 @@
-# 自然界面动作音效
+# 课程动作音效
 
-新音效默认 **natural-ui-v1**：按点击、构建、移动、放大、缩小、出现、消失、旋转、增长、收拢、揭示、聚焦、确认、切换、提醒 15 类动作选择，共 45 个常用 WAV；同包保留 Kenney Interface Sounds 的 100 个 CC0 原始素材、许可证和来源哈希。常用库经过短切、柔化高频、淡入淡出及少量构建/转动组合，不再以滤波白噪声生成位移声。旧 soft-tactile-v1 仅供恢复旧工程，不作为新默认。
+新音效默认 **teaching-native-v1**，随包内置用户确定的两款原库素材：《提示音》（叮）与《嘟咚，提示音1》。原始MP3字节、48kHz立体声PCM16副本、来源ID/哈希和 `assets/sfx/teaching-native-v1/audition.html` 一并提供。新课直接使用；花字、移动、划线、条件与总结的设计先读[花字与动作选音](46-flower-text-and-native-sfx.md)。15类动作角色复用这两款音源，不是15款独立音色；不每字一响，连续移动和阅读可以静音。
 
-`assets/sfx/natural-ui-v1/audition.html` 可离线逐项试听三种变体，并观察对应动作；每个 WAV 是实际调用素材。选音按对象的实际变化，不每字一响，不给所有入场统一叮声，也不要求所有运动都发声。增长/缩放用对应方向，完成点用确认/落位；思考停顿、阅读和不需要声音的动作保留静音。
+叮用于重点、依据与完成；嘟咚用于弹出、交接和轻提醒。`natural-ui-v1` 保留15类×3变体的45个CC0 WAV及Kenney的100个原件，作为明确选用的备选；`soft-tactile-v1` 保留恢复旧课。新默认不修改已有计划、批准混音或冻结视频。
 
 ```sh
 python3 SKILL_DIR/scripts/course_tools.py sfx-catalog
+python3 SKILL_DIR/scripts/course_tools.py sfx-catalog --palette natural-ui-v1
 python3 SKILL_DIR/scripts/course_tools.py sfx-plan COURSE --events COURSE/project/source/sfx-events.json
 python3 SKILL_DIR/scripts/course_tools.py sfx-mix COURSE --plan COURSE/project/audio/sfx-plan.json --narration audio/narration.wav --out audio/course-mix.wav
 ```
 
-源时间轴以绝对整数帧计。默认把实际素材峰值对齐事件帧；`align` 可为 `start` / `peak` / `end`，分别对齐动作启动、接触和完成点。长动作可只在开始或落位处给短音，不循环铺持续噪声；不要把运动的每一帧或每个数字都映射成声音。
+源时间轴使用绝对整数帧。默认把实际素材峰值对齐事件帧；`align=start|peak|end` 分别对齐动作启动、接触和完成点。素材自身的起始空白不等于动作延迟，依实际可闻起音复核。长动作只在需要的启动或落位给短音，不循环持续噪声。
 
 ```json
-{"palette":"natural-ui-v1","events":[
-  {"id":"button-pressed","frame":45,"role":"click","gainDb":-2},
-  {"id":"object-arrived","frame":96,"role":"move","align":"end","gainDb":-1},
-  {"id":"chart-growth","frame":140,"role":"grow","align":"end","gainDb":-3},
-  {"id":"camera-detail","frame":220,"role":"zoom-in","gainDb":-2},
-  {"id":"check-complete","frame":280,"role":"confirm","assetId":"confirm-2","gainDb":-2},
+{"palette":"teaching-native-v1","events":[
+  {"id":"point-arrived","frame":96,"role":"move","align":"peak","gainDb":-2},
+  {"id":"option-a","frame":140,"role":"appear","groupId":"equal-options"},
+  {"id":"option-b","frame":200,"role":"appear","groupId":"equal-options"},
+  {"id":"check-complete","frame":280,"role":"confirm","assetId":"confirm-native","gainDb":-2},
   {"id":"practice-thinking","frame":310,"role":"none"}
 ]}
 ```
 
-`role` 为上述英文角色；旧事件的 `enter` 在新库映射到 `appear`。`gainDb` 范围 -18 到 6。可指定同角色的 `assetId` 固定某个声音，省略时按课程和事件 ID 稳定轮换，避免同类相邻重复。路径与哈希在计划中保存；原库不能偷偷替换后复用旧哈希。自定义素材应作为新的课程库版本登记来源、格式及哈希，再重新规划，不覆盖已冻结素材。
+`role` 支持click、build、move、zoom-in、zoom-out、appear、disappear、rotate、grow、shrink、reveal、focus、confirm、transition、warning；旧enter映射appear。新库固定映射，旧自然库按课程/事件ID稳定轮换，可用 `assetId` 固定同角色素材。事件 `gainDb` 范围-18到6，叠加库内推荐基准后将实际增益写入计划。`groupId` 约束平等选项同素材同设置，实际局部避让取组内共同的较低增益，回执保存 `appliedGains`；不同素材或增益混入同组会拒绝规划或混音。
 
-新课未 configure 时先在构图 spec 保存实际 `sourceDurationFrames`，再准备计划；可用 `--spec` 指定实际构图文件，不能使用空画布 1 帧占位。混音等长后写入 spec 的 `media.audio` 再 configure。
+路径与哈希在计划中冻结，素材变化会拒绝混音。自定义库用新ID，放在课程 `project/audio/sfx/ID/palette.json`：目录/资产字段沿用内置库结构，登记真实来源、许可、格式、哈希和以采样帧计的峰值；渲染WAV为48kHz单声道或立体声PCM16。用 `sfx-catalog COURSE --palette ID` 查看。不覆盖旧库文件，不把自定义素材写进公共安装包；公开分发需有本次对应授权。
 
-既有课程获得音效修改授权后，`sfx-mix --bind` 保存原文档并增加 revision，只替换音轨绑定，原声音、字幕、镜头和时间轴保留。输入必须是干净旁白或分轨，含旧音效的成品不能直接叠加新音假装替换。输出独立音效分轨和来源记录；有声段按实际局部能量避让，削波拒绝输出，不统一压低整条旁白。
+新课未configure时，先在构图spec保存实际 `sourceDurationFrames`，再规划；可用 `--spec` 指定课程内实际构图，不能使用1帧占位。混音等长后写入spec的 `media.audio` 再configure。
 
-正常速度核对声音是否自然、短促、与动作对位、是否抢词或过密，并听实际混音和编码后视频。峰值、频谱、ASR 和文件存在仅是技术证据；用户的听感反馈优先。既有品牌片头片尾与冻结成片不因安装新默认自动修改。
+既有课程获得音效修改授权后，`sfx-mix --bind` 保存原文档并增加revision，只替换音轨绑定，保留旁白、字幕、镜头与时间轴。输入必须是干净旁白或分轨，不在含旧音效的成品上叠加。输出独立音效分轨和来源记录，只局部降低音效以避让人声；削波拒绝输出，不统一压低整条旁白。
+
+实际正常速度听看音源、混音与编码视频，检查短促、尾音、对位、抢词与密度。峰值、频谱、ASR和文件存在仅为技术证据，用户听感反馈优先。既有品牌首尾与冻结成片不因安装新默认自动修改。

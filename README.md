@@ -8,9 +8,9 @@
 
 ![实际成品画面：虚拟讲师、空间拆解、人物情境与字体动效](docs/media/capabilities-poster.jpg)
 
-**教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 本地配音 · 可恢复编辑工作台**
+**教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 花字与默认原库音效 · 本地配音 · 可恢复编辑工作台**
 
-[下载当前安装包 v6.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.0.0/kgxc-course-suite-v6.0.0.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
+[下载当前安装包 v6.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/kgxc-course-suite-v6.1.0.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
 
 [能交付什么](#它能帮你做什么) · [适用场景](#适合哪些培训场景) · [能力与价值](#核心能力与实际价值) · [制作流程](#一门课怎样完成) · [安装或更新](#安装或更新) · [版本更新](#版本更新)
 
@@ -64,6 +64,8 @@
 
 **字段与流程课同时安排阅读与讲解节奏。** 分镜列出每组新增文字、要读懂的任务、动作时间、完整停稳后的阅读时间，以及后续需要回看的结果。比如任务卡上的责任人与日期稳定保留，旁白解释其工作含义；前一步留下摘要，后一步可回看比较。动作结束不必换字，阅读时间也不机械变成无声等待。阅读不足时先精简正文、分组和调整顺序，禁止自动插静音凑秒数。导出会按真实文字、父容器运动、替换、剪切与渲染曝光检查，拦住“卡片动完了，文字却只剩一瞬”的候选。6.0新视频还绑定同轴旁白干声与明确任务停顿，导出前和最终编码分别检查讲解中断；背景音乐不能掩盖旁白断续。练习先提示学员自行暂停，较长观察或作答须有具体用途。工程阈值用于发现异常，不能代替正常速度连续听看和学员理解判断。[具体方法与检查命令](skills/corporate-training-motion/references/45-reading-and-information-pacing.md)
 
+**用花字把当前重点落到具体词句。** 服务沟通、条件判断与总结段可以安排短词弹出、重点标记、移动定位和步骤划线，先绑定讲稿原句与动画，再留足稳定阅读。条件和否定一起保留，平等选项保持同样权重，普通叙述可留白。花字与声音随分镜和小样一起审阅，方便培训负责人看清“此刻让学员注意什么”。[花字设计与选音方法](skills/corporate-training-motion/references/46-flower-text-and-native-sfx.md)
+
 [动作与调用方法](docs/MOTION.md) · [按内容导演](skills/corporate-training-motion/references/42-content-directed-production.md) · [参考片讲解方法](skills/corporate-training-motion/references/43-reference-teaching-and-voice.md)
 
 ### 3. 全课先看演绎与分镜，再用三个随机片段验证效果
@@ -109,9 +111,9 @@
 
 本地声音库支持注册中文或英文名称，分别保存默认男女声；以后可以按名字调用，减少重复准备参考的工作。单次选声、个人默认与课程既有录音分别保存。保持音色时可先调句子、标点、分段与交付速度；要用文字描述另一种音色，选 VoiceDesign；要复用自己的录音，选 Base 参考克隆。二者的模型和控制方式分别说明，新候选仍需试听。
 
-动作音效库包含 **15 类动作、45 个常用 WAV**，可配合点击、落位、确认和提醒，并按局部人声避让。你可以先试听音效，再决定密度与留白，让声音帮助辨认动作。
+新音效默认使用随包内置、已经选定的 **“叮”和“嘟咚”两款原库素材**，安装后可直接调用：重点与完成用叮，弹出与轻提醒用嘟咚，移动和连续划线按需要提示或留白。15 类动作映射复用这两款声音，同组平等选项保持同素材同增益；不把角色数当作独立音色数。实际混音保留立体声，避让只降低局部音效。原45个CC0常用WAV作为明确选用的备选，已有课程的冻结声音继续保留。
 
-[试听、语速与发音调试、换声及克隆指南](docs/VOICE.md) · [动作音效及逐项试听](docs/SOUND.md) · [有声动作试听片](docs/media/natural-ui-audition.mp4)
+[试听、语速与发音调试、换声及克隆指南](docs/VOICE.md) · [动作音效及逐项试听](docs/SOUND.md) · [默认两款音效试听](skills/corporate-training-motion/assets/sfx/teaching-native-v1/audition.html)
 
 ### 6. 让学员知道学到哪里，让成品方便上架
 
@@ -148,6 +150,16 @@
 [编辑、裁剪与恢复操作](docs/USAGE.md) · [工作台自动关闭规则](skills/corporate-training-motion/references/27-content-workbench.md#完成后的自动关闭)
 
 ## 实际演示
+
+### 花字与原库音效样片
+
+约73秒的《回收价格异议处理》，展示弹出短词、条件便签、依据标记、平等选项和步骤划线怎样与旁白对应。22处花字中选择15次发声，末尾三问留给讲解；这组数量和密度只属于本样片。
+
+[![回收价格异议处理：花字与原库音效](docs/media/flower-native/poster.png)](https://github.com/hebokenn/kgxc-corporate-course-skill/blob/main/docs/media/flower-native/price-objection-native-sfx.mp4)
+
+**[在GitHub查看样片](https://github.com/hebokenn/kgxc-corporate-course-skill/blob/main/docs/media/flower-native/price-objection-native-sfx.mp4)** · [下载有声MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/price-objection-native-sfx.mp4) · [对应字幕](docs/media/flower-native/price-objection-native-sfx.srt) · [音源、文件哈希与说明](docs/media/flower-native/README.md)
+
+保留这段既有画面、旁白与字幕，音效采用已确定的两款原库文件，不叠加旧音效。样片已按用户要求公开；它展示具体制作方法，业务条件仍需在使用时按实际情况核实。安装包已内置同一音源，供后续课程默认调用。
 
 ### 80 秒教学效果混剪
 
@@ -205,7 +217,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 ## 安装或更新
 
-**[下载 v6.0.0 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.0.0/kgxc-course-suite-v6.0.0.zip) → 解压 → 双击“安装或更新.command”。**
+**[下载 v6.1.0 可安装包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/kgxc-course-suite-v6.1.0.zip) → 解压 → 双击“安装或更新.command”。**
 
 默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 5.9.0` 与 `elearning-course-design 2.0.2`；升级保留个人配置，已有课程和录音按原记录继续使用。
 
@@ -236,7 +248,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 需要修改三维源工程时，按依赖说明准备 Blender。换课名使用包内标题合成器，一般无需重渲三维。
 
-[v6.0.0 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.0.0/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
+[v6.1.0 的 SHA256SUMS 校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.1.0/SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
 
 </details>
 
@@ -292,7 +304,13 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 
 ## 版本更新
 
-当前稳定版为 **v6.0.0**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+当前稳定版为 **v6.1.0**。下面按时间倒序概览变化；各项能力的使用场景与好处已归入前面的介绍。[查看完整版本历史、原始说明与验证链接](docs/CHANGELOG.md)。
+
+### 6.1.0：花字跟随内容，默认使用已确定的原库音效
+
+- 花字与原句、动作、稳定阅读和声音一并设计，保留条件、否定和并列选项的平等权重。
+- 安装包内置叮与嘟咚，成为新音效默认；立体声混音、同组共同增益和来源哈希可复核，旧课程声音继续保留。
+- 新增约73秒有声演示、两款默认音效试听与实际调用说明。[验证范围](docs/verification-v6.1.0.md)
 
 ### 6.0.0：画面可读、讲解连贯、停顿有目的
 

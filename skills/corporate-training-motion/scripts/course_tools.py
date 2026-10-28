@@ -186,7 +186,9 @@ def main(argv=None):
         from sound import catalog,make_plan,mix
         sound_parser=argparse.ArgumentParser(description='Natural interface action SFX for the current course')
         if args.command=='sfx-catalog':
-            sound_parser.parse_args(rest);result=catalog()
+            from sound import PALETTE,project_path
+            sound_parser.add_argument('course',type=Path,nargs='?');sound_parser.add_argument('--palette',default=PALETTE)
+            sound_args=sound_parser.parse_args(rest);result=catalog(project_path(sound_args.course) if sound_args.course else None,sound_args.palette)
         else:
             sound_parser.add_argument('course',type=Path)
             if args.command=='sfx-plan':
