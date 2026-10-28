@@ -19,7 +19,11 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    for name in ['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','reading_pacing.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_performance.py','performance-profiles.json','motion_evidence.py','character_pose.py','company_characters.py','device_models.py']:
+    names=['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','reading_pacing.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_performance.py','performance-profiles.json','motion_evidence.py','character_pose.py','company_characters.py','device_models.py']
+    # Only opted-in contracts add this module to the runtime file list.
+    if marker.is_file() and json.loads(marker.read_text()).get('continuityRequired'):
+        names.append('continuity_pacing.py')
+    for name in names:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
     return h.hexdigest()
@@ -36,7 +40,7 @@ def init_project(project, skill_root):
     shutil.copy2(original/'OFL.txt',font/'OFL.txt')
     doc=dict(schema='course-workbench/1',revision=0,status='draft',title='待输入课程名称',fps=30,width=1920,height=1080,
              adapter='scene-graph-v1',sourceDurationFrames=1,introFrames=0,bodyEndFrame=1,
-             font='native/assets/fonts/CourseHan.woff',media=dict(audio=None,intro=None,outro=None),
+             font='native/assets/fonts/CourseHan.woff',media=dict(audio=None,narration=None,intro=None,outro=None),
              holds=[],cuts=[],captions=[],fields=[],assets=[],scenes=[],sceneGraph=dict(background='#ffffff',nodes=[]),
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
              audio=dict(gain=1,voice='didi 推荐教学男声 · 尚未生成配音',speed=1))
@@ -45,7 +49,9 @@ def init_project(project, skill_root):
     doc['motionPolicy']=policy()
     from reading_pacing import policy as reading_policy
     doc['readingPolicy']=reading_policy()
-    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='5.9.1',semanticRequired=True,stateProofRequired=True,readingRequired=True))
+    from continuity_pacing import policy as continuity_policy
+    doc['continuityPolicy']=continuity_policy()
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='6.0.0',semanticRequired=True,stateProofRequired=True,readingRequired=True,continuityRequired=True))
     from craft_quality import policy as craft_policy
     doc['qualityPolicy']=craft_policy();doc['qualityPolicy']['spatialReviewRequired']=True
     atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,visualHygieneRequired=True,spatialReviewRequired=True,createdBy='5.7.0'))
@@ -109,7 +115,9 @@ def configure(course, spec_path):
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
     spec=expand(read(spec_path));d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','teachingModules','contentAssets','visualStyles','storyboardBindings'] if k in spec})
+    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings'] if k in spec})
+    if 'continuityPolicy' in spec:
+        d['continuityPolicy'].update({k:spec['continuityPolicy'][k] for k in ['noiseFloorDB','gapSeconds'] if k in spec['continuityPolicy']})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
     if any(n.get('enclosesTextIds') or n.get('nonOverlappingTextIds') or n.get('textExclusion') or n.get('supportBinding') for n in walk(d['sceneGraph'].get('nodes',[]))):d['layoutPolicy']=dict(required=True,scope='measured text enclosure, row separation and declared character exclusion on each rendered state')
     from render_routes import plan,prepare,bind_fields

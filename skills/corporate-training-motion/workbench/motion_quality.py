@@ -134,6 +134,7 @@ def preflight(doc):
 
 def require(doc,project=None):
     from reading_pacing import require as require_reading
+    from continuity_pacing import require as require_continuity
     if project and (Path(project)/'craft-contract.json').is_file() and not doc.get('qualityPolicy',{}).get('required'):
         raise ValueError('本工程要求独立审美与声音复核，不能删除 qualityPolicy')
     if project and (Path(project)/'motion-contract.json').is_file() and not doc.get('motionPolicy',{}).get('required'):
@@ -144,6 +145,7 @@ def require(doc,project=None):
         if marker.get('semanticRequired') and not doc.get('motionPolicy',{}).get('semanticRequired'):
             raise ValueError('本工程要求口播与对象状态对应；不能删除 semanticRequired 绕过检查')
     require_reading(doc,project)
+    require_continuity(doc,project)
     report=preflight(doc)
     if report['status']=='fail':raise ValueError('整课动效检查未通过：'+'; '.join(report['errors'][:16]))
     return report

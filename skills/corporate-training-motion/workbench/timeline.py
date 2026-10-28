@@ -11,6 +11,21 @@ def duration(doc):
     return doc['sourceDurationFrames']-sum(c['endFrame']-c['startFrame'] for c in doc.get('cuts',[]))+sum(h['frames'] for h in doc['holds'])
 
 
+def audio_filters(doc, gain=None):
+    """One sample-accurate edit map for playback, encoding and dry-voice checks."""
+    filters=[];labels=[];samples=48000//doc.get('fps',30)
+    for index,s in enumerate(segments(doc)):
+        count=(s['endFrame']-s['startFrame'])*samples
+        if s['kind']=='hold':filters.append(f'anullsrc=r=48000:cl=mono,atrim=end_sample={count}[a{index}]')
+        else:
+            start=s['sourceFrame']*samples
+            filters.append(f'[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono,apad,atrim=start_sample={start}:end_sample={start+count},asetpts=PTS-STARTPTS[a{index}]')
+        labels.append(f'[a{index}]')
+    gain=doc.get('audio',{}).get('gain',1) if gain is None else gain
+    filters.append(''.join(labels)+f'concat=n={len(labels)}:v=0:a=1,volume={gain}[out]')
+    return ';'.join(filters)
+
+
 def segments(doc):
     """Return retained source and silent hold segments in edited playback order."""
     cuts=doc.get('cuts',[]);holds={h['sourceFrame']:h for h in doc['holds']}

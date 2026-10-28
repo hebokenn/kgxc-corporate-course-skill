@@ -12,6 +12,7 @@ activate()
 def main():
     p=argparse.ArgumentParser();p.add_argument('--url',required=True);p.add_argument('--directory',type=Path,required=True)
     p.add_argument('--audio',type=Path,required=True);p.add_argument('--first',type=int,required=True);p.add_argument('--last',type=int,required=True);p.add_argument('--fps',type=int,required=True)
+    p.add_argument('--project',type=Path)
     a=p.parse_args();output=a.directory/'video.mp4';count=a.last-a.first
     args=['ffmpeg','-v','error','-y','-f','image2pipe','-framerate',str(a.fps),'-c:v','mjpeg','-i','-',
           '-ss',str(a.first/a.fps),'-i',str(a.audio),'-map','0:v:0','-map','1:a:0',
@@ -112,9 +113,15 @@ def main():
     reading=reading_audit.result()
     (a.directory/'reading-audit.json').write_text(json.dumps(reading,ensure_ascii=False,indent=2))
     if reading['status']=='fail':raise ValueError('实际成片文字阅读未通过：'+'；'.join(reading['errors'])+'；候选保留，未登记为小样或成片')
+    from continuity_pacing import audit as audit_continuity
+    if document.get('continuityPolicy',{}).get('required') and not a.project:
+        raise ValueError('连贯性检查需要 --project 以核对当前旁白干声')
+    continuity=audit_continuity(document,a.project or a.directory,a.first,a.last,video=output)
+    (a.directory/'continuity-audit.json').write_text(json.dumps(continuity,ensure_ascii=False,indent=2))
+    if continuity['status']=='fail':raise ValueError('实际成片讲解连贯性未通过：'+'；'.join(continuity['errors'])+'；候选保留，未登记为小样或成片')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,readingPacing=reading,
+                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,readingPacing=reading,narrationContinuity=continuity,
                 layoutAudit=dict(status='pass' if layout_checks else 'not-declared',checkedRenderedStates=layout_frames,rules=list(layout_checks.values()),scope='declared text enclosure and row separation, not all possible visual collisions'),renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))

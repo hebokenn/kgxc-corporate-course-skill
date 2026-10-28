@@ -196,6 +196,7 @@ def mix(course,plan_file,narration,out,bind=False):
     if bind:
         if read(p/'workbench.json')!=doc:raise ValueError('混音期间工程已更新；已保留新文件，未改工作台绑定')
         changed=json.loads(json.dumps(doc));changed['media']['audio']=str(output.relative_to(p));changed['revision']+=1
+        if changed.get('continuityPolicy',{}).get('required'):changed['media']['narration']=str(voice.relative_to(p))
         validate(changed,p);atomic(p/'workbench-history'/f'{doc["revision"]:06}.json',doc);atomic(p/'workbench.json',changed)
         receipt['boundRevision']=changed['revision']
     atomic(output.with_suffix('.json'),receipt)

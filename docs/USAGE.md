@@ -72,17 +72,19 @@ python3 skills/corporate-training-motion/scripts/course_tools.py craft-check --s
 
 检查结果和缺口留在工程中，完成实际修正再复看受影响部分；不要求无限返工或重复确认。配音遵守自然培训语气、标准普通话、干脆节奏与统一声线。旧工程保留原约定，已确认小样和历史冻结文件不自动失效。见[课程工艺规则](../skills/corporate-training-motion/references/36-course-craft.md)与[配音指南](VOICE.md)。
 
-## 文字与信息阅读节奏
+## 画面可读、讲解连贯与任务停顿
 
-新视频的分镜每种备选都列出信息组、动作时间、完整停稳阅读时间、焦点顺序与结果保留。构图中的 `readingPlan` 绑定真实文字，`readingPolicy` 与工程标记防止删检查绕过；导出前与实际渲染均检查连续稳定曝光，不能把运动、淡入或多段零碎空档算作读完。
+新视频的分镜每种备选都列出信息组、动作时间、稳定阅读时间、焦点顺序与结果保留。稳定文字可在相关讲解中继续阅读；动作结束不必换字，不能把阅读时间逐项相加成静音。先精简正文、分组、提前呈现条件并保留比较结果；练习明确提示学员自行暂停。目录与章节简洁衔接，避免无声占位。构图中的 `readingPlan` 绑定真实文字，`readingPolicy` 与工程标记防止删检查绕过；导出前与实际渲染均检查连续稳定曝光，不能把运动、淡入或多段零碎空档算作读完。
 
 ```sh
 python3 skills/corporate-training-motion/scripts/course_tools.py reading-check --spec COURSE/project/workbench.json
+# 6.0新工程：计划停顿检查，再核对同轴干声与最终编码声音
+python3 skills/corporate-training-motion/scripts/course_tools.py continuity-check --spec COURSE/project/workbench.json --project COURSE/project --video ACTUAL_FINAL_MP4
 # 明确要求旧课返修时才启用，保存真实依据
 python3 skills/corporate-training-motion/scripts/course_tools.py reading-enable COURSE --evidence 实际返修授权
 ```
 
-检查按文字量给工程估算下限，制作端根据陌生术语、字段、比较和判断任务增加时间。原有小样确认流程保留；完整候选补正常速度的实际阅读复核，自动通过不等于学员理解。详见[阅读计划、实际曝光与复核数据](../skills/corporate-training-motion/references/45-reading-and-information-pacing.md)。
+检查按文字量给工程估算下限，制作端根据陌生术语、字段、比较和判断任务增加时间。6.0新工程默认启用continuityPolicy，绑定同源时间轴的media.narration干声和continuityPlan；没有计划停顿时也写pauses=[]。声音检测复用播放器相同的剪切/停顿映射，禁止用背景音乐冒充连续旁白；异常报告不自动补话、加速或加静音。旧课只有明确返修授权后才运行continuity-enable，不自动迁移。原有小样确认流程保留；完整候选补正常速度的实际阅读复核，自动通过不等于学员理解。详见[阅读计划、实际曝光与复核数据](../skills/corporate-training-motion/references/45-reading-and-information-pacing.md)。
 
 ## 4. 打开工作台
 

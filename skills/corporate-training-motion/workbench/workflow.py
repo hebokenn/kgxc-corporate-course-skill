@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '5.9.1'
+VERSION = '6.0.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -785,6 +785,9 @@ class Course(LegacyCourse):
             videos=[self.relative(p) for p in paths if Path(p).suffix.lower()=='.mp4']
             if not videos:raise ValueError('配音和画面小样须有真实有声MP4，不能只交音频')
             for path in videos:
+                from continuity_pacing import export_errors
+                continuity_errors=export_errors(read(self.project/'workbench.json'),self.project,path,read(path.with_suffix('.json'),{}))
+                if continuity_errors:raise ValueError('；'.join(continuity_errors))
                 probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(path)]))
                 if not {'video','audio'}.issubset({s.get('codec_type') for s in probe['streams']}) or float(probe['format']['duration'])<=0:raise ValueError('需要实际画面与声音')
         else:

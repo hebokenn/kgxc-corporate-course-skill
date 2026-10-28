@@ -17,7 +17,7 @@ class NewCourseTests(unittest.TestCase):
         # This shared fixture exercises the pre-5.1 authoring/approval contract.
         # The new mandatory motion path has separate real-render and negative tests.
         historical_state=read(self.p/'course-state.json');historical_state.pop('planning_workflow',None);atomic(self.p/'course-state.json',historical_state)
-        historical=read(self.p/'workbench.json');historical.pop('motionPolicy',None);historical.pop('readingPolicy',None);atomic(self.p/'workbench.json',historical)
+        historical=read(self.p/'workbench.json');historical.pop('motionPolicy',None);historical.pop('readingPolicy',None);historical.pop('continuityPolicy',None);atomic(self.p/'workbench.json',historical)
         (self.p/'motion-contract.json').unlink(missing_ok=True)
         course=Course(self.course);s=course.status();plan=s['plan']
         source=self.course/'inputs/test.txt';source.write_text('验收用原件')

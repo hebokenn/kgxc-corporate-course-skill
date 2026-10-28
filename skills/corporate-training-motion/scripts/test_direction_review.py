@@ -82,8 +82,9 @@ class DirectionTests(unittest.TestCase):
             root=Path(os.environ.get('COURSE_DIRECTION_QA_DIR',tmp));p=root/'project';p.mkdir(parents=True)
             for n in ['assets','audio','source','qa']:(p/n).mkdir()
             init_project(p,ROOT)
-            with wave.open(str(p/'audio/synthetic-silence.wav'),'wb')as w:w.setnchannels(1);w.setsampwidth(2);w.setframerate(48000);w.writeframes(b'\0\0'*(48000*6))
-            spec=fixture();spec.update(title='异内容技术验证 无配音教学结论',media=dict(audio='audio/synthetic-silence.wav',intro=None,outro=None),assets=[],rendering=dict(route='auto'))
+            from test_continuity_pacing import audio as technical_audio
+            technical_audio(p/'audio/synthetic-tone.wav',seconds=6)
+            spec=fixture();spec.update(title='异内容技术验证 无配音教学结论',media=dict(audio='audio/synthetic-tone.wav',narration='audio/synthetic-tone.wav',intro=None,outro=None),assets=[],rendering=dict(route='auto'))
             spec['readingPlan']=dict(schema='course-reading-plan/1',groups=[],referenceTextIds=[],noNewTextReason='本夹具检查图形对象动作和状态，没有正文阅读任务')
             from authoring import walk
             for n in walk(spec['sceneGraph']['nodes']):
@@ -94,6 +95,7 @@ class DirectionTests(unittest.TestCase):
                 cue=next(v for v in spec['captions']if v['id']==cid);before=180 if sid=='SHIFT'else 1200;fs=[start,(start+end-1)//2,end-1]
                 spec['motionPlan']['beats'].append(dict(id=bid,sceneId=sid,kind='action',startFrame=start,endFrame=end,objectIds=[obj],purpose='错开休息时段'if sid=='SHIFT'else'记录归入接收档案',before='原时段'if sid=='SHIFT'else'记录待接收',after='新时段'if sid=='SHIFT'else'记录已归入',anchor=dict(cueId=cid,phrase=cue['text'],atFrame=start),evidenceFrames=fs,stateChecks=[dict(sourceFrame=start,objectId=obj,property='x',op='eq',expected=before),dict(sourceFrame=end-1,objectId=obj,property='x',op=op,expected=expect)]))
             spec['motionPlan']['beats'].append(dict(id='compare',sceneId='READ',kind='read',startFrame=120,endFrame=180,objectIds=['read-table'],reason='稳定比较调整前后的结果'))
+            spec['continuityPlan']=dict(schema='course-continuity-plan/1',pauses=[])
             path=p/'source/synthetic.json';path.write_text(json.dumps(spec,ensure_ascii=False));doc=configure(root,path);self.assertEqual(preflight(doc)['status'],'pass',preflight(doc))
             report=inspect(doc);(p/'qa/direction-plan.json').write_text(json.dumps(report,ensure_ascii=False,indent=2));space=Workspace(root)
             server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);server.workspace=space;threading.Thread(target=server.serve_forever,daemon=True).start()

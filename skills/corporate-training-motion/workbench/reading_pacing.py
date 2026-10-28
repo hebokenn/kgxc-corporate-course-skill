@@ -304,6 +304,8 @@ def review(project,doc,video):
     if r.get('documentSha256')!=sha(p/'workbench.json')or r.get('videoSha256')!=sha(video):errors.append('阅读复核绑定的是旧文字、时间线或视频')
     playback=r.get('playback',{})
     if playback.get('speed')!=1 or not playback.get('ranges')or not playback.get('method')or not r.get('reviewer'):errors.append('缺少实际正常速度复看的方法、范围与复核者')
+    if doc.get('continuityPolicy',{}).get('required') and not str(playback.get('continuityObservation','')).strip():
+        errors.append('缺少正常速度连续观看时的讲解衔接、停顿用途及注意力观察')
     rows={g.get('id'):g for g in r.get('groups',[])}
     for g in inspect(doc)['groups']:
         row=rows.get(g['id'],{})

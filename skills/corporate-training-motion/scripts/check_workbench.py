@@ -51,6 +51,8 @@ def check(project, require_runtime=False, video=None):
         if video:
             v=Path(video);meta=read(v.with_suffix('.json'))
             if meta.get('document_sha256')!=digest(p/'workbench.json') or meta.get('video_sha256')!=digest(v) or meta.get('native_sha256')!=native_fingerprint(p):errors.append('成片与当前工作台数据或源码未绑定')
+            from continuity_pacing import export_errors
+            errors.extend(export_errors(d,p,v,meta))
     except Exception as e:errors.append(str(e))
     return dict(ok=not errors,errors=errors,scope='editable contract and current renderer evidence; no content or listening approval')
 

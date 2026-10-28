@@ -31,11 +31,11 @@ python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL
 
 1. scaffold创建规范课程目录、`project/workbench.json`、`project/native/`画布和`project/editor/`独立启动器。模板内`workbench.required=true`，不能为通过检查改成false。未生成内容与声音的草稿可以打开，导出按钮停用；草稿不是成片。
 2. 在来源与逐字稿阶段沿用原课程方法。导演方案先选视觉语言、场景和动作，再选实现；不因为通用画布而采用一套标题加卡片或强制地图。
-3. 生成本地Aiden原速口播，按实际音轨定帧。制作`source/course-composition.json`并configure；它是初始化输入，实际编辑后`workbench.json`是唯一当前数据，不能反复configure覆盖编辑改动。脚本拒绝重置已经ready或有保存历史的工程。
+3. 沿用已确认声音，未配置时生成本地didi推荐口播，按实际音轨定帧。制作`source/course-composition.json`并configure；它是初始化输入，实际编辑后`workbench.json`是唯一当前数据，不能反复configure覆盖编辑改动。脚本拒绝重置已经ready或有保存历史的工程。
 4. 通用画布自动为文字与对象位置登记fields，图片按稳定assetId引用。替换图片与改文字会进入画面。更换为其他引擎时实现下述统一桥接，不能只把播放器包在一个页面里。
 5. 启动serve，展示实际打印的本地URL。工作台默认贯穿制作，用户不必再说“增加工作台”。独立打开可运行课程目录内的`python3 project/editor/scripts/workbench.py serve .`；无需保留Skill安装路径。
 6. 运行`check_workbench.py --runtime`，检查全部场景、字段/素材绑定及正反向seek；保存实际文档和渲染源码哈希。新课preview/final阶段及正式发布检查核对当前证据。文档、素材、音轨或渲染代码变化后，旧证据自动失效。
-7. UI或export命令从同一份已保存数据和CourseRenderer导出。声音、单行字幕、句尾停留和品牌包装共享时间轴，不把另一个旧视频当成本次成片。源码/媒体在导出中改变会阻止提交成功。
+7. UI或export命令从同一份已保存数据和CourseRenderer导出。声音、单行字幕、明确任务停顿和品牌包装共享时间轴，不把另一个旧视频当成本次成片。源码/媒体在导出中改变会阻止提交成功。
 8. 检查最终MP4编码及解码、字幕字形安全区、真实内容和声音；交付MP4、SRT、工作台URL、源码和可恢复工程ZIP。全量导出建立当前工程运行记录；片段导出不冒充整课验证。
 9. 解压工程ZIP，在新目录运行`python3 project/editor/scripts/workbench.py serve .`，验证字幕、素材和音轨，再保存并导出一个区间。首次采用新引擎或修改打包规则时实测这个闭环。技术结果与人工听看、用户验收分别报告。
 
@@ -51,7 +51,8 @@ python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL
   "sourceDurationFrames": 150,
   "scenes": [{"id":"S01","title":"核对订单","chapter":"收货核对","sourceStartFrame":0,"sourceEndFrame":150}],
   "captions": [{"id":"C01","sceneId":"S01","text":"先核对订单与商品","startFrame":0,"endFrame":150}],
-  "media": {"audio":"audio/course-mix.wav","intro":null,"outro":null},
+  "media": {"audio":"audio/course-mix.wav","narration":"audio/course-dry.wav","intro":null,"outro":null},
+  "continuityPlan": {"schema":"course-continuity-plan/1","pauses":[]},
   "assets": [{"id":"order","label":"订单原图","path":"assets/order.png"}],
   "sceneGraph": {"background":"#f3f2ec","nodes":[
     {"id":"heading","sceneId":"S01","type":"text","text":"核对订单","x":130,"y":150,"fontSize":72},
@@ -61,7 +62,7 @@ python3 scripts/check_workbench.py COURSE --require-runtime --video ACTUAL_FINAL
 }
 ```
 
-这是数据结构示例，不是整课视觉模板。audio必须是真实已生成的课程混音，5秒示例时长需要与实测一致，否则configure拒绝。单行字幕无标点，画面标题按内容保留。可用text、image、rect、ellipse、line、path、group，支持嵌套children、sceneId、起止帧、透明度、旋转、缩放及绝对时间motion。path使用Canvas Path2D数据；image支持contain或cover。sceneId为空的对象跨场景保留。时间从0开始，end不包含该帧。
+这是局部数据结构示例，不是完整可导出方案或整课视觉模板；仍须补齐实际动作、口播对应和阅读计划。6.0绑定同轴media.narration干声与continuityPlan，禁止自动插静音补阅读预算，详见[阅读与讲解连贯性](45-reading-and-information-pacing.md)。audio必须是真实已生成的课程混音，5秒示例时长需要与实测一致，否则configure拒绝。单行字幕无标点，画面标题按内容保留。可用text、image、rect、ellipse、line、path、group，支持嵌套children、sceneId、起止帧、透明度、旋转、缩放及绝对时间motion。path使用Canvas Path2D数据；image支持contain或cover。sceneId为空的对象跨场景保留。时间从0开始，end不包含该帧。
 
 需要逐字、遮罩、模糊、渐变、描线或其他内置动效时，在同一spec中配置`rendering.route=auto`和节点effects；configure会选motion-canvas、自动登记文字与位置、复制现有库并接入seek-bridge-v1。无需逐字拆编辑字段。字段、换图、时间轴、字幕与正式导出仍走同一CourseRenderer。完整参数和选路依据见[渲染选路](30-renderer-selection.md)。未知动效、强制简易画布却要求高级动效、或缺少自定义实现时明确报错，不能悄悄丢弃要求。旧工程不因Skill更新自动切换渲染器；已制作工程改路线须先保留源码和编辑，再由制作端迁移并复验。
 

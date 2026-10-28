@@ -215,7 +215,7 @@ class StoryboardTests(unittest.TestCase):
             bindings.append(dict(segment_id=sid,option_id=item['option_id'],script_excerpt=lookup[sid]['script_excerpt'],startFrame=i*10,endFrame=(i+1)*10,sceneIds=[scene]))
             nodes.append(dict(id='node-'+sid,type='text',sceneId=scene,text='技术夹具',x=100,y=100))
             captions.append(dict(id='caption-'+sid,sceneId=scene,text='技术夹具',startFrame=i*10,endFrame=(i+1)*10))
-        spec=dict(title='QA binding import',sourceDurationFrames=30,scenes=scenes,storyboardBindings=bindings,captions=captions,media=dict(audio='audio/test.wav',intro=None,outro=None),sceneGraph=dict(nodes=nodes))
+        spec=dict(title='QA binding import',continuityPlan=dict(schema='course-continuity-plan/1',pauses=[]),sourceDurationFrames=30,scenes=scenes,storyboardBindings=bindings,captions=captions,media=dict(audio='audio/test.wav',intro=None,outro=None),sceneGraph=dict(nodes=nodes))
         file=course.project/'source/spec.json';atomic(file,spec)
         doc=configure(path,file);self.assertEqual(doc['storyboardBindings'],bindings)
         with patch('backend.threading.Thread') as thread:

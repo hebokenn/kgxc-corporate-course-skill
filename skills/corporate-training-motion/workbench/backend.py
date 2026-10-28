@@ -121,7 +121,7 @@ def validate(doc, project):
     for key in ['fields','assets']:
         identifiers=[v.get('id') for v in doc[key]]
         if any(not isinstance(v,str) or not v for v in identifiers) or len(set(identifiers))!=len(identifiers):raise ValueError('登记ID缺失或重复：'+key)
-    for key in ['audio','intro','outro']:
+    for key in ['audio','narration','intro','outro']:
         name=doc['media'].get(key)
         required=key=='audio' and doc.get('status','ready')!='draft' or key=='intro' and doc['introFrames']>0 or key=='outro' and doc['bodyEndFrame']<doc['sourceDurationFrames']
         if required and not name:raise ValueError('缺少媒体：'+key)
@@ -154,6 +154,9 @@ def validate(doc, project):
             raise ValueError('画面位移超出允许范围')
     from company_characters import validate_uniforms
     validate_uniforms(doc,project)
+    if doc.get('status')!='draft':
+        from continuity_pacing import require as require_continuity
+        require_continuity(doc,project)
     return doc
 
 
@@ -256,7 +259,7 @@ class Workspace:
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
-            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','narrationLinks','readingPolicy','readingPlan','teachingModules']:
+            for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','narrationLinks','readingPolicy','readingPlan','continuityPolicy','continuityPlan','teachingModules']:
                 if doc.get(key) != current.get(key):
                     raise ValueError('不可通过编辑器修改原始结构字段：'+key)
             if [(a['id'],a['originalPath']) for a in doc['assets']] != [(a['id'],a['originalPath']) for a in current['assets']]:
@@ -301,18 +304,10 @@ class Workspace:
         key=self.audio_key(doc)
         path=self.work/(key+'.wav')
         if path.exists():return path
-        filters=[];labels=[]
-        for index,s in enumerate(segments(doc)):
-            count=(s['endFrame']-s['startFrame'])*1600
-            if s['kind']=='hold':filters.append(f'anullsrc=r=48000:cl=mono,atrim=end_sample={count}[a{index}]')
-            else:
-                start=s['sourceFrame']*1600
-                filters.append(f'[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono,apad,atrim=start_sample={start}:end_sample={start+count},asetpts=PTS-STARTPTS[a{index}]')
-            labels.append(f'[a{index}]')
-        filters.append(''.join(labels)+f'concat=n={len(labels)}:v=0:a=1,volume={doc["audio"]["gain"]}[out]')
+        from timeline import audio_filters
         temporary=path.with_name(path.stem+'.'+uuid.uuid4().hex+'.pending.wav')
         subprocess.run(['ffmpeg','-v','error','-y','-i',str(safe(self.project,doc['media']['audio'])),
-                        '-filter_complex',';'.join(filters),'-map','[out]','-ar','48000','-ac','1',str(temporary)],check=True)
+                        '-filter_complex',audio_filters(doc),'-map','[out]','-ar','48000','-ac','1',str(temporary)],check=True)
         temporary.replace(path)
         return path
 
@@ -378,11 +373,15 @@ class Workspace:
         def worker():
             try:
                 job['status']='rendering'
+                from continuity_pacing import audit as audit_continuity
+                continuity=audit_continuity(doc,self.project,first,last)
+                atomic(directory/'continuity-preflight.json',continuity)
+                if continuity['status']=='fail':raise ValueError('旁白连贯性检查未通过：'+'；'.join(continuity['errors']))
                 audio=self.audio(doc)
                 config=tools()
                 interpreter=os.environ.get('COURSE_PYTHON',config.get('python',sys.executable))
                 command=[interpreter,str(APP/'render_worker.py'),'--url',url+'/renderer.html?job='+job_id,
-                         '--directory',str(directory),'--audio',str(audio),'--first',str(first),'--last',str(last),
+                         '--directory',str(directory),'--project',str(self.project),'--audio',str(audio),'--first',str(first),'--last',str(last),
                          '--fps',str(doc['fps'])]
                 with (directory/'render.log').open('w') as log:
                     process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
