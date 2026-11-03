@@ -39,6 +39,12 @@ def inspect(doc):
             for key in node.get('performance',{}).get('keys',[]):mark(key.get('frame'),'performance-key:'+node['id'])
             for blink in node.get('performance',{}).get('blinks',[]):
                 for f in blink:mark(f,'performance-blink:'+node['id'])
+            actor=node.get('vectorActor',{})
+            for key in actor.get('keys',[]):mark(key.get('frame'),'acting-key:'+node['id'])
+            for action in actor.get('walks',[])+actor.get('turns',[]):
+                x,y=action.get('startFrame'),action.get('endFrame')
+                if type(x) is int and type(y) is int:
+                    for f in [x-1,x,(x+y)//2,y-1,y]:mark(f,'acting-motion:'+node['id'])
         camera=doc.get('sceneGraph',{}).get('camera',{})
         for move in camera.get('motion',[]):
             x,y=move.get('startFrame'),move.get('endFrame')
@@ -68,20 +74,20 @@ def inspect(doc):
                 link=links.get(cue['id'],{});cues.append(dict(cueId=cue['id'],text=cue['text'],purpose=link.get('purpose'),visibleObjectIds=link.get('visibleObjectIds',[])))
         rows.append(dict(sceneId=sid,title=scene.get('title',''),sourceRange=[a,z],seconds=(z-a)/fps,
             presentation=scene.get('presentation',{}),narration=cues,
-            subjectObjectIds=[n['id']for n,_ in local if n.get('role')not in ['decoration','camera'] and n.get('type')!='group'],
-            performanceObjectIds=[n['id']for n,_ in local if n.get('performance')],
+            subjectObjectIds=[n['id']for n,_ in local if n.get('role')not in ['decoration','camera'] and (n.get('type')!='group' or n.get('vectorActor'))],
+            performanceObjectIds=[n['id']for n,_ in local if n.get('performance') or n.get('vectorActor')],
             actionChoices=[{k:b.get(k)for k in ['id','kind','purpose','before','after','objectIds','anchor','startFrame','endFrame','reason']}for b in local_beats],
             inspectionFrames=inspected))
     signals=analyze(doc)['signals'] if doc.get('scenes') else []
     return dict(schema='course-content-direction-inspection/1',status='inspection-plan' if rows else 'needs-content-design',
         documentSemanticSha256=hashlib.sha256(json.dumps(doc,sort_keys=True,ensure_ascii=False).encode()).hexdigest(),
-        guides=GUIDES,scenes=rows,compositionSignals=signals,
+        guides=GUIDES+(['references/48-situational-acting.md'] if any(n.get('vectorActor') for n,_ in nodes) else []),scenes=rows,compositionSignals=signals,
         scope='actual saved words, objects, states and source/display-frame candidates; no keyword-selected template, semantic judgment, peak-visibility guarantee, aesthetic score or user acceptance')
 
 
 def continuation(doc):
     report=inspect(doc)
-    return dict(schema=report['schema'],status=report['status'],requiredGuides=GUIDES,
+    return dict(schema=report['schema'],status=report['status'],requiredGuides=report['guides'],
         scenes=len(report['scenes']),inspectionFrames=sum(len(s['inspectionFrames'])for s in report['scenes']),
         compositionSignals=report['compositionSignals'],
         command='course_tools.py direction-check --spec PROJECT/workbench.json --out NEW_REVIEW_PLAN.json',

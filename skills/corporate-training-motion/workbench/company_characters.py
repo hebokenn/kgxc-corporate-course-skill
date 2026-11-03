@@ -26,6 +26,11 @@ def validate_uniforms(doc,project):
         for n in items:parents[n['id']]=parent;register(n.get('children',[]),n['id'])
     register(doc.get('sceneGraph',{}).get('nodes',[]))
     for n in nodes.values():
+        actor=n.get('vectorActor',{})
+        if actor.get('characterRole') in {'store_staff','store_manager','coach'}:
+            expected=ORIGINAL_KG if actor['characterRole']!='coach' else actor.get('logoSha256')
+            if not expected or assets.get(actor.get('logoAsset'))!=expected or (actor['characterRole']=='coach' and (actor.get('uniformMark')!='MyCoach' or expected==ORIGINAL_KG)):
+                raise ValueError('情境人物需绑定对应身份的原版胸标：'+n['id'])
         if n.get('type')!='image' or assets.get(n.get('assetId')) not in UNBRANDED_MASTERS:continue
         if any(e.get('type')=='presenter-gesture' and assets.get(e.get('kgAsset'))==ORIGINAL_KG for e in n.get('effects',[])):continue
         mark=nodes.get(n.get('uniformMarkNodeId'));a=n.get('startFrame',0);z=n.get('endFrame',doc['sourceDurationFrames'])

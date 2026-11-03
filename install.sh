@@ -2,7 +2,7 @@
 # Installer bootstrap. Prepares Skill, media tools and recommended local voices; never asks for API credentials.
 set -euo pipefail
 REPOSITORY="hebokenn/kgxc-corporate-course-skill"
-VERSION="5.8.6"
+VERSION="6.3.0"
 UV_VERSION="0.11.21"
 TASK_TMP=""
 cleanup() { if [ -n "$TASK_TMP" ]; then rm -rf "$TASK_TMP"; fi; }

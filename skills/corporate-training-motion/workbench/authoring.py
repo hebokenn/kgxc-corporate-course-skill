@@ -25,6 +25,8 @@ def native_fingerprint(project):
         names.append('continuity_pacing.py')
     if (root/'palette-plan.json').is_file():
         names += ['course_palette.py', 'course-palettes.json']
+    if (root/'workbench.json').is_file() and any(n.get('vectorActor') for n in walk(json.loads((root/'workbench.json').read_text()).get('sceneGraph',{}).get('nodes',[]))):
+        names.append('acting.py')
     for name in names:
         f=Path(__file__).resolve().parent/name
         h.update(('@runtime/'+name).encode());h.update(f.read_bytes())
@@ -100,6 +102,8 @@ def graph_errors(doc):
     from character_performance import errors as performance_errors
     for node in nodes:
         if node.get('performance'):errors.extend(performance_errors(node,doc))
+    from acting import errors as acting_errors
+    errors.extend(acting_errors(doc))
     from render_routes import effect_errors, requirements
     if doc.get('rendering',{}).get('route')=='motion-canvas':errors.extend(effect_errors(doc))
     elif requirements(doc):errors.append('当前简易画布不能实现所需动效；先选择 motion-canvas 或实际自定义渲染')

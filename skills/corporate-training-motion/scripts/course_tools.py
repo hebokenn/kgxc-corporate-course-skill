@@ -16,13 +16,26 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command in ['stage-acting', 'acting-check']:
+        ap=argparse.ArgumentParser(description='Reusable solid-vector acting; course-specific appearance and blocking')
+        if args.command=='stage-acting':
+            ap.add_argument('course',type=Path);ap.add_argument('--design',type=Path,required=True)
+        else:ap.add_argument('--spec',type=Path,required=True)
+        ap.add_argument('--out',type=Path,required=args.command=='stage-acting');aa=ap.parse_args(rest)
+        if aa.out and (aa.out.exists() or args.dry_run):ap.error('保留已有文件；指定新的 --out，dry-run不写入')
+        from acting import stage,inspect
+        result=stage(json.loads(aa.design.read_text()),aa.course,ROOT) if args.command=='stage-acting' else inspect(json.loads(aa.spec.read_text()))
+        if aa.out:
+            aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(aa.out)
+        else:print(json.dumps(result,ensure_ascii=False,indent=2))
+        return 2 if result.get('status')=='fail' else 0
     if args.command=='palette-catalog':
         if rest:parser.error('palette-catalog 不接受额外参数')
         from course_palette import catalog
