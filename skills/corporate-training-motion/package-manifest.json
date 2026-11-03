@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "6.2.0",
+  "version": "6.2.1",
   "usage": "KGXC course production suite",
   "files": {
-    "INSTALL.md": "997eb6ddf9d011bd200dae0f74d5b074c403f8ca1e2c82b4cf4b6eadc90a4e6e",
-    "SKILL.md": "fa35a07ab3fc5c2690822370c6ba489c7a14f0d788964edc723d9c7c73e14780",
+    "INSTALL.md": "9c82df667cd71399e2d427436005690cfab9bb71e5fa1d8586918c471559c8f0",
+    "SKILL.md": "46e6df29809e18efab7af6579eaf3a07d1d6c694df42dfa83f012a29771da772",
     "agents/openai.yaml": "242d3df86fbb3e74231f81e6740a54f3d4bc4a6f16b6308cce4216542aef655d",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",
@@ -639,7 +639,7 @@
     "assets/templates/assessment-status.json": "e2a35f0f851bb5f5e0295f4f163aed0de2c3c3d5637de7c0c05b421d06e25696",
     "assets/templates/knowledge_maps.json": "97096d1dea5038c4a211d7c8b5a6908dae223cf51d9453510c68c4bf691488b3",
     "assets/templates/open_questions.md": "ddd4b104db1f6d20ce14d152c57dc71c322e1d82cb7ad987ffe729df3ec8f823",
-    "assets/templates/project.json": "5ea430f0c02c274307a24740dae5693ad0c90ca9792af9e38394a9da3581afaa",
+    "assets/templates/project.json": "6e6bfacdf49bc45d0012fc4f07808ec0a19ffdcf051b2090f2ce483377cd7bc5",
     "assets/templates/review_checklist.md": "65a393af08f064fdfd6ed255aeb8f3d1dadc655e71304d49a74cbd86956f2e18",
     "assets/templates/script_segments.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "assets/templates/single-line-caption.js": "64ed379bffab7588237a510b0a4f69ebd705d95f18413fd8c201b61c6b158432",
@@ -1060,7 +1060,7 @@
     "references/14-semantic-layout-qa.md": "4b5d50e42cc6b997140bdbd914268ca0b2e0adbcc52432334b7488623184a777",
     "references/15-workspace.md": "d3d0cdc3393726bc5dc4c08549f419b9965d6ef80c543eed123f4c68d30831db",
     "references/16-kgxc-bookends.md": "de73f7975a14a12aa1c2bac51d85bc415013d8f1048c7726d45e260b0d62fa0d",
-    "references/16-kgxc-profile.md": "5ab07fc2e89b1722d94f72ac066ea709bce0205c64ee93f06c3af8372e947def",
+    "references/16-kgxc-profile.md": "48b56aaaca417993bec3c8bc4de6e284afe3c0c3ba5bcfe823021e9e14685b24",
     "references/17-minimax-voice.md": "7d4106f03d2d0f57c8b75f4f7ae4c11c8bde14509cf8af0fb871b50e1e268f6c",
     "references/18-relationship-maps-and-source-images.md": "87ccbfdf649741e3a3ca0bbc5d9b2f26182422b7c1f02603d859e5029a14b9a3",
     "references/19-character-performance.md": "2921a900cc84fdec31505f4c6a6c74eadee6443e9c1802f7f2c5ae56d35c11de",
@@ -1081,8 +1081,8 @@
     "references/34-content-driven-assets.md": "6a1b7a3f9a9604f2a51c968797610a2808dbfda99242ef10cc25750bd773dac8",
     "references/35-layout-and-uniform.md": "04c330d2dc0990400d80388ca71e07d24c54e3fad35633b8d26c01384584f022",
     "references/36-course-craft.md": "0ab5d221b077e1fbcb6d3b27ddde283afd2967e1c85686f1c7ce9db9baa7d846",
-    "references/37-cover-and-delivery-finish.md": "fd9e6cd1d41e0a0417dcd9a23f18a93dcd42133399e02b3abf1cce60bd1efbac",
-    "references/38-production-lessons.md": "9218e7826af94e18b59dd88ade020c16d155aa9e80a09203c4d4ca61e2932d15",
+    "references/37-cover-and-delivery-finish.md": "78528df15c0054752d40723691121ab152a28758aa8ad9482009ae138c05ac60",
+    "references/38-production-lessons.md": "97842db1d43f1dd3240730eda02b1d6388e714d005cee107e34555b4454bdb09",
     "references/39-visual-hygiene.md": "c003e90106cfb35a0cb4e20c6977ebabdedcf3fed6e8434a4ce43610cb92fbec",
     "references/40-library-direction-assets.md": "bd12dd6d7584b9ac379e072ad11ba27eca764b60b1f28fa3709298f25de35c73",
     "references/41-direction-and-performance.md": "930715e3a4ee9729a1980ae236f9da91cafec38f51812ee3366aaf8da09d6fe7",
@@ -1090,7 +1090,7 @@
     "references/43-reference-teaching-and-voice.md": "5a75d688742087db1ccd2016fcabe347a0e13f11277c8557da7b333b9d6a7a23",
     "references/44-storyboard-and-sampling.md": "5e44f88412e5ffb56fce48a8417acab03197dd0d655d186d5cc47d0fed977264",
     "references/45-reading-and-information-pacing.md": "34331f3f867dd75f9770b1eb25edea079137620cee7c87a3ca114058ba96c426",
-    "references/46-flower-text-and-native-sfx.md": "8b3038ce6da4a6bfba606dee60f29e4b4408f330ad95aaa4beebab851ad2a81b",
+    "references/46-flower-text-and-native-sfx.md": "09cb01d0280212d99139f621f419c71f9a9ea0d0fbcfa0fe0343d428bc13d9ab",
     "references/47-course-palette.md": "e9f5b7175ca2359d858d7f37fa913a9dfbbec08f9d5c1d75eb59d3cfd5828fde",
     "scripts/asset_library.py": "7038a2f2809566e8f6964d1b9b408ebc07318ad392107c255ee51eb01a8a2250",
     "scripts/azure_tts.py": "e0c5ca6dba024bd23782e2d5712e60a3c32443dcbfc39649470e10a03a6c03b2",
@@ -1233,6 +1233,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "ddc8bec0b32972ac32006ff8c61e1ab027f87718a2f55a3296a36cfed0b5798a",
-    "workbench/workflow.py": "9d4e3e70576d016d9d656765b43bb8ae53a2f44618834cb093e912cfbf1ea66f"
+    "workbench/workflow.py": "e533590a2c9cba721da6f0c904b714fe43ff3508981b7241ce66c160a5b68046"
   }
 }
