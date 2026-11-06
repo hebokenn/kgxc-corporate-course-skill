@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>逐字稿编辑</title><link rel="stylesheet" href="/script-editor.css"></head>
+<body><div class="app">
+<header><div><span class="eyebrow">课程创作</span><h1 id="title">逐字稿编辑</h1></div><span id="save-state" role="status">正在打开…</span><button id="render" class="primary" disabled>渲染视频</button></header>
+<div id="error" role="alert" hidden></div>
+<main><section class="manuscript" aria-label="逐字稿编辑区"><div class="section-head"><h2>逐字稿</h2><div class="tools"><button id="undo" disabled>撤销</button><button id="select-paragraph">选择当前段落</button><button id="ask-ai">让 AI 修改</button></div></div>
+<p class="hint">直接修改文字，或选中一句、一段后让 AI 帮你改。</p>
+<details id="recovery" hidden><summary>切换前尚未保存的文字（当前稿件已在另一处更新）</summary><textarea id="recovery-text" aria-label="切换前保留的逐字稿" readonly></textarea><button id="recover">用此稿继续编辑</button></details>
+<textarea id="script" aria-label="逐字稿" spellcheck="false" placeholder="AI 生成逐字稿后会显示在这里，也可以直接开始写。"></textarea>
+<div id="ai-panel" hidden><div class="ai-head"><strong id="selection-label">修改选中内容</strong><button id="close-ai" aria-label="关闭 AI 修改">关闭</button></div><blockquote id="selected-text"></blockquote>
+<label for="instruction">希望怎么改</label><div class="prompt-row"><input id="instruction" placeholder="例如：更口语化，保留事实和关键步骤"><button id="rewrite" class="primary">生成修改建议</button><button id="cancel-ai" hidden>取消</button></div>
+<div id="ai-result" hidden><label for="suggestion">AI 建议（可以继续手动改）</label><textarea id="suggestion" aria-label="AI 修改建议"></textarea><div class="result-actions"><span id="ai-note" class="hint">只替换选中内容，其余逐字稿保持原样。</span><button id="accept-ai" class="primary">替换选中内容</button></div></div><p id="ai-status" role="status"></p></div>
+<footer><span id="word-count">0 字</span><span id="selection-state">未选择文字</span><span>自动保存草稿</span></footer></section>
+<section class="preview" aria-label="课程预览"><div class="section-head"><h2>课程预览</h2><span id="preview-kind" class="tag">等待画面</span></div>
+<div class="screen"><iframe id="preview" title="当前课程画面" hidden></iframe><div id="waiting"><span class="eyebrow">逐字稿预览</span><h3 id="paragraph-title">从这一段开始</h3><p id="paragraph-preview">在左侧输入逐字稿，或等待 AI 生成。</p><small>课程画面尚未制作</small></div><div id="preview-error" hidden></div></div>
+<div class="playback"><button id="play" disabled>播放预览</button><input id="seek" aria-label="课程预览进度" type="range" min="0" max="1" value="0"><span id="time">00:00</span></div>
+<p id="preview-note" class="hint">文字改动即时预览；配音和视频在点击渲染后更新。</p>
+<div id="render-status" role="status" hidden><strong id="render-label"></strong><p id="render-detail"></p><progress id="progress" max="1" value="0" hidden></progress><div id="downloads"></div></div>
+</section></main></div><script type="module" src="/script-editor.js"></script></body></html>

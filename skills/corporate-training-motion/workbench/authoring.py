@@ -19,7 +19,7 @@ def native_fingerprint(project):
             for p in sorted(folder.rglob('*')):
                 if p.is_file() and '__pycache__' not in p.parts:
                     h.update(str(p.relative_to(root)).encode());h.update(p.read_bytes())
-    names=['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','reading_pacing.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_performance.py','performance-profiles.json','motion_evidence.py','character_pose.py','company_characters.py','device_models.py']
+    names=['renderer.js','renderer.html','render_worker.py','backend.py','authoring.py','audio_timing.py','timeline.py','timeline.js','runtime.py','render_routes.py','motion_quality.py','motion_samples.py','semantic_motion.py','reading_pacing.py','motion_catalog.py','motion_extensions.py','teaching_modules.py','content_assets.py','retail_assets.py','visual_styles.py','visual-styles.json','visual_identity.py','character_rig.py','character_performance.py','performance-profiles.json','motion_evidence.py','character_pose.py','company_characters.py','device_models.py']
     # Only opted-in contracts add this module to the runtime file list.
     if marker.is_file() and json.loads(marker.read_text()).get('continuityRequired'):
         names.append('continuity_pacing.py')
@@ -49,13 +49,14 @@ def init_project(project, skill_root):
              captionStyle=dict(fontSize=42,y=990,fill='#ffffff',stroke='#172b38',strokeWidth=8),
              audio=dict(gain=1,voice='didi 推荐教学男声 · 尚未生成配音',speed=1))
     doc['characterPolicy']=dict(required=True,scope='known company masters require their original uniform mark')
+    doc['conversationPolicy']=dict(required=True,scope='character dialogue requires a visible same-scene addressee and correct heading; direct viewer narration is explicit')
     from motion_quality import policy
     doc['motionPolicy']=policy()
     from reading_pacing import policy as reading_policy
     doc['readingPolicy']=reading_policy()
     from continuity_pacing import policy as continuity_policy
     doc['continuityPolicy']=continuity_policy()
-    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='6.0.0',semanticRequired=True,stateProofRequired=True,readingRequired=True,continuityRequired=True))
+    atomic(p/'motion-contract.json',dict(schema='course-motion-policy/1',required=True,createdBy='6.5.0',semanticRequired=True,stateProofRequired=True,readingRequired=True,continuityRequired=True,conversationRequired=True))
     from craft_quality import policy as craft_policy
     doc['qualityPolicy']=craft_policy();doc['qualityPolicy']['spatialReviewRequired']=True
     atomic(p/'craft-contract.json',dict(schema='course-craft-policy/1',required=True,coverRequired=True,visualHygieneRequired=True,spatialReviewRequired=True,createdBy='5.7.0'))
@@ -123,7 +124,11 @@ def configure(course, spec_path):
     if old.get('status')!='draft' or old['revision']!=0:raise ValueError('已制作或编辑的工程不重新初始化；直接修改现有工程，保留工作台改动')
     from teaching_modules import expand
     from course_palette import read_plan, bind
-    spec=expand(bind(read(spec_path), read_plan(p)));d=copy.deepcopy(old)
+    spec=expand(bind(read(spec_path), read_plan(p)))
+    from audio_timing import timeline_errors,probe
+    timing_errors=timeline_errors(spec,probe(safe(p,spec['media']['audio'])) if spec.get('media',{}).get('audio') else None)
+    if timing_errors:raise ValueError('配音与画面时间校验未通过：'+'；'.join(timing_errors[:12]))
+    d=copy.deepcopy(old)
     d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette'] if k in spec})
     if 'continuityPolicy' in spec:
         d['continuityPolicy'].update({k:spec['continuityPolicy'][k] for k in ['noiseFloorDB','gapSeconds'] if k in spec['continuityPolicy']})

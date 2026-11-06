@@ -76,6 +76,13 @@ def check(board, script_text, script_sha, design,reading_required=False):
     units = {u['id'] for u in design.get('units', []) if u.get('disposition') == 'core'}
     assessments = {a['id'] for a in design.get('assessments', [])}
     source = paragraphs(script_text)
+    mapping = design.get('script_mapping')
+    if mapping:
+        identities = mapping.get('paragraphs',[])
+        if mapping.get('script_sha256') != script_sha or len(identities)!=len(source) or any(a.get('sha256')!=b['sha256'] for a,b in zip(identities,source)):
+            errors.append('章节与段落身份映射未绑定当前逐字稿，请先核对绑定')
+        else:
+            for paragraph,identity in zip(source,identities):paragraph.update(id=identity['id'],unit_id=identity['unit_id'])
     lookup = {p['id']: p for p in source}
     segments = board.get('segments', [])
     if not isinstance(segments, list) or not segments:
@@ -106,6 +113,7 @@ def check(board, script_text, script_sha, design,reading_required=False):
             errors.append(sid + ' 逐字稿段落引用无效')
         else:
             seen.extend(refs)
+            if any(lookup[p].get('unit_id',uid)!=uid for p in refs):errors.append(sid+' 的段落属于其他章节，请按稳定章节身份核对')
             excerpt = '\n\n'.join(lookup[p]['text'] for p in refs)
             if segment.get('script_excerpt') != excerpt:
                 errors.append(sid + ' 原文须完整对应所引段落，不能摘要或漏句')

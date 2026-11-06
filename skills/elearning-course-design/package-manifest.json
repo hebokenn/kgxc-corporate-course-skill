@@ -3,10 +3,10 @@
   "version": "2.0.3",
   "usage": "KGXC course production suite",
   "files": {
-    "SKILL.md": "008f2f878646ad8c09aa1493e84103e986dd1c2920b2b99855e8442e04fbfba6",
+    "SKILL.md": "f7969a2c0657cfcf70198d61ddec8e292fb585c6448d3b4552cf8461d94c3166",
     "agents/openai.yaml": "6bd6b3a1baafcd281b63c7e8ec15dba4a4ff96c461c9ab7dd7170c7e551549b4",
     "assets/design-plan.json": "385550f0877f90a07530e44c154d87f09366d551b9cee642c16ad9cb3719df89",
-    "references/decision-prompts.md": "7a1005c00845a79a58967c1e94068722d059c60b0e75191da2a558aa2e4562df",
+    "references/decision-prompts.md": "889c6424b49779acb3f521b16b6fef8ee91dad0281a5f1df5d02838f9a458d52",
     "references/deliverables.md": "a2d60be36d80bc4f16af40fa1b66d60263121914d2a2f0ca339f187bc43290af",
     "references/learner-context.md": "267fd4d1984bb11626c6efe87158a74fc496d218b7b63eb817d50880c57b9bd5",
     "references/media-selection.md": "268a72968d91106fc32021aff1461e64f3ae5c2699284dc1923c3df71788cf46",

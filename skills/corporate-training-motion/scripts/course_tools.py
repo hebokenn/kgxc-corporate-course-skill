@@ -16,13 +16,23 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['prepare-narration','timing-check','stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='prepare-narration':
+        ap=argparse.ArgumentParser();ap.add_argument('--source',type=Path,required=True);ap.add_argument('--out',type=Path,required=True)
+        ap.add_argument('--rate',type=float,default=1);ap.add_argument('--start',type=float,default=0);ap.add_argument('--end',type=float);ap.add_argument('--profile',default='');ap.add_argument('--replace',action='store_true');aa=ap.parse_args(rest)
+        from audio_timing import prepare
+        print(json.dumps(prepare(aa.source,aa.out,aa.rate,aa.start,aa.end,aa.profile,aa.replace),ensure_ascii=False,indent=2));return 0
+    if args.command=='timing-check':
+        ap=argparse.ArgumentParser();ap.add_argument('--spec',type=Path,required=True);ap.add_argument('--project',type=Path);aa=ap.parse_args(rest)
+        from audio_timing import timeline_errors,probe
+        doc=json.loads(aa.spec.read_text());audio=doc.get('media',{}).get('audio');errors=timeline_errors(doc,probe(aa.project/audio) if aa.project and audio else None)
+        print(json.dumps(dict(status='fail' if errors else 'pass',errors=errors),ensure_ascii=False,indent=2));return 2 if errors else 0
     if args.command in ['stage-acting', 'acting-check']:
         ap=argparse.ArgumentParser(description='Reusable solid-vector acting; course-specific appearance and blocking')
         if args.command=='stage-acting':

@@ -1,0 +1,4 @@
+- insert:
+    - id: kgxc-course
+      name: kgxc-course-plugin
+      config: {}

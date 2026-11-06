@@ -23,6 +23,18 @@ def required(config):
     return new_course or config.get('workbench',{}).get('required',False)
 
 
+def storyboard_errors(boards,doc,project):
+    if isinstance(boards,dict):
+        from storyboard import check_bindings
+        from workflow import Course
+        if boards.get('schema')!='course-storyboard/1':return ['分镜对象格式无效']
+        selected={b.get('segment_id') for b in doc.get('storyboardBindings',[])}
+        full=selected=={s['id'] for s in boards.get('segments',[])}
+        return check_bindings(boards,Course(project).sample_plan(),doc,full=full)
+    planned={s['id'] for s in boards if s.get('duration_sec')}
+    return ['分镜与工作台场景ID不一致'] if planned and planned!={s['id'] for s in doc['scenes']} else []
+
+
 def check(project, require_runtime=False, video=None):
     p=Path(project).resolve();errors=[]
     if (p/'project/workbench.json').exists():p=p/'project'
@@ -34,9 +46,8 @@ def check(project, require_runtime=False, video=None):
         cfg=read(p/'project.json') if (p/'project.json').exists() else {}
         if required(cfg) and not cfg.get('workbench',{}).get('required'):errors.append('新课不得关闭默认工作台契约')
         boards=read(p/'storyboard.json') if (p/'storyboard.json').exists() else []
-        planned={s['id'] for s in boards if s.get('duration_sec')}
+        errors.extend(storyboard_errors(boards,d,p))
         actual={s['id'] for s in d['scenes']}
-        if planned and planned!=actual:errors.append('分镜与工作台场景ID不一致')
         for name,key in [('intro','intro_video'),('outro','outro_video')]:
             expected=cfg.get('brand',{}).get(key)
             if expected and (not d['media'].get(name) or digest(safe(p,expected))!=digest(safe(p,d['media'][name]))):errors.append('工作台未保留已指定品牌'+name)

@@ -31,6 +31,7 @@ def main():
         rel=p.relative_to(ROOT)
         if not p.is_file() or rel.parts[0] not in ['skills','scripts','config','docs'] and len(rel.parts)!=1:continue
         if rel.parts[0] in ['dist','.git','tests'] or '__pycache__' in rel.parts or p.name.startswith('.') or p.suffix=='.pyc':continue
+        if rel.as_posix() in ['scripts/build_plugin.py','scripts/install_plugin.py','scripts/check_codex_plugin.py']:continue
         if len(rel.parts)==1 and p.name not in ['install.sh','VERSION','release.json','README.md','THIRD_PARTY_NOTICES.md','requirements.in','requirements.lock','requirements-voice.in','requirements-voice.lock','安装或更新.command']:continue
         candidates.append(p)
     bundle_manifest=dict(version=version,files={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in candidates})

@@ -21,3 +21,5 @@ Lucide 0.468.0: 30 SVG icons, ISC. Original LICENSE and exact source/hash are un
 Kenney Furniture Kit 2.0: selected furniture fixtures only, 36 isometric PNGs and 9 GLB models, CC0. Original license and source archive SHA-256 are under `skills/corporate-training-motion/assets/open-source/kenney-furniture/`. Electronic merchandise from other brands is not bundled.
 
 The 24 art-direction recipes are original code adaptations informed by linked official portfolios. Links do not grant rights to third-party videos, music, artwork or characters. Open Peeps and Rough.js are documented extension options; their full libraries are not bundled. unDraw artwork is not bundled. User retail photos and local derivatives stay private. Apple-family drawings and the four Blender material scenes are independently authored teaching illustrations, not Apple image files, exact specifications or teardown CAD. Same-source surface processing preserves existing authorized company characters and does not create a new identity.
+
+- DSH 插件的 `zod` 4.4.3 依赖使用 MIT 许可，Copyright (c) 2025 Colin McDonnell；由包管理器安装，原 LICENSE 随依赖保留。用于原生事件状态校验。

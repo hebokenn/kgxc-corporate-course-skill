@@ -39,4 +39,13 @@ python3 SKILL_DIR/scripts/qwen3_tts.py --profile B2-clone --ref-audio REFERENCE.
 
 后期提速或升调按[最终声音与时间线检查](37-cover-and-delivery-finish.md)执行，明确相对输入版本，避免重复加速；旁白升调不改变音乐音高，字幕与画面共用映射。
 
+裁去保护语句并调整交付语速时，复用确定性工具，先裁原声，再变速并测量结果；不要在 `atempo` 后用输出端 `-t` 截取原声长度，那会剪掉后面的正文。
+
+```sh
+python3 SKILL_DIR/scripts/course_tools.py prepare-narration --source RAW.wav --out PREPARED.wav --end SOURCE_END_SECONDS --rate 0.9 --profile didi
+python3 SKILL_DIR/scripts/course_tools.py timing-check --spec COMPOSITION.json --project COURSE/project
+```
+
+工具在 WAV 旁保存实际时长、原声截取范围、语速及字节哈希。对原始声音取得的词句时间，使用 `audio_timing.NarrationClock(该JSON).frame(原声秒数)` 换算并检查边界；如果 ASR 已针对处理后的声音运行，就直接使用处理后秒数，不再次除以语速。配置画面前自动检查音轨、字幕、场景和对象的时间范围，发现越界就保留候选并报告，不能删掉末句或缩短字幕绕过检查。此校验不代替听校。
+
 用户给出参考片或要求添加可复用的本地克隆声音时，见[参考片学习与本地声音库](43-reference-teaching-and-voice.md)。Base克隆和VoiceDesign的控制边界分别说明，注册候选不更改默认声音。

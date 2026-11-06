@@ -92,6 +92,9 @@ def preflight(doc):
                 if max(a,e['startFrame'])<min(z,e['endFrame']):effect_intervals.append((e['startFrame'],e['endFrame']))
             for e in n.get('motion',[]):
                 if e.get('from')!=e.get('to') and max(a,e['startFrame'])<min(z,e['endFrame']):effect_intervals.append((e['startFrame'],e['endFrame']))
+            if n.get('vectorActor'):
+                from acting import motion_intervals
+                effect_intervals.extend((s,e) for s,e in motion_intervals(n) if max(a,s)<min(z,e))
         for object_id in objects:
             n=nodes.get(object_id,{})
             keys=n.get('performance',{}).get('keys',[])
@@ -141,6 +144,8 @@ def require(doc,project=None):
         raise ValueError('本工程要求逐段动效检查；不能删除 motionPolicy 绕过检查')
     if project and (Path(project)/'motion-contract.json').is_file():
         marker=json.loads((Path(project)/'motion-contract.json').read_text())
+        if marker.get('conversationRequired') and not doc.get('conversationPolicy',{}).get('required'):
+            raise ValueError('本工程要求对白受话人、朝向与同场在场检查，不能删除 conversationPolicy')
         if marker.get('stateProofRequired')and not doc.get('motionPolicy',{}).get('stateProofRequired'):raise ValueError('本工程要求对象状态与编码像素证明，不能删除 stateProofRequired')
         if marker.get('semanticRequired') and not doc.get('motionPolicy',{}).get('semanticRequired'):
             raise ValueError('本工程要求口播与对象状态对应；不能删除 semanticRequired 绕过检查')

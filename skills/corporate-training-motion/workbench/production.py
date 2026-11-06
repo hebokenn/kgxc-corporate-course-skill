@@ -7,15 +7,23 @@ from sound import PALETTE,ROLES
 
 def handoff(project,status):
     p=Path(project);branch=status.get('branch');stage=status.get('stage')
+    from production_preferences import load as load_preferences, choice_digest,storyboard_current
+    preferences=load_preferences(p)
+    preferences['choices_sha256']=choice_digest(p) if preferences['required'] else None
+    preferences['storyboard_current']=storyboard_current(p)
+    preferences['implementation_review']={
+        'path':'qa/production-preferences-<pilot|final>-review.json',
+        'required_fields':['choices_sha256','video_sha256','observations (customer, flower_text, sound_effects)','implemented (customer_ids, customer_nodes, flower_count, flower_nodes, sfx_count, sfx_palette; new_customer_profile when new)'],
+        'policy':'先保存顾客/花字/音效选择；用save_storyboard保存结合当前选择的分镜；逐项检查实际编码画面和音轨后登记，不以启用配置代替真实接入。小样未覆盖的特征写deferred_features原因，整课启用项必须真实出现。新增顾客按33号参考完成后，把本课相对profile_path及design_approval{status:confirmed,actor,evidence}保存在production-preferences.json的new_customer内，不能用断手代替。'}
     from course_palette import read_plan
     palette=read_plan(p)
     active=stage!='complete' and (branch=='video' or branch is None and status.get('workflow_schema')!=2 and stage in ['visual','pilot','final'])
-    if not active:return dict(active=False,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
+    if not active:return dict(active=False,production_preferences=preferences,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
     if status.get('planning_workflow')=='storyboard-v1' and stage=='storyboard':
         return dict(active=False,reason='先审阅全课内容演绎与分镜，逐片段至少三种表现；此时不生成完整配音或视频',
-                    action='review-whole-course-storyboard',coverage=status.get('storyboard_report'))
+                    action='review-whole-course-storyboard',coverage=status.get('storyboard_report'),production_preferences=preferences)
     if status.get('planning_workflow')=='storyboard-v1' and stage=='pilot' and not status.get('sampling_valid'):
-        return dict(active=False,reason='分镜已确认；先分层随机抽取三个片段再制作',action='sample-storyboard')
+        return dict(active=False,reason='分镜已确认；先分层随机抽取三个片段再制作',action='sample-storyboard',production_preferences=preferences)
     def read(path):return json.loads(path.read_text()) if path.is_file() else {}
     doc=read(p/'workbench.json');spec_path=next((p/x for x in ['source/course-composition.json','source/composition.json','source/spec.json'] if (p/x).is_file()),None)
     spec=read(spec_path) if spec_path else doc
@@ -32,8 +40,11 @@ def handoff(project,status):
     if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
     from direction_review import continuation
     return dict(active=True,automatic=True,storyboard_file='storyboard.json' if status.get('planning_workflow')=='storyboard-v1' else None,sampling=status.get('sampling') if status.get('sampling_valid') else None,current_route=current,route_audit=selection,direction=continuation(doc),
-        palette_plan=palette,palette_policy='读取palette-plan.json；编译使用coursePalette；不按风格名称恢复灰绿，不重新抽色',
+        production_preferences=preferences,palette_plan=palette,palette_policy='读取palette-plan.json；编译使用coursePalette；不按风格名称恢复灰绿，不重新抽色',
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
+        timing=dict(prepare='course_tools.py prepare-narration --source RAW.wav --out PREPARED.wav --rate RATE [--start SOURCE_SECONDS --end SOURCE_SECONDS]',
+                    map='audio_timing.NarrationClock(声音旁边的.wav.json).frame(原始配音词句秒数)',check='course_tools.py timing-check --spec COMPOSITION.json --project COURSE/project',
+                    policy='先按原声裁切，再交付变速并实测时长；不在变速后用输出-t截短；越界先失败并修时轴，不能靠省略末句过检查'),
         available_effects=sorted(capabilities()['effects']),teaching_modules=capabilities()['teaching_modules'],motion_catalog_count=capabilities()['executable_motion_count'],
         motion_quality=__import__('motion_quality').preflight(doc),
         craft_quality=__import__('craft_quality').analyze(doc),reading_pacing=__import__('reading_pacing').inspect(doc),narration_continuity=__import__('continuity_pacing').inspect(doc),

@@ -412,6 +412,9 @@ class Workspace:
                               document_sha256=digest(directory/'document.json'),video_sha256=digest(video),
                               subtitles_sha256=digest(srt),review='technical_export_verified; content/user acceptance pending',
                               verification=read(directory/'verification.json'))
+                from export_playback import playback,audio_settings
+                metadata['playback']=playback(doc,first,last)
+                metadata['audio_settings']=audio_settings(doc,self.project)
                 if (self.project/'course-state.json').is_file():
                     from workflow import Course
                     planning_course=Course(self.root)
@@ -514,10 +517,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             url=urllib.parse.urlparse(self.path);path=urllib.parse.unquote(url.path);q=urllib.parse.parse_qs(url.query)
             if path=='/api/document':return self.json(read(self.space.file))
+            if path=='/api/studio':
+                from studio import Studio
+                return self.json(Studio(self.space).view())
+            if path=='/api/studio/source-preview':
+                from source_preview import render_pdf
+                return self.file(render_pdf(self.space,q.get('id',[''])[0],int(q.get('page',['1'])[0])))
+            if path=='/api/editor':
+                from script_editor import ScriptEditor
+                editor=ScriptEditor(self.space);state=editor.read();request=state.get('render_request',{})
+                if request.get('job',{}).get('id') and request.get('status')=='rendering':
+                    job=self.space.job(request['job']['id'])
+                    status='complete' if job.get('status')=='complete' else 'failed' if job.get('status') in ['failed','missing'] else 'rendering'
+                    state['render_request']=editor.render_update(request['id'],status,job=job,error=job.get('error'))
+                return self.json(state)
             if path=='/api/identity':
                 from workflow import VERSION
+                from lifecycle import POLICY
                 state=read(self.space.project/'course-state.json') if (self.space.project/'course-state.json').is_file() else {}
-                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION))
+                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION,lifecycle_policy=POLICY))
             if path=='/api/workflow':
                 from workflow import Course
                 return self.json(Course(self.space.root).status())
@@ -570,6 +588,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             length=int(self.headers.get('Content-Length','0'))
             if not 0<length<=25*1024*1024:raise ValueError('请求大小无效或超过25MB')
             raw=self.rfile.read(length);path=urllib.parse.urlparse(self.path).path
+            if path=='/api/studio/source':
+                from studio import Studio
+                return self.json(Studio(self.space).add_source(urllib.parse.unquote(self.headers.get('X-Filename','')),raw,int(self.headers['X-Base-Revision'])))
             if path=='/api/upload':
                 name=urllib.parse.unquote(self.headers.get('X-Filename','image.png'));suffix=Path(name).suffix.lower()
                 if suffix not in ['.png','.jpg','.jpeg','.webp']:raise ValueError('只接受PNG、JPEG、WebP图片')
@@ -580,6 +601,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     dest.unlink();raise ValueError('无法解码该图片')
                 return self.json(dict(path=str(dest.relative_to(self.space.project)),name=name,sha256=digest(dest)))
             data=json.loads(raw)
+            if path.startswith('/api/studio/'):
+                from studio import Studio
+                return self.json(Studio(self.space).action(path.rsplit('/',1)[1],data))
+            if path.startswith('/api/editor/'):
+                from script_editor import ScriptEditor
+                editor=ScriptEditor(self.space)
+                if path=='/api/editor/save':return self.json(editor.save(data['text'],data['baseRevision']))
+                if path=='/api/editor/render-error':return self.json(editor.render_update(data['requestId'],'failed',error=data['error']))
+                if path=='/api/editor/render':
+                    request=editor.request_render(data['baseRevision']);state=editor.read();doc=state['document']
+                    if not state['changed'] and doc.get('status')!='draft' and doc.get('media',{}).get('audio'):
+                        try:
+                            from workflow import Course
+                            course=Course(self.space.root)
+                            purpose='final' if any(g.get('id')=='pilot' and g.get('status')=='confirmed' for g in course.status().get('gates',[])) else 'pilot'
+                            job=self.space.start_export(doc['revision'],0,duration(doc)/doc['fps'],'http://'+self.headers['Host'],purpose if course.modern() else None)
+                            request=editor.render_update(request['id'],'rendering',job=job)
+                        except Exception as exc:
+                            editor.render_update(request['id'],'failed',error=str(exc));raise
+                    return self.json(request)
+                raise ValueError('未知编辑操作')
             if path.startswith('/api/workflow/'):
                 from workflow import Course
                 course=Course(self.space.root)

@@ -34,7 +34,11 @@ def main():
         page=browser.new_page(viewport=dict(width=1920,height=1080));errors=[]
         page.on('pageerror',lambda error:errors.append(str(error)))
         page.on('console',lambda message:errors.append(message.text) if message.type=='error' and '404' not in message.text else None)
-        page.on('requestfailed',lambda request:errors.append(request.url+' '+str(request.failure)))
+        # Chromium cancels obsolete media range requests when deterministic frame
+        # seeking jumps between bookends. A loaded video's intentional seek abort
+        # is harmless; renderer seek/onerror and final decode still check media.
+        page.on('requestfailed',lambda request:errors.append(request.url+' '+str(request.failure))
+                if not (request.resource_type=='media' and request.failure=='net::ERR_ABORTED') else None)
         page.on('response',lambda response:errors.append(str(response.status)+' '+response.url) if response.status>=400 and not response.url.endswith('favicon.ico') else None)
         for attempt in range(3):
             errors.clear()

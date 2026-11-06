@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.3.0'
+VERSION = '6.5.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -459,6 +459,8 @@ class Course(LegacyCourse):
             report=check(candidate,self.script()['text'],self.script_sha(),read(self.plan_file),reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required')))
             if report['errors']:raise ValueError('；'.join(report['errors']))
             self._snapshot(state);atomic(self.project/'storyboard.json',candidate)
+            from production_preferences import record_storyboard
+            record_storyboard(self.project,'production-side-save','生产端已结合本课当前制作偏好提交分镜；不代表用户人工确认')
             export_html(candidate,self.project/'storyboard.html')
             self._commit(state,'storyboard_saved',dict(segments=report['segment_count']))
         return self.status()
@@ -615,10 +617,14 @@ class Course(LegacyCourse):
                 path=item.get('path')
                 file=self.relative(path) if path else None
                 sample_assets.append(dict(id=identifier,path=path,sha256=sha(file) if file and file.is_file() else None))
-            return dict(script_sha256=self.script_sha(),storyboard_sha256=board_basis(self.storyboard()),samples=self.sample_plan(),
+            result=dict(script_sha256=self.script_sha(),storyboard_sha256=board_basis(self.storyboard()),samples=self.sample_plan(),
                 voice=audio.get('voice'),speed=audio.get('speed',1),gain=audio.get('gain',1),caption_style=doc.get('captionStyle'),
                 runtime=runtime_digest(self.project,doc) if doc.get('motionPolicy',{}).get('required') else None,
                 sample_assets=sample_assets,visual_palette_sha256=plan_digest(state['visual_palette']) if state.get('visual_palette') else None)
+            from production_preferences import creative_basis
+            preferences=creative_basis(self.project)
+            if preferences is not None:result['production_preferences']=preferences
+            return result
         visual_scope=self.director().get('style_scope')=='visual'
         basis=dict(script_sha256=self.script_sha(),director_sha256=proof.get('style_sha256',proof['sha256']),
             style=state.get('selected_style'),voice=audio.get('voice'),speed=audio.get('speed',1),
@@ -662,6 +668,9 @@ class Course(LegacyCourse):
         elif key=='storyboard':
             from storyboard import basis
             data=dict(storyboard_sha256=basis(self.storyboard()))
+            from production_preferences import creative_basis
+            preferences=creative_basis(self.project)
+            if preferences is not None:data['production_preferences']=preferences
         elif key=='style':
             proof=self._director_proof();data=dict(director=proof.get('style_sha256',proof['sha256']),selected=state.get('selected_style'))
         elif key=='courseware':data=dict(script=self.script_sha(plan),files=self._artifact_hashes(key,state))
@@ -672,6 +681,9 @@ class Course(LegacyCourse):
     def _readiness(self,key,plan,state,pending):
         if not self.modern():return super()._readiness(key,plan,state,pending)
         errors=[]
+        if key in ['storyboard','pilot','final']:
+            from production_preferences import selection_errors
+            errors.extend(selection_errors(self.project))
         if key in ['outline','script']:
             from check_design import check
             candidate=copy.deepcopy(plan);candidate['handoff']=dict(ready_for_courseware=False,ready_for_production=False)
@@ -685,6 +697,8 @@ class Course(LegacyCourse):
             from storyboard import check
             report=check(self.storyboard(),self.script()['text'],self.script_sha(),plan,reading_required=bool(read(self.project/'workbench.json',{}).get('readingPolicy',{}).get('required')))
             errors.extend(report['errors']);errors.extend('待选择分镜：'+sid for sid in report['pending'])
+            from production_preferences import storyboard_current
+            if not storyboard_current(self.project):errors.append('分镜尚未结合当前制作偏好更新')
         elif key=='style':errors.extend(self._director_proof()['errors'])
         else:
             files=self._artifact_hashes(key,state)
@@ -703,6 +717,10 @@ class Course(LegacyCourse):
             from performance_cache import director_review
             target=self.relative(state['artifacts']['final'][0])
             if target.is_file():errors.extend(director_review(self.project,read(self.project/'workbench.json'),target)['errors'])
+        if key in ['pilot','final'] and state.get('artifacts',{}).get(key):
+            from production_preferences import review_errors
+            videos=[self.relative(name) for name in state['artifacts'][key] if name.lower().endswith('.mp4')]
+            if videos and videos[0].is_file():errors.extend(review_errors(self.project,key,videos[0]))
         errors.extend(('待解决：' if p.get('kind')=='issue' else '待选择：')+p['id'] for p in pending if p.get('gate')==key)
         return list(dict.fromkeys(errors))
 
@@ -830,7 +848,7 @@ class Course(LegacyCourse):
                 path=self.relative(name);dest=self.project/'qa/reviews'/key/(sha(path)[:12]+'-'+path.name);ensure_dir(dest.parent)
                 if path!=dest and not dest.exists():shutil.copy2(path,dest)
                 sidecar=path.with_suffix('.json')
-                if key=='pilot' and path.suffix.lower()=='.mp4' and sidecar.is_file() and read(sidecar).get('video_sha256')==sha(path) and sidecar!=dest.with_suffix('.json'):
+                if key in ['pilot','final'] and path.suffix.lower()=='.mp4' and sidecar.is_file() and read(sidecar).get('video_sha256')==sha(path) and sidecar!=dest.with_suffix('.json'):
                     shutil.copy2(sidecar,dest.with_suffix('.json'))
                 stable.append(str(dest.relative_to(self.project)))
             if key=='courseware':
@@ -927,17 +945,23 @@ def open_course(root, open_browser=True):
     if not course.state_file.is_file(): raise ValueError('该工程未接入新版流程，旧课请使用原工作台入口')
     record = course.project / 'work/workbench-service.json'; server = read(record, {})
     url = server.get('url', '')
+    resume_port=0
     try:
         identity = local_json(url + '/api/identity')
         from lifecycle import POLICY
         if identity.get('course_id') != read(course.state_file)['course_id'] or identity.get('version') != VERSION or identity.get('course_root')!=str(course.root) or identity.get('lifecycle_policy')!=POLICY: url = ''
-    except (ValueError, OSError): url = ''
+    except OSError:
+        parsed=urllib.parse.urlparse(url)
+        if parsed.scheme=='http' and parsed.hostname in ['127.0.0.1','localhost','::1']:
+            resume_port=parsed.port or 0
+        url=''
+    except ValueError:url=''
     if not url:
         ensure_dir(record.parent); log = record.parent / 'workbench-service.log'
         configured = tools().get('python', sys.executable)
         python = configured if Path(configured).is_file() else sys.executable
         with log.open('ab') as handle:
-            process = subprocess.Popen([python, str(Path(__file__).resolve().parents[1]/'scripts/workbench.py'), 'serve', str(course.root)],
+            process = subprocess.Popen([python, str(Path(__file__).resolve().parents[1]/'scripts/workbench.py'), 'serve', str(course.root), '--port',str(resume_port)],
                 stdin=subprocess.DEVNULL, stdout=handle, stderr=handle, start_new_session=True)
         deadline = time.monotonic() + 12
         while time.monotonic() < deadline:
@@ -992,6 +1016,8 @@ def main():
             create(args.course)
         course.init(args.title)
         if created:
+            from production_preferences import ensure as ensure_production_preferences
+            ensure_production_preferences(course.project)
             current=course.status();plan=current['plan'];plan['title']=args.title
             course.save_plan(plan,current['revision'])
         if args.source:

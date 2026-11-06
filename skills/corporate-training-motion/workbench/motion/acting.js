@@ -135,7 +135,7 @@
   if(a.hair==='bob'){c.save();c.translate(-dir*v*8,0);c.scale(1-.20*v,1);path(c,'M -46 -30 Q -40 -68 4 -61 Q 54 -64 53 -15 L 47 53 L -45 53 Z',hair);c.restore()}
   const farEar=C(1-v/.4);if(farEar>.01)ellipse(c,dir*mix(43,22,v),2,9*farEar,14,skin,'#7e5545');
   const pt=(x,y,px,py)=>`${dir*mix(x,px,v)} ${mix(y,py,v)}`;
-  const face=new Path2D(`M ${pt(-42,-23,-32,-23)} C ${pt(-44,-45,-34,-45)} ${pt(-25,-55,-16,-55)} ${pt(0,-55,0,-55)} C ${pt(27,-55,22,-55)} ${pt(44,-43,25,-42)} ${pt(43,-20,24,-20)} L ${pt(43,0,25,-2)} Q ${pt(43,8,41,7)} ${pt(43,13,34,12)} Q ${pt(43,20,29,16)} ${pt(43,23,27,14)} C ${pt(40,38,29,31)} ${pt(22,47,27,42)} ${pt(0,48,6,45)} C ${pt(-24,47,-19,44)} ${pt(-43,33,-30,29)} ${pt(-43,10,-31,10)} Z`);
+  const face=new Path2D(a.faceShape==='angular'?`M ${pt(-40,-24,-31,-24)} C ${pt(-43,-44,-33,-44)} ${pt(-24,-55,-18,-55)} ${pt(0,-55,0,-55)} C ${pt(27,-55,22,-55)} ${pt(44,-42,25,-42)} ${pt(42,-19,24,-19)} L ${pt(42,0,25,-2)} Q ${pt(42,8,41,7)} ${pt(42,14,34,13)} L ${pt(38,30,29,28)} L ${pt(22,47,25,43)} L ${pt(-6,50,3,48)} L ${pt(-30,39,-22,38)} Q ${pt(-43,22,-31,18)} ${pt(-41,5,-31,5)} Z`:`M ${pt(-42,-23,-32,-23)} C ${pt(-44,-45,-34,-45)} ${pt(-25,-55,-16,-55)} ${pt(0,-55,0,-55)} C ${pt(27,-55,22,-55)} ${pt(44,-43,25,-42)} ${pt(43,-20,24,-20)} L ${pt(43,0,25,-2)} Q ${pt(43,8,41,7)} ${pt(43,13,34,12)} Q ${pt(43,20,29,16)} ${pt(43,23,27,14)} C ${pt(40,38,29,31)} ${pt(22,47,27,42)} ${pt(0,48,6,45)} C ${pt(-24,47,-19,44)} ${pt(-43,33,-30,29)} ${pt(-43,10,-31,10)} Z`);
   path(c,face,skin,'#634c44',1.8);
   const ear=dir*mix(-43,-13,v);ellipse(c,ear,2,mix(9,7.5,v),mix(14,12,v),skin,'#a56e56',1.2);path(c,`M ${ear-dir*2} -3 Q ${ear+dir*5} -1 ${ear+dir*1} 6`,null,'#ba8166',1.1);
   c.save();c.clip(face);if(drawAudit)drawAudit.faceFeaturesClipped=true;
@@ -152,7 +152,7 @@
   if(p.mouth>.1){ellipse(c,mx,my,mw*.44,2+p.mouth*7,'#633d36','#8c5345',1.2);if(p.mouth>.4)path(c,`M ${mx-mw*.36} ${my-4} L ${mx+mw*.36} ${my-4}`,null,'#fff9e8',2)}else path(c,`M ${mx-mw/2} ${my} Q ${mx} ${my+5-10*p.s.concern+3*p.s.relief} ${mx+mw/2} ${my}`,null,'#8c5345',2.2);
   if(a.hair==='mature'){path(c,`M ${mix(-27,-dir*5,v)} 19 L ${mix(-20,dir*2,v)} 21`,null,'#c28b71',1.3);path(c,'M -27 -38 Q 0 -44 25 -37',null,'#c28b71',1.1)}
   c.restore();
-  const hd=a.hair==='spiky'?'M -44 -5 Q -52 -23 -44 -31 L -47 -44 Q -34 -47 -24 -42 L -22 -57 Q -12 -58 -5 -49 L 6 -62 Q 20 -58 22 -48 Q 46 -51 43 -32 Q 56 -21 46 -1 L 34 -20 Q 11 -10 -7 -28 Q -25 -22 -38 0 Z':a.hair==='mature'?'M -43 2 Q -59 -44 -22 -55 Q 0 -70 28 -52 Q 58 -43 44 4 L 34 -23 Q 11 -34 -10 -25 L -35 -14 Z':'M -44 2 Q -61 -41 -22 -57 Q 12 -75 41 -47 Q 60 -28 45 8 L 34 -21 Q 4 -7 -18 -21 Q -31 -19 -38 8 Z';
+  const hd=a.hair==='spiky'?'M -44 -5 Q -52 -23 -44 -31 L -47 -44 Q -34 -47 -24 -42 L -22 -57 Q -12 -58 -5 -49 L 6 -62 Q 20 -58 22 -48 Q 46 -51 43 -32 Q 56 -21 46 -1 L 34 -20 Q 11 -10 -7 -28 Q -25 -22 -38 0 Z':['side-part','sidepart'].includes(a.hair)?'M -43 5 Q -54 -35 -29 -49 Q -9 -69 18 -54 Q 43 -57 47 -31 L 42 4 L 31 -17 Q 18 -18 9 -31 Q -6 -8 -34 -10 L -37 9 Z':a.hair==='mature'?'M -43 2 Q -59 -44 -22 -55 Q 0 -70 28 -52 Q 58 -43 44 4 L 34 -23 Q 11 -34 -10 -25 L -35 -14 Z':'M -44 2 Q -61 -41 -22 -57 Q 12 -75 41 -47 Q 60 -28 45 8 L 34 -21 Q 4 -7 -18 -21 Q -31 -19 -38 8 Z';
   c.save();c.translate(-dir*8*v,0);c.scale(1-.25*v,1);path(c,hd,hair,'#302d30',1.8);path(c,'M -31 -37 Q -7 -58 24 -41',null,'#76615a',2.2);
   if(a.hair==='mature'){path(c,'M -45 -12 L -37 -14 L -36 11 L -43 14 Z','#99918a',null);path(c,'M 36 -15 L 45 -11 L 42 14 L 35 10 Z','#99918a',null)}c.restore();
   if(a.glasses){c.save();c.clip(face);const visible=eyes.filter(e=>e.alpha);for(const eye of visible){c.strokeStyle='#514a47';c.lineWidth=1.9;c.beginPath();c.roundRect(eye.ex-eye.ew-4,-20,eye.ew*2+8,27,5);c.stroke();if(eye.near)path(c,`M ${eye.ex-dir*(eye.ew+4)} -12 L ${dir*mix(-43,-13,v)} -4`,null,'#514a47',1.9)}if(visible.length===2){const left=visible[0],right=visible[1];path(c,`M ${left.ex+left.ew+4} -11 Q ${(left.ex+right.ex)/2} -14 ${right.ex-right.ew-4} -11`,null,'#514a47',1.9)}c.restore()}
@@ -162,15 +162,19 @@
   const y=p.hipY,ct=p.front,st=p.profile,F=(x,z=17)=>p.shoulderX+x*ct+z*st,nw=mix(20,11,Math.abs(st)),nx=p.shoulderX+st*4;
   path(c,`M ${nx-nw} ${y-150} L ${nx+nw} ${y-150} L ${nx+nw} ${y-121} Q ${F(0)} ${y-112} ${nx-nw} ${y-121} Z`,skin,null);
   path(c,`M ${nx-nw} ${y-143} L ${nx-nw} ${y-121} M ${nx+nw} ${y-143} L ${nx+nw} ${y-121}`,null,'#7e5545',1.4);
-  const collar=a.shirt==='blue'?'#98b8d9':'#474b55';
-  path(c,`M ${F(-24,9)} ${y-130} L ${F(0)} ${y-106} L ${F(-18,20)} ${y-89} L ${F(-37,12)} ${y-116} Z`,collar);
-  path(c,`M ${F(24,9)} ${y-130} L ${F(0)} ${y-106} L ${F(17,20)} ${y-89} L ${F(37,12)} ${y-116} Z`,collar);
-  path(c,`M ${F(-2)} ${y-105} L ${F(3)} ${y-105} L ${F(3)} ${y-63} L ${F(-2)} ${y-63} Z`,a.shirt==='blue'?'#658ab6':'#222630',null);
-  if(ct>.12){ellipse(c,F(.5),y-95,1.8*ct,1.8,'#d5d9da');ellipse(c,F(.5),y-81,1.8*ct,1.8,'#d5d9da')}
   if(a.shirt==='jacket'){
-   const band=Math.max(2,17*ct),center=F(0);path(c,`M ${center-band} ${y-120} L ${center+band} ${y-120} L ${center+band} ${y+5} L ${center-band} ${y+5} Z`,'#ece9e0',null);
-   path(c,`M ${F(-18)} ${y-120} L ${F(-32,12)} ${y-95} L ${F(-19,18)} ${y-72} L ${F(-27)} ${y+5} M ${F(19)} ${y-120} L ${F(33,12)} ${y-95} L ${F(19,18)} ${y-72} L ${F(27)} ${y+5}`,null,'#bed0dc',2.2);
-  }else if(ct>.12&&images[a.logoAsset]){c.save();c.translate(F(22,12),y-92);c.scale(ct,1);c.drawImage(images[a.logoAsset],0,0,22,22*images[a.logoAsset].height/images[a.logoAsset].width);c.restore()}
+    const center=F(0),band=Math.max(3,17*ct);path(c,`M ${center-band} ${y-127} Q ${center} ${y-116} ${center+band} ${y-127} L ${center+band} ${y+4} L ${center-band} ${y+4} Z`,a.innerColor||'#ece9e0',null);
+    path(c,`M ${F(-22)} ${y-127} L ${F(-31,12)} ${y-96} L ${F(-19,18)} ${y-77} L ${F(-23)} ${y+5} M ${F(22)} ${y-127} L ${F(31,12)} ${y-96} L ${F(19,18)} ${y-77} L ${F(23)} ${y+5}`,null,'#717985',1.8);
+    path(c,`M ${F(-36)} ${y-30} L ${F(-23)} ${y-22} M ${F(23)} ${y-22} L ${F(36)} ${y-30}`,null,'#717985',1.6);
+  }else if(a.shirt==='tee')path(c,`M ${F(-20)} ${y-131} Q ${F(0)} ${y-105} ${F(20)} ${y-131}`,null,'#6e627c',2.4);
+  else{
+    const collar=a.shirt==='blue'?'#98b8d9':a.shirt==='shirt'?(a.shirtColor||'#c9b18e'):'#474b55';
+    path(c,`M ${F(-24,9)} ${y-130} L ${F(0)} ${y-106} L ${F(-18,20)} ${y-89} L ${F(-37,12)} ${y-116} Z`,collar);
+    path(c,`M ${F(24,9)} ${y-130} L ${F(0)} ${y-106} L ${F(17,20)} ${y-89} L ${F(37,12)} ${y-116} Z`,collar);
+    path(c,`M ${F(-2)} ${y-105} L ${F(3)} ${y-105} L ${F(3)} ${y-63} L ${F(-2)} ${y-63} Z`,a.shirt==='blue'?'#658ab6':'#222630',null);
+    if(ct>.12){ellipse(c,F(.5),y-95,1.8*ct,1.8,'#d5d9da');ellipse(c,F(.5),y-81,1.8*ct,1.8,'#d5d9da')}
+  }
+  if(a.shirt!=='jacket'&&ct>.12&&images[a.logoAsset]){c.save();c.translate(F(22,12),y-92);c.scale(ct,1);c.drawImage(images[a.logoAsset],0,0,22,22*images[a.logoAsset].height/images[a.logoAsset].width);c.restore()}
   const bw=40*p.bodyWidth;path(c,`M ${p.shoulderX-bw} ${y+1} Q ${p.shoulderX} ${y+12} ${p.shoulderX+bw} ${y+1}`,null,'#222834',5);
   if(ct>.12)path(c,`M ${F(-6,14)} ${y+4} L ${F(6,14)} ${y+4} L ${F(6,14)} ${y+11} L ${F(-6,14)} ${y+11} Z`,'#777e89','#252c36',1.3);
  }

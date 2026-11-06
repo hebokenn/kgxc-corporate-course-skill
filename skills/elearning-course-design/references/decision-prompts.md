@@ -17,6 +17,8 @@
 
 每项按“定位发现→影响→推荐→2–3选项及代价→将改动什么”写。每轮聚焦1–3项，用户可自由补充；等回复时继续独立工作。
 
+有宿主结构化提问能力时，将本轮问题主动作为一批弹出供选择。DSH 调用 `ask_user_question`；使用稳定的 `id`、简短 `header`、明确 `question` 和 `options[{label,description}]`，推荐项在首位。先保存方案中的问题和选项，再发起；答案返回后按对应 ID 记录 `selected/status/evidence`。不能仅在长回复末尾罗列 A/B/C，也不能替用户提交默认推荐。关闭或跳过不推进依赖该选择的步骤；已回答项不重问。
+
 记录稳定ID和 `question/finding/options/recommended/selected/status/evidence/blocking_for`：
 
 - `open`：仍待回答，推荐不是用户选择。

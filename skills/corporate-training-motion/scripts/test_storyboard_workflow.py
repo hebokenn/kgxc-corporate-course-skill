@@ -159,6 +159,18 @@ class StoryboardTests(unittest.TestCase):
         wrong=copy.deepcopy(doc);wrong['storyboardBindings'][0]['option_id']='C'
         self.assertTrue(check_bindings(board,plan,wrong))
 
+    def test_editable_checker_accepts_current_storyboard_objects_and_rejects_missing_bindings(self):
+        from check_workbench import storyboard_errors
+        self.ready();self.course.sample_storyboard(self.course.status()['revision'],seed='checker')
+        board=self.course.storyboard();plan=self.course.sample_plan();lookup={s['id']:s for s in board['segments']}
+        doc=dict(sourceDurationFrames=300,scenes=[],storyboardBindings=[])
+        for i,chosen in enumerate(plan['selections']):
+            sid=chosen['segment_id'];scene='render-scene-'+sid
+            doc['scenes'].append(dict(id=scene,sourceStartFrame=i*100,sourceEndFrame=(i+1)*100))
+            doc['storyboardBindings'].append(dict(segment_id=sid,option_id=chosen['option_id'],script_excerpt=lookup[sid]['script_excerpt'],startFrame=i*100,endFrame=(i+1)*100,sceneIds=[scene]))
+        self.assertEqual(storyboard_errors(board,doc,self.course.project),[])
+        doc['storyboardBindings'].pop();self.assertTrue(storyboard_errors(board,doc,self.course.project))
+
     def test_real_av_registration_requires_current_export_binding_and_freezes_sample(self):
         from performance_cache import native_fingerprint
         self.ready();self.course.sample_storyboard(self.course.status()['revision'],seed='qa')
@@ -179,6 +191,9 @@ class StoryboardTests(unittest.TestCase):
         self.course.register('pilot',[video.name],self.course.status()['revision'])
         state=self.course.confirm('pilot',self.course.status()['revision'],'QA合成媒体仅检查登记流程',actor='qa-operator')
         self.assertEqual(state['stage'],'final')
+        state=self.course.register('final',[video.name],self.course.status()['revision'])
+        final=self.course.relative(state['artifacts']['final'][0])
+        self.assertEqual(json.loads(final.with_suffix('.json').read_text()),proof)
         doc['newProductionField']='仅扩展新内容，冻结的小样本身不变'
         atomic(self.course.project/'workbench.json',doc)
         self.course.require_video('pilot')

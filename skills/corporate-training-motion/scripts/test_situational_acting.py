@@ -85,6 +85,7 @@ class ProductionActingTests(unittest.TestCase):
             item = stage(design(), f.p, ROOT); actor = item['node']
             # Synthetic own-line envelope; it is a technical stimulus, not a voice sample.
             actor['vectorActor']['speech'] = [dict(startFrame=110, envelope=[.8]*20)]
+            actor['vectorActor']['targets'] = [dict(frame=0,id='listener')]
             other = copy.deepcopy(actor); other.update(id='listener', x=1150)
             other['vectorActor'] = dict(identity='listener', characterRole='customer', hair='bob',
                                         walks=[], facing=[dict(frame=0, yaw=-math.pi/3)], keys=[])

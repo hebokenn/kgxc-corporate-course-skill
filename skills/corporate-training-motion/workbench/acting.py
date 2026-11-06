@@ -8,7 +8,7 @@ import shutil
 CHANNELS = {'gesture', 'concern', 'relief', 'nod', 'head', 'turn', 'write',
             'reach', 'tryEar', 'shrug', 'yield', 'scribble', 'gazeDown'}
 APPEARANCE = {'identity', 'hair', 'hairColor', 'skin', 'age', 'glasses',
-              'shirtColor', 'pantsColor'}
+              'shirtColor', 'innerColor', 'pantsColor', 'faceShape'}
 
 
 def natural_walk(start, from_x, to_x, scale=1, fps=30, step_rate=2.6):
@@ -76,8 +76,12 @@ def stage(design, project, skill_root):
     role = design.get('characterRole', 'customer')
     if role not in {'customer', 'store_staff', 'store_manager', 'coach'}:
         raise ValueError('characterRole 须为 customer/store_staff/store_manager/coach')
+    outfit=design.get('outfit','jacket')
+    if role=='customer' and outfit not in {'jacket','tee','shirt'}:raise ValueError('顾客服装须为 jacket/tee/shirt')
+    if design.get('faceShape','round') not in {'round','angular'}:raise ValueError('脸型须为 round/angular')
+    if design.get('hair','short') not in {'spiky','mature','bob','pony','short','side-part','sidepart'}:raise ValueError('请使用已有可动发型 spiky/mature/bob/pony/short/side-part')
     a = {k: copy.deepcopy(design[k]) for k in APPEARANCE if k in design}
-    a.update(characterRole=role, shirt='jacket' if role == 'customer' else
+    a.update(characterRole=role, shirt=outfit if role == 'customer' else
              'blue' if role == 'store_staff' else 'black')
     assets = []
     if role != 'customer':
@@ -228,6 +232,66 @@ def errors(doc, check_targets=True):
             reject('targetId需真实对象ID')
         if a.get('characterRole') in {'store_staff', 'store_manager', 'coach'} and a.get('logoAsset') not in assets:
             reject('公司角色需原版胸标，使用stage-acting绑定')
+    if check_targets and not result and doc.get('conversationPolicy',{}).get('required'):
+        result.extend(conversation_errors(doc))
+    return result
+
+
+def conversation_errors(doc):
+    """Reject absent addressees and reversed heads during actual character lines."""
+    from authoring import walk
+    actors={n['id']:n for n in walk(doc.get('sceneGraph',{}).get('nodes',[])) if n.get('vectorActor')}
+    problems=[]
+    def heading(keys,frame):
+        if not keys:return 0
+        prior=keys[0]
+        for nxt in keys:
+            if nxt['frame']<=frame:prior=nxt;continue
+            t=max(0,min(1,(frame-prior['frame'])/(nxt['frame']-prior['frame'])));t=t*t*(3-2*t)
+            return prior['yaw']+(nxt['yaw']-prior['yaw'])*t
+        return prior['yaw']
+    def position(node,frame):
+        x=node['x']
+        for w in node['vectorActor'].get('walks',[]):
+            if frame<w['startFrame']:break
+            if frame>=w['endFrame']:x=w['toX'];continue
+            t=(frame-w['startFrame'])/(w['endFrame']-w['startFrame']);r=.12
+            u=t*t/(2*r*(1-r)) if t<r else 1-(1-t)**2/(2*r*(1-r)) if t>1-r else (t-r/2)/(1-r)
+            return w['fromX']+(w['toX']-w['fromX'])*u
+        return x
+    for identifier,node in actors.items():
+        actor=node['vectorActor']
+        for line in actor.get('speech',[]):
+            if line.get('audience')=='viewer':continue
+            start=line['startFrame'];end=start+len(line['envelope'])
+            for frame in range(start,end):
+                if not node.get('startFrame',0)<=frame<node.get('endFrame',doc['sourceDurationFrames']):
+                    problems.append(f'对白说话人尚未在场：{identifier}，第{frame}帧');break
+                target=next((v['id'] for v in reversed(actor.get('targets',[])) if v['frame']<=frame),actor.get('targetId'))
+                listener=actors.get(target)
+                if not listener or listener is node or listener.get('sceneId')!=node.get('sceneId') or not listener.get('startFrame',0)<=frame<listener.get('endFrame',doc['sourceDurationFrames']):
+                    problems.append(f'对白受话人未在同场实际出现：{identifier} → {target}，第{frame}帧');break
+                direction=position(listener,frame)-position(node,frame)
+                yaw=heading(actor.get('facing',[]),frame+2)
+                if abs(direction)>20 and direction*yaw < -2:
+                    problems.append(f'对白时头部背向受话人：{identifier} → {target}，第{frame}帧');break
+    return list(dict.fromkeys(problems))
+
+
+def motion_intervals(node):
+    """Actual authored CourseActors movement, excluding speech-only mouth changes."""
+    actor=node.get('vectorActor',{});result=[]
+    for item in actor.get('walks',[]):
+        if item.get('fromX')!=item.get('toX'):result.append((item['startFrame'],item['endFrame']))
+    keys=actor.get('facing',[])
+    result.extend((a['frame'],b['frame']) for a,b in zip(keys,keys[1:]) if a['yaw']!=b['yaw'])
+    for channel in CHANNELS:
+        previous=dict(frame=node.get('startFrame',0),value=.1 if channel=='relief' else 0)
+        for item in actor.get('keys',[]):
+            if channel not in item.get('values',{}):continue
+            if previous['value']!=item['values'][channel] and previous['frame']<item['frame']:
+                result.append((previous['frame'],item['frame']))
+            previous=dict(frame=item['frame'],value=item['values'][channel])
     return result
 
 
