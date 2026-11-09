@@ -126,6 +126,35 @@ class PackagingGateTests(unittest.TestCase):
         self.assertEqual(self.build().returncode, 1)
         self.assertEqual(before, {p: p.read_bytes() for p in before})
 
+    def test_local_config_and_hidden_directories_are_not_published(self):
+        (self.root / 'README.md').write_text(VALID)
+        config = self.root / 'config'
+        config.mkdir()
+        (config / 'tools.example.json').write_text('{"python":"python3"}')
+        (config / 'tools.json').write_text('{"token":"private-config"}')
+        (config / 'azure.json').write_text('{"key":"private-credential"}')
+        hidden = self.root / 'docs/.private'
+        hidden.mkdir(parents=True)
+        (hidden / 'report.md').write_text('private review')
+        linked = self.root / 'docs/linked.md'
+        linked.symlink_to(config / 'tools.json')
+        result = self.build()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        with zipfile.ZipFile(self.root / 'dist/kgxc-course-suite-v5.8.5.zip') as bundle:
+            names = bundle.namelist()
+            self.assertIn('kgxc-course-suite/config/tools.example.json', names)
+            for name in ['config/tools.json', 'config/azure.json', 'docs/.private/report.md', 'docs/linked.md']:
+                self.assertNotIn('kgxc-course-suite/' + name, names)
+
+    def test_unchanged_sources_produce_identical_archive_bytes(self):
+        (self.root / 'README.md').write_text(VALID)
+        self.assertEqual(self.build().returncode, 0)
+        archive = self.root / 'dist/kgxc-course-suite-v5.8.5.zip'
+        before = archive.read_bytes()
+        (self.root / 'README.md').touch()
+        self.assertEqual(self.build().returncode, 0)
+        self.assertEqual(archive.read_bytes(), before)
+
     def test_valid_homepage_still_builds_verified_zip_and_checksum(self):
         (self.root / 'README.md').write_text(VALID)
         result = self.build()

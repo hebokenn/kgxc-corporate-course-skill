@@ -148,6 +148,7 @@ class Studio:
                     feedback=read(self.feedback_file,[]),proposals=read(self.proposals,[]),
                     rendering=status.get('rendering',{}),audio_settings=settings,narration_status=status.get('narration_status'),
                     production_preferences=preferences,
+                    ai_review=status.get('ai_review'),source_coverage=status.get('source_coverage'),
                     undo_available=any((self.project/'studio-history').glob('*.json')))
 
     def save_production_choice(self,args):
@@ -268,15 +269,50 @@ class Studio:
             return self.save_outline(units,args['baseRevision'],merge)
         raise ValueError('未知章节操作')
 
-    def confirm(self, stage, expected):
+    def confirm(self, stage, expected, audio_declaration=None, source_coverage_declaration=None):
         simulated=self.review_context()=='qa-simulation';actor='qa-operator' if simulated else 'dsh-course-workbench'
+        if source_coverage_declaration is not None:
+            self.course._revision(expected,read(self.course.state_file))
+            if simulated or stage!='script' or not isinstance(source_coverage_declaration,dict):raise ValueError('原件对照确认只能来自当前逐字稿阶段的真实用户操作')
+            fields={'report_sha256','evidence','source'}
+            if set(source_coverage_declaration)!=fields or source_coverage_declaration.get('source')!='workbench-explicit-click':raise ValueError('原件对照声明须来自用户明确勾选，并绑定当前报告')
+            from source_coverage import SourceCoverage
+            SourceCoverage(self.course).confirm(**source_coverage_declaration,actor='dsh-user-click')
+        if stage=='script':
+            from source_coverage import SourceCoverage
+            SourceCoverage(self.course).require_confirmed()
         evidence=('授权模拟操作，仅用于独立验证课，不代表正式课程内容验收：' if simulated else '用户在 DSH 课程工作台点击确认当前')+dict(STAGES).get(stage,stage)
+        from ai_review import Review,enabled
+        review=Review(self.course) if enabled(self.course) and stage in ['script','storyboard','pilot','final'] else None
+        reviewed=review.require_pass(stage) if review else None
+        if audio_declaration is not None:
+            self.course._revision(expected,read(self.course.state_file))
+            if simulated or not review or stage not in ['pilot','final'] or not isinstance(audio_declaration,dict):raise ValueError('听审声明只能来自当前媒体阶段的真实用户操作')
+            fields={'artifact_sha256s','artifacts','coverage','listened_completely','audio_and_sync_ok','evidence','source'}
+            if not fields<=set(audio_declaration)<=fields|{'feedback'}:raise ValueError('听审声明字段不完整或包含制作代理权限')
+            review.record_user_audio_review(stage,**audio_declaration,actor='dsh-user-click')
+            if not audio_declaration['listened_completely'] or not audio_declaration['audio_and_sync_ok']:return self.view()
+        if review:review.require_user_audio(stage)
+        if stage=='storyboard' and enabled(self.course):
+            actor='ai-production-preflight'
+            evidence='当前分镜独立盲审通过；依据已保存的分镜选择与制作委托完成制作预检，不新增或冒充用户点击'
         if stage=='script':
             value=self.view()
             if not value['mapped']:raise ValueError('当前稿件尚未完成章节绑定，不能确认')
             self.save_sections(value['sections'],expected,value['editor']['revision'],official=True)
             expected=self.course.status()['revision']
-        result=self.course.confirm(stage,expected,evidence,actor=actor)
+        if stage=='final' and review:
+            with self.course.locked():
+                state=read(self.course.state_file);self.course._revision(expected,state)
+                self.course.require_video('pilot')
+                errors=self.course._readiness('final',read(self.course.plan_file),state,self.course._pending(read(self.course.plan_file)))
+                if errors:raise ValueError('当前成片尚不能确认：'+'；'.join(errors))
+                self.course._snapshot(state)
+                state['gates']['final']=dict(at=now(),evidence=evidence,actor=actor,sha256=self.course._gate_hash('final',read(self.course.plan_file),state),review_id=reviewed['run']['id'])
+                self.course._commit(state,'final_user_confirmed',dict(review_id=reviewed['run']['id']))
+        else:result=self.course.confirm(stage,expected,evidence,actor=actor)
+        if review and stage!='storyboard':review.approve(stage,reviewed['run']['id'])
+        result=self.course.status()
         if stage=='script' and result.get('branch')!='video':
             self.course.select_branch('video',result['revision'],evidence+'，进入视频分镜',actor=actor)
         if stage=='storyboard':
@@ -297,6 +333,10 @@ class Studio:
         with self.transaction(args['baseRevision'],'studio_feedback_saved'):
             values=read(self.feedback_file,[]);values.append({'id':uuid.uuid4().hex[:12],'at':now(),'stage':args['stage'],'segment_id':args.get('segment_id'),'time':stamp,'text':text,
                 'artifact_path':artifact['path'] if artifact else None,'artifact_sha256':artifact['sha256'] if artifact else None})
+            from ai_review import Review,enabled
+            import blind_review as blind
+            if args['stage'] in ['pilot','final'] and enabled(self.course) and Review(self.course).arrangement()==blind.USER_AUDIO_ARRANGEMENT:
+                values[-1]['artifact_sha256s']=Review(self.course).artifact_hashes(args['stage'])
             atomic(self.feedback_file,values)
         return self.view()
 
@@ -351,11 +391,41 @@ class Studio:
 
     def action(self,action,args):
         expected=args['baseRevision']
+        if action in ['source-coverage-save','source-coverage-confirm']:
+            from source_coverage import SourceCoverage
+            self.course._revision(expected,read(self.course.state_file))
+            coverage=SourceCoverage(self.course)
+            if action=='source-coverage-save':
+                coverage.save(args['report'],args['expected_script_sha256'],args.get('expected_report_sha256'))
+            else:
+                if self.review_context()=='qa-simulation':raise ValueError('模拟制作操作不能代替原件覆盖报告的真实人工确认')
+                coverage.confirm(args['report_sha256'],args['evidence'],actor='dsh-user-click',source='workbench-explicit-click')
+            return self.view()
+        if action=='review-arrangement':
+            from ai_review import Review
+            self.course._revision(expected,read(self.course.state_file))
+            Review(self.course).set_review_arrangement(args['mode'],args['evidence'],source=args['source'])
+            return self.view()
+        if action=='review-select-scheme':
+            from ai_review import Review
+            self.course._revision(expected,read(self.course.state_file))
+            if self.review_context()=='qa-simulation':raise ValueError('模拟制作操作不能代替用户明确改选实质新方案，不能重置盲审周期')
+            Review(self.course).select_scheme(args['stage'],args['scheme_id'],args['evidence'],actor='dsh-user-click')
+            return self.view()
+        if action in ['review-draft','review-dismiss','review-approve','review-extend']:
+            from ai_review import Review
+            review=Review(self.course);stage=args['stage']
+            if action=='review-draft':review.ui(stage,args['run_id'],'draft',args.get('text',''))
+            elif action=='review-dismiss':review.ui(stage,args['run_id'],'dismiss')
+            elif action=='review-extend':review.extend(stage,int(args.get('repairs',0)),int(args.get('calls',0)),str(args.get('evidence','')))
+            else:
+                review.require_pass(stage,args['run_id']);return self.confirm(stage,expected,args.get('audio_declaration'),args.get('source_coverage_declaration'))
+            return self.view()
         if action=='production-choice':return self.save_production_choice(args)
         if action=='outline':return self.save_outline(args['units'],expected,plan_fields=args.get('plan_fields'))
         if action in ['reorder','add','remove','split','merge']:return self.restructure(action,args)
         if action=='sections':return self.save_sections(args['sections'],expected,args.get('baseEditorRevision'))
-        if action=='confirm':return self.confirm(args['stage'],expected)
+        if action=='confirm':return self.confirm(args['stage'],expected,args.get('audio_declaration'),args.get('source_coverage_declaration'))
         if action=='choice':
             simulated=self.review_context()=='qa-simulation'
             self.course.choose_shot(args['id'],args['option'],expected,'独立验证课模拟选择' if simulated else '用户在课程工作台明确选择画面方案',actor='qa-operator' if simulated else 'dsh-course-workbench');return self.view()

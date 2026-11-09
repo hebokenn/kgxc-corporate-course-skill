@@ -29,6 +29,8 @@ class StudioTests(unittest.TestCase):
     def ready_script(self):
         self.course.confirm('outline',self.rev(),'技术夹具明确确认',actor='qa-operator')
         self.studio.save_sections(self.sections(),self.rev(),official=True)
+        from source_coverage_fixture import confirm_fixture_coverage
+        confirm_fixture_coverage(self.course)
         self.studio.confirm('script',self.rev())
     def ready_board(self):
         self.ready_script();board=fixture(self.course);mapping=read(self.course.plan_file)['script_mapping']['paragraphs']

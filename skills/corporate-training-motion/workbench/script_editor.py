@@ -41,21 +41,31 @@ class ScriptEditor:
         if plan.is_file(): title = read(plan).get('title') or title
         state = read(self.path) if self.path.is_file() else dict(schema='course-script-editor/1', revision=0, text=text, base_text=text, base_sha256=sha(text))
         state = copy.deepcopy(state)
+        # Legacy drafts did not record their baseline. Reading them must retain
+        # their bytes and text; an unknown baseline cannot authorize a merge.
+        missing_base = 'base_text' not in state or 'base_sha256' not in state
+        state.setdefault('schema', 'course-script-editor/1')
+        state.setdefault('revision', 0)
+        state.setdefault('text', text)
+        state.setdefault('base_text', text)
+        state.setdefault('base_sha256', sha(text))
+        unknown_base = (state.get('base_unknown', False) or missing_base) and state['text'] != text
+        state['base_unknown'] = unknown_base
         # Adopt an AI's newly written transcript only when this window has no edits.
-        if state['text'] in [state['base_text'], text] and state['base_sha256'] != sha(text):
+        if not unknown_base and state['text'] in [state['base_text'], text] and state['base_sha256'] != sha(text):
             state.update(text=text, base_text=text, base_sha256=sha(text), revision=state['revision'] + 1)
-        elif state.get('render_request', {}).get('sha256') == sha(text):
+        elif not unknown_base and state.get('render_request', {}).get('sha256') == sha(text):
             # Expected production of a frozen render input is safe to rebase onto;
             # text written after the click remains the user's current draft.
             state.update(base_text=text, base_sha256=sha(text))
         state.update(title=title, course_path=str(self.space.root), document=doc,
-                     official_sha256=sha(text), base_changed=state['base_sha256'] != sha(text),
+                     official_sha256=sha(text), base_changed=unknown_base or state['base_sha256'] != sha(text),
                      changed=state['text'] != text, has_scenes=bool(doc.get('scenes')))
         return state
 
     def write(self, state):
         from backend import atomic
-        keep = ['schema', 'revision', 'text', 'base_text', 'base_sha256', 'render_request']
+        keep = ['schema', 'revision', 'text', 'base_text', 'base_sha256', 'base_unknown', 'render_request']
         atomic(self.path, {key: state[key] for key in keep if key in state})
 
     def save(self, text, expected):
@@ -66,7 +76,7 @@ class ScriptEditor:
             if state['revision'] != expected:
                 raise FileExistsError('逐字稿已在其他窗口更新；当前修改仍留在编辑区，请重新打开后核对')
             if state['base_changed']:
-                raise FileExistsError('AI 已更新课程逐字稿；当前修改仍留在编辑区，请核对后再合并')
+                raise FileExistsError('正式稿与当前草稿的基线不一致；当前修改仍留在编辑区，请核对后再合并')
             if text != state['text']:
                 state.update(text=text, revision=state['revision'] + 1)
                 self.write(state)

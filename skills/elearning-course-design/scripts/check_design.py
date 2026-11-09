@@ -148,6 +148,56 @@ def check(plan, base):
         file = plan.get("script_file" if modern else "courseware_file")
         if plan.get("stage") != ("script" if modern else "courseware") or not isinstance(file, str) or not file.strip() or not (base / file).is_file():
             errors.append("Production readiness requires an existing confirmed-script candidate" if modern else "Production readiness requires a courseware stage and existing draft")
+    # Optional for legacy plans. Author input stays outside the blind packet;
+    # completeness here is not a semantic quality score or an approval.
+    authoring = plan.get("authoring")
+    if authoring is not None:
+        if not isinstance(authoring, dict) or authoring.get("schema") != "script-authoring/1":
+            errors.append("Invalid authoring contract")
+        else:
+            greeting = authoring.get("brand_greeting")
+            if greeting is not None and (not isinstance(greeting, str) or not greeting.strip()):
+                errors.append("authoring.brand_greeting must be a selected greeting or null")
+            intents = authoring.get("unit_intents")
+            if not isinstance(intents, list):
+                errors.append("authoring.unit_intents must be an array")
+                intents = []
+            covered = set()
+            for index, intent in enumerate(intents):
+                if not isinstance(intent, dict):
+                    errors.append(f"authoring.unit_intents[{index}] must be an object")
+                    continue
+                uid = intent.get("unit_id")
+                if not isinstance(uid, str) or uid not in groups["units"]:
+                    errors.append(f"authoring.unit_intents[{index}]: unknown unit")
+                elif uid in covered:
+                    errors.append(f"Duplicate authoring intent: {uid}")
+                else:
+                    covered.add(uid)
+                for key in ("trigger", "action", "decision_basis", "new_information", "example"):
+                    if not isinstance(intent.get(key), str) or not intent[key].strip():
+                        errors.append(f"authoring.unit_intents[{index}]: missing {key}")
+            self_check = authoring.get("self_check")
+            if not isinstance(self_check, dict) or self_check.get("status") not in ("not_done", "complete"):
+                errors.append("authoring.self_check needs status not_done/complete")
+                self_check = {}
+            unresolved = self_check.get("unresolved")
+            if not isinstance(unresolved, list) or any(not isinstance(x, str) or not x.strip() for x in unresolved):
+                errors.append("authoring.self_check.unresolved must be an array of nonempty strings")
+            if self_check.get("status") == "complete" and (not isinstance(self_check.get("evidence"), str) or not self_check["evidence"].strip()):
+                errors.append("Completed authoring self-check needs actual scope/change evidence")
+            if plan.get("stage") == "script":
+                if not isinstance(authoring.get("selected_plan"), str) or not authoring["selected_plan"].strip():
+                    errors.append("Script authoring needs the current selected plan")
+                for uid, unit in groups["units"].items():
+                    if unit.get("disposition") == "core" and uid not in covered:
+                        errors.append(f"{uid}: missing authoring input")
+                if self_check.get("status") != "complete":
+                    pending.append({"id": "authoring-self-check", "kind": "authoring", "blocks": ["courseware", "production"]})
+                    if any(handoff.get(flag) for flag in ("ready_for_courseware", "ready_for_production")):
+                        errors.append("Readiness requires the producer's complete-script self-check")
+                if unresolved and any(handoff.get(flag) for flag in ("ready_for_courseware", "ready_for_production")):
+                    errors.append("Readiness conflicts with unresolved authoring items")
     return {"ok": not errors, "errors": errors, "pending": pending,
             "counts": {k: len(v) for k, v in groups.items()},
             "scope": "Structure and links only; no proof of approval, facts, or learning effectiveness"}

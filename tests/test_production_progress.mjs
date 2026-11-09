@@ -61,3 +61,8 @@ test('changed production preferences cannot show an older complete export as the
  const state=productionProgress({stage:'final',jobs:[{id:'old',purpose:'final',status:'complete',completed_at:20}],data:{production_preferences:{required:true,ready:true,storyboard_current:false}}});
  assert.equal(state.value,0);assert.match(state.label,/制作偏好已修改/);
 });
+
+test('supervision-cancelled current export remains paused despite old delivered media',()=>{
+ const state=productionProgress({stage:'final',jobs:[{id:'held',purpose:'final',status:'cancelled',progress:.8,error:'监督发现执行越界；当前文件保留'}],data:{gates:[{id:'final',status:'delivered',receipt:{at:new Date().toISOString()}}]}});
+ assert.equal(state.tone,'waiting');assert.equal(state.value,null);assert.match(state.label,/暂停/);assert.match(state.detail,/监督/);
+});

@@ -27,6 +27,16 @@ async function client(fetcher,{pending,chatOpen}={}){
 }
 const response=value=>({ok:true,json:async()=>value});
 const settle=async()=>{for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));};
+test('plugin reload refreshes a stale connection token once before retrying the same read request',async()=>{
+  const tokens=[],bodies=[];let metadata=0,contexts=0;
+  const app=await client(async(url,options)=>{
+    if(url.endsWith('/meta')){metadata++;return response({ok:true,token:metadata===1?'old-token':'current-token'});}
+    if(url.endsWith('/context')){contexts++;tokens.push(options.headers['X-KGXC-Token']);bodies.push(options.body);if(contexts===1)return {ok:false,status:403,json:async()=>({ok:false,error:'请重新打开制课工作台'})};return response({ok:true,ready:true,course_path:null});}
+    return response({ok:true,courses:[]});
+  });
+  app.render();app.flush();await settle();
+  assert.deepEqual(tokens,['old-token','current-token']);assert.equal(bodies[0],bodies[1]);assert.equal(app.states[2],'');app.unmount();
+});
 function nodes(node){return Array.isArray(node)?node.flatMap(nodes):node&&typeof node==='object'?[node,...nodes(node.props?.children)]:[];}
 function button(tree,label){return nodes(tree).find(node=>node.type==='button'&&node.props.children.includes(label));}
 async function loadedClient({deliveryChoice,expired=false,cleanupError}={}){
@@ -35,7 +45,7 @@ async function loadedClient({deliveryChoice,expired=false,cleanupError}={}){
     return response(url.endsWith('/meta')?{ok:true,token:'test'}:url.endsWith('/context')?{ok:true,ready:true,course_path:course.course_path}:data?.name==='kgxc_course_resume'?course:data?.action==='workbench_live'?{ok:true,alive:!expired}:data?.action==='deliver'?saved:data?.action==='cleanup_preview'?(cleanupError?{ok:false,error:cleanupError}:{ok:true,preview:{request_id:'current-inventory',file_count:12,bytes:12345,groups:[{label:'逐字稿与小样',files:12,bytes:12345}]}}):data?.action==='retention'?saved:{ok:true,courses:[]});
   });
   app.render();app.flush();await settle();const tree=app.render(),sender={postMessage:()=>{}};
-  nodes(tree).find(node=>node.type==='iframe').props.ref.current={contentWindow:sender};app.flush();await settle();
+  const native=nodes(tree).find(node=>node.type==='kgxc-studio-view');assert.equal(native.props.class,'kgxc-frame kgxc-native');assert.equal(native.props.className,undefined);native.props.ref.current={contentWindow:sender};app.flush();await settle();
   return {app,calls,course,sender,event:data=>({source:sender,origin:'http://127.0.0.1:1234',data:{course_path:course.course_path,...data}})};
 }
 
@@ -123,9 +133,10 @@ test('saved unanswered decisions request one native question and reject another 
 
 
 test('stage navigation wakes an expired workbench without waiting for a dead iframe or starting a model',async()=>{
- const {app,calls,sender}=await loadedClient({expired:true});const before=nodes(app.render()).find(n=>n.type==='iframe');
+ const {app,calls,sender}=await loadedClient({expired:true});const before=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
  const tab=nodes(app.render()).find(n=>n.props?.role==='tab'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes('分镜')));
- await tab.props.onClick();await settle();const after=nodes(app.render()).find(n=>n.type==='iframe');
+ assert.ok(tab,'全课分镜阶段必须可以独立打开');
+ await tab.props.onClick();await settle();const after=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
  assert.match(after.props.src,/stage=storyboard/);assert.notEqual(before.props.key,after.props.key);
  assert.equal(calls.filter(c=>c.data?.name==='kgxc_course_resume').length,2);
  assert.equal(calls.some(c=>c.data?.action==='stage'),false);app.unmount();

@@ -1,5 +1,5 @@
 {
-  "version": "6.5.0",
+  "version": "6.8.1",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -9,5 +9,10 @@
     "corporate-training-motion",
     "elearning-course-design"
   ],
-  "distribution": "GitHub Release installable bundle and versioned source tag"
+  "distribution": "GitHub Release installable bundle and versioned source tag",
+  "plugin_version": "0.8.23",
+  "skill_versions": {
+    "corporate-training-motion": "6.8.1",
+    "elearning-course-design": "2.0.6"
+  }
 }

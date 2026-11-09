@@ -30,6 +30,8 @@ class NewCourseTests(unittest.TestCase):
         course.save_plan(plan,s['revision'])
         for key in ['outline']:course.confirm(key,course.status()['revision'],'自动化验收夹具，非业务批准',actor='qa-agent')
         course.save_script('先核对订单，再核对编码。现在请完成一次核对，逐项复核。',course.status()['revision'])
+        from test_source_coverage_support import confirm_fixture_coverage
+        confirm_fixture_coverage(course)
         course.confirm('script',course.status()['revision'],'自动化验收夹具，非业务批准',actor='qa-agent')
         course.select_branch('video',course.status()['revision'],'QA请求视频',actor='qa-agent')
         from test_branch_workflow import director

@@ -196,9 +196,10 @@ def serve(root, port=0, idle_seconds=IDLE_SECONDS, check_seconds=CHECK_SECONDS):
     server.lifecycle = Lifecycle(server.workspace, idle_seconds)
     url = 'http://127.0.0.1:'+str(server.server_port)
     if (server.workspace.project/'course-state.json').is_file():
-        from workflow import VERSION
+        from workflow import VERSION,service_build
+        server.runtime_build=service_build()
         backend.atomic(server.workspace.project/'work/workbench-service.json',
-                       dict(pid=os.getpid(), version=VERSION, url=url, lifecycle_policy=POLICY))
+                       dict(pid=os.getpid(), version=VERSION, url=url, lifecycle_policy=POLICY,runtime_build=server.runtime_build))
     stopped = threading.Event()
 
     def monitor():

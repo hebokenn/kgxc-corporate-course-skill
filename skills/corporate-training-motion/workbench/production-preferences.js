@@ -7,7 +7,7 @@ const TITLES={customer:'顾客采用什么形象？',flower_text:'重点内容�
 export const missingProductionChoices=value=>Object.keys(OPTIONS).filter(key=>!OPTIONS[key].some(([id])=>id===value?.choices?.[key]));
 export function productionPreferenceSummary(value){return Object.keys(OPTIONS).map(key=>({customer:'顾客',flower_text:'花字',sound_effects:'音效'})[key]+'：'+(OPTIONS[key].find(([id])=>id===value?.choices?.[key])?.[1]||'尚未选择')).join('；');}
 
-export function createProductionPreferences({getValue,saveChoice,uploadReference,onError}){
+export function createProductionPreferences({getValue,saveChoice,uploadReference,onError,document=globalThis.document,window=globalThis.window}){
   const dialog=document.createElement('dialog');dialog.className='production-preferences';dialog.setAttribute('aria-labelledby','production-preferences-title');document.body.append(dialog);
   let generation=0,busy=false,onReady=null,activeKey=null,mode='summary',alive=true,statusError='';
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};

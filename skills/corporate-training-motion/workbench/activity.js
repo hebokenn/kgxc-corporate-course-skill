@@ -1,6 +1,6 @@
 // Only real interactions, unsaved edits and playback hold the local service open.
 // Workflow/job polling deliberately does not count as activity.
-export function startActivity(isDirty, isPlaying=()=>[...document.querySelectorAll('video')].some(v=>!v.paused&&!v.ended)) {
+export function startActivity(isDirty, isPlaying=()=>[...globalThis.document.querySelectorAll('video')].some(v=>!v.paused&&!v.ended),{document=globalThis.document,window=globalThis.window,fetch=globalThis.fetch,location=globalThis.location}={}) {
  if(location.protocol==='file:')return;
  const client=crypto.randomUUID();let last=0,held=false,failures=0;
  async function ping(active=false){
@@ -16,6 +16,6 @@ export function startActivity(isDirty, isPlaying=()=>[...document.querySelectorA
  const timer=setInterval(()=>{void ping();},30000);
  window.addEventListener('pagehide',()=>{
   clearInterval(timer);
-  navigator.sendBeacon('/api/activity',new Blob([JSON.stringify({client_id:client,dirty:false,playing:false,active:false})],{type:'application/json'}));
+  void fetch('/api/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:client,dirty:false,playing:false,active:false}),keepalive:true}).catch(()=>{});
  });
 }

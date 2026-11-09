@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     check_readme(ROOT / 'README.md')
+    subprocess.run([sys.executable,'-B',str(ROOT/'scripts/build_native_client.py')],check=True)
     package = json.loads((ROOT / 'package.json').read_text())
     manifest = json.loads((ROOT / 'plugin.json').read_text())
     if (manifest['name'], manifest['version']) != (package['name'], package['version']):
@@ -21,14 +22,22 @@ def main():
     for name in ['corporate-training-motion', 'elearning-course-design']:
         subprocess.run([sys.executable, str(ROOT / 'skills/corporate-training-motion/scripts/check_skill_package.py'), str(ROOT / 'skills' / name)], check=True)
     files = {}
-    for folder in ['plugin', 'skills']:
+    public_config = {'tools.example.json','voice-model.json','azure.example.json','package.json','package-lock.json'}
+    for folder in ['plugin', 'skills', 'docs', 'scripts', 'tests', 'config']:
         for path in sorted((ROOT / folder).rglob('*')):
-            if not path.is_file() or path.is_symlink() or '__pycache__' in path.parts or path.suffix == '.pyc' or path.name.startswith('.'):
+            rel = path.relative_to(ROOT)
+            if (not path.is_file()
+                    or any(parent.is_symlink() for parent in [path, *path.parents] if parent != ROOT and parent.is_relative_to(ROOT))
+                    or any(part.startswith('.') or part in {'__pycache__','node_modules','inputs','courses','work','logs','reviews','private'} for part in rel.parts)
+                    or path.suffix in {'.pyc','.pem','.key','.log','.pdf','.docx'}):
                 continue
-            files[str(path.relative_to(ROOT))] = path.read_bytes()
-    for name in ['package.json', 'plugin.json', 'cordis.patch.yml', 'VERSION', '安装制课插件.command', 'scripts/install_plugin.py', 'tests/test_plugin.py', 'tests/test_dsh_plugin.mjs', 'tests/test_script_editor.py', 'tests/test_script_editor.mjs', 'tests/test_editor_host.mjs', 'tests/test_session_courses.mjs', 'tests/test_course_client.mjs', 'tests/test_studio.py', 'tests/test_delivery.py', 'tests/test_delivery_files.mjs', 'tests/test_production_progress.mjs', 'tests/test_production_monitor.mjs', 'tests/test_audio_timing.py', 'tests/test_production_preferences.py', 'tests/test_layered_customers.py', 'docs/PLUGIN.md', 'docs/verification-plugin-v0.1.0.md', 'docs/verification-plugin-v0.2.0.md', 'docs/verification-plugin-v0.3.0.md', 'docs/verification-plugin-v0.4.0.md', 'docs/verification-plugin-v0.5.0.md', 'docs/verification-plugin-v0.6.0.md', 'THIRD_PARTY_NOTICES.md']:
+            if folder == 'config' and (len(rel.parts) != 2 or path.name not in public_config):
+                continue
+            files[str(rel)] = path.read_bytes()
+    for name in ['package.json', 'plugin.json', 'cordis.patch.yml', 'VERSION', 'README.md', 'release.json',
+                 '安装制课插件.command', '安装或更新.command', 'install.sh', 'THIRD_PARTY_NOTICES.md',
+                 'requirements.in', 'requirements.lock', 'requirements-voice.in', 'requirements-voice.lock']:
         files[name] = (ROOT / name).read_bytes()
-    files['README.md'] = (ROOT / 'docs/PLUGIN.md').read_bytes()
     proof = dict(name=package['name'], version=package['version'], core_version=(ROOT / 'VERSION').read_text().strip(), files={name: hashlib.sha256(data).hexdigest() for name, data in files.items()})
     files['plugin-bundle-manifest.json'] = (json.dumps(proof, ensure_ascii=False, indent=2) + '\n').encode()
     out = ROOT / 'dist'; out.mkdir(exist_ok=True)
@@ -37,7 +46,7 @@ def main():
         for name, data in sorted(files.items()):
             entry = zipfile.ZipInfo('kgxc-course-plugin/' + name)
             entry.compress_type = zipfile.ZIP_DEFLATED
-            entry.external_attr = (0o100755 if name.endswith('.command') else 0o100644) << 16
+            entry.external_attr = (0o100755 if name.endswith(('.command','.sh')) else 0o100644) << 16
             bundle.writestr(entry, data)
     with zipfile.ZipFile(archive) as bundle:
         if bundle.testzip(): raise ValueError('插件包 ZIP CRC 失败')

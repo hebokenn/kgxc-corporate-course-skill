@@ -3,12 +3,38 @@ window.__ModuleLoader__.load({
   factory:require=>{
     const {createElement:h,useState,useEffect,useRef}=require('react');
     const API='/api/kgxc-course'; let token;
-    async function request(path,data){
+    async function request(path,data,retried=false){
       if(data&&!token)token=(await request('/meta')).token;
       const response=await fetch(API+path,data?{method:'POST',headers:{'Content-Type':'application/json','X-KGXC-Token':token},body:JSON.stringify(data)}:{});
+      if(data&&response.status===403&&!retried){token=(await request('/meta')).token;return request(path,data,true);}
       const value=await response.json();if(!response.ok||value.ok===false)throw Error(value.error||'操作失败');return value;
     }
     const call=(name,args={})=>request('/call',{name,arguments:args});
+    function defineNativeStudio(){
+      if(typeof customElements==='undefined'||customElements.get('kgxc-studio-view'))return;
+      customElements.define('kgxc-studio-view',class extends HTMLElement{
+        static observedAttributes=['src'];
+        constructor(){super();this.attachShadow({mode:'open'});this.epoch=0;this.messages=[];this.contentWindow={postMessage:(data,origin)=>{if(origin!==new URL(this.getAttribute('src')).origin)return;if(this.view)this.view.receive(data);else this.messages.push(data);}};}
+        connectedCallback(){void this.open();}
+        attributeChangedCallback(){if(this.isConnected)void this.open();}
+        disconnectedCallback(){this.epoch++;this.view?.dispose();this.view=null;this.messages=[];}
+        async open(){
+          const epoch=++this.epoch;this.view?.dispose();this.view=null;this.shadowRoot.textContent='正在恢复课程…';
+          try{
+            const sourceURL=this.getAttribute('src'),session_id=this.getAttribute('session-id'),course_path=this.getAttribute('course-path');
+            const [module,access]=await Promise.all([require.async('./client.studio-native.js'),request('/view',{session_id,course_path})]);
+            if(!this.isConnected||epoch!==this.epoch)return;
+            const resourceFetch=async(url,options={},retry=false)=>{
+              const headers=new Headers(options.headers);if(options.method&&options.method!=='GET')headers.set('X-KGXC-Token',token);
+              const response=await fetch(url,{...options,headers});
+              if(response.status===403&&!retry){token=(await request('/meta')).token;return resourceFetch(url,options,true);}return response;
+            };
+            this.view=module.mountNative(this,{sourceURL,resourceBase:access.resource_base,fetch:resourceFetch,onMessage:data=>{if(epoch===this.epoch)this.dispatchEvent(new CustomEvent('kgxc-message',{detail:data}));}});
+            for(const data of this.messages.splice(0))this.view.receive(data);
+          }catch(error){if(epoch===this.epoch)this.shadowRoot.textContent='课程界面未能恢复：'+error.message;}
+        }
+      });
+    }
     const ownedFrames=new WeakMap(),draftKey=path=>'kgxc-unsaved-draft:'+path;
     const STAGES=[['sources','资料'],['outline','大纲'],['script','逐字稿'],['storyboard','分镜'],['pilot','有声小样'],['final','整课交付']];
     function savedDraft(path){try{return JSON.parse(localStorage.getItem(draftKey(path))||'null');}catch{return null;}}
@@ -27,7 +53,7 @@ window.__ModuleLoader__.load({
         if(submit&&!submit.disabled)submit.click();
       });
     }
-    const CSS=`.kgxc-panel{height:100%;min-height:0;display:flex;flex-direction:column;background:#fff;color:#2c3036;font:14px/1.7 system-ui,sans-serif}.kgxc-switch{display:flex;gap:10px;align-items:center;padding:8px 24px;border-bottom:1px solid #e7e8e9;font-size:12px;color:#7b8087}.kgxc-switch select{border:0;background:transparent;color:#454b54;font:inherit;max-width:80%}.kgxc-layout{display:flex;flex:1;min-height:0;min-width:0}.kgxc-editor{display:flex;flex:1;min-width:320px;min-height:0;position:relative}.kgxc-frame{flex:1;min-height:0;width:100%;border:0}.kgxc-chat{display:flex;flex-direction:column;min-height:0;width:var(--kgxc-chat-width,360px);min-width:290px;max-width:60%;border-left:1px solid #e0e3e7;flex-shrink:0;background:var(--background,#fff);color:var(--text-primary,#282d34)}.kgxc-chat-head{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid #e7e8e9}.kgxc-chat-head strong{flex:1;font-size:14px}.kgxc-chat button,.kgxc-reopen{font:inherit;border:1px solid #d6dbe2;background:transparent;color:inherit;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:12px}.kgxc-chat-tools{display:flex;gap:8px;padding:10px 14px}.kgxc-chat-note{font-size:11px;color:#818791;padding:0 14px 8px}.kgxc-chat-body{display:flex;flex:1;min-height:0;min-width:0;flex-direction:column;overflow:hidden}.kgxc-chat-native{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.kgxc-chat-native>div{flex:1;min-height:0}.kgxc-divider{width:5px;cursor:col-resize;flex-shrink:0;background:#fafbfc;touch-action:none}.kgxc-reopen{position:absolute;top:8px;right:16px;z-index:2;background:white}.kgxc-chat-error{font-size:12px;color:#a24b3c;margin:0 14px 8px}.kgxc-chat [data-phase]{min-width:0}.kgxc-empty{margin:auto;max-width:450px;padding:36px}.kgxc-empty h1{font-size:22px}.kgxc-empty p{color:#7b8087}.kgxc-error{color:#9b3b32;padding:12px 24px;background:#fff1ed}`;
+    const CSS=`.kgxc-panel{height:100%;min-height:0;display:flex;flex-direction:column;background:#fff;color:#2c3036;font:14px/1.7 system-ui,sans-serif}.kgxc-switch{display:flex;gap:10px;align-items:center;padding:8px 24px;border-bottom:1px solid #e7e8e9;font-size:12px;color:#7b8087}.kgxc-switch select{border:0;background:transparent;color:#454b54;font:inherit;max-width:80%}.kgxc-layout{display:flex;flex:1;min-height:0;min-width:0}.kgxc-editor{display:flex;flex:1;min-width:320px;min-height:0;position:relative}.kgxc-frame{flex:1;min-height:0;width:100%;border:0}.kgxc-native{display:block;overflow:auto;background:#fafbfc}.kgxc-chat{display:flex;flex-direction:column;min-height:0;width:var(--kgxc-chat-width,360px);min-width:290px;max-width:60%;border-left:1px solid #e0e3e7;flex-shrink:0;background:var(--background,#fff);color:var(--text-primary,#282d34)}.kgxc-chat-head{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid #e7e8e9}.kgxc-chat-head strong{flex:1;font-size:14px}.kgxc-chat button,.kgxc-reopen{font:inherit;border:1px solid #d6dbe2;background:transparent;color:inherit;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:12px}.kgxc-chat-tools{display:flex;gap:8px;padding:10px 14px}.kgxc-chat-note{font-size:11px;color:#818791;padding:0 14px 8px}.kgxc-chat-body{display:flex;flex:1;min-height:0;min-width:0;flex-direction:column;overflow:hidden}.kgxc-chat-native{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}.kgxc-chat-native>div{flex:1;min-height:0}.kgxc-divider{width:5px;cursor:col-resize;flex-shrink:0;background:#fafbfc;touch-action:none}.kgxc-reopen{position:absolute;top:8px;right:16px;z-index:2;background:white}.kgxc-chat-error{font-size:12px;color:#a24b3c;margin:0 14px 8px}.kgxc-chat [data-phase]{min-width:0}.kgxc-empty{margin:auto;max-width:450px;padding:36px}.kgxc-empty h1{font-size:22px}.kgxc-empty p{color:#7b8087}.kgxc-error{color:#9b3b32;padding:12px 24px;background:#fff1ed}`;
     function Workspace(props){return props.renderSlot('kgxc.workspace',{});}
     function SessionPanel(props){return h(Panel,{...props,key:props.sessionId||'no-session'});}
     function Panel({ctx,sessionId,useSession,useSessionStatus,renderSlot}){
@@ -165,6 +191,10 @@ window.__ModuleLoader__.load({
           if(event.data?.type==='kgxc-editor-leave-result'){const item=leaving.current.get(event.data.id);if(item){clearTimeout(item.timer);leaving.current.delete(event.data.id);event.data.error?item.reject(Error(event.data.error)):item.resolve();}return;}
           if(event.data?.type!=='kgxc-editor-request'||event.data.course_path!==active.course_path)return;
           const {id,action,...args}=event.data;
+          if(action==='review'){
+            try{const result=await request('/review',{...args,action:args.review_action,session_id:sessionId,course_path:active.course_path});event.source.postMessage({type:'kgxc-editor-result',id,result},origin);}
+            catch(error){event.source.postMessage({type:'kgxc-editor-result',id,error:error.message},origin);}return;
+          }
           if(action==='deliver'){
             try{if(runningRef.current)throw Error('请等待当前 AI 制作结束后再保存交付文件。');const value=await request('/workspace',{action:'deliver',session_id:sessionId});event.source.postMessage({type:'kgxc-editor-result',id,result:value},origin);if(value.ok){setActive(value);setStage('final');setStageMeta(null);if(value.delivery?.cleanup_decision?.choice!=='keep')void showRetention(value);}}
             catch(error){event.source.postMessage({type:'kgxc-editor-result',id,error:error.message},origin);}return;
@@ -173,15 +203,18 @@ window.__ModuleLoader__.load({
           try{if(['stage','render'].includes(action)&&runningRef.current)throw Error('当前 AI 正在制作，请等待结束，或在右侧停止后重试。');const result=await request('/editor',{action,arguments:{...args,session_id:sessionId}});event.source.postMessage({type:'kgxc-editor-result',id,result},origin);if(action==='stage'&&STAGES.some(([key])=>key===result.target_stage)){setRequestedStage(result.target_stage);setStage(result.target_stage);localStorage.setItem('kgxc-stage:'+active.course_path,result.target_stage);}}
           catch(e){event.source.postMessage({type:'kgxc-editor-result',id,error:e.message},origin);}
         };
-        window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);
+        const element=frame.current,nativeReceive=event=>receive({source:element.contentWindow,origin,data:event.detail});
+        element?.addEventListener?.('kgxc-message',nativeReceive);
+        element?.contentWindow?.postMessage({type:'kgxc-editor-host',draft:savedDraft(active.course_path),running:runningRef.current},origin);
+        window.addEventListener('message',receive);return()=>{window.removeEventListener('message',receive);element?.removeEventListener?.('kgxc-message',nativeReceive);};
       },[active]);
-      function stageStatus(key){const meta=stageMeta||{},gates=meta.gates||active?.workflow?.gates||[],gate=gates.find(g=>g.id===key),has=key==='sources'?meta.has_sources:key==='outline'?meta.has_outline:key==='script'?meta.has_script:key==='storyboard'?meta.has_storyboard:key==='pilot'?meta.has_pilot:meta.has_final;if(requestedStage===key&&(running||meta.producing)&&!sessionStatus?.pendingInteraction)return '生成中';if(key==='sources'&&gates.some(g=>g.id==='outline'&&g.status==='confirmed'))return '已确认';if(meta.dirty&&has&&['script','storyboard','pilot','final'].includes(key))return '修改后待更新';if(gate?.status==='stale')return '修改后待更新';if(['confirmed','delivered'].includes(gate?.status))return '已确认';return has?'待你确认':'尚未生成';}
+      function stageStatus(key){const meta=stageMeta||{},gates=meta.gates||active?.workflow?.gates||[],gate=gates.find(g=>g.id===key),has=key==='sources'?meta.has_sources:key==='outline'?meta.has_outline:key==='script'?meta.has_script:key==='storyboard'?meta.has_storyboard:key==='pilot'?meta.has_pilot:meta.has_final;if(requestedStage===key&&(running||meta.producing)&&!sessionStatus?.pendingInteraction)return '生成中';if(key==='sources'&&gates.some(g=>g.id==='outline'&&g.status==='confirmed'))return '已确认';if(meta.dirty&&has&&['script','storyboard','pilot','final'].includes(key))return '修改后待更新';if(gate?.status==='stale')return '修改后待更新';if(gate?.status==='delivered')return '正式交付';if(gate?.status==='confirmed')return key==='storyboard'?'分镜审阅通过':'用户已确认';const review=meta.ai_review?.nodes?.[key];if(review?.passed)return key==='storyboard'?'独立审阅通过':'AI通过，待你确认';return has?(key==='storyboard'?'待独立审阅':'待你确认'):'尚未生成';}
       const url=active&&!active.delivery_only?active.workbench_url+'/studio.html?stage='+stage+'&parentOrigin='+encodeURIComponent(location.origin):null;
       return h('section',{className:'kgxc-panel','aria-label':'课程工作台'},
         h('div',{className:'kgxc-switch'},h('button',{onClick:newCourse,disabled:loading},'新建课程'),h('label',{htmlFor:'kgxc-course'},active?'当前课程':'继续已有课程'),h('select',{id:'kgxc-course',value:active?.course_path||'',disabled:loading||!sessionId,onChange:e=>e.target.value&&open(e.target.value)},h('option',{value:'',disabled:true},'选择已有课程…'),courses.map(c=>h('option',{key:c.course_id,value:c.course_path},c.title))),active&&!active.delivery_only&&workspacePath&&!active.course_path.startsWith(workspacePath+'/')&&h('button',{onClick:moveIntoWorkspace,disabled:loading},'工程迁入当前工作区')),
         error&&h('div',{className:'kgxc-error',role:'alert'},error),
         active&&!active.delivery_only&&h('nav',{className:'kgxc-stages',role:'tablist','aria-label':'制课阶段'},STAGES.map(([key,label])=>h('button',{key,role:'tab','aria-selected':stage===key,onClick:()=>navigateStage(key)},h('strong',null,label),h('span',null,stageStatus(key))))),
-        h('div',{className:'kgxc-layout',ref:layout,style:{'--kgxc-chat-width':chatWidth+'px'}},h('div',{className:'kgxc-editor'},!chatOpen&&h('button',{className:'kgxc-reopen',onClick:toggleChat},'打开 AI 对话'),active?(active.delivery_only?h(DeliveryView,{course:active,onRetention:()=>showRetention(),onResume:resumeEngineering,onOpenFolder:openSavedFolder}):h('iframe',{className:'kgxc-frame',ref:frame,key:active.course_path+':'+frameEpoch.current,title:'课程'+(STAGES.find(([key])=>key===stage)?.[1]||'工作台'),src:url})):h('div',{className:'kgxc-empty'},h('h1',null,loading?'正在打开课程…':'开始一门新课程'),!loading&&h('p',null,'在右侧告诉 AI 要制作哪门课程，或上传资料。这里只显示本次对话关联的课程。'))),chatOpen&&h('div',{className:'kgxc-divider',role:'separator','aria-label':'调整 AI 对话栏宽度','aria-orientation':'vertical',onPointerDown:resize}),chatOpen&&h('aside',{className:'kgxc-chat','aria-label':'课程 AI 对话'},h('div',{className:'kgxc-chat-head'},h('strong',null,'AI 对话'),h('button',{onClick:toggleChat,'aria-label':'收起 AI 对话'},'收起')),renderSlot('kgxc.chat',{coursePath:active?.delivery_only?undefined:active?.course_path,courseTitle:active?.workflow?.title,onCourseUpdate:refresh}))),
+        h('div',{className:'kgxc-layout',ref:layout,style:{'--kgxc-chat-width':chatWidth+'px'}},h('div',{className:'kgxc-editor'},!chatOpen&&h('button',{className:'kgxc-reopen',onClick:toggleChat},'打开 AI 对话'),active?(active.delivery_only?h(DeliveryView,{course:active,onRetention:()=>showRetention(),onResume:resumeEngineering,onOpenFolder:openSavedFolder}):h('kgxc-studio-view',{class:'kgxc-frame kgxc-native',ref:frame,'session-id':sessionId,'course-path':active.course_path,key:active.course_path+':'+frameEpoch.current,title:'课程'+(STAGES.find(([key])=>key===stage)?.[1]||'工作台'),src:url})):h('div',{className:'kgxc-empty'},h('h1',null,loading?'正在打开课程…':'开始一门新课程'),!loading&&h('p',null,'在右侧告诉 AI 要制作哪门课程，或上传资料。这里只显示本次对话关联的课程。'))),chatOpen&&h('div',{className:'kgxc-divider',role:'separator','aria-label':'调整 AI 对话栏宽度','aria-orientation':'vertical',onPointerDown:resize}),chatOpen&&h('aside',{className:'kgxc-chat','aria-label':'课程 AI 对话'},h('div',{className:'kgxc-chat-head'},h('strong',null,'AI 对话'),h('button',{onClick:toggleChat,'aria-label':'收起 AI 对话'},'收起')),renderSlot('kgxc.chat',{coursePath:active?.delivery_only?undefined:active?.course_path,courseTitle:active?.workflow?.title,onCourseUpdate:refresh}))),
         retentionPrompt&&h(RetentionDialog,{key:retentionPrompt.course.delivery.course_id,prompt:retentionPrompt,busy:retentionBusy,onChoose:chooseRetention,onPreview:previewRetention,onOpenFolder:openSavedFolder,onClose:()=>!retentionBusy&&setRetentionPrompt(null)}));
     }
     function RetentionDialog({prompt,busy,onChoose,onClose,onPreview,onOpenFolder}){
@@ -238,6 +271,7 @@ window.__ModuleLoader__.load({
       return h('div',{className:'kgxc-chat-body'},h('div',{className:'kgxc-chat-tools'},h('button',{onClick:chooseFolder,disabled:picking},picking?'正在选择…':'选择文件夹'),h('button',{onClick:chooseFiles,disabled:!sessionId},'上传文件')),h('p',{className:'kgxc-chat-note'},courseTitle?'当前课程：'+courseTitle:'沿用 DSH 当前对话，可发送资料开始制课。'),message&&h('p',{className:'kgxc-chat-error',role:'alert'},message),h('div',{className:'kgxc-chat-native'},renderFactorySlot('conversation.content',{variant:'embedded',phase,hero:phase==='hero'},{slots:{views:ChatView}})));
     }
     function apply(ctx){
+      defineNativeStudio();
       ctx.effect(()=>{const style=document.createElement('style');style.dataset.plugin='kgxc-course-plugin';style.textContent=CSS+QUESTION_CSS+`.kgxc-stages{display:grid;grid-template-columns:repeat(6,minmax(95px,1fr));overflow-x:auto;flex-shrink:0;background:#fafbfc;border-bottom:1px solid #e1e5eb}.kgxc-stages button{border:0;border-right:1px solid #e6e9ee;background:transparent;padding:13px 15px;cursor:pointer;text-align:left;color:#525d6b}.kgxc-stages button[aria-selected=true]{background:#edf2fa;box-shadow:inset 0 -2px #6682b6;color:#324e7e}.kgxc-stages strong,.kgxc-stages span{display:block;font-size:13px}.kgxc-stages span{font-size:10px;color:#8a929d;margin-top:4px}`;document.head.appendChild(style);return()=>style.remove();},'kgxc-course: editor styles');
       ctx.effect(()=>{document.addEventListener('click',submitLastChoice,true);return()=>document.removeEventListener('click',submitLastChoice,true);},'kgxc-course: submit last explicit choice');
       ctx.effect(()=>{const receive=event=>{const owner=ownedFrames.get(event.source),data=event.data;if(!owner||owner.origin!==event.origin||data?.type!=='kgxc-editor-draft'||data.course_path!==owner.path)return;if(data.dirty){localStorage.setItem(draftKey(owner.path),JSON.stringify({text:data.text,base_text:data.base_text,base_revision:data.base_revision}));}else if(savedDraft(owner.path)?.text===data.text)localStorage.removeItem(draftKey(owner.path));};window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);},'kgxc-course: preserve pending manual edits');

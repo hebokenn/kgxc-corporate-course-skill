@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.5.0'
+VERSION = '6.8.1'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -681,6 +681,10 @@ class Course(LegacyCourse):
     def _readiness(self,key,plan,state,pending):
         if not self.modern():return super()._readiness(key,plan,state,pending)
         errors=[]
+        if key!='outline':
+            from source_coverage import SourceCoverage
+            try:SourceCoverage(self).require_confirmed()
+            except ValueError as error:errors.append(str(error))
         if key in ['storyboard','pilot','final']:
             from production_preferences import selection_errors
             errors.extend(selection_errors(self.project))
@@ -722,6 +726,8 @@ class Course(LegacyCourse):
             videos=[self.relative(name) for name in state['artifacts'][key] if name.lower().endswith('.mp4')]
             if videos and videos[0].is_file():errors.extend(review_errors(self.project,key,videos[0]))
         errors.extend(('待解决：' if p.get('kind')=='issue' else '待选择：')+p['id'] for p in pending if p.get('gate')==key)
+        from ai_review import gate_errors
+        errors.extend(gate_errors(self,key))
         return list(dict.fromkeys(errors))
 
     def status(self):
@@ -736,15 +742,23 @@ class Course(LegacyCourse):
         for key,label in keys:
             receipt=state.get('gates',{}).get(key,{})
             errors=self._readiness(key,plan,state,pending);valid=bool(receipt and receipt.get('sha256')==self._gate_hash(key,plan,state) and upstream and not errors)
+            from ai_review import approved
+            valid=valid and approved(self,key)
             delivery=key in ['courseware','final'];current='delivered' if delivery and valid else 'confirmed' if valid else 'stale' if receipt else 'open'
+            if key=='final' and valid:
+                from ai_review import enabled,formally_delivered
+                if enabled(self) and not formally_delivered(self):current='confirmed'
             needs_artifact=(key=='script' and not self.script_sha(plan)) or (key=='style' and not self.director().get('styles')) or (key=='storyboard' and not self.storyboard().get('segments')) or (key=='pilot' and not self._artifact_hashes(key,state))
             gates.append(dict(id=key,label=label,status=current,ready=upstream and not errors,reasons=errors,receipt=receipt,delivery=delivery,needs_artifact=needs_artifact))
             upstream=valid
         common=all(g['status']=='confirmed' for g in gates[:2]);complete=common and bool(branch) and upstream
         first=next((g for g in gates if g['status'] not in ['confirmed','delivered']),None)
         stage='complete' if complete else first['id'] if first else 'branch'
+        from ai_review import enabled as review_enabled
+        if complete and branch=='video' and review_enabled(self) and not any(g['id']=='final' and g['status']=='delivered' for g in gates):stage='delivery'
         if stage=='complete':action='课件与逐字稿已交付；以后可从本稿启动视频' if branch=='courseware' else '完整视频已生成并交付，可观看与提出修改'
         elif stage=='branch':action='逐字稿已确认，请选择制作课件或视频'
+        elif stage=='delivery':action='AI审阅通过且用户已确认当前成片；尚未正式交付，可保存成品到桌面'
         elif stage in ['courseware','final']:action='生成并交付课件与逐字稿' if stage=='courseware' else '小样已确认，可以生成完整视频'
         elif stage=='script' and not self.script_sha(plan):action='教学方案已确认，编写逐字稿供你审阅'
         elif stage=='pilot' and self.storyboard_mode():action='分镜已确认，分层抽取并生成三个完整有声样段' if not self.sample_plan() else '按已保存抽样计划制作并审阅三个完整有声样段'
@@ -759,7 +773,7 @@ class Course(LegacyCourse):
         if branch=='video' and narration=='not_required':narration='not_started'
         result=dict(version=VERSION,workflow_schema=2,course_id=state['course_id'],title=plan['title'],revision=state['revision'],stage=stage,next_action=action,
             branch=branch,branch_receipt=state.get('branch_receipt'),branch_history=state.get('branch_history',[]),selected_style=state.get('selected_style'),director=self.director(),script_sha256=self.script_sha(plan),
-            deliveries=state.get('deliveries',[]),gates=gates,pending=pending,plan=plan,artifacts=state['artifacts'],jobs=jobs,source_files=self._source_files(plan),
+            deliveries=state.get('deliveries',[]),formal_deliveries=state.get('formal_deliveries',[]),gates=gates,pending=pending,plan=plan,artifacts=state['artifacts'],jobs=jobs,source_files=self._source_files(plan),
             narration_status='not_required' if branch!='video' else 'ready' if complete else 'sample_ready' if any(g['id']=='pilot' and g['status'] in ['open','confirmed'] and g['ready'] for g in gates) else 'needs_regeneration' if state['artifacts'].get('pilot') else narration,updated_at=state['updated_at'])
         if self.storyboard_mode():
             from storyboard import check, check_samples, basis as board_basis
@@ -773,13 +787,20 @@ class Course(LegacyCourse):
         if stage=='final' and state.get('artifacts',{}).get('final') and state.get('director_review_status',{}).get('status')=='pending':result['next_action']='当前完整视频为候选；制作端完成逐段导演复核后登记，不重复渲染或代填用户认可'
         from production import handoff
         result['production_handoff']=handoff(self.project,result)
-        result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries'],storyboard=result.get('storyboard'),sampling=result.get('sampling')))
+        from source_coverage import SourceCoverage
+        result['source_coverage']=SourceCoverage(self).view()
+        from ai_review import enabled,Review
+        if enabled(self):result['ai_review']=Review(self).view()
+        result['state_key']=hashed(dict(plan=plan,gates=gates,branch=branch,selected_style=state.get('selected_style'),director=result['director'],deliveries=result['deliveries'],storyboard=result.get('storyboard'),sampling=result.get('sampling'),ai_review=result.get('ai_review'),source_coverage=result.get('source_coverage')))
         return result
 
     def require(self,key):
         if not self.modern():return super().require(key)
         key={'content':'script','visual':'style'}.get(key,key)
         if self.storyboard_mode() and key=='style':key='storyboard'
+        if key!='outline':
+            from source_coverage import SourceCoverage
+            SourceCoverage(self).require_confirmed()
         gates=self.status()['gates'];ids=[g['id'] for g in gates]
         if key not in ids:raise ValueError('本分支没有该阶段：'+key)
         missing=[g['label'] for g in gates[:ids.index(key)+1] if g['status'] not in ['confirmed','delivered']]
@@ -790,11 +811,14 @@ class Course(LegacyCourse):
         self.require(key)
 
     def confirm(self,key,expected,evidence,actor='workbench'):
+        if self.modern() and key=='script':
+            from source_coverage import SourceCoverage
+            SourceCoverage(self).require_confirmed()
         if self.modern() and key in ['style','courseware','final']:
             raise ValueError('风格请使用明确的风格选择；交付产物由实际文件检查登记')
         return super().confirm(key,expected,evidence,actor)
 
-    def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None):
+    def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None,review_run_id=None):
         if not self.modern():return super().register(key,paths,expected)
         if self.storyboard_mode() and key in ['pilot','final']:
             from storyboard import check_bindings, basis, digest
@@ -812,7 +836,10 @@ class Course(LegacyCourse):
                     if proof.get('video_sha256')!=sha(target) or proof.get('storyboard_sampling')!=expected_binding:
                         raise ValueError('抽样小样缺少与实际视频、分镜、时间线和生产源码绑定的导出记录')
         if key not in ['pilot','final','courseware']:raise ValueError('请用director保存导演方案，用script保存逐字稿')
-        self.require_video('style' if key=='pilot' else 'pilot') if key!='courseware' else self.require('script')
+        if review_run_id:
+            from ai_review import Review
+            Review(self).allow_render(key,review_run_id)
+        else:self.require_video('style' if key=='pilot' else 'pilot') if key!='courseware' else self.require('script')
         if key=='courseware' and read(self.state_file).get('branch')!='courseware':raise ValueError('请先选择课件分支')
         if not paths or any(not self.relative(p).is_file() for p in paths):raise ValueError('实际交付文件不存在')
         if key in ['pilot','final']:
@@ -864,10 +891,14 @@ class Course(LegacyCourse):
                 state['director_review_status']=quality
                 quality_ready=quality['status'] in ['pass','legacy-not-opted-in']
                 if not quality_ready:state['gates'].pop('final',None)
-            if key in ['courseware','final'] and quality_ready:
+            from ai_review import enabled as ai_review_enabled
+            if key in ['courseware','final'] and quality_ready and not (key=='final' and ai_review_enabled(self)):
                 receipt=dict(at=now(),evidence=str(evidence),actor=actor,sha256=self._gate_hash(key,read(self.plan_file),state))
                 state['gates'][key]=receipt
                 state['deliveries'].append(dict(branch='courseware' if key=='courseware' else 'video',at=now(),script_sha256=self.script_sha(),files=self._artifact_hashes(key,state),evidence=str(evidence)))
+            elif key=='final' and ai_review_enabled(self):
+                state['gates'].pop('final',None)
+                state['final_candidate']=dict(at=now(),files=self._artifact_hashes(key,state),status='pending-ai-review')
             self._commit(state,'artifacts_registered',dict(gate=key,paths=stable))
         return self.status()
 
@@ -940,16 +971,22 @@ def bundle_course(root, destination):
     return dict(path=str(destination),bytes=destination.stat().st_size,sha256=sha(destination),files=len(files))
 
 
+def service_build():
+    folder=Path(__file__).resolve().parent
+    return hashed({name:sha(folder/name) for name in ['workflow.py','backend.py','lifecycle.py','studio.py','ai_review.py','blind_review.py','script_editor.py','source_coverage.py'] if (folder/name).is_file()})
+
+
 def open_course(root, open_browser=True):
     course = Course(root)
     if not course.state_file.is_file(): raise ValueError('该工程未接入新版流程，旧课请使用原工作台入口')
+    if read(course.state_file).get('preferred_workbench')=='dsh':open_browser=False
     record = course.project / 'work/workbench-service.json'; server = read(record, {})
     url = server.get('url', '')
     resume_port=0
     try:
         identity = local_json(url + '/api/identity')
         from lifecycle import POLICY
-        if identity.get('course_id') != read(course.state_file)['course_id'] or identity.get('version') != VERSION or identity.get('course_root')!=str(course.root) or identity.get('lifecycle_policy')!=POLICY: url = ''
+        if identity.get('course_id') != read(course.state_file)['course_id'] or identity.get('version') != VERSION or identity.get('course_root')!=str(course.root) or identity.get('lifecycle_policy')!=POLICY or identity.get('runtime_build')!=service_build(): url = ''
     except OSError:
         parsed=urllib.parse.urlparse(url)
         if parsed.scheme=='http' and parsed.hostname in ['127.0.0.1','localhost','::1']:

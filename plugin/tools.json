@@ -121,6 +121,51 @@
     }
   },
   {
+    "name": "kgxc_course_source_coverage",
+    "description": "读取或保存当前原始资料与逐字稿的逐项对照：按原件要点统计覆盖率，列出舍弃、新增及其理由与依据。保存不代表人工确认，确认只能由用户在工作台完成。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "status",
+            "save"
+          ]
+        },
+        "expected_script_sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        },
+        "report": {
+          "type": "object"
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24000
+        }
+      },
+      "required": [
+        "course_path",
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "kgxc_course_export",
     "description": "提交现有已制作时间线的小样或整片导出，返回任务ID。复用后端前置确认和画面检查，缺少确认会拒绝；不会替用户批准。",
     "inputSchema": {

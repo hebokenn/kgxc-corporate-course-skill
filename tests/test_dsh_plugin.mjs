@@ -15,11 +15,14 @@ test('DSH registers the shared tools, both skills and an actual environment call
     if (deps.includes('skills')) action({skills: {register: item => skills.push(item)}});
   }};
   apply(ctx);
-  assert.equal(registered.length, 9);
+  assert.equal(registered.length, 10);
+  assert.ok(registered.find(tool=>tool.name==='kgxc_course_source_coverage'));
   assert.deepEqual(skills.map(skill => skill.name), ['corporate-training-motion', 'elearning-course-design']);
   for (const skill of skills) { assert.ok(existsSync(skill.path)); assert.ok(skill.content.length > 100); }
   const value = await registered.find(tool => tool.name === 'kgxc_course_environment').execute({});
-  assert.equal(value.ok, true); assert.equal(value.plugin_version, '0.6.0'); assert.equal(value.core_version, '6.5.0');
+  assert.equal(value.ok, true);
+  assert.equal(value.plugin_version,JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8')).version);
+  assert.equal(value.core_version,(await readFile(new URL('../VERSION',import.meta.url),'utf8')).trim());
   assert.equal(registered.some(tool => tool.name.includes('confirm')), false);
 });
 

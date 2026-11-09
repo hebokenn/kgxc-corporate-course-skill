@@ -10,5 +10,12 @@
   "assessments": [],
   "decisions": [],
   "issues": [],
+  "authoring": {
+    "schema": "script-authoring/1",
+    "selected_plan": "",
+    "brand_greeting": null,
+    "unit_intents": [],
+    "self_check": {"status": "not_done", "evidence": "", "unresolved": []}
+  },
   "handoff": {"ready_for_courseware": false, "ready_for_production": false}
 }

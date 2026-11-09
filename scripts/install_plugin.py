@@ -23,17 +23,24 @@ def digest(path):
 
 def local_package(vendor):
     """Install immutable package bytes; pnpm directory specs may remain development links."""
+    builder=ROOT/'scripts/build_native_client.py'
+    if builder.is_file():subprocess.run([sys.executable,'-B',str(builder)],check=True)
     metadata = json.loads((ROOT / 'package.json').read_text())
     vendor.mkdir(parents=True, exist_ok=True)
     handle, temporary = tempfile.mkstemp(prefix='.kgxc-package-', suffix='.tgz', dir=vendor)
     os.close(handle)
     temporary = Path(temporary)
     try:
+        def publishable(path):
+            rel = path.relative_to(ROOT)
+            return (not any(part.startswith('.') or part in {'__pycache__','node_modules','inputs','courses','work','logs','reviews','private'} for part in rel.parts)
+                    and path.suffix not in {'.pyc','.pem','.key','.log','.pdf','.docx'}
+                    and not any(parent.is_symlink() for parent in [path,*path.parents] if parent != ROOT and parent.is_relative_to(ROOT)))
         paths = {ROOT / 'package.json'}
         for name in metadata['files']:
             source = ROOT / name
-            if source.is_dir(): paths.update(path for path in source.rglob('*') if path.is_file() and not path.is_symlink() and '__pycache__' not in path.parts and path.suffix != '.pyc' and not path.name.startswith('.'))
-            elif source.is_file(): paths.add(source)
+            if source.is_dir(): paths.update(path for path in source.rglob('*') if path.is_file() and publishable(path))
+            elif source.is_file() and publishable(source): paths.add(source)
         with temporary.open('wb') as raw, gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as zipped, tarfile.open(fileobj=zipped, mode='w') as archive:
             for path in sorted(paths):
                 info = archive.gettarinfo(str(path), 'package/' + str(path.relative_to(ROOT)))
@@ -49,6 +56,9 @@ def local_package(vendor):
 
 def dsh(executable, profile):
     home = Path(os.environ.get('DSH_HOME', str(Path.home() / '.dsh')))
+    if profile == 'desktop' and home.resolve() == (Path.home()/'.dsh').resolve():
+        running=subprocess.run(['pgrep','-f',r'^/Applications/DeepSeek Harness\.app/Contents/MacOS/DeepSeek Harness( |$)'],capture_output=True).returncode==0
+        if running:raise ValueError('请先完整退出 DeepSeek Harness 再安装。运行中替换插件会让已加载的后端模块与前端资源版本错配；仅刷新页面不能完成升级。任务数据与课程文件保持保留。')
     folder = home / 'profiles' / profile
     source = folder / 'package.json'
     before = {name: digest(folder / name) for name in ['cordis.yml', 'cordis.patch.yml'] if (folder / name).is_file()}
@@ -82,6 +92,7 @@ def dsh(executable, profile):
     after = {name: digest(folder / name) for name in before}
     if before != after: raise ValueError('DSH 配置在安装期间发生变化，请核对配置')
     report = dict(host='dsh', profile=profile, installed=str(installed), source=str(ROOT), package=str(package), package_sha256=digest(package),
+                  requires_host_restart=True,
                   registration_count=json.loads(source.read_text())['dsh']['profile']['bundles'].count(NAME),
                   existing_configuration_unchanged=before == after, version=json.loads((installed / 'package.json').read_text())['version'])
     (backup / 'result.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')

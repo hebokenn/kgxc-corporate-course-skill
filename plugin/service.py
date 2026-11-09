@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -26,7 +27,7 @@ from runtime import activate, config_dir, tools as media_tools
 activate()
 from workflow import Course, VERSION as CORE_VERSION, open_course, atomic, read
 
-VERSION = '0.6.0'
+VERSION = '0.8.23'
 TOOLS = json.loads((ROOT / 'plugin/tools.json').read_text())
 TOOL_MAP = {tool['name']: tool for tool in TOOLS}
 
@@ -113,7 +114,7 @@ def workspace_action(action, args):
 
 def summary(course, full=False):
     status = course.status()
-    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries']
+    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries', 'ai_review']
     data = status if full else {key: status.get(key) for key in fields if key in status}
     from delivery import completed
     prior=completed(course.root)
@@ -126,6 +127,12 @@ def summary(course, full=False):
 
 
 def workbench(course):
+    # One visible entry for DSH courses; the loopback server is an internal component.
+    if read(course.state_file).get('preferred_workbench')!='dsh':
+        with course.locked():
+            state=read(course.state_file)
+            if state.get('preferred_workbench')!='dsh':
+                state['preferred_workbench']='dsh';course._commit(state,'workbench_host_selected',dict(host='dsh',external_browser=False))
     with redirect_stdout(io.StringIO()):
         url = open_course(course.root, open_browser=False)
     return url
@@ -233,6 +240,16 @@ def execute(name, args):
         delivered=completed(args['course_path'])
         if delivered and delivered['delivery']['cleanup_status']=='complete':return delivered
     course = course_at(args['course_path'])
+    if name == 'kgxc_course_source_coverage':
+        from source_coverage import SourceCoverage
+        coverage = SourceCoverage(course)
+        if args.get('limit',24000)>24000:
+            raise ValueError('单次原件读取上限为24000字符，请按next_offset继续读取')
+        if args['action'] == 'save':
+            if not isinstance(args.get('report'),dict) or not args.get('expected_script_sha256'):
+                raise ValueError('保存原件对照需要完整报告及当前逐字稿SHA-256；不能代填人工确认')
+            coverage.save(args['report'], args['expected_script_sha256'])
+        return dict(ok=True,course_path=str(course.root),source_coverage=coverage.view(),**(dict(source_excerpt=coverage.source_excerpt(args['source_id'],args.get('offset',0),args.get('limit',24000))) if args['action']=='status' and args.get('source_id') else {}))
     if name == 'kgxc_course_editor':
         from backend import Workspace
         from script_editor import ScriptEditor, sha
@@ -338,8 +355,55 @@ def mcp(request):
     return dict(jsonrpc='2.0', id=request['id'], result=result)
 
 
+def review_action(action,args):
+    from ai_review import Review,STAGES,RUNNING
+    course=course_at(args['course_path']);review=Review(course)
+    stage=args.get('stage');run=args.get('run_id')
+    if action=='enable':return dict(ok=True,review=review.ensure())
+    if action=='status':return dict(ok=True,review=review.view())
+    if action=='hold':return dict(ok=True,review=review.hold(args['held'],args.get('reason','')))
+    if action=='review_arrangement':return dict(ok=True,review=review.set_review_arrangement(args['mode'],args['evidence'],args['actor'],args['source']))
+    if action=='select_scheme':return dict(ok=True,review=review.select_scheme(stage,args['scheme_id'],args['evidence'],args['actor']))
+    if action=='user_audio_review':return dict(ok=True,review=review.record_user_audio_review(stage,args['artifact_sha256s'],args['artifacts'],args['coverage'],args['listened_completely'],args['audio_and_sync_ok'],args['evidence'],args['actor'],args['source'],args.get('feedback','')))
+    if action=='requirements':return dict(ok=True,review=review.requirements(args['values'],args['evidence']))
+    if action=='production_event':return review.production_event(args['producer'],args['operation_id'],args['phase'],args.get('stage'),args.get('execution'))
+    if action=='supervisor_packet':return review.supervisor_packet(stage,run,args.get('operation_id'))
+    if action=='supervisor_submit':return review.production_supervisor_submit(args['operation_id'],args['result']) if args.get('operation_id') else review.supervisor_submit(stage,run,args['result'])
+    if action=='recover':
+        state=review.load()
+        for key,node in state['nodes'].items():
+            if node.get('runs') and node['runs'][-1]['status'] in RUNNING and node['runs'][-1].get('owner')!=args.get('owner'):
+                review.finish(key,node['runs'][-1]['id'],error='宿主已重启，上一轮检查中断；输入、费用与失败记录保留。请主动继续审阅，不会自动重复调用。')
+        return dict(ok=True,review=review.view())
+    if action=='begin':return review.begin(stage,args['request_id'],args.get('mode','auto'),args.get('instruction',''),args.get('route'),args.get('owner',''),args.get('producer'),args.get('supervision_operation_id'))
+    if action=='resume_producer':return review.resume_producer(stage,run,args['request_id'],args['binding'],args['route'],args['producer'],args['owner'])
+    if action=='packet':return review.packet(stage,run)
+    if action=='producer_packet':return review.producer_packet(stage,run)
+    if action=='producer_submit':return review.producer_submit(stage,run,args['result'])
+    if action=='progress':review.progress(stage,run,args['text'],args.get('status'));return dict(ok=True)
+    if action=='reserve':return review.reserve_supervision_call(args['operation_id'],args['key'],args['route'],args.get('role','supervisor')) if args.get('operation_id') else review.reserve_call(stage,run,args['key'],args['route'],args.get('role','reviewer'))
+    if action=='call_result':return review.supervision_call_result(args['operation_id'],args['key'],args.get('usage'),args.get('error'),args.get('agent_audit'),args.get('execution_phase'),args.get('model_invoked')) if args.get('operation_id') else review.call_result(stage,run,args['key'],args.get('usage'),args.get('error'),args.get('sent_frames'),args.get('agent_audit'),args.get('execution_phase'),args.get('model_invoked'))
+    if action=='submit':return review.submit(stage,run,args['result'])
+    if action=='repair':return review.repair(stage,run,args['repairs'],args.get('producer_id'))
+    if action=='repair_error':return review.repair_error(stage,run,args['error'])
+    if action=='finish':return review.finish(stage,run,args.get('error'),args.get('limit',False))
+    if action=='render':
+        review.render_start(stage,run);url=workbench(course);doc=read(course.project/'workbench.json')
+        from timeline import duration
+        job=local_json(url+'/api/export',dict(revision=doc['revision'],start=0,end=duration(doc)/doc['fps'],purpose=stage,review_run_id=run))
+        return dict(ok=True,job=job)
+    if action=='render_result':return review.rebind_render(stage,run,args['fingerprint'])
+    if action=='ui':return review.ui(stage,run,args['action'],args.get('text'))
+    raise ValueError('未知审阅操作')
+
+
 def main():
-    parser = argparse.ArgumentParser(); parser.add_argument('--once', action='store_true'); parser.add_argument('--stdio', action='store_true'); parser.add_argument('--workspace-once', action='store_true'); args = parser.parse_args()
+    parser = argparse.ArgumentParser(); parser.add_argument('--once', action='store_true'); parser.add_argument('--stdio', action='store_true'); parser.add_argument('--workspace-once', action='store_true'); parser.add_argument('--review-once', action='store_true'); args = parser.parse_args()
+    if args.review_once:
+        request=json.load(sys.stdin)
+        try:result=review_action(request['name'],request['arguments'])
+        except (ValueError,OSError,KeyError,subprocess.SubprocessError) as error:result=dict(ok=False,error=str(error))
+        print(json.dumps(result,ensure_ascii=False),flush=True);return
     if args.workspace_once:
         request = json.load(sys.stdin)
         print(json.dumps(workspace_action(request['name'], request['arguments']),ensure_ascii=False),flush=True)

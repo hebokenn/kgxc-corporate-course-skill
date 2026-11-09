@@ -1,9 +1,11 @@
 """Local, file-backed course editor. All mutation stays in its imported copy."""
 from pathlib import Path
+from contextlib import contextmanager
 import argparse
 import array
 import copy
 import hashlib
+import fcntl
 import http.server
 import json
 import math
@@ -11,6 +13,7 @@ import mimetypes
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import threading
@@ -25,6 +28,45 @@ activate()
 
 APP = Path(__file__).resolve().parent
 LOCK = threading.RLock()
+
+
+class ProductionHeld(ValueError):
+    pass
+
+
+def owned_export_process(command,**kwargs):
+    process=subprocess.Popen(command,start_new_session=True,**kwargs)
+    process.kgxc_export_process_group=process.pid
+    return process
+
+
+def stop_export_process(process):
+    """Drain the owned group even if its leader has already exited."""
+    group=getattr(process,'kgxc_export_process_group',None)
+    if group is None:
+        if process.poll() is not None:return
+        if os.getpgid(process.pid)!=process.pid:raise ValueError('导出进程缺少独立进程组，不能终止其他任务')
+        group=process.kgxc_export_process_group=process.pid
+    try:os.killpg(group,signal.SIGTERM)
+    except ProcessLookupError:return
+    deadline=time.monotonic()+.8
+    while time.monotonic()<deadline:
+        process.poll()
+        try:os.killpg(group,0)
+        except ProcessLookupError:break
+        time.sleep(.02)
+    else:
+        try:os.killpg(group,signal.SIGKILL)
+        except ProcessLookupError:pass
+    process.wait(timeout=3)
+
+
+@contextmanager
+def document_lock(project):
+    with (Path(project)/'workbench.lock').open('a') as handle:
+        fcntl.flock(handle,fcntl.LOCK_EX)
+        try:yield
+        finally:fcntl.flock(handle,fcntl.LOCK_UN)
 
 
 def digest(path):
@@ -249,6 +291,13 @@ class Workspace:
         self.work=self.project/'work/workbench'
         ensure_dir(self.work)
 
+    def require_production_active(self, process=None):
+        policy=self.project/'ai-review.json'
+        hold=(read(policy) if policy.is_file() else {}).get('hold') or {}
+        if hold.get('held'):
+            if process is not None:stop_export_process(process)
+            raise ProductionHeld('制作已暂停：'+str(hold.get('reason') or '等待解除暂停')+'；当前文件全部保留')
+
     def job(self, name):
         if not re.fullmatch('[a-f0-9]{12}',name):
             raise ValueError('导出任务ID无效')
@@ -258,10 +307,11 @@ class Workspace:
         return dict(id=name,status='missing',error='该任务未完成或服务曾中断，请重新导出')
 
     def save(self, doc, revision):
-        with LOCK:
+        with LOCK, document_lock(self.project):
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
+            if doc==current:return copy.deepcopy(current)
             for key in ['schema','fps','width','height','adapter','sourceDurationFrames','introFrames','bodyEndFrame','media','scenes','status','font','sceneGraph','rendering','motionPlan','narrationLinks','readingPolicy','readingPlan','continuityPolicy','continuityPlan','teachingModules','coursePalette']:
                 if doc.get(key) != current.get(key):
                     raise ValueError('不可通过编辑器修改原始结构字段：'+key)
@@ -299,7 +349,7 @@ class Workspace:
         value=[doc['media']['audio'],stat.st_mtime_ns,stat.st_size,doc['sourceDurationFrames'],doc['holds'],doc.get('cuts',[]),doc['audio']['gain']]
         return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()[:20]
 
-    def audio(self, doc):
+    def audio(self, doc, production=False):
         validate(doc,self.project)
         if not doc['media'].get('audio'):raise ValueError('草稿尚无实际配音，不能播放或导出')
         if not doc['holds'] and not doc.get('cuts') and doc['audio']['gain']==1:
@@ -309,8 +359,18 @@ class Workspace:
         if path.exists():return path
         from timeline import audio_filters
         temporary=path.with_name(path.stem+'.'+uuid.uuid4().hex+'.pending.wav')
-        subprocess.run(['ffmpeg','-v','error','-y','-i',str(safe(self.project,doc['media']['audio'])),
-                        '-filter_complex',audio_filters(doc),'-map','[out]','-ar','48000','-ac','1',str(temporary)],check=True)
+        command=['ffmpeg','-v','error','-y','-i',str(safe(self.project,doc['media']['audio'])),
+                 '-filter_complex',audio_filters(doc),'-map','[out]','-ar','48000','-ac','1',str(temporary)]
+        if production:
+            self.require_production_active()
+            with temporary.with_suffix('.log').open('w') as log:
+                process=owned_export_process(command,stdout=log,stderr=subprocess.STDOUT)
+                while process.poll() is None:
+                    self.require_production_active(process)
+                    time.sleep(.1)
+                self.require_production_active(process)
+                if process.returncode:raise ValueError('导出音轨处理失败，保留日志：'+str(temporary.with_suffix('.log')))
+        else:subprocess.run(command,check=True)
         temporary.replace(path)
         return path
 
@@ -336,8 +396,9 @@ class Workspace:
                         if path and (self.project/path).resolve()==old:config['render_artifacts'][stage]=str(dest.relative_to(self.project))
         atomic(config_path,config)
 
-    def start_export(self, revision, start, end, url, purpose=None):
+    def start_export(self, revision, start, end, url, purpose=None, review_run_id=None):
         with LOCK:
+            self.require_production_active()
             doc=read(self.file)
             validate(doc,self.project)
             if doc.get('status')=='draft' or not doc['scenes'] or (not doc['captions'] and not doc.get('cuts')):
@@ -355,7 +416,10 @@ class Workspace:
                 from workflow import Course
                 course=Course(self.root)
                 if course.modern():
-                    course.require_video('pilot' if key=='final' else 'style')
+                    if review_run_id:
+                        from ai_review import Review
+                        Review(course).allow_render(key,review_run_id)
+                    else:course.require_video('pilot' if key=='final' else 'style')
                     if course.storyboard_mode():
                         from storyboard import check_bindings
                         issues=check_bindings(course.storyboard(),course.sample_plan(),doc,first,last,full=key=='final')
@@ -375,26 +439,31 @@ class Workspace:
             self.jobs[job_id]=job
         def worker():
             try:
+                self.require_production_active()
                 job['status']='rendering'
                 from continuity_pacing import audit as audit_continuity
                 continuity=audit_continuity(doc,self.project,first,last)
                 atomic(directory/'continuity-preflight.json',continuity)
                 if continuity['status']=='fail':raise ValueError('旁白连贯性检查未通过：'+'；'.join(continuity['errors']))
-                audio=self.audio(doc)
+                audio=self.audio(doc,production=True)
                 config=tools()
                 interpreter=os.environ.get('COURSE_PYTHON',config.get('python',sys.executable))
                 command=[interpreter,str(APP/'render_worker.py'),'--url',url+'/renderer.html?job='+job_id,
                          '--directory',str(directory),'--project',str(self.project),'--audio',str(audio),'--first',str(first),'--last',str(last),
                          '--fps',str(doc['fps'])]
                 with (directory/'render.log').open('w') as log:
-                    process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
+                    self.require_production_active()
+                    process=owned_export_process(command,stdout=log,stderr=subprocess.STDOUT,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
+                    atomic(directory/'execution.json',dict(pid=process.pid,process_group=process.pid,scope='owned-export-process-group',job_id=job_id,files_retained=True))
                     while process.poll() is None:
+                        self.require_production_active(process)
                         status=directory/'progress.json'
                         if status.exists():
                             try:job['progress']=read(status)['progress']
                             except ValueError:pass
                         time.sleep(.4)
                     if process.returncode:raise ValueError((directory/'render.log').read_text()[-1800:])
+                self.require_production_active()
                 if native_hash!=native_fingerprint(self.project):raise ValueError('导出期间源码或媒体已改变，请重新导出；没有把旧帧绑定到新源码')
                 if render_context is not None and read(self.file)!=doc:raise ValueError('导出期间编辑版本已改变，请重新生成当前版本')
                 delivery=self.root/'delivery';ensure_dir(delivery)
@@ -452,6 +521,7 @@ class Workspace:
                 with zipfile.ZipFile(archive) as z:
                     if z.testzip():raise ValueError('工程包CRC校验失败')
                 if native_hash!=native_fingerprint(self.project):raise ValueError('打包期间素材发生变化，请重试')
+                self.require_production_active()
                 self.archive_previous_exports(job_id)
                 cfg=self.project/'project.json'
                 if cfg.exists():
@@ -465,13 +535,16 @@ class Workspace:
                     from workflow import Course,bundle_course
                     course=Course(self.root)
                     with LOCK:
-                        if course.modern():course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'],render_context=render_context)
+                        self.require_production_active()
+                        if course.modern():course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1),str(srt.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'],render_context=render_context,review_run_id=review_run_id)
                         else:course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'])
                     bundle_course(self.root,archive)
                 job.update(status='complete',progress=1,video='/download/'+urllib.parse.quote(str(video.relative_to(self.root))),
                            srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),
                            package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata)
                 atomic(directory/'result.json',job)
+            except ProductionHeld as exc:
+                job.update(status='cancelled',error=str(exc),files_retained=True);atomic(directory/'result.json',job)
             except Exception as exc:
                 job.update(status='failed',error=str(exc));atomic(directory/'result.json',job)
         threading.Thread(target=worker,daemon=True).start()
@@ -535,7 +608,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 from workflow import VERSION
                 from lifecycle import POLICY
                 state=read(self.space.project/'course-state.json') if (self.space.project/'course-state.json').is_file() else {}
-                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION,lifecycle_policy=POLICY))
+                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION,lifecycle_policy=POLICY,runtime_build=getattr(self.server,'runtime_build',None)))
             if path=='/api/workflow':
                 from workflow import Course
                 return self.json(Course(self.space.root).status())
@@ -575,7 +648,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     match=re.search(r'-([a-f0-9]{12})\.(mp4|srt|json|zip)$',f.name)
                     if match:f=safe(self.space.work,'exports/'+match[1]+'/published/'+f.name)
                 return self.file(f)
-            if path in ['/','/index.html']:return self.file(APP/('design.html' if (self.space.project/'course-state.json').is_file() else 'index.html'))
+            if path in ['/','/index.html']:
+                if (self.space.project/'course-state.json').is_file() and read(self.space.project/'course-state.json').get('preferred_workbench')=='dsh':
+                    return self.json(dict(service='DSH course workbench internal service',message='本课统一从DSH课程工作台插件进入；本地址不再展示独立制课界面。'))
+                return self.file(APP/('design.html' if (self.space.project/'course-state.json').is_file() else 'index.html'))
             if path=='/edit.html':return self.file(APP/'index.html')
             return self.file(safe(APP,path.lstrip('/')))
         except (BrokenPipeError,ConnectionResetError):pass
@@ -649,7 +725,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if not dest.exists():shutil.copy2(audio,dest)
                 return self.json(dict(url='/preview-audio/'+name))
             if path=='/api/export':
-                return self.json(self.space.start_export(data['revision'],data['start'],data['end'],'http://'+self.headers['Host'],data.get('purpose') or None))
+                return self.json(self.space.start_export(data['revision'],data['start'],data['end'],'http://'+self.headers['Host'],data.get('purpose') or None,data.get('review_run_id')))
             raise ValueError('未知操作')
         except FileExistsError as exc:self.json(dict(error=str(exc)),409)
         except (BrokenPipeError,ConnectionResetError):pass
@@ -660,7 +736,8 @@ def serve(root,port=0):
     http.server.ThreadingHTTPServer.request_queue_size=128
     server=http.server.ThreadingHTTPServer(('127.0.0.1',port),Handler);server.workspace=Workspace(root)
     if (server.workspace.project/'course-state.json').is_file():
-        from workflow import VERSION
+        from workflow import VERSION,service_build
+        server.runtime_build=service_build()
         atomic(server.workspace.project/'work/workbench-service.json',dict(pid=os.getpid(),version=VERSION,url='http://127.0.0.1:'+str(server.server_address[1])))
     print('WORKBENCH_URL=http://127.0.0.1:'+str(server.server_address[1]),flush=True)
     try:server.serve_forever()

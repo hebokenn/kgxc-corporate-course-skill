@@ -44,6 +44,8 @@ class StoryboardTests(unittest.TestCase):
         design(self.course)
         self.course.confirm('outline',self.course.status()['revision'],'测试夹具结构，不是用户课程认可',actor='qa-operator')
         self.course.save_script('先核对订单。\n\n顾客询问时，先倾听再回应。\n\n现在完成核对，并逐项复查。',self.course.status()['revision'])
+        from test_source_coverage_support import confirm_fixture_coverage
+        confirm_fixture_coverage(self.course)
         self.course.confirm('script',self.course.status()['revision'],'测试夹具逐字稿',actor='qa-operator')
         self.course.select_branch('video',self.course.status()['revision'],'技术测试视频分支',actor='qa-operator')
 
@@ -214,6 +216,8 @@ class StoryboardTests(unittest.TestCase):
         path=self.root/'default-course';create(path);course=Course(path);design(course)
         course.confirm('outline',course.status()['revision'],'QA结构',actor='qa-operator')
         course.save_script(self.course.script()['text'],course.status()['revision'])
+        from test_source_coverage_support import confirm_fixture_coverage
+        confirm_fixture_coverage(course)
         course.confirm('script',course.status()['revision'],'QA正文',actor='qa-operator')
         course.select_branch('video',course.status()['revision'],'QA视频',actor='qa-operator')
         course.save_storyboard(fixture(course),course.status()['revision'])

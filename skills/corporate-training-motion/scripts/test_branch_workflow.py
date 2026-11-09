@@ -24,6 +24,8 @@ def design(course):
 def approve_script(course):
     course.confirm('outline',course.status()['revision'],'QA：结构与讲法确认',actor='qa-operator')
     course.save_script('先核对订单，再核对编码。现在请完成一次核对，逐项复核。',course.status()['revision'])
+    from test_source_coverage_support import confirm_fixture_coverage
+    confirm_fixture_coverage(course)
     return course.confirm('script',course.status()['revision'],'QA：逐字稿确认',actor='qa-operator')
 
 
@@ -83,7 +85,10 @@ class BranchTests(unittest.TestCase):
         d=director(self.course);d['inputs'].append(dict(role='original',path='../delivery/courseware/deck.html'))
         with self.assertRaises(ValueError):self.course.save_director(d,self.course.status()['revision'])
         copy_path=self.root/'inputs/copied-original.html';copy_path.write_bytes(p.read_bytes());s=self.course.status();plan=s['plan'];plan['sources'].append(dict(id='COPY',title='重命名课件',kind='file',location='../inputs/copied-original.html'));self.course.save_plan(plan,s['revision'])
-        self.course.confirm('outline',self.course.status()['revision'],'QA来源变更确认');self.course.confirm('script',self.course.status()['revision'],'QA本稿不变确认')
+        self.course.confirm('outline',self.course.status()['revision'],'QA来源变更确认')
+        from test_source_coverage_support import confirm_fixture_coverage
+        confirm_fixture_coverage(self.course)
+        self.course.confirm('script',self.course.status()['revision'],'QA本稿不变确认')
         d['inputs'][-1]['path']='../inputs/copied-original.html'
         with self.assertRaisesRegex(ValueError,'课件不能'):self.course.save_director(d,self.course.status()['revision'])
     def test_three_real_style_proposals_are_required_and_never_auto_selected(self):

@@ -8,6 +8,8 @@
 
 制作包包括完整学员稿/旁白、案例练习及反馈、素材需求、媒介/交互逻辑、选择记录和未决项。要 PPTX 等才按要求制作实际文件；不把分镜表冒充成品课件。
 
+当前逐字稿审核另交制作端[原件覆盖对照](source-coverage-and-scope.md)：按独立业务要点计算覆盖，舍弃仍在分母，单列关键点、全部舍弃理由与新增内容及依据；原件读取不全或未辨认项明确显示。由用户对照当前原件和稿件明确确认取舍，可与逐字稿确认合并为一次明确提交；保存报告、模型核验与人工确认分别记录。对照账不发给只看成品的独立盲审 agent，不因此增加盲审轮次。
+
 区分制作端来源与实际发给学员的材料，未明确分发的附件默认不可用。按[学员上下文检查](learner-context.md)在交接备注列出被引用对象的名称、用途、课程内必要内容和呈现位置；简单课程可直接在原稿旁标注，不另造空表。每个指代都应能从学员稿本身理解，不能要求下一位制作者自行猜原附件。
 
 ## 已确认逐字稿与分支
@@ -26,6 +28,7 @@
 - `decisions`：`id,question,finding,options,recommended,selected,status,evidence,blocking_for`。选项各含`id,label,impact`。无选择为`selected:null`；`status`为`open/confirmed/delegated`；`blocking_for`列`courseware`和/或`production`，或空数组。
 - `issues`：`id,detail,state,blocks`，可加`source_refs,resolution`。`state`为`open/resolved/mitigated`；`blocks`为`none/courseware/production`。缓解需具体做法。
 - `handoff`：`ready_for_courseware,ready_for_production`。校验器只报告，不自动改成就绪或代替授权。
+- `authoring`：新模板的制作端输入记录，`schema=script-authoring/1`，`selected_plan`引用当前已选方案，`brand_greeting`为实际选定问候原句或`null`。`unit_intents`按核心教学单元记录`unit_id,trigger,action,decision_basis,new_information,example`；`example`可为完整示范、练习反馈或不需要示范的理由。`self_check`含`status=not_done/complete,evidence,unresolved[]`，记录制作端通读和修改范围，不能伪造用户确认。此记录留在制作端，不附给盲审者。旧稿缺少该字段不自动作废。
 
 v2的`stage`为`outline/script`；完整逐字稿由`script_file`引用，相对设计JSON定位。旧schema_version=1保留outline/courseware与courseware_file。仅存在不证明内容完整，需检查全稿及格式渲染。
 
@@ -35,4 +38,4 @@ v2的`stage`为`outline/script`；完整逐字稿由`script_file`引用，相对
 
 隐藏原始文件，通读完整学员稿并按[指代检查](learner-context.md)复核：对象是否已介绍、用途是否讲明、判断或操作所需内容是否已纳入课程；引用画面能否在实际讲到时看清对应项目。旁白与画面上的“原表／本表”等都在范围内，来源台账和制作备注单独保留。结构校验通过不能替代这项语义复核。
 
-运行 `check_design.py`检查结构和引用。它不能判断教学质量、业务正确、真实用户回答或学习效果；仍需人工复核与试学。仅要大纲时，大纲完成即完成当前请求，不为就绪伪造已定稿、已试学或已发布。
+运行 `check_design.py`检查结构、引用及新模板中的作者输入记录。它不能判断教学质量、业务正确、真实用户回答或学习效果；作者仍须按[逐字稿输入与自检](script-authoring-quality.md)通读当前正文。当前阶段当前选定方案只盲审一次；之后集中修复并按固定问题清单验收，不自动再盲审。仅要大纲时，大纲完成即完成当前请求，不为就绪伪造已定稿、已试学或已发布。

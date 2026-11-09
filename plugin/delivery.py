@@ -86,7 +86,7 @@ def deliver(course,workspace,desktop=None):
     if root.parent!=workspace/'courses' or course.root.is_symlink():raise ValueError('只保存当前会话 courses 内的本课成品')
     with course.locked():
         status=course.status()
-        if status['stage']!='complete' or not any(g['id']=='final' and g['status']=='delivered' for g in status['gates']):raise ValueError('当前完整视频尚未完成制作端校验与登记')
+        if status['stage'] not in ['complete','delivery'] or not any(g['id']=='final' and g['status'] in ['confirmed','delivered'] for g in status['gates']):raise ValueError('当前完整视频尚未完成必检项审阅、校验与用户确认')
         if any(j.get('status') in ['queued','rendering','encoding','packaging'] for j in status.get('jobs',[])):raise ValueError('制作任务尚未结束，暂不保存或处理工程')
         files=[course.relative(name) for name in status['artifacts'].get('final',[])]
         videos=[p for p in files if p.suffix.lower()=='.mp4' and p.is_file()]
@@ -127,6 +127,13 @@ def deliver(course,workspace,desktop=None):
         decision=dict(choice='keep',at=now(),evidence=policy.get('evidence'),actor=policy.get('actor','user')) if policy.get('mode')=='keep' and policy.get('evidence') else None
         value=dict(schema='course-delivery-receipt/1',at=now(),course_path=str(root),course_id=status['course_id'],title=title,revision=status['revision'],
                    delivery_root=str(folder),files=outputs,originals=originals,chapters=chapters,review_context=read(course.project/'workbench-review-context.json',{}).get('scope','course-review'),cleanup_status='retained',cleanup_decision=decision)
+        from ai_review import enabled,Review
+        if enabled(course):
+            state=read(course.state_file);view=Review(course).require_pass('final')
+            if not view['user_confirmed']:raise ValueError('本版成片尚未由用户确认，不能登记正式交付')
+            state.setdefault('formal_deliveries',[]).append(dict(at=now(),review_id=view['run']['id'],fingerprint=view['fingerprint'],files=outputs))
+            course._commit(state,'formal_delivery_saved',dict(review_id=view['run']['id'],folder=str(folder)))
+            value.update(revision=state['revision'],ai_review_id=view['run']['id'],user_confirmation=view['run']['id'])
         receipt=receipt_file(status['course_id']);atomic(receipt,value)
         # Saving verified deliverables never authorizes removal of source work.
         # Retention is the default, including unattended and delegated production.

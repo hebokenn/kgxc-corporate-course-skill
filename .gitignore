@@ -16,3 +16,9 @@ dist/
 *.key
 *.log
 *.blend1
+
+# Local experimental host registration; the public plugin targets DSH.
+.agents/
+.codex-plugin/
+.mcp.json
+mcp.json

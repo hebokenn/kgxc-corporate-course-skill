@@ -7,13 +7,27 @@ import {SessionCourses} from './session-courses.mjs';
 import {serveDelivery} from './delivery-files.mjs';
 import {z} from 'zod';
 import {productionProjection,productionSnapshot} from './production-monitor.mjs';
+import {reviewHost} from './review-host.mjs';
+import {studioProxy} from './studio-proxy.mjs';
 
 export const name = 'kgxc-course';
 export const inject = ['tools'];
 export function apply(ctx) {
   const bindings = new Map();
   const courses = new SessionCourses();
-  const editor = editorHost(ctx, bindings);
+  const reviews=reviewHost(ctx,{bindings});
+  const editor = editorHost(ctx, bindings,callTool,{supervision:reviews});
+  ctx.on?.('session/event',(session,event)=>{
+    const agent=ctx.get?.('agents')?.get(session.id);
+    if(agent)void reviews.observe(agent,event).catch(error=>ctx.logger?.warn?.('课程监督已停止执行：'+error.message));
+  });
+  ctx.on?.('agent/status',({agent,status})=>{
+    if(status==='idle')void reviews.onIdle(agent).catch(error=>ctx.logger?.warn?.('课程自动独立审阅未启动：'+error.message));
+  });
+  ctx.tools.guard?.(execution=>reviews.blockReason(execution.agent));
+  ctx.on?.('tools/pre-execute',async(execution,next)=>{
+    await reviews.beforeTool(execution.agent,execution.name,execution.arguments);return next();
+  },{prepend:true});
   ctx.inject(['sessionProjections'],scoped=>scoped.sessionProjections.register(productionProjection(z)));
   for (const spec of tools) {
     ctx.tools.register({
@@ -24,6 +38,7 @@ export function apply(ctx) {
         const value = await callTool(spec.name, args, {signal: execution?.signal});
         if (value.ok && value.course_path && execution?.agent) bindings.set(value.course_path, execution.agent);
         courses.record(spec.name,value,execution?.agent);
+        if(value.ok&&value.course_path&&execution?.agent&&['kgxc_course_create','kgxc_course_resume'].includes(spec.name))void reviews.onIdle(execution.agent).catch(error=>ctx.logger?.warn?.('关联课程后的独立审阅未启动：'+error.message));
         return value;
       },
     });
@@ -41,6 +56,8 @@ export function apply(ctx) {
   });
   const token = randomBytes(32).toString('hex');
   const json = (res, status, value) => { res.writeHead(status, {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}); res.end(JSON.stringify(value)); };
+  const validToken=req=>{const value=req.headers['x-kgxc-token'];return typeof value==='string'&&value.length===token.length&&timingSafeEqual(Buffer.from(value),Buffer.from(token));};
+  const views=studioProxy({validToken,json,resolveCourse:sessionId=>{const session=ctx.get?.('agents')?.get(sessionId)?.session||ctx.get?.('sessions')?.get(sessionId);return courses.resolve(sessionId,session).course_path;}});
   ctx.inject(['webServer'], scoped => {
     scoped.effect(() => scoped.webServer.register({kind: 'prefix', path: '/api/kgxc-course', handler: async (req, res) => {
       try {
@@ -48,18 +65,26 @@ export function apply(ctx) {
         const address = req.socket?.remoteAddress;
         if (host && !['127.0.0.1', 'localhost', '[::1]'].includes(new URL('http://' + host).hostname) || address && !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address)) return json(res, 403, {ok: false, error: '制课接口仅供本机使用'});
         const route = new URL(req.url, 'http://localhost').pathname;
+        if(route.startsWith('/api/kgxc-course/content/'))return await views.serve(req,res,new URL(req.url,'http://localhost'));
         if(req.method==='GET'&&route==='/api/kgxc-course/delivery/file')return await serveDelivery(req,res,new URL(req.url,'http://localhost'));
         if (req.method === 'GET' && route === '/api/kgxc-course/meta') {
-          return json(res, 200, {ok: true, version: '0.6.0', token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
+          return json(res, 200, {ok: true, version: '0.8.23', token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
         }
         if (req.method === 'GET' && route === '/api/kgxc-course/courses') return json(res, 200, await callTool('kgxc_course_list'));
-        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
+        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
         const supplied = req.headers['x-kgxc-token'];
         if (typeof supplied !== 'string' || supplied.length !== token.length || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) return json(res, 403, {ok: false, error: '请重新打开制课工作台'});
         if (!String(req.headers['content-type'] || '').startsWith('application/json')) return json(res, 415, {ok: false, error: '需要 JSON 请求'});
         let body = '', bytes = 0;
         for await (const chunk of req) { bytes += chunk.length; if (bytes > 4 * 1024 * 1024) return json(res, 413, {ok: false, error: '请求过大'}); body += chunk; }
         const request = JSON.parse(body);
+        if(route.endsWith('/view'))return json(res,200,await views.open(request));
+        if(route.endsWith('/review')){
+          const agent=ctx.get?.('agents')?.get(request.session_id),session=agent?.session||ctx.get?.('sessions')?.get(request.session_id);
+          const path=courses.resolve(request.session_id,session).course_path;
+          if(!path||request.course_path!==path)throw Error('课程已切换，请在当前课程重新打开审阅');
+          return json(res,200,await reviews(request.action,{...request,course_path:path,busy:agent?.status==='running'||Boolean(request.busy)}));
+        }
         if(route.endsWith('/progress')){
           const agent=ctx.get?.('agents')?.get(request.session_id),session=agent?.session||ctx.get?.('sessions')?.get(request.session_id);
           const path=courses.resolve(request.session_id,session).course_path;

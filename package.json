@@ -1,6 +1,6 @@
 {
   "name": "kgxc-course-plugin",
-  "version": "0.6.0",
+  "version": "0.8.23",
   "description": "DSH 课程工作台：资料、大纲、逐字稿、分镜、有声小样与整课交付。工程位于当前会话工作区。",
   "type": "module",
   "main": "./plugin/dsh.mjs",
@@ -16,17 +16,12 @@
     "cordis.patch.yml",
     "VERSION",
     "README.md",
-    "docs/PLUGIN.md",
-    "docs/verification-plugin-v0.1.0.md",
-    "docs/verification-plugin-v0.2.0.md",
-    "docs/verification-plugin-v0.3.0.md",
-    "docs/verification-plugin-v0.4.0.md",
-    "docs/verification-plugin-v0.5.0.md",
-    "docs/verification-plugin-v0.6.0.md"
+    "docs",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "engines": {
     "node": ">=22",
-    "dsh": ">=0.2.1-rc.3 <0.3.0"
+    "dsh": ">=0.2.2-rc.1 <0.3.0"
   },
   "dsh": {
     "bundle": {

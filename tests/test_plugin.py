@@ -113,6 +113,13 @@ class PluginTests(unittest.TestCase):
         confirmed = service.local_json(result['workbench_url'] + '/api/workflow/confirm', dict(gate='outline', baseRevision=saved['workflow']['revision'], evidence='隔离技术测试：测试操作员确认结构；不代表真实课程验收'))
         script = service.call('kgxc_course_update', {'course_path': path, 'base_revision': confirmed['revision'], 'stage': 'script', 'text': '先核对订单，再核对编码。现在请完成一次核对，逐项复核。'})
         self.assertTrue(script['ok'], script)
+        self.assertTrue(script['workflow']['ai_review']['enabled'])
+        with self.assertRaisesRegex(ValueError,'原件覆盖'):
+            course.confirm('script',course.status()['revision'],'技术夹具：不能绕过原件对照人工确认')
+        from source_coverage_fixture import confirm_fixture_coverage
+        confirm_fixture_coverage(course)
+        with self.assertRaisesRegex(ValueError,'AI审阅'):
+            course.confirm('script',course.status()['revision'],'技术夹具：不能绕过AI审阅')
         resumed = service.call('kgxc_course_resume', {'course_path': path})
         self.assertTrue(resumed['ok'], resumed)
         self.assertEqual(resumed['workflow']['course_id'], first['course_id'])
@@ -132,7 +139,7 @@ class PluginTests(unittest.TestCase):
         responses = [json.loads(line) for line in process.stdout.splitlines()]
         self.assertEqual([response['id'] for response in responses], [1, 2, 3, 4])
         self.assertEqual(responses[0]['result']['protocolVersion'], '2025-06-18')
-        self.assertEqual(len(responses[1]['result']['tools']), 9)
+        self.assertEqual(len(responses[1]['result']['tools']), 10)
         self.assertTrue(responses[2]['result']['structuredContent']['ok'])
         self.assertTrue(responses[3]['result']['isError'])
 
