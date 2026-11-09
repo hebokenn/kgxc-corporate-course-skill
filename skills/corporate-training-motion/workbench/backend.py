@@ -493,6 +493,15 @@ class Workspace:
                             sample_plan_sha256=plan_digest(planning_course.sample_plan()),document_sha256=digest(self.file),
                             native_sha256=native_hash,bindings=doc.get('storyboardBindings'))
                 atomic(video.with_suffix('.json'),metadata)
+                # A current encoded candidate is needed before its visual/audio
+                # evidence can be checked. Keep it viewable without registering
+                # a stage or replacing a prior accepted export prematurely.
+                from production_contract import inspect as inspect_contract
+                contract=inspect_contract(self.project,document=directory/'document.json',video=video,purpose=key)
+                contract_pending=contract.get('required') and not contract.get('ready')
+                metadata.update(registration_status='held' if contract_pending else 'pending',
+                                stage_registered=False,contract_pending=contract if contract_pending else None)
+                atomic(video.with_suffix('.json'),metadata)
                 packages=self.root/'packages';ensure_dir(packages)
                 archive=packages/f'editable-r{revision}-{job_id}.zip'
                 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=1) as z:
@@ -510,6 +519,11 @@ class Workspace:
                     for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:
                         z.write(APP.parent/'scripts'/name,editor_prefix+'/scripts/'+name)
                     if modern:
+                        from production import PORTABLE_CONTRACT_METADATA
+                        for name in PORTABLE_CONTRACT_METADATA:
+                            source=APP.parent/name
+                            if not source.is_file():raise ValueError('可编辑工程缺少制作基准元数据：'+name)
+                            z.write(source,editor_prefix+'/'+name)
                         z.writestr('README.md','# 可编辑企业课程\n\n运行 python3 project/editor/scripts/workbench.py serve . 打开工作台。\n建议先按Skill仓库README完成完整安装，再运行 kgxc-course serve .。视频导出使用本机配置的ffmpeg、Python Playwright和Chromium。\n')
                         for folder in ['inputs/','delivery/','packages/']:z.writestr(folder,b'')
                         workspace=self.root/'workspace.json'
@@ -522,10 +536,6 @@ class Workspace:
                     if z.testzip():raise ValueError('工程包CRC校验失败')
                 if native_hash!=native_fingerprint(self.project):raise ValueError('打包期间素材发生变化，请重试')
                 self.require_production_active()
-                self.archive_previous_exports(job_id)
-                cfg=self.project/'project.json'
-                if cfg.exists():
-                    config=read(cfg);config.setdefault('render_artifacts',{})['final' if key=='final' else 'preview']=str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1);atomic(cfg,config)
                 # Only a whole-course export establishes complete editable-engine evidence.
                 if first==0 and last==duration(doc) and read(self.file)==doc:
                     proof=read(directory/'verification.json')
@@ -534,14 +544,25 @@ class Workspace:
                 if (self.project/'course-state.json').is_file():
                     from workflow import Course,bundle_course
                     course=Course(self.root)
-                    with LOCK:
-                        self.require_production_active()
-                        if course.modern():course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1),str(srt.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'],render_context=render_context,review_run_id=review_run_id)
-                        else:course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'])
+                    if not contract_pending:
+                        with LOCK:
+                            self.require_production_active()
+                            if course.modern():course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1),str(srt.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'],render_context=render_context,review_run_id=review_run_id)
+                            else:course.register(key,[str(video.relative_to(self.root)).replace('delivery/','../delivery/',1)],course.status()['revision'])
+                        metadata.update(registration_status='registered',stage_registered=True)
+                    atomic(video.with_suffix('.json'),metadata)
+                if not contract_pending:
+                    self.archive_previous_exports(job_id)
+                    cfg=self.project/'project.json'
+                    if cfg.exists():
+                        config=read(cfg);config.setdefault('render_artifacts',{})['final' if key=='final' else 'preview']=str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1);atomic(cfg,config)
+                if (self.project/'course-state.json').is_file():
                     bundle_course(self.root,archive)
                 job.update(status='complete',progress=1,video='/download/'+urllib.parse.quote(str(video.relative_to(self.root))),
                            srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),
-                           package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata)
+                           package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata,
+                           registration_status=metadata['registration_status'],stage_registered=metadata['stage_registered'],
+                           contract_pending=contract if contract_pending else None)
                 atomic(directory/'result.json',job)
             except ProductionHeld as exc:
                 job.update(status='cancelled',error=str(exc),files_retained=True);atomic(directory/'result.json',job)

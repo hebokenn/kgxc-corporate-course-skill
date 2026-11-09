@@ -7,11 +7,19 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'workbench'))
 from storyboard import SCHEMA, paragraphs, check, basis, draw, check_samples, check_bindings
 from workflow import Course, atomic, sha
 from test_branch_workflow import design
+
+
+def choose_fixture_preferences(course):
+    """Save deliberate synthetic choices; this is not real user approval."""
+    from production_preferences import update
+    for key, choice in [('customer', 'V01'), ('flower_text', 'off'), ('sound_effects', 'off')]:
+        update(course.project, key, choice, 'qa-operator')
 
 
 def fixture(course):
@@ -56,7 +64,8 @@ class StoryboardTests(unittest.TestCase):
         return self.course.enable_storyboard(self.course.status()['revision'],'QA显式升级测试',actor='qa-operator')
 
     def ready(self):
-        self.enable();self.course.save_storyboard(fixture(self.course),self.course.status()['revision'])
+        self.enable();choose_fixture_preferences(self.course)
+        self.course.save_storyboard(fixture(self.course),self.course.status()['revision'])
         self.course.choose_shot('all','recommended',self.course.status()['revision'],'QA夹具选择',actor='qa-operator')
         return self.course.confirm('storyboard',self.course.status()['revision'],'QA夹具分镜确认',actor='qa-operator')
 
@@ -173,7 +182,13 @@ class StoryboardTests(unittest.TestCase):
         self.assertEqual(storyboard_errors(board,doc,self.course.project),[])
         doc['storyboardBindings'].pop();self.assertTrue(storyboard_errors(board,doc,self.course.project))
 
-    def test_real_av_registration_requires_current_export_binding_and_freezes_sample(self):
+    # This component tests real export metadata and current sampling. The six
+    # final-media requirements are exercised unmocked by production contract
+    # tests/entrypoints and preference material tests, not by this gray clip.
+    # Real preference choices, selection readiness and board bindings remain.
+    @patch('production.require_contract',return_value=dict(required=False,ready=True))
+    @patch('production_preferences.review_errors',return_value=[])
+    def test_real_av_registration_requires_current_export_binding_and_freezes_sample(self,_preference_media,_contract):
         from performance_cache import native_fingerprint
         self.ready();self.course.sample_storyboard(self.course.status()['revision'],seed='qa')
         board,plan=self.course.storyboard(),self.course.sample_plan()
@@ -220,6 +235,7 @@ class StoryboardTests(unittest.TestCase):
         confirm_fixture_coverage(course)
         course.confirm('script',course.status()['revision'],'QA正文',actor='qa-operator')
         course.select_branch('video',course.status()['revision'],'QA视频',actor='qa-operator')
+        choose_fixture_preferences(course)
         course.save_storyboard(fixture(course),course.status()['revision'])
         course.choose_shot('all','recommended',course.status()['revision'],'QA选择',actor='qa-operator')
         course.confirm('storyboard',course.status()['revision'],'QA分镜',actor='qa-operator')

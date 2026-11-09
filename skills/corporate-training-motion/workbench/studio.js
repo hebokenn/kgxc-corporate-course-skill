@@ -225,9 +225,11 @@ function finalView(root){
 function exportJobCard(job,historical){
   const row=el('section',null,'job'),heading=el('div',null,'job-heading');row.dataset.status=job.status;
   let label=({queued:'排队中',rendering:'制作中',encoding:'编码中',packaging:'整理交付',complete:'合成已完成',failed:'本次未通过校验'})[job.status]||job.status;
+  if(job.status==='complete'&&job.registration_status==='held')label='制作候选已生成 · 待核验';
   if(historical)label=job.status==='failed'?'历史失败记录':label;
   heading.append(el('strong',(historical?'':'当前任务 · ')+label,'job-label'),el('span',(Number.isFinite(job.revision)?'R'+job.revision+' · ':'')+(job.id||''),'meta'));row.append(heading);
-  if(job.status==='complete')row.append(el('p','已完成渲染与编码检查。','meta'));
+  if(job.status==='complete')row.append(el('p',job.registration_status==='held'?'渲染与编码检查已完成；制作候选尚未登记，需补齐当前制作检查。':'已完成渲染与编码检查。','meta'));
+  if(job.registration_status==='held'&&job.contract_pending?.errors?.length){const pending=el('details',null,'job-diagnostics');pending.append(el('summary','查看待核验项'));for(const issue of job.contract_pending.errors)pending.append(el('p',issue.message));row.append(pending);}
   if(!historical&&activeJobs([job])&&typeof job.progress==='number'){const line=el('div',null,'job-progress'),bar=el('progress');bar.max=1;bar.value=Math.max(0,Math.min(1,job.progress));line.append(bar,el('span',Math.floor(bar.value*100)+'%'));row.append(line);}
   if(job.supersededBy)row.append(el('p','后续 '+(Number.isFinite(job.supersededBy.revision)?'R'+job.supersededBy.revision+' ':'')+'导出已通过；本条保留为历史诊断。','meta'));
   if(job.error){const diagnostic=el('details',null,'job-diagnostics');diagnostic.append(el('summary',historical?'查看当时的错误详情':'查看本次错误详情'),el('pre',String(job.error)));row.append(diagnostic);}

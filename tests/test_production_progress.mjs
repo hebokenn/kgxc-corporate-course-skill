@@ -66,3 +66,8 @@ test('supervision-cancelled current export remains paused despite old delivered 
  const state=productionProgress({stage:'final',jobs:[{id:'held',purpose:'final',status:'cancelled',progress:.8,error:'监督发现执行越界；当前文件保留'}],data:{gates:[{id:'final',status:'delivered',receipt:{at:new Date().toISOString()}}]}});
  assert.equal(state.tone,'waiting');assert.equal(state.value,null);assert.match(state.label,/暂停/);assert.match(state.detail,/监督/);
 });
+
+test('a technically complete held candidate is not an old delivered course or a failed render',()=>{
+ const state=productionProgress({stage:'final',jobs:[{id:'candidate',purpose:'final',status:'complete',registration_status:'held',stage_registered:false,completed_at:20}],data:{gates:[{id:'final',status:'delivered',receipt:{at:new Date().toISOString()}}]}});
+ assert.equal(state.value,1);assert.equal(state.tone,'waiting');assert.match(state.label,/候选/);assert.match(state.detail,/尚未登记/);
+});

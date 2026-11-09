@@ -38,6 +38,7 @@ test('DSH local JSON API rejects forged host and missing CSRF token', async () =
   try {
     const meta = await (await fetch(base + '/api/kgxc-course/meta')).json();
     assert.equal(meta.ok, true); assert.equal(meta.token.length, 64);
+    assert.equal(meta.version, JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8')).version);
     assert.equal(meta.media_origin,'http://127.0.0.1:12345');
     const blocked = await fetch(base + '/api/kgxc-course/call', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: 'kgxc_course_environment'})});
     assert.equal(blocked.status, 403);

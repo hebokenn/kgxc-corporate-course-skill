@@ -1,12 +1,31 @@
-"""Small, read-only production handoff included in every course continuation."""
+"""Shared production handoff and contract gate for every video entry point."""
 import json
 from pathlib import Path
 from render_routes import plan,capabilities
 from sound import PALETTE,ROLES
 
+PORTABLE_CONTRACT_METADATA = (
+    'assets/sfx/teaching-native-v1/palette.json',
+    'assets/brand/logo.json',
+    'assets/bookends/packaging-provenance.json',
+)
+
+
+def require_contract(project, video, purpose='final', document=None):
+    """Reject incomplete production evidence before registering or copying media."""
+    from production_contract import inspect
+    result = inspect(project, document=document, video=video, purpose=purpose)
+    if result.get('required') and not result.get('ready'):
+        details = ['[' + str(item.get('id') or item.get('requirement') or 'contract') + '] ' +
+                   str(item.get('message') or '缺少本项制作证据') for item in result.get('errors', [])]
+        raise ValueError('制作合同未完成：' + '；'.join(details or ['缺少当前产物对应的制作证据']))
+    return result
+
 
 def handoff(project,status):
     p=Path(project);branch=status.get('branch');stage=status.get('stage')
+    from production_contract import load as load_contract
+    contract=load_contract(p)
     from production_preferences import load as load_preferences, choice_digest,storyboard_current
     preferences=load_preferences(p)
     preferences['choices_sha256']=choice_digest(p) if preferences['required'] else None
@@ -18,12 +37,12 @@ def handoff(project,status):
     from course_palette import read_plan
     palette=read_plan(p)
     active=stage!='complete' and (branch=='video' or branch is None and status.get('workflow_schema')!=2 and stage in ['visual','pilot','final'])
-    if not active:return dict(active=False,production_preferences=preferences,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
+    if not active:return dict(active=False,production_preferences=preferences,production_contract=contract,reason='已完成，等待具体修改需求，不自动重制' if stage=='complete' else '沿用当前教学设计或课件阶段；此时不启动视频与混音')
     if status.get('planning_workflow')=='storyboard-v1' and stage=='storyboard':
         return dict(active=False,reason='先审阅全课内容演绎与分镜，逐片段至少三种表现；此时不生成完整配音或视频',
-                    action='review-whole-course-storyboard',coverage=status.get('storyboard_report'),production_preferences=preferences)
+                    action='review-whole-course-storyboard',coverage=status.get('storyboard_report'),production_preferences=preferences,production_contract=contract)
     if status.get('planning_workflow')=='storyboard-v1' and stage=='pilot' and not status.get('sampling_valid'):
-        return dict(active=False,reason='分镜已确认；先分层随机抽取三个片段再制作',action='sample-storyboard',production_preferences=preferences)
+        return dict(active=False,reason='分镜已确认；先分层随机抽取三个片段再制作',action='sample-storyboard',production_preferences=preferences,production_contract=contract)
     def read(path):return json.loads(path.read_text()) if path.is_file() else {}
     doc=read(p/'workbench.json');spec_path=next((p/x for x in ['source/course-composition.json','source/composition.json','source/spec.json'] if (p/x).is_file()),None)
     spec=read(spec_path) if spec_path else doc
@@ -38,9 +57,19 @@ def handoff(project,status):
     action='configure' if doc.get('status')=='draft' else 'upgrade-renderer' if current=='scene-graph' and selection.get('route')=='motion-canvas' else 'continue-current-renderer'
     if not selection.get('ready'):action='resolve-specific-renderer-gap'
     if (status.get('director_review_status') or {}).get('status')=='pending' and status.get('artifacts',{}).get('final'):action='review-current-candidate'
+    from workflow import export_job_projection
+    projected_jobs=[export_job_projection(p,status,job) for job in status.get('jobs',[])]
+    pending_candidates=[dict(id=job.get('id'),video=job.get('video'),srt=job.get('srt'),package=job.get('package'),
+                            registration_status='held',contract_pending=job.get('contract_pending'))
+                        for job in projected_jobs if job.get('status')=='complete' and
+                        job.get('registration_status')=='held' and job.get('revision')==doc.get('revision') and
+                        (job.get('contract_pending') or {}).get('purpose')==stage]
+    if pending_candidates:action='verify-current-candidate'
     from direction_review import continuation
     return dict(active=True,automatic=True,storyboard_file='storyboard.json' if status.get('planning_workflow')=='storyboard-v1' else None,sampling=status.get('sampling') if status.get('sampling_valid') else None,current_route=current,route_audit=selection,direction=continuation(doc),
-        production_preferences=preferences,palette_plan=palette,palette_policy='读取palette-plan.json；编译使用coursePalette；不按风格名称恢复灰绿，不重新抽色',
+        production_preferences=preferences,production_contract=contract,pending_candidates=pending_candidates,
+        candidate_policy='先核对已有当前编码候选，补齐同一版本的制作证据，再走checkpoint登记；候选完成不代表阶段或成品已登记，不因缺观察而反复渲染',
+        palette_plan=palette,palette_policy='读取palette-plan.json；编译使用coursePalette；不按风格名称恢复灰绿，不重新抽色',
         composition_source=str(spec_path.relative_to(p)) if spec_path else 'workbench.json',action=action,
         timing=dict(prepare='course_tools.py prepare-narration --source RAW.wav --out PREPARED.wav --rate RATE [--start SOURCE_SECONDS --end SOURCE_SECONDS]',
                     map='audio_timing.NarrationClock(声音旁边的.wav.json).frame(原始配音词句秒数)',check='course_tools.py timing-check --spec COMPOSITION.json --project COURSE/project',

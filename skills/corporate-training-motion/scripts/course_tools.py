@@ -16,13 +16,33 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['prepare-narration','timing-check','stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['production-contract','production-check','prepare-narration','timing-check','stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command in ['production-contract','production-check']:
+        ap=argparse.ArgumentParser(description='Explicit production contract and current media evidence; does not approve content')
+        ap.add_argument('course',type=Path)
+        if args.command=='production-contract':
+            ap.add_argument('--read',action='store_true');ap.add_argument('--profile')
+            ap.add_argument('--activate',action='store_true',help='仅在已明确授权当前旧课修订时启用制作合同；不代替任何人工确认')
+        else:
+            ap.add_argument('--document',type=Path);ap.add_argument('--video',type=Path)
+            ap.add_argument('--purpose',choices=['pilot','final'],default='final')
+        aa=ap.parse_args(rest)
+        project=aa.course if aa.course.name=='project' or (aa.course/'workbench.json').is_file() else aa.course/'project'
+        from production_contract import ensure,load,inspect
+        if args.command=='production-contract':
+            if aa.activate and (aa.read or args.dry_run):ap.error('--activate 不能与 --read 或 --dry-run 同用；只读操作不激活旧课')
+            if aa.profile and (aa.read or args.dry_run):ap.error('--profile 仅用于生成合同；只读不改现有选择')
+            result=load(project) if aa.read or args.dry_run else ensure(project,aa.profile,activate=aa.activate)
+        else:result=inspect(project,document=aa.document.expanduser().resolve() if aa.document else None,
+                            video=aa.video.expanduser().resolve() if aa.video else None,purpose=aa.purpose)
+        print(json.dumps(result,ensure_ascii=False,indent=2))
+        return 2 if args.command=='production-check' and result.get('required') and not result.get('ready') else 0
     if args.command=='prepare-narration':
         ap=argparse.ArgumentParser();ap.add_argument('--source',type=Path,required=True);ap.add_argument('--out',type=Path,required=True)
         ap.add_argument('--rate',type=float,default=1);ap.add_argument('--start',type=float,default=0);ap.add_argument('--end',type=float);ap.add_argument('--profile',default='');ap.add_argument('--replace',action='store_true');aa=ap.parse_args(rest)

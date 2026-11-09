@@ -91,6 +91,8 @@ def deliver(course,workspace,desktop=None):
         files=[course.relative(name) for name in status['artifacts'].get('final',[])]
         videos=[p for p in files if p.suffix.lower()=='.mp4' and p.is_file()]
         if len(videos)!=1:raise ValueError('当前交付应只有一个已登记完整视频')
+        from production import require_contract
+        require_contract(course.project,videos[0],'final')
         video=videos[0];subtitles=next((p for p in files if p.suffix.lower()=='.srt' and p.is_file()),video.with_suffix('.srt'))
         cover_record=read(course.project/'qa/cover-review.json',{});cover=course.relative(cover_record.get('coverPath','')) if cover_record.get('coverPath') else None
         if not subtitles.is_file() or not cover or not cover.is_file() or digest(cover)!=cover_record.get('coverSha256'):raise ValueError('缺少与当前成品对应的字幕或已核对封面')

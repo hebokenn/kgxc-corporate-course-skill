@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'workbench'))
 from workflow import Course,atomic,sha,bundle_course
@@ -51,6 +52,13 @@ def visual_director(course):
 
 class BranchTests(unittest.TestCase):
     def setUp(self):
+        # Branch/version tests isolate their existing approval contract. Real new
+        # production-gate failures are covered in test_production_contract_entrypoints.
+        self.contract_gate=patch('production.require_contract',return_value=dict(required=False,ready=True));self.contract_gate.start()
+        self.addCleanup(self.contract_gate.stop)
+        self.preference_gate=patch.multiple('production_preferences',
+            selection_errors=lambda project:[],review_errors=lambda project,gate,video:[])
+        self.preference_gate.start();self.addCleanup(self.preference_gate.stop)
         self.tmp=tempfile.TemporaryDirectory();self.root=Path(self.tmp.name);atomic(self.root/'project/workbench.json',{})
         self.course=Course(self.root);self.course.init('分支验收');design(self.course)
     def tearDown(self):self.tmp.cleanup()

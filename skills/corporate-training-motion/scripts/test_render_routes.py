@@ -216,10 +216,31 @@ class MotionRuntimeTests(unittest.TestCase):
         self.assertFalse(self.errors)
 
     def test_export_and_reopen_without_installed_skill(self):
+        # A technical candidate must be viewable before producer evidence exists,
+        # while the real stage checkpoint remains blocked by that missing proof.
+        from workflow import Course
+        course=Course(self.fixture.course);state_before=course.state_file.read_bytes()
+        previous=self.fixture.course/'delivery/previous-accepted.mp4';previous.parent.mkdir(exist_ok=True)
+        previous.write_bytes(b'prior-file-retention-fixture')
+        old_result=self.p/'work/workbench/exports/prior/result.json'
+        atomic(old_result,dict(id='prior',status='complete',video='/download/delivery/'+previous.name))
+        prior_config=read(self.p/'project.json');prior_config['render_artifacts']=dict(final='../delivery/'+previous.name,preview='../delivery/'+previous.name)
+        atomic(self.p/'project.json',prior_config)
+        config_before=read(self.p/'project.json')
         job=self.space.start_export(self.doc['revision'],0,1,self.url,purpose='pilot')
         deadline=time.monotonic()+90
         while job['status'] not in ['complete','failed'] and time.monotonic()<deadline:time.sleep(.1)
         self.assertEqual(job['status'],'complete',str(job))
+        self.assertEqual(job['registration_status'],'held');self.assertFalse(job['stage_registered'])
+        self.assertFalse(job['contract_pending']['ready']);self.assertTrue(job['contract_pending']['errors'])
+        self.assertEqual(course.state_file.read_bytes(),state_before)
+        self.assertEqual(read(self.p/'project.json').get('render_artifacts'),config_before.get('render_artifacts'))
+        self.assertEqual(previous.read_bytes(),b'prior-file-retention-fixture')
+        self.assertEqual(read(old_result)['video'],'/download/delivery/'+previous.name)
+        video=self.fixture.course/'delivery'/Path(job['video']).name
+        with self.assertRaisesRegex(ValueError,'制作合同未完成'):
+            course.register('pilot',['../delivery/'+video.name],course.status()['revision'])
+        self.assertEqual(course.state_file.read_bytes(),state_before)
         result=self.p/'work/workbench/exports'/job['id']
         self.assertEqual(read(result/'verification.json')['fullDecode'],'pass')
         from workflow import bundle_course
@@ -227,6 +248,14 @@ class MotionRuntimeTests(unittest.TestCase):
         reopened=self.fixture.course.parent/'unpacked'
         with zipfile.ZipFile(archive) as z:
             self.assertIsNone(z.testzip());z.extractall(reopened)
+        from production import PORTABLE_CONTRACT_METADATA
+        for name in PORTABLE_CONTRACT_METADATA:
+            self.assertEqual((reopened/'project/editor'/name).read_bytes(),(ROOT/name).read_bytes())
+        trusted=subprocess.run([tools().get('python',sys.executable),'-B','-c',
+            'import json,sys;sys.path.insert(0,sys.argv[1]);from production_contract import _native_assets;print(json.dumps(_native_assets()))',
+            str(reopened/'project/editor/workbench')],capture_output=True,text=True,timeout=15)
+        self.assertEqual(trusted.returncode,0,trusted.stderr)
+        self.assertIn('focus-native',[row['id'] for row in json.loads(trusted.stdout)])
         # Start the actual copied backend so no imports or server files come from ROOT.
         log=reopened/'server.log'
         with log.open('w') as out:
@@ -252,6 +281,9 @@ class MotionRuntimeTests(unittest.TestCase):
             command=[tools().get('python',sys.executable),str(reopened/'project/editor/scripts/workbench.py'),'export',str(reopened),'--server',url,'--purpose','pilot']
             completed=subprocess.run(command,capture_output=True,text=True,timeout=90)
             self.assertEqual(completed.returncode,0,completed.stdout+completed.stderr)
+            copied_job=json.loads(completed.stdout)
+            self.assertEqual(copied_job['registration_status'],'held')
+            self.assertFalse(copied_job['stage_registered']);self.assertFalse(copied_job['contract_pending']['ready'])
             page.reload();page.wait_for_function('window.ready===true || window.renderError')
             self.assertNotEqual(page.evaluate('async()=>{const r=window.courseRenderer;await r.drawFrame(26);return r.canvas.toDataURL()}'),original)
         finally:proc.terminate();proc.wait(timeout=10)

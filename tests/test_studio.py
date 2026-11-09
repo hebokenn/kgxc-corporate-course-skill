@@ -10,7 +10,7 @@ sys.path[:0]=[str(ROOT/'skills/corporate-training-motion/workbench'),str(ROOT/'s
 from workflow import Course,atomic,read
 from studio import Studio,compose
 from test_branch_workflow import design
-from test_storyboard_workflow import fixture
+from test_storyboard_workflow import fixture,choose_fixture_preferences
 from export_playback import playback,audio_settings
 
 
@@ -33,7 +33,8 @@ class StudioTests(unittest.TestCase):
         confirm_fixture_coverage(self.course)
         self.studio.confirm('script',self.rev())
     def ready_board(self):
-        self.ready_script();board=fixture(self.course);mapping=read(self.course.plan_file)['script_mapping']['paragraphs']
+        self.ready_script();choose_fixture_preferences(self.course)
+        board=fixture(self.course);mapping=read(self.course.plan_file)['script_mapping']['paragraphs']
         for shot,item in zip(board['segments'],mapping):shot.update(unit_id=item['unit_id'],source_paragraph_ids=[item['id']])
         self.course.save_storyboard(board,self.rev());self.course.choose_shot('all','recommended',self.rev(),'技术夹具方案选择',actor='qa-operator')
         self.course.confirm('storyboard',self.rev(),'技术夹具分镜确认',actor='qa-operator')

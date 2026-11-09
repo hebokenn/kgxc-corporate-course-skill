@@ -37,7 +37,10 @@ def load(project):
     historical=bool(str(state.get('version','')).startswith(('6.4.','6.3.','6.2.')) and
         existing.get('video_path') in registered and target.is_relative_to(Path(project).resolve().parent) and target.is_file() and
         existing.get('video_sha256')==sha(target) and existing.get('actor') and existing.get('evidence'))
-    return dict(value, required=path.is_file() and not historical, ready=not pending, pending=pending, customers=CUSTOMERS,new_customer_ready=customer_ready)
+    from production_contract import load as load_contract
+    contract=load_contract(project);active_video=contract.get('required',False)
+    required=contract.get('branch')!='courseware' and (active_video or (path.is_file() and not historical))
+    return dict(value, required=required, ready=not pending, pending=pending, customers=CUSTOMERS,new_customer_ready=customer_ready)
 
 
 def ensure(project):
@@ -48,8 +51,6 @@ def ensure(project):
 
 
 def creative_basis(project):
-    if not (Path(project) / FILENAME).is_file():
-        return None
     value = load(project)
     if not value['required']:return None
     result = dict(choices=value['choices'])
@@ -108,6 +109,10 @@ def update(project, key, choice, actor, brief='', reference_path=''):
         value['new_customer'] = request
     value['updated_at'] = now()
     atomic(Path(project) / FILENAME, value)
+    # A saved choice is an explicit write action; read-only status never creates
+    # or refreshes the production contract.
+    from production_contract import ensure as ensure_contract,load as load_contract
+    if load_contract(project).get('required'):ensure_contract(project)
     return load(project)
 
 

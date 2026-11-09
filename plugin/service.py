@@ -27,7 +27,7 @@ from runtime import activate, config_dir, tools as media_tools
 activate()
 from workflow import Course, VERSION as CORE_VERSION, open_course, atomic, read
 
-VERSION = '0.8.23'
+VERSION = json.loads((ROOT / 'package.json').read_text())['version']
 TOOLS = json.loads((ROOT / 'plugin/tools.json').read_text())
 TOOL_MAP = {tool['name']: tool for tool in TOOLS}
 
@@ -114,7 +114,7 @@ def workspace_action(action, args):
 
 def summary(course, full=False):
     status = course.status()
-    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries', 'ai_review']
+    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries', 'ai_review', 'production_handoff']
     data = status if full else {key: status.get(key) for key in fields if key in status}
     from delivery import completed
     prior=completed(course.root)
@@ -122,6 +122,7 @@ def summary(course, full=False):
         'skill': str(SKILL / 'SKILL.md'), 'design': str(course.plan_file),
         'transcript': str(course.project / 'source/transcript.md'),
         'storyboard': str(course.project / 'storyboard.json'), 'workbench': str(course.project / 'workbench.json'),
+        'production_contract': str(course.project / 'production-contract.json'),
         'editor_draft': str(course.project / 'script-editor.json'),
     }, confirmation='待确认内容请在实际工作台审阅并确认；保存草稿不构成批准。')
 

@@ -32,6 +32,10 @@ class DeliveryTests(unittest.TestCase):
             def locked(inside):return nullcontext()
             def status(inside):return copy.deepcopy(self.state)
             def relative(inside,name):return (project/name).resolve()
+        # These unit tests isolate copy/retention safety; the real production gate
+        # is exercised without mocks in test_production_contract_entrypoints.py.
+        self.contract_gate=patch('production.require_contract',return_value=dict(required=False,ready=True));self.contract_gate.start()
+        self.addCleanup(self.contract_gate.stop)
         self.course=Fixture();self.env=patch.dict(os.environ,{'COURSE_CONFIG_DIR':str(self.base/'config')});self.env.start()
     def tearDown(self):self.env.stop();self.tmp.cleanup()
     def test_delivery_preserves_transcript_samples_and_engineering_by_default(self):

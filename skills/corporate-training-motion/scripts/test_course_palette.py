@@ -162,9 +162,10 @@ class PaletteTests(unittest.TestCase):
 
     def test_palette_change_updates_the_board_and_invalidates_affected_confirmation(self):
         from test_branch_workflow import design, approve_script
-        from test_storyboard_workflow import fixture
+        from test_storyboard_workflow import fixture, choose_fixture_preferences
         course = Course(self.project.parent);course.init('改色检查', planning='storyboard-v1')
         design(course);approve_script(course);course.select_branch('video',course.status()['revision'],'QA video')
+        choose_fixture_preferences(course)
         course.save_storyboard(fixture(course),course.status()['revision'])
         course.choose_shot('all','recommended',course.status()['revision'],'QA choices')
         course.confirm('storyboard',course.status()['revision'],'QA fixture approval')

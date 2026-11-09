@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.8.1'
+VERSION = '6.8.2'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -45,6 +45,33 @@ def hashed(data):
 def sha(path):
     from performance_cache import sha as cached_sha
     return cached_sha(path)
+
+
+def export_job_projection(project, state, job):
+    """Associate a held candidate with actual registered bytes, without rewriting history."""
+    projected=dict(job)
+    if job.get('status')!='complete' or job.get('registration_status')!='held':return projected
+    proof=job.get('contract_pending') or {};purpose=job.get('purpose') or proof.get('purpose')
+    expected=proof.get('video_sha256')
+    if purpose not in ['pilot','final'] or not isinstance(expected,str) or len(expected)!=64:return projected
+    try:
+        parsed=urllib.parse.urlsplit(job.get('video',''))
+        if parsed.scheme or parsed.netloc or not parsed.path.startswith('/download/'):return projected
+        project=Path(project).resolve();root=project.parent
+        relative=urllib.parse.unquote(parsed.path.removeprefix('/download/'))
+        if Path(relative).is_absolute():return projected
+        candidate=(root/relative).resolve()
+        if not candidate.is_relative_to(root) or not candidate.is_file():return projected
+        registered=False
+        for value in state.get('artifacts',{}).get(purpose,[]):
+            if not isinstance(value,str) or Path(value).is_absolute():continue
+            target=(project/value).resolve()
+            if target.is_relative_to(root) and target==candidate:registered=True;break
+        if registered and sha(candidate)==expected:
+            projected.update(registration_status='registered',stage_registered=True,contract_pending=None,
+                             registration_basis='current-artifact-path-and-video-sha256')
+    except (OSError,TypeError,ValueError):pass
+    return projected
 
 
 class LegacyCourse:
@@ -198,7 +225,7 @@ class LegacyCourse:
                              ready_for_production='content' in confirmed and not any('production' in p.get('blocking_for',[]) for p in pending))
         jobs = []
         for p in sorted((self.project / 'work/workbench/exports').glob('*/result.json')):
-            job = read(p, {}); jobs.append({k: job.get(k) for k in ['id', 'status', 'video', 'srt', 'package', 'revision']})
+            job = export_job_projection(self.project,state,read(p, {})); jobs.append({k: job.get(k) for k in ['id', 'status', 'video', 'srt', 'package', 'revision', 'registration_status', 'contract_pending', 'stage_registered','registration_basis']})
         return dict(version=VERSION, state_key=hashed(dict(plan=plan,gates=gates)), course_id=state.get('course_id'), title=plan.get('title', ''),
             revision=state.get('revision', 0), stage=next_gate['id'] if next_gate else 'complete',
             next_action=('审阅并确认' + next_gate['label']) if next_gate else '当前候选已确认，可交付',
@@ -273,6 +300,10 @@ class LegacyCourse:
         if key not in dict(GATES): raise ValueError('未知阶段')
         if not paths or any(not self.relative(p).is_file() for p in paths): raise ValueError('审阅产物不存在')
         if key in ['pilot','final']:
+            from production import require_contract
+            for path in paths:
+                if Path(path).suffix.lower()=='.mp4':require_contract(self.project,self.relative(path),key)
+        if key in ['pilot','final']:
             from motion_quality import require as require_motion
             require_motion(read(self.project/'workbench.json'),self.project)
             videos=[self.relative(p) for p in paths if Path(p).suffix.lower()=='.mp4']
@@ -331,6 +362,8 @@ class LegacyCourse:
             p=s['palette_plan'];lines.append('课程配色（沿用，不重抽）：'+json.dumps(dict(name=p['palette']['name'],mode=p['mode'],palette=p['palette'],exclude=p['exclude']),ensure_ascii=False))
         if s.get('production_handoff',{}).get('active'):
             lines.append('制作接续（制作端自动执行）：'+json.dumps(s['production_handoff'],ensure_ascii=False))
+        elif s.get('production_handoff',{}).get('production_contract',{}).get('required'):
+            lines.append('制作合同（当前视频必须落实）：'+json.dumps(s['production_handoff']['production_contract'],ensure_ascii=False))
         return '\n'.join(lines)
 
 
@@ -422,6 +455,9 @@ class Course(LegacyCourse):
             if branch=='courseware':state['narration_status']='not_required'
             elif state.get('narration_status')=='not_required':state['narration_status']='not_started'
             self._commit(state,'branch_selected',receipt)
+            if branch=='video':
+                from production_contract import ensure as ensure_contract
+                ensure_contract(self.project)
         return self.status()
 
     def enable_storyboard(self, expected, evidence, actor='chat'):
@@ -467,10 +503,12 @@ class Course(LegacyCourse):
 
     def choose_shot(self, identifier, option, expected, evidence, actor='workbench'):
         from storyboard import export_html
+        from production_preferences import storyboard_current,record_storyboard
         if not self.storyboard_mode() or not str(evidence).strip():raise ValueError('请记录分镜选择依据')
         with self.locked():
             state=read(self.state_file);self._revision(expected,state);self.require_video('script')
             board=self.storyboard()
+            preferences_current=storyboard_current(self.project)
             selected=board.get('segments',[]) if identifier=='all' and option=='recommended' else [s for s in board.get('segments',[]) if s['id']==identifier]
             if not selected:raise ValueError('片段不存在')
             for segment in selected:
@@ -479,6 +517,9 @@ class Course(LegacyCourse):
                 segment['selected']=oid
                 segment['selection_receipt']=dict(at=now(),evidence=str(evidence),actor=actor)
             self._snapshot(state);atomic(self.project/'storyboard.json',board)
+            if preferences_current:
+                record_storyboard(self.project,'storyboard-choice-preserved-preferences',
+                    '仅选择已结合当前制作偏好的既有方案；保留原选择依据，不代表新增内容确认')
             export_html(board,self.project/'storyboard.html')
             self._commit(state,'storyboard_choice_saved',dict(id=identifier,option=option,evidence=evidence,actor=actor))
         return self.status()
@@ -768,7 +809,7 @@ class Course(LegacyCourse):
         elif stage=='style':action='导演基于逐字稿提供三个风格，选择并确认画面方案'
         else:action='审阅并确认'+next(g['label'] for g in gates if g['id']==stage)
         plan['handoff']=dict(ready_for_courseware=common,ready_for_production=common and branch=='video' and any(g['id']==('storyboard' if self.storyboard_mode() else 'style') and g['status']=='confirmed' for g in gates))
-        jobs=[{k:d.get(k) for k in ['id','status','video','srt','package','revision']} for p in sorted((self.project/'work/workbench/exports').glob('*/result.json')) for d in [read(p)]]
+        jobs=[{k:d.get(k) for k in ['id','status','video','srt','package','revision','registration_status','contract_pending','stage_registered','registration_basis']} for p in sorted((self.project/'work/workbench/exports').glob('*/result.json')) for d in [export_job_projection(self.project,state,read(p))]]
         narration=state.get('narration_status','not_started')
         if branch=='video' and narration=='not_required':narration='not_started'
         result=dict(version=VERSION,workflow_schema=2,course_id=state['course_id'],title=plan['title'],revision=state['revision'],stage=stage,next_action=action,
@@ -820,6 +861,10 @@ class Course(LegacyCourse):
 
     def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None,review_run_id=None):
         if not self.modern():return super().register(key,paths,expected)
+        if key in ['pilot','final'] and paths and all(self.relative(p).is_file() for p in paths):
+            from production import require_contract
+            for path in paths:
+                if Path(path).suffix.lower()=='.mp4':require_contract(self.project,self.relative(path),key)
         if self.storyboard_mode() and key in ['pilot','final']:
             from storyboard import check_bindings, basis, digest
             issues=check_bindings(self.storyboard(),self.sample_plan(),read(self.project/'workbench.json',{}),full=key=='final')
@@ -957,6 +1002,11 @@ def bundle_course(root, destination):
         if p.is_file():files['project/audio/sfx/'+PALETTE+'/'+p.name]=p
     for name in ['workbench.py','workflow.py','single_line_subtitles.py','check_workbench.py','course_tools.py','character_assets.py']:
         files['project/editor/scripts/'+name]=app.parent/'scripts'/name
+    from production import PORTABLE_CONTRACT_METADATA
+    for name in PORTABLE_CONTRACT_METADATA:
+        source=app.parent/name
+        if not source.is_file():raise ValueError('可编辑工程缺少制作基准元数据：'+name)
+        files['project/editor/'+name]=source
     for name in ['workspace.json','打开课程工作台.command','README.md']:
         if (course.root/name).is_file():files[name]=course.root/name
     proof=dict(version=VERSION,created_at=now(),course_id=course.status()['course_id'],

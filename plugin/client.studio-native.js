@@ -141,6 +141,7 @@ function productionProgress({stage,busy=false,data={},jobs=[],native}) {
   if(latest?.status==='cancelled')return {label:'本次合成已暂停，过程文件保留',value:null,detail:String(latest.error||'制作或监督暂停了本次任务；解除暂停后重新制作当前版本。'),tone:'waiting'};
   if(['storyboard','pilot','final'].includes(stage)&&data.production_preferences?.required&&!data.production_preferences.storyboard_current)
     return {label:data.production_preferences.ready?'制作偏好已修改，等待更新对应成果':'待选择课程制作偏好',value:0,detail:'已有视频和历史记录保留；更新相关分镜与音视频后再登记当前结果。',tone:'waiting'};
+  if(latest?.status==='complete'&&latest.registration_status==='held')return {label:'制作候选已生成 · 100%',value:1,detail:'渲染与编码检查已完成；制作检查尚未齐备，候选可查看，尚未登记成品。',tone:'waiting'};
   const finalGate=data.gates?.find(g=>g.id==='final'),deliveredAt=Date.parse(finalGate?.receipt?.at||'');
   if(finalGate?.status==='delivered'&&Number.isFinite(deliveredAt)&&!busy&&!data.editor?.changed&&list.at(-1)?.status!=='failed'&&(!native?.issue||native.issue.at<deliveredAt))return {label:'整课制作与登记已完成',value:1,detail:'当前成品已通过制作端检查；历史失败保留在折叠记录中，不代表当前制作失败。',tone:'done'};
   const completedAt=latest?.completed_at|| (latest?.id&&native?.last_export?.job_id===latest.id?native.last_export.at:0);
@@ -684,9 +685,11 @@ function finalView(root){
 function exportJobCard(job,historical){
   const row=el('section',null,'job'),heading=el('div',null,'job-heading');row.dataset.status=job.status;
   let label=({queued:'排队中',rendering:'制作中',encoding:'编码中',packaging:'整理交付',complete:'合成已完成',failed:'本次未通过校验'})[job.status]||job.status;
+  if(job.status==='complete'&&job.registration_status==='held')label='制作候选已生成 · 待核验';
   if(historical)label=job.status==='failed'?'历史失败记录':label;
   heading.append(el('strong',(historical?'':'当前任务 · ')+label,'job-label'),el('span',(Number.isFinite(job.revision)?'R'+job.revision+' · ':'')+(job.id||''),'meta'));row.append(heading);
-  if(job.status==='complete')row.append(el('p','已完成渲染与编码检查。','meta'));
+  if(job.status==='complete')row.append(el('p',job.registration_status==='held'?'渲染与编码检查已完成；制作候选尚未登记，需补齐当前制作检查。':'已完成渲染与编码检查。','meta'));
+  if(job.registration_status==='held'&&job.contract_pending?.errors?.length){const pending=el('details',null,'job-diagnostics');pending.append(el('summary','查看待核验项'));for(const issue of job.contract_pending.errors)pending.append(el('p',issue.message));row.append(pending);}
   if(!historical&&activeJobs([job])&&typeof job.progress==='number'){const line=el('div',null,'job-progress'),bar=el('progress');bar.max=1;bar.value=Math.max(0,Math.min(1,job.progress));line.append(bar,el('span',Math.floor(bar.value*100)+'%'));row.append(line);}
   if(job.supersededBy)row.append(el('p','后续 '+(Number.isFinite(job.supersededBy.revision)?'R'+job.supersededBy.revision+' ':'')+'导出已通过；本条保留为历史诊断。','meta'));
   if(job.error){const diagnostic=el('details',null,'job-diagnostics');diagnostic.append(el('summary',historical?'查看当时的错误详情':'查看本次错误详情'),el('pre',String(job.error)));row.append(diagnostic);}

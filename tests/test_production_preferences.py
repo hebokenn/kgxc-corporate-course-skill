@@ -8,7 +8,7 @@ from types import SimpleNamespace
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/'skills/corporate-training-motion/workbench'),str(ROOT/'skills/corporate-training-motion/scripts')]
 from workflow import Course,atomic,read,sha
-from production_preferences import ensure,load,update,creative_basis,choice_digest,selection_errors,review_errors
+from production_preferences import ensure,load,update,creative_basis,choice_digest,selection_errors,review_errors,storyboard_current
 from studio import Studio
 from test_branch_workflow import design
 
@@ -55,6 +55,36 @@ class ProductionPreferencesTests(unittest.TestCase):
         old=read(self.course.state_file)['gates']['outline'].copy();self.ready()
         self.assertEqual(read(self.course.state_file)['gates']['outline'],old)
         self.assertEqual(self.course.status()['gates'][0]['status'],'confirmed')
+    def ready_storyboard(self):
+        from test_branch_workflow import approve_script
+        from test_storyboard_workflow import fixture
+        self.ready();approve_script(self.course)
+        self.course.select_branch('video',self.rev(),'合成夹具视频需求',actor='qa-operator')
+        self.course.save_storyboard(fixture(self.course),self.rev())
+    def test_selecting_an_existing_shot_preserves_current_preference_binding(self):
+        self.ready_storyboard()
+        receipt=self.project/'production-preferences-storyboard.json';old=receipt.read_bytes()
+        choices=choice_digest(self.project)
+        self.assertTrue(storyboard_current(self.project))
+        self.course.choose_shot('all','recommended',self.rev(),'合成夹具明确选择既有方案',actor='qa-operator')
+        self.assertTrue(storyboard_current(self.project));self.assertEqual(choice_digest(self.project),choices)
+        self.assertEqual(read(receipt)['actor'],'storyboard-choice-preserved-preferences')
+        self.assertTrue(any(path.read_bytes()==old for path in (self.project/'work/production-preferences-history').glob('*.json')))
+        self.course.confirm('storyboard',self.rev(),'合成夹具分镜确认，不代表业务课程批准',actor='qa-operator')
+    def test_selecting_a_shot_cannot_revalidate_changed_preferences(self):
+        self.ready_storyboard()
+        receipt=self.project/'production-preferences-storyboard.json';old=receipt.read_bytes()
+        self.choose('sound_effects','off')
+        self.assertFalse(storyboard_current(self.project))
+        self.course.choose_shot('all','recommended',self.rev(),'合成夹具选择，尚未按新偏好重做分镜',actor='qa-operator')
+        self.assertEqual(receipt.read_bytes(),old);self.assertFalse(storyboard_current(self.project))
+        with self.assertRaisesRegex(ValueError,'制作偏好更新'):
+            self.course.confirm('storyboard',self.rev(),'合成夹具不能绕过失效偏好',actor='qa-operator')
+    def test_selecting_a_shot_cannot_invent_a_missing_preference_binding(self):
+        self.ready_storyboard()
+        receipt=self.project/'production-preferences-storyboard.json';receipt.unlink()
+        self.course.choose_shot('all','recommended',self.rev(),'合成夹具仅选择方案，不造缺失依据',actor='qa-operator')
+        self.assertFalse(receipt.exists());self.assertFalse(storyboard_current(self.project))
     def test_uploaded_customer_reference_is_scoped_and_design_must_be_adopted(self):
         outside=self.root/'private.png';outside.write_bytes(b'image')
         with self.assertRaises(ValueError):self.choose('customer','new',brief='便装顾客',reference_path='../private.png')

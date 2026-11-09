@@ -342,7 +342,7 @@ class BlindReviewTests(unittest.TestCase):
         self.assertEqual(private['blind_report']['findings'],wrong['findings']);self.assertFalse(private['blind_report']['passed'])
 
     def test_storyboard_producer_repair_saves_real_board_revision_backup_and_delegated_preflight(self):
-        from test_storyboard_workflow import fixture as storyboard_fixture
+        from test_storyboard_workflow import fixture as storyboard_fixture,choose_fixture_preferences
         from test_workbench import WorkbenchTests
         document_fixture=WorkbenchTests();document_fixture.setUp()
         try:
@@ -356,6 +356,7 @@ class BlindReviewTests(unittest.TestCase):
         self.course.confirm('script',self.course.status()['revision'],'合成夹具明确内容确认',actor='qa-operator')
         self.course.select_branch('video',self.course.status()['revision'],'合成夹具已有视频制作委托',actor='qa-operator')
         self.course.enable_storyboard(self.course.status()['revision'],'合成夹具启用分镜',actor='qa-operator')
+        choose_fixture_preferences(self.course)
         board=storyboard_fixture(self.course)
         for segment,paragraph in zip(board['segments'],read(self.course.plan_file)['script_mapping']['paragraphs']):segment['source_paragraph_ids']=[paragraph['id']]
         self.course.save_storyboard(board,self.course.status()['revision'])

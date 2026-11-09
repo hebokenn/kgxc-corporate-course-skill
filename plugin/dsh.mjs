@@ -10,6 +10,8 @@ import {productionProjection,productionSnapshot} from './production-monitor.mjs'
 import {reviewHost} from './review-host.mjs';
 import {studioProxy} from './studio-proxy.mjs';
 
+const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+
 export const name = 'kgxc-course';
 export const inject = ['tools'];
 export function apply(ctx) {
@@ -68,7 +70,7 @@ export function apply(ctx) {
         if(route.startsWith('/api/kgxc-course/content/'))return await views.serve(req,res,new URL(req.url,'http://localhost'));
         if(req.method==='GET'&&route==='/api/kgxc-course/delivery/file')return await serveDelivery(req,res,new URL(req.url,'http://localhost'));
         if (req.method === 'GET' && route === '/api/kgxc-course/meta') {
-          return json(res, 200, {ok: true, version: '0.8.23', token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
+          return json(res, 200, {ok: true, version, token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
         }
         if (req.method === 'GET' && route === '/api/kgxc-course/courses') return json(res, 200, await callTool('kgxc_course_list'));
         if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
