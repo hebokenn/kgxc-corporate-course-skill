@@ -59,3 +59,17 @@ python3 SKILL_DIR/scripts/course_tools.py sfx-mix COURSE --plan COURSE/project/a
 正常速度检查原库单音、课程混音及最终编码：清脆程度、尾音、是否抢词、密度、可闻起音与动作落点、同组选项是否等权。源哈希、格式、削波、波形相关、ASR和抽帧各自只证明技术项目；不能虚构已完整听看或代填用户认可。出现“音源不好听”时，回到参考音源选择，不继续用EQ、升调或加混响掩盖选源问题。
 
 公开演示《回收价格异议处理》采用22处花字、15次声音、两款原库音源，末尾三问和阅读留白保持安静；这是一段具体演示的选择。公开入口见仓库主页的“花字与原库音效样片”，完整教学任务仍按本课内容安排。
+
+## 可执行花字与当前编码声音证据
+
+`requirements.emphasis.events`仍是唯一花字清单，新增执行字段：`requirement_id,quote,purpose,emphasis_text,visual_treatment,target_node_ids,text_node_ids,marker_node_ids,semantic_anchor,animation_start,animation_end,landing_frame,reading_window,sound_or_silence_reason`。需要保留的否定、条件、权限登记 `protected_tokens`。实际字组、标记及目标关系必须存在；字体名、普通正文换ID、字幕、单纯透明度入场不能单独算专门花字。`emphasis_checks.inspect()`沿实际祖先、阅读组与运行曝光核对，事件空表、语义改变、缺图或读不完分别保持稳定错误。逐图观察不能复制同一句“已看清”。
+
+编码图证据使用当前视频的出现前/触发/中点/落位/阅读结束帧，记录 `encoded_frame,actualPTS,path,sha256,observation`及当前doc/videoSHA。程序会从当前主视频实际解码比对像素。图像核对与真实片段观看、主体/人物遮挡观察各自记录；此检查不自动授予审美或学员接受结论。详见[执行合同](55-execution-contract-and-release.md)。
+
+`sfx_evidence.mix_from_dry(project,dry_path,plan_path,assets,stem_path,mix_path,fps)`从已保存计划及实际干声生成48k单声道独立音效分轨和混音，返回源、增益、落点、计划/干声/分轨/混音哈希与样本数。不新增静音、不压缩或拉长配音、不静默削尾，不自动归一化以掩盖过载。需要多声道或额外音乐时仍沿现有混音流程，并交同等来源和时轴回执。
+
+执行事件使用 `asset_id/source_sha256/visual_event_id/trigger_kind/peak_or_onset_frame/source_peak_sample或source_onset_sample/gain/group_id`，由实际源的空白、起音或峰值确定位置。`timing_contract`在混音前保存目标及容差依据；`receipt`绑定本次计划和未改变的干声时轴。不得把源文件开头直接当可闻起音。
+
+`requirements.sfx.calibration.assets`为每个当前源记录 `source_sha256`及实际 `positive_controls/negative_controls`文件和哈希。正例含原声与压缩含声，负例含静音、旁白、压缩无声；正例保存真实 `expected_offset_sample`。匹配器实际解码到48k，从这些对照推导阈值与采样误差；不能用一个未经校准的相关系数放行。当前编码逐事件保存匹配值、落点及偏差，删声报 `SFX_NOT_IN_ENCODE`，无法分离报 `SFX_PRESENCE_UNCERTAIN`，超出预先约定的整数帧量化及实测误差报 `SFX_TIME_MISMATCH`，事后扩大误差报 `SFX_TIMING_CONTRACT_MISMATCH`。
+
+`review.listening`单独记录实际正常速度听审能力、检查者、方法和每事件可闻性、抢词、尾音、密度、平等权重、音画落点及未解决项。信号检出、波形或ASR不填写这些听感结论；没有真实听审继续返回 `AUDIO_REVIEW_UNVERIFIED`。当前合成夹具验证了原库声音、AAC压缩、静音/旁白反例、删声和错两帧；它不证明任意混音可分离，更不替代真实课程听审。

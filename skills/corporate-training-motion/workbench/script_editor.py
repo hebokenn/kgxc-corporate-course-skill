@@ -69,6 +69,8 @@ class ScriptEditor:
         atomic(self.path, {key: state[key] for key in keep if key in state})
 
     def save(self, text, expected):
+        from render_input_guard import ensure_mutation_allowed
+        ensure_mutation_allowed(self.space.project,'ScriptEditor.save',dict(text=text,expected=expected))
         if not isinstance(text, str) or len(text) > 2_000_000:
             raise ValueError('逐字稿超过可编辑长度')
         with self.locked():

@@ -4,8 +4,10 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import zipfile
+import uuid
 
 from check_readme import ReadmeStructureError, check_readme
 
@@ -28,11 +30,26 @@ def main():
         print(f'打包已阻止：{ROOT / "README.md"}: {error}',file=sys.stderr)
         return 1
     version=(ROOT/'VERSION').read_text().strip()
-    for name in [NAME,'elearning-course-design']:
+    metadata=json.loads((ROOT/'release.json').read_text())
+    versions=metadata.get('skill_versions',{})
+    if metadata.get('version')!=version or versions.get(NAME)!=version or not isinstance(versions.get('elearning-course-design'),str) or not versions['elearning-course-design']:
+        raise ValueError('Release metadata and declared Skill versions must match before writing artifacts')
+    names=[NAME,'elearning-course-design']
+    stage=ROOT/'dist/staging'/version/uuid.uuid4().hex
+    for name in names:
         skill=ROOT/'skills'/name;manifest=skill/'package-manifest.json'
         files={str(p.relative_to(skill)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(skill.rglob('*')) if p.is_file() and p!=manifest and not excluded(p)}
-        manifest.write_text(json.dumps(dict(name=name,version=version if name==NAME else '2.0.6',usage='KGXC course production suite',files=files),ensure_ascii=False,indent=2)+'\n')
-        subprocess.run([sys.executable,str(ROOT/'skills'/NAME/'scripts/check_skill_package.py'),str(skill)],check=True)
+        manifest.write_text(json.dumps(dict(name=name,version=versions[name],usage='KGXC course production suite',files=files),ensure_ascii=False,indent=2)+'\n')
+        # Validate the exact bounded snapshot that will be shipped. Source caches
+        # remain untouched; they must never leak into an archive or invalidate
+        # an otherwise clean, explicitly filtered publication snapshot.
+        target=stage/'skills'/name
+        for path in sorted(skill.rglob('*')):
+            if path.is_file() and not excluded(path):
+                destination=target/path.relative_to(skill);destination.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(path,destination)
+    for name in names:
+        subprocess.run([sys.executable,str(ROOT/'skills'/NAME/'scripts/check_skill_package.py'),str(stage/'skills'/name)],check=True)
     out=ROOT/'dist';out.mkdir(exist_ok=True);archive=out/f'kgxc-course-suite-v{version}.zip'
     candidates=[]
     for p in ROOT.rglob('*'):
@@ -43,13 +60,14 @@ def main():
         if rel.as_posix() in ['scripts/build_plugin.py','scripts/install_plugin.py','scripts/check_codex_plugin.py','scripts/build_native_client.py']:continue
         if len(rel.parts)==1 and p.name not in ['install.sh','VERSION','release.json','README.md','THIRD_PARTY_NOTICES.md','requirements.in','requirements.lock','requirements-voice.in','requirements-voice.lock','安装或更新.command']:continue
         candidates.append(p)
-    bundle_manifest=dict(version=version,files={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in candidates})
+    frozen={str(p.relative_to(ROOT)):(stage/p.relative_to(ROOT)).read_bytes() if p.relative_to(ROOT).parts[0]=='skills' else p.read_bytes() for p in candidates}
+    bundle_manifest=dict(version=version,files={name:hashlib.sha256(data).hexdigest() for name,data in frozen.items()})
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for p in sorted(candidates):
             entry=zipfile.ZipInfo('kgxc-course-suite/'+str(p.relative_to(ROOT)))
             entry.compress_type=zipfile.ZIP_DEFLATED
             entry.external_attr=(0o100755 if p.suffix in {'.sh','.command'} else 0o100644)<<16
-            z.writestr(entry,p.read_bytes())
+            z.writestr(entry,frozen[str(p.relative_to(ROOT))])
         entry=zipfile.ZipInfo('kgxc-course-suite/bundle-manifest.json')
         entry.compress_type=zipfile.ZIP_DEFLATED;entry.external_attr=0o100644<<16
         z.writestr(entry,json.dumps(bundle_manifest,ensure_ascii=False,indent=2)+'\n')

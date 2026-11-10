@@ -25,13 +25,15 @@ export function productionProgress({stage,busy=false,data={},jobs=[],native}) {
   const {current:latest}=productionJobHistory(list,stage);
   if(latest?.status==='failed')return {label:'本次合成未完成',value:0,detail:String(latest.error||'').trim().split('\n').filter(Boolean).at(-1)?.slice(0,240)||'请在右侧查看原因，修正后继续制作。',tone:'failed'};
   if(latest?.status==='cancelled')return {label:'本次合成已暂停，过程文件保留',value:null,detail:String(latest.error||'制作或监督暂停了本次任务；解除暂停后重新制作当前版本。'),tone:'waiting'};
+  if(data.release_status?.state==='acceptance_blocked')return {label:'候选保留 · 当前验收受阻',value:null,
+    detail:(data.release_status.errors||[]).map(e=>(e.code?e.code+'：':'')+e.message).slice(0,5).join('；')||'当前版本必检证据尚未齐备。',tone:'waiting'};
   if(['storyboard','pilot','final'].includes(stage)&&data.production_preferences?.required&&!data.production_preferences.storyboard_current)
     return {label:data.production_preferences.ready?'制作偏好已修改，等待更新对应成果':'待选择课程制作偏好',value:0,detail:'已有视频和历史记录保留；更新相关分镜与音视频后再登记当前结果。',tone:'waiting'};
-  if(latest?.status==='complete'&&latest.registration_status==='held')return {label:'制作候选已生成 · 100%',value:1,detail:'渲染与编码检查已完成；制作检查尚未齐备，候选可查看，尚未登记成品。',tone:'waiting'};
+  if(latest?.status==='complete'&&latest.registration_status==='held')return {label:'候选已生成 · 验收受阻',value:null,detail:'编码完成。当前缺项：'+(latest.contract_pending?.errors||[]).map(e=>e.code||e.message).slice(0,5).join('、')+'。候选可查看，尚未正式交付。',tone:'waiting'};
   const finalGate=data.gates?.find(g=>g.id==='final'),deliveredAt=Date.parse(finalGate?.receipt?.at||'');
   if(finalGate?.status==='delivered'&&Number.isFinite(deliveredAt)&&!busy&&!data.editor?.changed&&list.at(-1)?.status!=='failed'&&(!native?.issue||native.issue.at<deliveredAt))return {label:'整课制作与登记已完成',value:1,detail:'当前成品已通过制作端检查；历史失败保留在折叠记录中，不代表当前制作失败。',tone:'done'};
   const completedAt=latest?.completed_at|| (latest?.id&&native?.last_export?.job_id===latest.id?native.last_export.at:0);
-  if(latest?.status==='complete'&&completedAt&&(!native?.issue||native.issue.at<completedAt)&&!data.editor?.changed&&data.gates?.find(g=>g.id===stage)?.status!=='stale')return {label:'视频合成已完成 · 100%',value:1,detail:native?.issue?'此前独立检查的问题保留在步骤明细；当前合成已完成，等待成品审阅。':'当前合成已完成，等待成品审阅。',tone:'done'};
+  if(latest?.status==='complete'&&completedAt&&(!native?.issue||native.issue.at<completedAt)&&!data.editor?.changed&&data.gates?.find(g=>g.id===stage)?.status!=='stale')return {label:'候选编码完成 · 待成品审阅',value:null,detail:'当前候选可查看。正式交付与用户验收分别记录。',tone:'waiting'};
   if(native?.available){
     const issue=native.issue,current=native.current;
     if(issue)return {label:issue.label+(issue.count>1?'连续失败 '+issue.count+' 次':'失败')+(native.status==='stopped'?' · 已停止':''),value:0,

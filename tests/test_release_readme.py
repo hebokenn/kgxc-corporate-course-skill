@@ -90,6 +90,7 @@ class PackagingGateTests(unittest.TestCase):
         for name in ['build_release.py', 'check_readme.py']:
             shutil.copy2(ROOT / 'scripts' / name, scripts / name)
         (self.root / 'VERSION').write_text('5.8.5\n')
+        (self.root / 'release.json').write_text(json.dumps(dict(version='5.8.5',skill_versions={'corporate-training-motion':'5.8.5','elearning-course-design':'2.1.0'})))
         for name in ['corporate-training-motion', 'elearning-course-design']:
             folder = self.root / 'skills' / name
             folder.mkdir(parents=True)

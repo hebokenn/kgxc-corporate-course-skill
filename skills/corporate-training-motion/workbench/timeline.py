@@ -1,5 +1,6 @@
-"""Non-destructive source cuts and retained holds, in integer 30 fps frames."""
+"""Non-destructive source cuts and retained holds, in integer source/display frames at the document frame rate."""
 import copy
+from fractions import Fraction
 
 
 def display_frame(frame, holds, cuts=()):
@@ -13,12 +14,14 @@ def duration(doc):
 
 def audio_filters(doc, gain=None):
     """One sample-accurate edit map for playback, encoding and dry-voice checks."""
-    filters=[];labels=[];samples=48000//doc.get('fps',30)
+    filters=[];labels=[];fps=Fraction(str(doc['fps']))
+    if fps<=0:raise ValueError('A positive actual frame rate is required')
+    boundary=lambda frame:round(Fraction(frame)*48000/fps)
     for index,s in enumerate(segments(doc)):
-        count=(s['endFrame']-s['startFrame'])*samples
+        count=boundary(s['endFrame'])-boundary(s['startFrame'])
         if s['kind']=='hold':filters.append(f'anullsrc=r=48000:cl=mono,atrim=end_sample={count}[a{index}]')
         else:
-            start=s['sourceFrame']*samples
+            start=boundary(s['sourceFrame'])
             filters.append(f'[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono,apad,atrim=start_sample={start}:end_sample={start+count},asetpts=PTS-STARTPTS[a{index}]')
         labels.append(f'[a{index}]')
     gain=doc.get('audio',{}).get('gain',1) if gain is None else gain

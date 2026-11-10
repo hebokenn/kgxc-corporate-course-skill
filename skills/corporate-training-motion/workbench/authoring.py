@@ -114,6 +114,8 @@ def graph_errors(doc):
 
 
 def configure(course, spec_path):
+    from render_input_guard import ensure_mutation_allowed
+    ensure_mutation_allowed(Path(course)/'project' if not (Path(course)/'workbench.json').is_file() else Path(course),'authoring.configure',dict(spec_path=str(spec_path)))
     from backend import read,atomic,safe,validate
     p=Path(course).resolve();p=p if (p/'workbench.json').exists() else p/'project'
     old=read(p/'workbench.json')
@@ -129,7 +131,7 @@ def configure(course, spec_path):
     timing_errors=timeline_errors(spec,probe(safe(p,spec['media']['audio'])) if spec.get('media',{}).get('audio') else None)
     if timing_errors:raise ValueError('配音与画面时间校验未通过：'+'；'.join(timing_errors[:12]))
     d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette'] if k in spec})
+    d.update({k:spec[k] for k in ['title','fps','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette','chapterTable'] if k in spec})
     if 'continuityPolicy' in spec:
         d['continuityPolicy'].update({k:spec['continuityPolicy'][k] for k in ['noiseFloorDB','gapSeconds'] if k in spec['continuityPolicy']})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)
@@ -151,7 +153,7 @@ def configure(course, spec_path):
         if issues:raise ValueError('；'.join(issues))
     if not d['media'].get('audio'):raise ValueError('尚未接入实际混音；保留可打开的草稿，不能标为可导出')
     actual=float(json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',str(safe(p,d['media']['audio']))]))['format']['duration'])
-    if abs(actual-d['sourceDurationFrames']/30)>.12:raise ValueError('课程时间轴与真实混音时长不一致；请先按实际音轨对齐')
+    if abs(actual-d['sourceDurationFrames']/d['fps'])>.12:raise ValueError('课程时间轴与真实混音时长不一致；请先按实际音轨对齐')
     prepare(p,selection,Path(__file__).resolve().parents[1])
     atomic(p/'workbench.json',d)
     config=p/'project.json'

@@ -110,10 +110,13 @@ class Studio:
                 item.update(pdf_info(path))
             sources.append(item)
         artifacts={}
-        for key,values in status.get('artifacts',{}).items():
+        visible_files=dict(status.get('artifacts',{}))
+        for key,values in status.get('candidate_artifacts',{}).items():
+            if values:visible_files[key]=values
+        for key,values in visible_files.items():
             artifacts[key]=[]
             for name in values:
-                path=self.course.relative(name);item=dict(path=name,available=path.is_file(),bindings=[],chapters=[])
+                path=self.course.relative(name);item=dict(path=name,available=path.is_file(),bindings=[],chapters=[],candidate=name in status.get('candidate_artifacts',{}).get(key,[]))
                 if path.is_file() and path.suffix.lower()=='.mp4':
                     meta=read(path.with_suffix('.json'),{})
                     if meta.get('video_sha256')==file_sha(path):
@@ -132,7 +135,7 @@ class Studio:
         for folder in sorted(exports.glob('*'),key=lambda p:(p/'document.json').stat().st_mtime if (p/'document.json').exists() else 0):
             if not folder.is_dir():continue
             job=self.space.job(folder.name) if hasattr(self.space,'job') else read(folder/'result.json',{})
-            item={key:job[key] for key in ['id','purpose','status','progress','error','video','srt','package','revision'] if key in job}
+            item={key:job[key] for key in ['id','purpose','status','progress','error','video','srt','package','revision','registration_status','contract_pending','stage_registered','release_state','candidate_generated','user_acceptance'] if key in job}
             if (folder/'document.json').is_file():item['created_at']=int((folder/'document.json').stat().st_mtime*1000)
             if job.get('status') in ['complete','failed'] and (folder/'result.json').is_file():item['completed_at']=int((folder/'result.json').stat().st_mtime*1000)
             progress_jobs.append(item)
@@ -144,6 +147,7 @@ class Studio:
                     editor={k:editor[k] for k in ['revision','text','changed','base_changed','has_scenes']},
                     storyboard=status.get('storyboard',{}),storyboard_report=status.get('storyboard_report',{}),
                     sampling=status.get('sampling',{}),artifacts=artifacts,jobs=progress_jobs,
+                    candidate_artifacts=status.get('candidate_artifacts',{}),release_status=status.get('release_status'),
                     deliveries=status.get('deliveries',[]),impact=read(self.impact,{}),
                     feedback=read(self.feedback_file,[]),proposals=read(self.proposals,[]),
                     rendering=status.get('rendering',{}),audio_settings=settings,narration_status=status.get('narration_status'),
@@ -161,6 +165,8 @@ class Studio:
         return self.view()
 
     def save_sections(self, sections, expected, editor_revision=None, official=False):
+        from render_input_guard import ensure_mutation_allowed
+        ensure_mutation_allowed(self.project,'Studio.save_sections',dict(sections=sections,expected=expected,official=official))
         plan=read(self.course.plan_file);old=self.content(plan)
         wanted=[u['id'] for u in plan['units'] if u.get('disposition','core')=='core']
         if [s.get('unit_id') for s in sections] != wanted:raise ValueError('逐字稿章节必须与当前大纲的稳定章节对应')
@@ -293,6 +299,9 @@ class Studio:
             review.record_user_audio_review(stage,**audio_declaration,actor='dsh-user-click')
             if not audio_declaration['listened_completely'] or not audio_declaration['audio_and_sync_ok']:return self.view()
         if review:review.require_user_audio(stage)
+        if stage in ['pilot','final']:
+            promoted=self.course.promote_candidate(stage,expected)
+            expected=promoted['revision']
         if stage=='storyboard' and enabled(self.course):
             actor='ai-production-preflight'
             evidence='当前分镜独立盲审通过；依据已保存的分镜选择与制作委托完成制作预检，不新增或冒充用户点击'
@@ -302,6 +311,11 @@ class Studio:
             self.save_sections(value['sections'],expected,value['editor']['revision'],official=True)
             expected=self.course.status()['revision']
         if stage=='final' and review:
+            from production import stage_release
+            current=read(self.course.state_file)
+            for name in current.get('artifacts',{}).get('final',[]):
+                if str(name).lower().endswith('.mp4'):
+                    stage_release(self.project,'final',self.project/'workbench.json',self.course.relative(name),'Studio.confirm.final')
             with self.course.locked():
                 state=read(self.course.state_file);self.course._revision(expected,state)
                 self.course.require_video('pilot')

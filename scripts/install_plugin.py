@@ -58,7 +58,16 @@ def dsh(executable, profile):
     home = Path(os.environ.get('DSH_HOME', str(Path.home() / '.dsh')))
     if profile == 'desktop' and home.resolve() == (Path.home()/'.dsh').resolve():
         running=subprocess.run(['pgrep','-f',r'^/Applications/DeepSeek Harness\.app/Contents/MacOS/DeepSeek Harness( |$)'],capture_output=True).returncode==0
-        if running:raise ValueError('请先完整退出 DeepSeek Harness 再安装。运行中替换插件会让已加载的后端模块与前端资源版本错配；仅刷新页面不能完成升级。任务数据与课程文件保持保留。')
+        installed_root=home/'profiles'/profile/'node_modules'/NAME
+        import shlex
+        consumers=[]
+        for line in subprocess.check_output(['ps','-axo','pid=,command='],text=True).splitlines():
+            parts=line.strip().split(None,1)
+            if len(parts)!=2:continue
+            try:argv=shlex.split(parts[1])
+            except ValueError:continue
+            if any(arg.startswith(str(installed_root)+'/')for arg in argv[1:5]):consumers.append(int(parts[0]))
+        if running or consumers:raise ValueError('DSH_RUNTIME_ACTIVE: 请先按已审阅方案停稳 DeepSeek Harness 与依赖本插件的后端，再安装；仅刷新页面不能升级。依赖PID='+','.join(map(str,consumers))+'。课程与配置保留，未执行替换。')
     folder = home / 'profiles' / profile
     source = folder / 'package.json'
     before = {name: digest(folder / name) for name in ['cordis.yml', 'cordis.patch.yml'] if (folder / name).is_file()}

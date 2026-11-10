@@ -2,8 +2,9 @@
 """Inspect approved brand inventory and actual first/last frames before full delivery.
 No rendering, no uploads. Template or approval metadata alone cannot certify a final film.
 """
-import argparse,json,hashlib,subprocess,io
+import argparse,json,hashlib,subprocess,io,sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'workbench'))
 
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def probe(p):return json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(p)]))
@@ -58,6 +59,15 @@ def check(plan_path,assets_only=False,video_override=None):
    evidence['actual_first_last_frame_comparisons']=checks;evidence['video_sha256']=sha(v)
    review=plan.get('brand_audio_review',{})
    if review.get('status')!='reviewed' or review.get('video_sha256')!=sha(v):errors.append('Actual first/last audio and greeting review not bound to final video')
+ if not assets_only:
+  from release_gate import evaluate,build_context
+  if not plan.get('project') or not plan.get('current_document'):
+   errors.append('GATE_NOT_EXECUTED: final release requires explicit project and current_document')
+  else:
+   project=resolve(plan['project']);document=resolve(plan['current_document'])
+   gate=evaluate(project,build_context(project,'final',document,v,entrypoint='scripts.delivery_gate'))
+   evidence['unified_release_gate']=gate
+   if gate.get('allow_release') is not True:errors.extend(item['code']+': '+item['message'] for item in gate['errors'])
  return {'ok':not errors,'mode':'assets_only' if assets_only else 'final_release','errors':errors,'evidence':evidence,'limits':'selected actual brand frames and explicit review records; not whole-film aesthetic or listening certification'}
 
 if __name__=='__main__':

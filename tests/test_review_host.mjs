@@ -61,6 +61,40 @@ c=Course(r);c.init('独立审阅控制器夹具');design(c);c.confirm('outline',
 Studio(SimpleNamespace(root=r,project=p,file=p/'workbench.json')).save_sections([dict(unit_id='U',body='先核对订单，再核对商品编码。示例：订单A的编码为P12，实物也是P12，核对后填写一致再交接。若不同就暂停并记录。')],c.status()['revision'],official=True)
 `,repository,root]);return root;
 }
+async function registerProductionObligations(root){
+  execFileSync('python3',['-B','-c',`import sys,json
+from pathlib import Path
+sys.path[:0]=[sys.argv[1]+'/skills/corporate-training-motion/workbench']
+from execution_requirements import update
+from workflow import atomic,read
+p=Path(sys.argv[2])/'project'
+(p/'messages').mkdir(parents=True,exist_ok=True);(p/'messages/synthetic-production.txt').write_text('Read the synthetic handoff and return its current structured artifact.')
+d=read(p/'workbench.json',{});d.update(sourceDurationFrames=10,fps=25,sceneGraph=dict(nodes=[dict(id='synthetic-work-object',type='rect',startFrame=0,endFrame=10,width=10,height=10)]));atomic(p/'workbench.json',d)
+r=dict(id='synthetic-work-return',source_type='user_current',source_ref='messages/synthetic-production.txt',original_quote='Read the synthetic handoff and return its current structured artifact.',stage='storyboard',scope=dict(scenes=['synthetic']),required_behavior='Return readable current work output and check evidence without claiming course approval',acceptance_checks=['synthetic-artifact-readable'],implementation_refs=[],evidence_refs=[],status='not_started',changes=[])
+result=update(p,[r]);assert result['ready'],result
+`,repository,root]);
+}
+async function returnProductionResult(root,message){
+  const line=message.content[0].text.split('\n').find(x=>x.startsWith('实际派工与原句、对象、输入哈希、负责/禁改范围、必检动作及交回文件：'));
+  const dispatch=JSON.parse(line.slice(line.indexOf('：')+1));assert.ok(dispatch.task?.task_id,'producer receives the actual backend dispatch');
+  execFileSync('python3',['-B','-c',`import sys,json
+from pathlib import Path
+sys.path[:0]=[sys.argv[1]+'/skills/corporate-training-motion/workbench']
+from workflow import read,atomic
+from handoff_contract import submit
+from evidence_versions import file_ref
+p=Path(sys.argv[2])/'project';task=read(p/'work/handoffs'/(sys.argv[3]+'.json'))
+for name in task['return_files']:
+ value=read(p/name,{}) if name=='workbench.json' else {}
+ value.update(synthetic_output=True,task_id=task['task_id'],note='Readable bounded work artifact; not a valid final course or user approval')
+ atomic(p/name,value)
+evidence='work/handoffs/'+task['task_id']+'-artifact-check.json'
+outputs=[file_ref(p,name)for name in task['return_files']]
+atomic(p/evidence,dict(method='current-output-json-readback',output_paths=outputs,readable=all(isinstance(read(p/name),dict)for name in task['return_files']),course_approved=False))
+r=dict(task_id=task['task_id'],requirement_ids=task['requirement_ids'],output_paths=outputs,object_bindings=[dict(event_id='synthetic-object-event',quote=next(iter(task['quotes'].values())),object_ids=['synthetic-work-object'],allowed_types=['rect'],frame_range=[0,10])],checks_run=[dict(id=k,status='passed',evidence_ref=evidence)for k in task['required_checks']],evidence_refs=[file_ref(p,evidence)],unresolved_items=[],issue_ids=task['issue_ids'])
+result=submit(p,r,read(p/'workbench.json'));assert result['ready'],result
+`,repository,root,dispatch.task.task_id]);
+}
 function producer(root,{repair=true,failCalls=0}={}){
   let seq=0,pending=Promise.resolve();const log=[],capabilities={restrict:0,guard:0,executor:0},hooks=[];
   const emit=(type,data)=>{const event={type,data,seq:++seq,time:Date.now()};log.push(event);fake.onEvent?.(event);};
@@ -79,6 +113,7 @@ function producer(root,{repair=true,failCalls=0}={}){
           const facade=dispatch('internal/get',[fake.ctx,'llm',undefined],()=>service),prepared=await facade.prepareCall(FIXED_ROUTE);
           try{
             for await(const response of prepared.stream({...FIXED_ROUTE,sessionId:fake.session.id,signal:new AbortController().signal,tools:[{name:'work_tool'}],toolHistory:{tools:[{name:'work_tool'}],updates:[]},messages:[{id:'system',role:'system',source:{kind:'system-prompt'},content:[{type:'text',text:'ORIGINAL_WORK_SYSTEM'}]},{id:'old-work-history',role:'user',source:{kind:'user'},content:[{type:'text',text:'OLD_WORK_HISTORY'}]},message]}))emit('assistant/message',{message:{...response,source:FIXED_ROUTE},usage:{totalTokens:23}});
+            await fake.completeWork?.(message);
             emit('turn/end',{reason:{kind:'completed'}});
           }catch(error){emit('turn/end',{reason:fake.cancelled?{kind:'aborted'}:{kind:'error',error:{message:error.message}}});}
           fake.status='idle';return;
@@ -122,7 +157,7 @@ function isolatedCalls({supervisorPass=true,onCall}={}){
   };return {run,calls};
 }
 function host(root,agent,independent,overrides={}){
-  const {attachments,...options}=overrides,services={attachments,agents:{get:id=>id===agent.session.id?agent:undefined},agentDefaultModel:{currentSelection:()=>FIXED_ROUTE}};
+  const {attachments,...options}=overrides,services={attachments,llm:{prepareCall:async config=>({config})},agents:{get:id=>id===agent.session.id?agent:undefined},agentDefaultModel:{currentSelection:()=>FIXED_ROUTE}};
   return reviewHost({get:name=>services[name]}, {bindings:new Map([[root,agent]]),runIsolated:independent.run,...options});
 }
 function supervisionFixture({allow=()=>true,onCall,bind=false}={}){
@@ -158,6 +193,8 @@ test('one blind review and one repair batch stop after targeted acceptance even 
   const binding={stage:'script',run_id:'single-review-run',packet_sha256:'b'.repeat(64)};let producerPackets=0;
   const invoke=async(action,args)=>{
     actions.push({action,args});
+    if(['production_dispatch','capability_requirements'].includes(action))return callReview(action,args);
+    if(action==='production_event'&&args.operation_id?.startsWith('produce-'))return callReview(action,args);
     if(action==='begin')return {ok:true,started:true,run:{id:binding.run_id}};
     if(action==='reserve')return {ok:true,reserved:true};
     if(action==='packet')return {ok:true,packet:{protocol:REVIEW_PROTOCOL,stage:'script',run_id:binding.run_id,fingerprint:'f',artifact_sha256:'a'.repeat(64),binding,review_contract:{},checklist:[],input:{text:'先核对订单，再核对商品编码。'},evidence:{media:[],frames:[],limitations:[]},allowed_artifacts:[{id:'transcript',kind:'transcript',sha256:'a'.repeat(64)}]}};
@@ -339,7 +376,7 @@ test('a failing independent supervisor holds the course and blocks every repair,
 });
 
 test('explicit production is supervised through real backend and persists request idempotency across host replacement',async()=>{
-  const root=await fixture(),agent=producer(root),independent=isolatedCalls(),options={bindings:new Map()};let handle=host(root,agent,independent,options);
+  const root=await fixture(),agent=producer(root),independent=isolatedCalls(),options={bindings:new Map()};await registerProductionObligations(root);agent.completeWork=message=>returnProductionResult(root,message);let handle=host(root,agent,independent,options);
   const observes=[];agent.onEvent=event=>{const pending=handle.observe(agent,event).catch(()=>{});observes.push(pending);};
   try{
     await callReview('enable',{course_path:root});let release;const gate=new Promise(resolve=>{release=resolve;});agent.beforeWork=()=>gate;
@@ -348,6 +385,9 @@ test('explicit production is supervised through real backend and persists reques
     assert.equal((await handle('produce',args)).started,false);release();await handle.whenIdle();await Promise.all(observes);
     assert.equal(agent.workCalls,1);assert.equal(independent.calls.every(call=>call.role==='supervisor'),true);assert.equal(independent.calls.length,2,'short ordinary progress is persisted between start/end checks');
     const state=(await callReview('status',{course_path:root})).review,operation=state.supervision.operations.find(item=>item.operation_id===first.operation_id);
+    const capability=JSON.parse(await readFile(join(root,'project/qa/review-capabilities',first.operation_id+'.json'),'utf8'));
+    assert.equal(capability.inference_performed,false);assert.equal(capability.course_blind_review,false);assert.deepEqual(capability.route,{provider:FIXED_ROUTE.provider,model:FIXED_ROUTE.model});
+    assert.equal(capability.capabilities.includes('audio_listening'),false,'route preflight cannot invent continuous hearing');
     assert.equal(operation.phase,'end');assert.match(JSON.stringify(operation.events),/PRODUCE_DIRECTION_SENTINEL/);assert.ok(operation.events.some(event=>event.phase==='progress'));
     const summary=JSON.parse(await readFile(join(root,'project/qa/ai-supervision',first.operation_id,'producer-dispatch.json'),'utf8'));
     assert.equal(summary.agent_audit.id,agent.id);assert.equal(summary.agent_audit.input_scope,'producer-work-snapshot');assert.equal(summary.agent_audit.outbound_steps.length,1);
@@ -359,7 +399,7 @@ test('explicit production is supervised through real backend and persists reques
 });
 
 test('course hold blocks a new production claim and interrupts an active managed producer without replay',async()=>{
-  const root=await fixture(),agent=producer(root),independent=isolatedCalls(),handle=host(root,agent,independent,{bindings:new Map()});
+  const root=await fixture(),agent=producer(root),independent=isolatedCalls();await registerProductionObligations(root);agent.completeWork=message=>returnProductionResult(root,message);const handle=host(root,agent,independent,{bindings:new Map()});
   const observes=[];agent.onEvent=event=>observes.push(handle.observe(agent,event).catch(()=>{}));
   try{
     await callReview('enable',{course_path:root});await handle('hold',{course_path:root,held:true,reason:'synthetic held'});
@@ -376,10 +416,12 @@ test('course hold blocks a new production claim and interrupts an active managed
 });
 
 test('an authorized storyboard pass dispatches pilot production through the same managed snapshot without a new approval',async()=>{
-  const root=await mkdtemp(join(tmpdir(),'kgxc-managed-continuation-')),agent=producer(root,{repair:false}),independent=isolatedCalls(),actions=[],operations=new Set();
+  const root=await fixture(),agent=producer(root,{repair:false}),independent=isolatedCalls(),actions=[],operations=new Set();await registerProductionObligations(root);agent.completeWork=message=>returnProductionResult(root,message);
   const binding={stage:'storyboard',run_id:'synthetic-board-run',packet_sha256:'b'.repeat(64)};
   const invoke=async(action,args)=>{
     actions.push({action,args});
+    if(['production_dispatch','capability_requirements'].includes(action))return callReview(action,args);
+    if(action==='production_event'&&args.operation_id?.startsWith('produce-'))return callReview(action,args);
     if(action==='begin')return {ok:true,started:true,run:{id:binding.run_id}};
     if(action==='packet')return {ok:true,packet:{protocol:REVIEW_PROTOCOL,stage:'storyboard',run_id:binding.run_id,fingerprint:'f',artifact_sha256:'a'.repeat(64),binding,review_contract:{},checklist:[],input:{storyboard:{segments:[{id:'S1',action:'当前对象变化'}]}},evidence:{media:[],frames:[],limitations:[]},allowed_artifacts:[{id:'storyboard',kind:'storyboard',sha256:'a'.repeat(64)}]}};
     if(action==='producer_packet')return {ok:true,packet:{protocol:'course-producer-qa/1',stage:'storyboard',run_id:binding.run_id,role:'producer',binding,input:{text:'当前逐字稿'},checklist:[],evidence:{sources:[{id:'source',text:'合成原件'}]},editable_files:[]}};

@@ -1,9 +1,9 @@
 {
   "name": "elearning-course-design",
-  "version": "2.0.6",
+  "version": "2.1.0",
   "usage": "KGXC course production suite",
   "files": {
-    "SKILL.md": "04a52df6280ea2d1ae19df4d9d05eaca3429c936f83d498f7a27c04578b62ac3",
+    "SKILL.md": "1aa7542c747ffd95766f95ff212f51e7c782a5bcd5636144bb91284bdb6176d1",
     "agents/openai.yaml": "6bd6b3a1baafcd281b63c7e8ec15dba4a4ff96c461c9ab7dd7170c7e551549b4",
     "assets/design-plan.json": "8a59e7c9d2214a43f3c1eecd89a0693ad82716f6d26a3535ef72f1b662449d17",
     "assets/source-coverage.json": "7634b06c9a1e61da86524f076bae96b39d8d12453b8a542cfb61dfa5c1035949",
@@ -12,7 +12,7 @@
     "references/learner-context.md": "267fd4d1984bb11626c6efe87158a74fc496d218b7b63eb817d50880c57b9bd5",
     "references/media-selection.md": "268a72968d91106fc32021aff1461e64f3ae5c2699284dc1923c3df71788cf46",
     "references/research-and-methods.md": "a9db5037293eaa5361513d1d13e5fb0fad4e6c4f689e44348c97877780f930e6",
-    "references/script-authoring-quality.md": "3c9c0b75cee246c808e469cf90f3385284264148042a965434f750ece3a42def",
+    "references/script-authoring-quality.md": "dcad36e841cbe9b88453c5341eab97b60bc364e24d09959a6fa6f578f334a7fe",
     "references/source-coverage-and-scope.md": "a65b00d35516a729d59d06c33b57dc1ef92dbd304e3da5c33ef39a1249311229",
     "scripts/check_design.py": "27da90d37edff583234f1d7161152cb9a72bf4bde07a46f92f6b6310e592277d"
   }

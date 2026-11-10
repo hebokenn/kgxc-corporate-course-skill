@@ -393,10 +393,14 @@ class Review:
             atomic(self.path,state)
         return self.view()
 
+    def _stage_files(self, stage, state=None):
+        state=state or read(self.course.state_file)
+        return state.get('candidate_artifacts',{}).get(stage) or state.get('artifacts',{}).get(stage,[])
+
     def _audio_artifacts(self, stage):
         if stage not in ['pilot','final']:return []
         artifacts=[]
-        for name in read(self.course.state_file).get('artifacts',{}).get(stage,[]):
+        for name in self._stage_files(stage):
             if not str(name).lower().endswith('.mp4'):continue
             path=self.course.relative(name)
             if not path.is_file() or path.is_symlink():raise ValueError('当前听审媒体缺失或不是固定实际文件')
@@ -642,7 +646,7 @@ class Review:
             value.update(review_arrangement=self.arrangement(),storyboard=read(self.project / 'storyboard.json', {}),
                          production=self.course._pilot_basis(state) if stage=='pilot' else dict(workbench=sha(self.project / 'workbench.json'),native=native_fingerprint(self.project)),
                          preferences=creative_basis(self.project),
-                         files=self.course._artifact_hashes(stage, state))
+                         files=[dict(path=n,sha256=sha(self.course.relative(n))) for n in self._stage_files(stage,state)])
         return value
 
     def fingerprint(self, stage): return hashed(self.basis(stage))
@@ -651,7 +655,7 @@ class Review:
         if stage=='script':return [blind.artifact_digest(self.script_input()['text'])]
         if stage=='storyboard':return [hashed(read(self.project/'storyboard.json',{}))]
         state=read(self.course.state_file)
-        return [sha(self.course.relative(p)) for p in state.get('artifacts',{}).get(stage,[]) if str(p).lower().endswith('.mp4') and self.course.relative(p).is_file()]
+        return [sha(self.course.relative(p)) for p in self._stage_files(stage,state) if str(p).lower().endswith('.mp4') and self.course.relative(p).is_file()]
 
     def _confirmation(self, node, stage):
         approval=node.get('approval',{})
@@ -679,7 +683,7 @@ class Review:
         if stage == 'script': return bool(self.script_input()['text'].strip())
         if stage=='storyboard':return bool(read(self.project/'storyboard.json',{}).get('segments'))
         state = read(self.course.state_file)
-        return any(str(p).lower().endswith('.mp4') and self.course.relative(p).is_file() for p in state.get('artifacts', {}).get(stage, []))
+        return any(str(p).lower().endswith('.mp4') and self.course.relative(p).is_file() for p in self._stage_files(stage,state))
 
     def _node(self, state, stage):
         return state['nodes'].setdefault(stage, dict(runs=[], repairs=0, calls=0, usage={}, elapsed_ms=0,
@@ -845,7 +849,7 @@ class Review:
             if mode=='auto' and stage=='script' and self.script_input()['changed']:raise ValueError('人工草稿尚在编辑；保存不会自动调用模型，请明确继续审阅')
             if mode=='auto' and stage in ['pilot','final']:
                 current_state=read(self.course.state_file)
-                if self.script_input()['changed'] or current_state.get(stage+'_context')!=self.course._video_context(current_state):raise ValueError('实际媒体尚未更新到本次制作版本，生成后再自动审阅')
+                if self.script_input()['changed'] or (current_state.get('candidate_context',{}).get(stage) or current_state.get(stage+'_context'))!=self.course._video_context(current_state):raise ValueError('实际媒体尚未更新到本次制作版本，生成后再自动审阅')
             policy = self._policy(state,node)
             pinned = state.get('route')
             if pinned and route and pinned != route: raise ValueError('模型或计费通道已改变；保留成果，不能自动切换来源')
@@ -1095,7 +1099,7 @@ class Review:
             value.update(input=dict(storyboard=board),artifact_sha256=digest)
             value['allowed_artifacts']=[dict(id='storyboard',kind='storyboard',sha256=digest)]
         else:
-            names=[name for name in read(self.course.state_file).get('artifacts',{}).get(stage,[]) if str(name).lower().endswith('.mp4')]
+            names=[name for name in self._stage_files(stage) if str(name).lower().endswith('.mp4')]
             if len(names)!=1:raise ValueError('每轮媒体盲审须绑定一个实际视频；多个片段请分别审阅，不能混入其他阶段成果')
             source=self.course.relative(names[0]);digest=sha(source);target=folder/'artifact.mp4'
             if source.is_symlink():raise ValueError('实际视频不能通过符号链接改变审阅范围')
@@ -1109,13 +1113,17 @@ class Review:
                 media=dict(id='video',sha256=digest,duration=seconds,method='media_probe',streams=[{k:s.get(k) for k in ['codec_type','codec_name','width','height','sample_rate','channels']} for s in probe['streams']])
                 if arrangement==blind.PRODUCER_AUDIO_ARRANGEMENT:media['audio_technical']=_audio_technical(target,digest,probe)
                 value['evidence']['media'].append(media)
-                times=sorted(set([0,min(1/30,seconds/2),max(0,seconds-2),max(0,seconds-.15)]+[round(seconds*i/12,3) for i in range(1,12)]))
+                times=sorted(set([0,min(1/float(__import__('fractions').Fraction(next(s for s in probe['streams'] if s.get('codec_type')=='video' and not s.get('disposition',{}).get('attached_pic'))['avg_frame_rate'])),seconds/2),max(0,seconds-2),max(0,seconds-.15)]+[round(seconds*i/12,3) for i in range(1,12)]))
                 for number,second in enumerate(times):
                     frame=folder/('frame-'+str(number).zfill(2)+'.jpg')
-                    if not frame.exists():subprocess.run(['ffmpeg','-nostdin','-v','error','-ss',str(second),'-i',str(target),'-frames:v','1','-vf','scale=960:-2','-y',str(frame)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=30)
+                    from fractions import Fraction
+                    from media_frames import main_video,extract
+                    stream=main_video(target);fps=Fraction(stream['avg_frame_rate'])
+                    frame_index=max(0,min(int(stream.get('nb_frames') or round(seconds*float(fps)))-1,int(second*fps)))
+                    decoded=extract(target,frame_index,frame)
                     item=dict(id='frame-'+str(number).zfill(2),kind='frame',path=str(frame.relative_to(self.project)),sha256=sha(frame),parent_sha256=digest)
                     value['allowed_artifacts'].append(item)
-                    value['evidence']['frames'].append(dict(id=item['id'],path=item['path'],sha256=item['sha256'],time=second,media_sha256=digest,method='frames'))
+                    value['evidence']['frames'].append(dict(id=item['id'],path=item['path'],sha256=item['sha256'],time=decoded['time'],decoded_frame=decoded['decoded_frame'],media_sha256=digest,method='frames'))
             except (ValueError,KeyError,OSError,subprocess.SubprocessError) as error:
                 # Error paths/details may contain unrelated paths; expose only the capability boundary.
                 value['evidence']['limitations'].append('当前视频探测或抽帧未完成：'+type(error).__name__)
@@ -1535,7 +1543,7 @@ class Review:
                 if frozen.get('binding')!=run.get('packet_binding'):raise ValueError('已冻结盲审包被修改')
                 frozen_technical={m['sha256']:copy.deepcopy(m['audio_technical']) for m in frozen['evidence']['media']
                                   if m.get('audio_technical',{}).get('schema')==_AUDIO_TECHNICAL_SCHEMA}
-            artifacts=read(self.course.state_file).get('artifacts',{}).get(stage,[])
+            artifacts=self._stage_files(stage)
             for name in artifacts:
                 path=self.course.relative(name)
                 if path.suffix.lower()=='.srt':evidence.setdefault('subtitles',[]).append(dict(path=name,sha256=sha(path),text=path.read_text()))
@@ -1549,11 +1557,15 @@ class Review:
                         if sha(path)!=digest:raise ValueError('复用自动技术检查时视频字节已改变')
                     evidence['media'].append(media)
                     # Evidence scope is explicit. No frame set is labelled continuous video review.
-                    times=sorted(set([0,min(1/30,seconds/2),max(0,seconds-2),max(0,seconds-.15)]+[round(seconds*i/12,3) for i in range(1,12)]))
+                    times=sorted(set([0,min(1/float(__import__('fractions').Fraction(next(s for s in probe['streams'] if s.get('codec_type')=='video' and not s.get('disposition',{}).get('attached_pic'))['avg_frame_rate'])),seconds/2),max(0,seconds-2),max(0,seconds-.15)]+[round(seconds*i/12,3) for i in range(1,12)]))
                     for index,second in enumerate(times):
                         target=folder/(digest[:12]+'-'+str(index).zfill(2)+'.jpg')
-                        if not target.exists():subprocess.run(['ffmpeg','-nostdin','-v','error','-ss',str(second),'-i',str(path),'-frames:v','1','-vf','scale=960:-2','-y',str(target)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,timeout=30)
-                        evidence['frames'].append(dict(path=str(target.relative_to(self.project)),sha256=sha(target),time=second,media_sha256=digest,method='frames'))
+                        from fractions import Fraction
+                        from media_frames import main_video,extract
+                        stream=main_video(path);fps=Fraction(stream['avg_frame_rate'])
+                        frame_index=max(0,min(int(stream.get('nb_frames') or round(seconds*float(fps)))-1,int(second*fps)))
+                        decoded=extract(path,frame_index,target)
+                        evidence['frames'].append(dict(path=str(target.relative_to(self.project)),sha256=sha(target),time=decoded['time'],decoded_frame=decoded['decoded_frame'],media_sha256=digest,method='frames'))
                 except (ValueError,KeyError,OSError,subprocess.SubprocessError) as error:evidence['limitations'].append('媒体解码未完成：'+str(error))
             evidence['limitations'].append('当前宿主适配器只提交文本与可读取图片；没有连续视频/音频理解能力。抽帧与ASR不能支持完整视听通过。')
         doc=None if stage=='storyboard' else read(self.project/'workbench.json',{})

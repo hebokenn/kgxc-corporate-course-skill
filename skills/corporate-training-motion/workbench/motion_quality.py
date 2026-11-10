@@ -203,7 +203,8 @@ def audit_encoded(video,doc,first,last):
         return dict(status='legacy-not-opted-in')
     from motion_samples import subject_roi
     roi=subject_roi(doc);fps=doc.get('fps',30);w,h=424,160;duration=(last-first)/fps
-    cmd=['ffmpeg','-v','error','-ss',str(first/fps),'-i',str(video),'-t',str(duration),
+    from production_validation import main_video_index
+    cmd=['ffmpeg','-v','error','-ss',str(first/fps),'-i',str(video),'-map','0:'+str(main_video_index(video)),'-t',str(duration),
          '-vf',f'fps=2,crop={roi[2]}:{roi[3]}:{roi[0]}:{roi[1]},scale={w}:{h},format=gray','-f','rawvideo','-']
     # Exported video begins at zero, independently of the source timeline.
     cmd[4]='0'

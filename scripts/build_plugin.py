@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import zipfile
+import uuid
 
 from check_readme import check_readme
 
@@ -19,8 +20,6 @@ def main():
     manifest = json.loads((ROOT / 'plugin.json').read_text())
     if (manifest['name'], manifest['version']) != (package['name'], package['version']):
         raise ValueError('宿主清单版本不一致')
-    for name in ['corporate-training-motion', 'elearning-course-design']:
-        subprocess.run([sys.executable, str(ROOT / 'skills/corporate-training-motion/scripts/check_skill_package.py'), str(ROOT / 'skills' / name)], check=True)
     files = {}
     public_config = {'tools.example.json','voice-model.json','azure.example.json','package.json','package-lock.json'}
     for folder in ['plugin', 'skills', 'docs', 'scripts', 'tests', 'config']:
@@ -38,6 +37,11 @@ def main():
                  '安装制课插件.command', '安装或更新.command', 'install.sh', 'THIRD_PARTY_NOTICES.md',
                  'requirements.in', 'requirements.lock', 'requirements-voice.in', 'requirements-voice.lock']:
         files[name] = (ROOT / name).read_bytes()
+    stage=ROOT/'dist/plugin-staging'/package['version']/uuid.uuid4().hex
+    for name,data in files.items():
+        target=stage/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
+    for name in ['corporate-training-motion', 'elearning-course-design']:
+        subprocess.run([sys.executable,'-B',str(stage/'skills/corporate-training-motion/scripts/check_skill_package.py'),str(stage/'skills'/name)],check=True)
     proof = dict(name=package['name'], version=package['version'], core_version=(ROOT / 'VERSION').read_text().strip(), files={name: hashlib.sha256(data).hexdigest() for name, data in files.items()})
     files['plugin-bundle-manifest.json'] = (json.dumps(proof, ensure_ascii=False, indent=2) + '\n').encode()
     out = ROOT / 'dist'; out.mkdir(exist_ok=True)

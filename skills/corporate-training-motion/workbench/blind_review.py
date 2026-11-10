@@ -288,6 +288,8 @@ def seal(packet):
     packet['binding'] = dict(protocol=PROTOCOL, stage=packet['stage'], run_id=packet['run_id'],
                              fingerprint=packet['fingerprint'], artifact_sha256=packet['artifact_sha256'])
     packet['binding']['packet_sha256'] = hashed(packet)
+    from review_preflight import require_clean
+    require_clean(packet)
     return packet
 
 
@@ -336,6 +338,8 @@ def validate_packet(packet):
     bound = copy.deepcopy(packet); digest = bound.get('binding', {}).pop('packet_sha256', None)
     if digest != hashed(bound) or packet['binding'].get('artifact_sha256') != packet['artifact_sha256']:
         raise ValueError('盲审资料包绑定已改变')
+    from review_preflight import require_clean
+    require_clean(packet)
     return packet
 
 
@@ -430,6 +434,6 @@ def validate_result(result, packet):
         raise ValueError('审阅代理实际访问成果范围与本轮白名单不一致')
     if packet['stage'] in ['script','storyboard'] and set(actual_ids)!=allowed_ids:
         raise ValueError('当前文字成果未实际提交给独立审阅代理')
-    if audit.get('capabilities') != CAPABILITIES:
+    if audit.get('capabilities') not in [CAPABILITIES, ['text']] or packet['stage'] in ['pilot','final'] and audit.get('capabilities')!=CAPABILITIES:
         raise ValueError('当前适配器能力只能如实记录为文本与图片')
     return result

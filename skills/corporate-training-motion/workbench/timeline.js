@@ -20,3 +20,7 @@ export function rippleCut(doc,start,end){
  d.cuts=merged;d.holds=d.holds.map(h=>({...h,frames:h.frames-(removed.get(h.sourceFrame)||0)})).filter(h=>h.frames>0);
  const move=t=>t<=start?t:t>=end?t-(end-start):start;d.captions=d.captions.map(c=>({...c,startFrame:move(c.startFrame),endFrame:move(c.endFrame)})).filter(c=>c.endFrame>c.startFrame);return d;
 }
+
+// One immutable chapter table, measured on the edited display clock (seek-safe).
+export function chapterProgress(chapter,frame){const a=chapter.display_start,z=chapter.display_end;if(!Number.isFinite(a)||!Number.isFinite(z)||z<=a)throw Error('Invalid chapter display range');return Math.max(0,Math.min(1,(frame-a)/(z-a)))}
+export function chapterAt(doc,frame){return (doc.chapterTable||[]).find(c=>c.display_start<=frame&&frame<c.display_end)||null}

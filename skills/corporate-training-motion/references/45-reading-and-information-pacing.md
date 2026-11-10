@@ -115,3 +115,15 @@ python3 SKILL_DIR/scripts/course_tools.py continuity-enable COURSE --evidence �
 新契约的完整候选在现有导演/工艺复核中补 `qa/reading-review.json`：`schema=course-reading-review/1`、`status=reviewed`、当前`videoSha256/documentSha256`、实际`reviewer`、`playback.speed=1/method/ranges`，逐阅读组的`id/readingTask/observedReadability/retentionObserved/attentionObservation`，以及真实`unresolvedIssues`。6.0工程的 `playback.continuityObservation` 另记实际连贯性与停顿用途观察。首次观看的“首次”表示按陌生学员视角评估，不冒称审阅者从未见过稿件。此记录不新增用户批准阶段，不代填小样确认，也不能靠批量复制“已读清”完成。
 
 自动估算、实际渲染、首次观看判断和用户认可分别报告。安装新Skill不自动给旧课补一份“通过”，不把技术验证样例当正式课程交付。
+
+## 精确语义锚点和真实连续曝光
+
+`requirements.direction.semantic_alignment`保存 `audio_path/audio_sha256/map_path/events/encoded_mapping/review`，由 `semantic_alignment.inspect()`与[统一放行](55-execution-contract-and-release.md)消费。词图按片段记录原始 `narration`、`words[{word_id,start_frame,end_frame,alignment_kind}]`和 `char_map[{raw_start,raw_end,word_ids,alignment_kind}]`；必须绑定当前实际干声SHA。ASR包络属于近似边界，不能改称逐音素听审。
+
+每个事件提供 `id,segment_id,quote,raw_span:[a,z],occurrence,semantic_anchor:{raw_span,word_ids},node_ids,new_value_node_ids,trigger_frame,result_frame`。同一句内分别讲到的数值/条件/答案分别绑定，结果对象另给 `result_anchor/result_node_ids`。保留旧对象的动作可明确 `new_value_node_ids:[]`，中性支架须以 `neutral_scaffolds[{node_id,reason}]`说明；不能把未讲到的新事实藏进中性容器。
+
+`resolve()`严格核对完整原文区间和明确出现次数，再读取真实词ID及包络；没有短串首匹配、最近字幕、段长均分、首项段首或阅读预算夹移回退。技术证明点单独用 `technical_anchor`，必须与同源词包络和实际字幕交叉，不能改变语义触发帧。缺口返回 `SEMANTIC_ANCHOR_MISSING`；父容器/子字段提前可读、结果抢先或证明对象已退场有独立错误码。
+
+编码后 `encoded_mapping`须绑定当前视频/干声、明确 `display_frame_offset`和至少三个 `source_checkpoints`；检查器实际以48k干声窗口对当前编码声音测时，低置信匹配保持unknown，超出整数帧量化报 `SEMANTIC_ENCODED_TIME_MISMATCH`。触发前、触发、中点、落位和阅读末端图像须来自同一当前视频。这个测时不证明声音自然、内容被理解或完整连续听过。
+
+花字同时满足已有阅读预算与 `estimate()`估算下限。`RuntimeAudit`现在保存最长真实连续 `actualStableWindow`，每帧消费同一次绘制的完整文字、透明度、位置、裁切与遮挡回执；零碎曝光不能相加。`requirements.emphasis.runtime_reading`绑定当前doc/video及实际 `report/report_path`。`emphasis_checks`只计与花字计划阅读窗的真实交集，缺实际回执或曝光不足报 `EMPHASIS_RUNTIME_READING_MISSING/SHORT`，不能靠计划窗声明已读完。

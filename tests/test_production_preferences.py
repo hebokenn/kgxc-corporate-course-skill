@@ -58,6 +58,12 @@ class ProductionPreferencesTests(unittest.TestCase):
     def ready_storyboard(self):
         from test_branch_workflow import approve_script
         from test_storyboard_workflow import fixture
+        # These preference unit cases predate the central execution contract.
+        # Keep their real stale-choice/body-material checks, isolate only admission.
+        # This is not evidence that a current release passed its canonical gate.
+        from unittest.mock import patch
+        stage_gate=patch('production.stage_release',return_value=dict(ready=True,scope='historical-preference-fixture-only',current_release_gate_tested=False))
+        stage_gate.start();self.addCleanup(stage_gate.stop)
         self.ready();approve_script(self.course)
         self.course.select_branch('video',self.rev(),'合成夹具视频需求',actor='qa-operator')
         self.course.save_storyboard(fixture(self.course),self.rev())

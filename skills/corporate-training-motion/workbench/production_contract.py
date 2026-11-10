@@ -181,6 +181,9 @@ def ensure(project, profile=None, activate=False):
     value.setdefault('schema', SCHEMA)
     value.setdefault('profile', defaults['profile'])
     value.setdefault('choices', defaults['choices'])
+    # Source-attributed obligations are filled by the real intake/dispatch path.
+    # Empty metadata never manufactures user requirements or passes release_gate.
+    value.setdefault('obligations', [])
     for key, requirement in defaults['requirements'].items():
         value.setdefault('requirements', {}).setdefault(key, requirement)
     if value.get('choices') != defaults['choices']:
@@ -199,6 +202,8 @@ def ensure(project, profile=None, activate=False):
             value['requirements'][key]['review'] = {}
     path = p / FILENAME
     if not path.is_file() or value != old:
+        from render_input_guard import ensure_mutation_allowed
+        ensure_mutation_allowed(p,'production-contract-ensure',dict(profile=profile,activate=activate))
         p.mkdir(parents=True, exist_ok=True)
         if path.is_file():
             history = p / 'work/production-contract-history' / (_sha(path) + '.json')
@@ -351,6 +356,8 @@ def _diagram_label_errors(scene, nodes, duration, ancestors, non_body_ids):
 
 def _has_action(node, a, z):
     # Opacity-only appearance is not evidence of semantic change.
+    a=max(a,node.get('startFrame',a));z=min(z,node.get('endFrame',z))
+    if a>=z or node.get('visible')is False or node.get('opacity',1)==0:return False
     actor = node.get('vectorActor', {})
     if any(max(a, m.get('startFrame', 0)) < min(z, m.get('endFrame', 0))
            for m in actor.get('walks', []) + actor.get('turns', [])):
@@ -363,9 +370,10 @@ def _has_action(node, a, z):
         if max(a, motion.get('startFrame', 0)) >= min(z, motion.get('endFrame', 0)):
             continue
         kind = motion.get('kind') or motion.get('type') or motion.get('property')
+        if ('from'in motion and 'to'in motion and motion['from']==motion['to']):continue
         if kind and kind not in ['opacity', 'fade', 'fade-in', 'fade-out', 'appear', 'disappear']:
             return True
-    return False
+    return any(_has_action(child,a,z) for child in node.get('children',[]) if isinstance(child,dict))
 
 
 def _directed_change(scene, nodes, duration, review):
@@ -687,6 +695,14 @@ def _inspect(project, document=None, video=None, purpose='final'):
                     continue
                 span = [scene.get('start_frame'), scene.get('end_frame')]
                 ids = scene.get('node_ids', [])
+                declared=next((s for s in doc.get('scenes',[])if s.get('id')==scene.get('scene_id')), {})
+                if declared.get('kind')=='brand':
+                    source=scene.get('source_media',{})
+                    path=_file(p,source.get('path'),source.get('sha256')) if isinstance(source,dict)and source.get('sha256')else None
+                    if (not path or source.get('path')not in doc.get('media',{}).values() or
+                            not _range(span,duration) or not all(scene.get(k)for k in ['purpose','before','process','after'])):
+                        error(key,'预渲染品牌场须绑定当前实际媒体与帧范围；不造正文原句或对象',dict(scene=scene.get('scene_id')))
+                    continue
                 captions = ''.join(str(c.get('text', '')) for c in doc.get('captions', []))
                 if (not all(scene.get(field) for field in ['quote', 'purpose', 'before', 'process', 'after']) or
                         scene.get('quote', '') not in captions or
@@ -725,6 +741,13 @@ def _inspect(project, document=None, video=None, purpose='final'):
             for message in _review_errors(requirement.get('review'), hashes, video_sha, duration):
                 error(key, message)
         elif key == 'chapters':
+            if requirement.get('chapter_table'):
+                from chapter_table import inspect as inspect_chapter_table
+                extra=inspect_chapter_table(p,doc,video_path,purpose,{'requirements':{'chapters':requirement}})
+                for item in extra.get('errors',[]):error(key,item.get('message','章节表核验失败'),item)
+                if extra.get('ready')is not True and not extra.get('errors'):error(key,'章节表检查未执行或状态未知')
+                checks[key]=dict(required=True,ready=len(errors)==start,status='verified-evidence'if len(errors)==start else 'unverified',evidence=extra)
+                continue
             segments = requirement.get('segments', [])
             if not isinstance(segments, list) or not segments:
                 error(key, '缺少带独立标签、节点和当前状态的分段导航；一条长进度条不能替代')
@@ -773,3 +796,19 @@ def inspect(project, document=None, video=None, purpose='final'):
                                  message='制作契约或实物证据格式无效，未放行',
                                  evidence=dict(error=str(exc)))],
                     next_steps=[dict(requirement='contract', action='修正具体无效字段后重新检查；不删除文件绕过')])
+
+
+def register_obligations(project, obligations, purpose='outline'):
+    """Update the existing master; preserve previous requirement snapshots."""
+    from execution_requirements import update
+    return update(project, obligations, purpose)
+
+
+def create_handoff(project, task):
+    from handoff_contract import create
+    return create(project, task)
+
+
+def accept_handoff(project, result, document):
+    from handoff_contract import submit
+    return submit(project, result, document)

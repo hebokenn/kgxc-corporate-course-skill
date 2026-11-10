@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.8.2'
+VERSION = '6.9.0-rc.1'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -45,6 +45,8 @@ def hashed(data):
 def sha(path):
     from performance_cache import sha as cached_sha
     return cached_sha(path)
+
+from render_input_guard import guarded_mutation
 
 
 def export_job_projection(project, state, job):
@@ -225,7 +227,7 @@ class LegacyCourse:
                              ready_for_production='content' in confirmed and not any('production' in p.get('blocking_for',[]) for p in pending))
         jobs = []
         for p in sorted((self.project / 'work/workbench/exports').glob('*/result.json')):
-            job = export_job_projection(self.project,state,read(p, {})); jobs.append({k: job.get(k) for k in ['id', 'status', 'video', 'srt', 'package', 'revision', 'registration_status', 'contract_pending', 'stage_registered','registration_basis']})
+            job = export_job_projection(self.project,state,read(p, {})); jobs.append({k: job.get(k) for k in ['id', 'status', 'video', 'srt', 'package', 'revision', 'registration_status', 'contract_pending', 'stage_registered','registration_basis','purpose','firstFrame','lastFrame','progress','completed_at','release_state','candidate_generated','user_acceptance']})
         return dict(version=VERSION, state_key=hashed(dict(plan=plan,gates=gates)), course_id=state.get('course_id'), title=plan.get('title', ''),
             revision=state.get('revision', 0), stage=next_gate['id'] if next_gate else 'complete',
             next_action=('审阅并确认' + next_gate['label']) if next_gate else '当前候选已确认，可交付',
@@ -236,6 +238,7 @@ class LegacyCourse:
     def _revision(self, expected, state):
         if expected != state['revision']: raise FileExistsError('工程已被其他窗口修改，请刷新后重试')
 
+    @guarded_mutation
     def save_plan(self, plan, expected):
         with self.locked():
             state = read(self.state_file); self._revision(expected, state)
@@ -283,6 +286,16 @@ class LegacyCourse:
 
     def confirm(self, key, expected, evidence, actor='workbench'):
         if not evidence or not str(evidence).strip(): raise ValueError('需要本次审阅的确认说明')
+        from production import stage_release
+        stage={'content':'script','visual':'storyboard'}.get(key,key)
+        if stage in ['script','storyboard','pilot','final','courseware']:
+            state=read(self.state_file)
+            if stage in ['pilot','final']:
+                for name in state.get('artifacts',{}).get(stage,[]):
+                    if str(name).lower().endswith('.mp4'):stage_release(self.project,stage,self.project/'workbench.json',self.relative(name),'workflow.confirm')
+            else:
+                path=self.project/'storyboard.json' if stage=='storyboard' else self.relative(read(self.plan_file).get('script_file') or read(self.plan_file).get('courseware_file') or 'source/transcript.md')
+                stage_release(self.project,stage,path,entrypoint='workflow.confirm')
         with self.locked():
             state = read(self.state_file); self._revision(expected, state)
             status = self.status(); gate = next((g for g in status['gates'] if g['id'] == key), None)
@@ -299,10 +312,11 @@ class LegacyCourse:
     def register(self, key, paths, expected):
         if key not in dict(GATES): raise ValueError('未知阶段')
         if not paths or any(not self.relative(p).is_file() for p in paths): raise ValueError('审阅产物不存在')
+        release_decision=None
         if key in ['pilot','final']:
             from production import require_contract
             for path in paths:
-                if Path(path).suffix.lower()=='.mp4':require_contract(self.project,self.relative(path),key)
+                if Path(path).suffix.lower()=='.mp4':release_decision=require_contract(self.project,self.relative(path),key,document=self.project/'workbench.json')
         if key in ['pilot','final']:
             from motion_quality import require as require_motion
             require_motion(read(self.project/'workbench.json'),self.project)
@@ -326,13 +340,52 @@ class LegacyCourse:
                         shutil.copy2(sidecar,dest.with_suffix('.json'))
                     name=str(dest.relative_to(self.project))
                 stable.append(name)
-            state['artifacts'][key] = stable; self._commit(state, 'artifacts_registered', dict(gate=key, paths=stable))
+            state['artifacts'][key] = stable
+            if release_decision:state.setdefault('release_decisions',{})[key]=release_decision
+            self._commit(state, 'artifacts_registered', dict(gate=key, paths=stable))
         return self.status()
+
+    def stage_candidate(self,key,paths,document,render_context=None):
+        """Expose unapproved bytes to reviewers, without formal artifacts or gates."""
+        if key not in ['pilot','final'] or not paths:raise ValueError('Candidate stage/files required')
+        import shutil
+        stable=[]
+        with self.locked():
+            state=read(self.state_file)
+            for name in paths:
+                path=self.relative(name)
+                if not path.is_file():raise ValueError('Candidate file missing')
+                dest=self.project/'qa/reviews'/key/(sha(path)[:12]+'-'+path.name);ensure_dir(dest.parent)
+                if path!=dest and not dest.exists():shutil.copy2(path,dest)
+                if sha(dest)!=sha(path):raise ValueError('RELEASE_INPUT_CHANGED: candidate copy mismatch')
+                if path.suffix.lower()=='.mp4' and path.with_suffix('.json').is_file():
+                    shutil.copy2(path.with_suffix('.json'),dest.with_suffix('.json'))
+                stable.append(str(dest.relative_to(self.project)))
+            prior=state.setdefault('candidate_artifacts',{}).get(key)
+            if prior and prior!=stable:state.setdefault('candidate_history',[]).append(dict(stage=key,files=prior,at=now()))
+            state['candidate_artifacts'][key]=stable
+            state.setdefault('candidate_context',{})[key]=render_context
+            state.setdefault('candidate_documents',{})[key]=dict(path=str(document),sha256=sha(document))
+            # A candidate write does not approve a stage or reset a review cycle.
+            atomic(self.state_file,state)
+        return stable
+
+    def promote_candidate(self,key,expected):
+        state=read(self.state_file);files=state.get('candidate_artifacts',{}).get(key)
+        if files and files!=state.get('artifacts',{}).get(key):
+            return self.register(key,files,expected)
+        return self.status()
+
+    def record_release_check(self,key,decision):
+        with self.locked():
+            state=read(self.state_file);state.setdefault('release_decisions',{})[key]=decision
+            atomic(self.state_file,state)
 
     def courseware(self):
         plan = read(self.plan_file, {}); value = plan.get('courseware_file')
         return dict(path=value, text=self.relative(value).read_text(encoding='utf-8') if value and self.relative(value).is_file() else '')
 
+    @guarded_mutation
     def save_courseware(self, text, expected):
         if not isinstance(text, str) or not text.strip() or len(text) > 2000000: raise ValueError('课件稿为空或过长')
         with self.locked():
@@ -430,6 +483,7 @@ class Course(LegacyCourse):
         p=self.relative(name) if name else None
         return sha(p) if p and p.is_file() else None
 
+    @guarded_mutation
     def save_script(self, text, expected):
         if not self.modern(): return super().save_courseware(text, expected)
         if not isinstance(text,str) or not text.strip() or len(text)>2000000: raise ValueError('逐字稿为空或过长')
@@ -470,6 +524,7 @@ class Course(LegacyCourse):
             self._commit(state,'storyboard_workflow_enabled',dict(evidence=evidence,actor=actor))
         return self.status()
 
+    @guarded_mutation
     def save_storyboard(self, data, expected):
         from storyboard import check, digest, export_html
         if not self.storyboard_mode():raise ValueError('先显式启用内容演绎与分镜流程')
@@ -607,6 +662,7 @@ class Course(LegacyCourse):
                 script_excerpt=excerpt,styles=choices,recommended=data.get('recommended'),previews=previews))
         return proof
 
+    @guarded_mutation
     def save_director(self, data, expected):
         if not isinstance(data,dict):raise ValueError('导演方案须为对象')
         with self.locked():
@@ -765,7 +821,7 @@ class Course(LegacyCourse):
         if key in ['pilot','final'] and state.get('artifacts',{}).get(key):
             from production_preferences import review_errors
             videos=[self.relative(name) for name in state['artifacts'][key] if name.lower().endswith('.mp4')]
-            if videos and videos[0].is_file():errors.extend(review_errors(self.project,key,videos[0]))
+            if videos and videos[0].is_file():errors.extend(review_errors(self.project,key,videos[0],document=self.project/'workbench.json'))
         errors.extend(('待解决：' if p.get('kind')=='issue' else '待选择：')+p['id'] for p in pending if p.get('gate')==key)
         from ai_review import gate_errors
         errors.extend(gate_errors(self,key))
@@ -809,7 +865,7 @@ class Course(LegacyCourse):
         elif stage=='style':action='导演基于逐字稿提供三个风格，选择并确认画面方案'
         else:action='审阅并确认'+next(g['label'] for g in gates if g['id']==stage)
         plan['handoff']=dict(ready_for_courseware=common,ready_for_production=common and branch=='video' and any(g['id']==('storyboard' if self.storyboard_mode() else 'style') and g['status']=='confirmed' for g in gates))
-        jobs=[{k:d.get(k) for k in ['id','status','video','srt','package','revision','registration_status','contract_pending','stage_registered','registration_basis']} for p in sorted((self.project/'work/workbench/exports').glob('*/result.json')) for d in [export_job_projection(self.project,state,read(p))]]
+        jobs=[{k:d.get(k) for k in ['id','status','video','srt','package','revision','registration_status','contract_pending','stage_registered','registration_basis','purpose','firstFrame','lastFrame','progress','completed_at','release_state','candidate_generated','user_acceptance']} for p in sorted((self.project/'work/workbench/exports').glob('*/result.json')) for d in [export_job_projection(self.project,state,read(p))]]
         narration=state.get('narration_status','not_started')
         if branch=='video' and narration=='not_required':narration='not_started'
         result=dict(version=VERSION,workflow_schema=2,course_id=state['course_id'],title=plan['title'],revision=state['revision'],stage=stage,next_action=action,
@@ -825,6 +881,9 @@ class Course(LegacyCourse):
         result['palette_plan'] = read_plan(self.project)
         result['rendering']=read(self.project/'workbench.json',{}).get('rendering',{})
         result['director_review_status']=state.get('director_review_status')
+        result['candidate_artifacts']=state.get('candidate_artifacts',{})
+        from production import release_projection
+        result['release_status']=release_projection(self.project,state)
         if stage=='final' and state.get('artifacts',{}).get('final') and state.get('director_review_status',{}).get('status')=='pending':result['next_action']='当前完整视频为候选；制作端完成逐段导演复核后登记，不重复渲染或代填用户认可'
         from production import handoff
         result['production_handoff']=handoff(self.project,result)
@@ -861,10 +920,11 @@ class Course(LegacyCourse):
 
     def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None,review_run_id=None):
         if not self.modern():return super().register(key,paths,expected)
+        release_decision=None
         if key in ['pilot','final'] and paths and all(self.relative(p).is_file() for p in paths):
             from production import require_contract
             for path in paths:
-                if Path(path).suffix.lower()=='.mp4':require_contract(self.project,self.relative(path),key)
+                if Path(path).suffix.lower()=='.mp4':release_decision=require_contract(self.project,self.relative(path),key,document=self.project/'workbench.json')
         if self.storyboard_mode() and key in ['pilot','final']:
             from storyboard import check_bindings, basis, digest
             issues=check_bindings(self.storyboard(),self.sample_plan(),read(self.project/'workbench.json',{}),full=key=='final')
@@ -881,6 +941,9 @@ class Course(LegacyCourse):
                     if proof.get('video_sha256')!=sha(target) or proof.get('storyboard_sampling')!=expected_binding:
                         raise ValueError('抽样小样缺少与实际视频、分镜、时间线和生产源码绑定的导出记录')
         if key not in ['pilot','final','courseware']:raise ValueError('请用director保存导演方案，用script保存逐字稿')
+        if key=='courseware' and paths:
+            from production import stage_release
+            stage_release(self.project,key,self.relative(paths[0]),entrypoint='workflow.register.courseware')
         if review_run_id:
             from ai_review import Review
             Review(self).allow_render(key,review_run_id)
@@ -927,6 +990,7 @@ class Course(LegacyCourse):
                 target=self.root/'delivery/courseware/课程逐字稿.md';ensure_dir(target.parent);target.write_text(self.script()['text'],encoding='utf-8')
                 stable.append('../'+str(target.relative_to(self.root)))
             state['artifacts'][key]=stable
+            if release_decision:state.setdefault('release_decisions',{})[key]=release_decision
             if key=='pilot' and self.storyboard_mode():state['pilot_asset_ids']=[a['id'] for a in read(self.project/'workbench.json',{}).get('assets',[])]
             if context:state[key+'_context']=context
             quality_ready=True
@@ -1023,7 +1087,8 @@ def bundle_course(root, destination):
 
 def service_build():
     folder=Path(__file__).resolve().parent
-    return hashed({name:sha(folder/name) for name in ['workflow.py','backend.py','lifecycle.py','studio.py','ai_review.py','blind_review.py','script_editor.py','source_coverage.py'] if (folder/name).is_file()})
+    return hashed({str(path.relative_to(folder)):sha(path) for path in sorted(folder.rglob('*'))
+                   if path.is_file() and path.suffix in {'.py','.js','.html','.css'} and '__pycache__' not in path.parts})
 
 
 def open_course(root, open_browser=True):

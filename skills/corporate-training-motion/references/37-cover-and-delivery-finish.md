@@ -72,3 +72,10 @@
 ## DSH保存可见性
 
 成品保存不能只算哈希：macOS暂存目录或来源文件可能带UF_HIDDEN，复制元数据后即使改为正常名称仍会被Finder隐藏。交付及重复保存时仅去除正式文件夹和本课视频、字幕、封面的隐藏标记，保留压缩等其他属性，再核对字节。实际点击“打开保存文件夹”并在Finder看到三份文件，才报告用户可见的保存结果；清理资格与保存、保留分别处理。
+# 当前字节组装与放行
+
+通用`finish_media.py`默认`cover_hold_seconds=0, cover_fade_seconds=0`，封面仅覆盖视频第0帧，第1帧回到原视频对应帧；扩展停留或变速必须有真实授权来源。视频按主流帧数编码，排除attached_pic；混音独立完整生成AAC后再remux，不用视频帧上限或shortest剪掉尾包。输出为工程内候选，不能直接指定桌面正式目录。
+
+`production-contract.json.final_media`保存当前`source_video/narration/subtitles/cover`的路径与SHA、`expected{frames,fps,width,height}`和音轨`audio.mode`。复制封装比较逐AAC载荷、顺序和时间；有意重编码用已校准样本容差，不要求压缩字节相等。SRT按实际显示轴及唯一章节表核对，样片按完整语义cue边界切取。小样只要求其适用范围，不把终片封面、原生缩略图和全片章元数据压到前期。
+
+精确0/1帧、品牌边界、原生缩略图、实际尾部听审与连续AV证据分别绑定当前媒体。只能文字/图片时听审保留未知；ASR或完整解码不能代替听过。正式登记及复制调用[同一release_gate](55-execution-contract-and-release.md)，当前检查未知/异常/失败均拒绝；复制后核对三件SHA和真实Finder回读再写交付回执。旧版与过程文件保留。

@@ -24,6 +24,8 @@ class DeliveryTests(unittest.TestCase):
         (root/'inputs/original.txt').write_text('original business source')
         (project/'source').mkdir();(project/'source/transcript.md').write_text('人工逐字稿须保留')
         (project/'qa/pilot.mp4').write_bytes(b'pilot fixture');(root/'packages/work.zip').write_bytes(b'editable fixture')
+        atomic(project/'workbench.json',dict(title='独立交付夹具'))
+        atomic(project/'production-contract.json',dict(requirements={}))
         atomic(project/'qa/cover-review.json',dict(coverPath='cover.png',coverSha256=digest(project/'cover.png')))
         atomic(root/'delivery/final.json',dict(video_sha256=digest(root/'delivery/final.mp4'),playback=dict(chapters=[dict(title='技术夹具',start=0)])))
         self.state=dict(stage='complete',course_id='a'*32,title='独立交付夹具',revision=9,gates=[dict(id='final',status='delivered')],jobs=[],artifacts=dict(final=['../delivery/final.mp4','../delivery/final.srt']),plan=dict(sources=[dict(location='../inputs/original.txt')]))
@@ -34,7 +36,11 @@ class DeliveryTests(unittest.TestCase):
             def relative(inside,name):return (project/name).resolve()
         # These unit tests isolate copy/retention safety; the real production gate
         # is exercised without mocks in test_production_contract_entrypoints.py.
-        self.contract_gate=patch('production.require_contract',return_value=dict(required=False,ready=True));self.contract_gate.start()
+        def copy_only_gate(project,context):
+            return dict(allow_release=True,checker_executed=True,scope='unit-test-copy-only; no media acceptance',hashes={key:digest(Path(context[name])) for key,name in [('document_sha256','current_document'),('video_sha256','current_video'),('contract_sha256','current_contract')]})
+        self.contract_gate=patch('release_gate.require_release',side_effect=copy_only_gate);self.contract_gate.start()
+        self.visibility=patch('delivery_visibility.verify_finder_files',return_value=dict(status='verified',method='unit-stub-no-native-visibility-claim'));self.visibility.start();self.addCleanup(self.visibility.stop)
+        self.visibility2=patch('delivery.verify_finder_files',return_value=dict(status='verified',method='unit-stub-no-native-visibility-claim'));self.visibility2.start();self.addCleanup(self.visibility2.stop)
         self.addCleanup(self.contract_gate.stop)
         self.course=Fixture();self.env=patch.dict(os.environ,{'COURSE_CONFIG_DIR':str(self.base/'config')});self.env.start()
     def tearDown(self):self.env.stop();self.tmp.cleanup()
@@ -62,13 +68,14 @@ class DeliveryTests(unittest.TestCase):
         self.assertTrue((self.course.root/'delivery/final.mp4').is_file())
     def test_failed_media_copy_keeps_engineering_and_removes_its_staging_folder(self):
         import delivery
-        real=delivery.copy_verified
+        import release_gate
+        real=release_gate.shutil.copyfile
         def copy(source,target):
-            if source.suffix=='.mp4':raise OSError('injected copy failure')
+            if Path(source).suffix=='.mp4':raise OSError('injected copy failure')
             return real(source,target)
-        with patch.object(delivery,'copy_verified',copy):
+        with patch.object(release_gate.shutil,'copyfile',copy):
             with self.assertRaises(OSError):deliver(self.course,self.workspace,self.base/'desktop')
-        self.assertTrue(self.course.root.is_dir());self.assertFalse(list((self.base/'desktop').iterdir()));self.assertIsNone(completed(self.course.root))
+        self.assertTrue(self.course.root.is_dir());self.assertFalse(list((self.base/'desktop').rglob('*.mp4'))); self.assertIsNone(completed(self.course.root))
     def test_repeat_save_reuses_verified_desktop_delivery_without_deleting_work(self):
         first=deliver(self.course,self.workspace,self.base/'desktop')
         second=deliver(self.course,self.workspace,self.base/'desktop')

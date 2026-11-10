@@ -7,6 +7,7 @@ import {productionEventFact} from './production-monitor.mjs';
 import {producerQASnapshot,producerReadOnlyTools} from './producer-qa-snapshot.mjs';
 import {producerWorkSnapshot} from './producer-work-snapshot.mjs';
 import {freezeReviewInput,reviewResultEnvelope} from './review-input-boundary.mjs';
+import {probeReviewer} from './review-preflight.mjs';
 
 const STAGES=['script','storyboard','pilot','final'];
 const RUNNING=['queued','checking','repairing','rendering','rechecking'];
@@ -200,6 +201,12 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
     task.promise=(async()=>{
       let snapshot,operation,observation,fromSeq=[...producer.session.log].at(-1)?.seq||0,started=false;
       try{
+        const dispatch=await runCall('production_dispatch',{course_path:args.course_path,stage:args.stage,task_id:operation_id});
+        const llm=get('llm');
+        if(!llm?.prepareCall)throw Error('REVIEW_CAPABILITY_MISSING: composed route preparation unavailable');
+        const prepared=await llm.prepareCall({...selection,maxTokens:14000},new AbortController().signal);requireRoute(prepared.config);
+        const requirements=await runCall('capability_requirements',{course_path:args.course_path,stage:args.stage});
+        dispatch.capability_preflight=await probeReviewer({get,selection,prepared,packet:{run_id:operation_id,checklist:requirements.checklist},course_path:args.course_path,strict:false});
         const claim=await handle.production({course_path:args.course_path,producer,stage:args.stage,operation_id,phase:'start',user_instruction:args.instruction,
           execution:[{type:'production/request',operation:'controlled-produce',call_id:args.request_id,agent_id:producer.id,stage:args.stage}]});
         if(claim.started!==true){ready.resolve({ok:true,started:false,operation_id,request_id:args.request_id});return;}
@@ -207,7 +214,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
         if(producer.status==='running'||producer.session.log.some(event=>event.seq>fromSeq&&(event.type==='user/message'&&event.data.source?.kind==='user'||event.type==='agent/inbox/spliced'&&event.data.inserted?.some(input=>input.source?.kind==='user')))){
           operation.steered=true;throw Error('制作派发期间收到新的用户任务，停止旧请求并保留新输入。');
         }
-        const message=Object.freeze({id:randomUUID(),role:'user',source:{kind:'kgxc-producer-work'},content:[{type:'text',text:'KGXC_OPERATION '+JSON.stringify({course_path:args.course_path,stage:args.stage,operation_id,request_id:args.request_id})+'\n当前课程路径：'+args.course_path+'。依据现有权限和已有确认读取当前实际文件及相关记录后完成以下明确任务；保留过程文件、旧版本和真实失败，不代用户确认。\n'+AUTHORING_PREFLIGHT_PROMPT+'\n\n'+SOURCE_COVERAGE_PROMPT+'\n\n'+args.instruction}]});
+        const message=Object.freeze({id:randomUUID(),role:'user',source:{kind:'kgxc-producer-work'},content:[{type:'text',text:'KGXC_OPERATION '+JSON.stringify({course_path:args.course_path,stage:args.stage,operation_id,request_id:args.request_id})+'\n实际派工与原句、对象、输入哈希、负责/禁改范围、必检动作及交回文件：'+JSON.stringify(dispatch)+'\n完成前通过给出的 return_command 提交真实结果映射与证据，不能只口头声称完成。\n当前课程路径：'+args.course_path+'。依据现有权限和已有确认读取当前实际文件及相关记录后完成以下明确任务；保留过程文件、旧版本和真实失败，不代用户确认。\n'+AUTHORING_PREFLIGHT_PROMPT+'\n\n'+SOURCE_COVERAGE_PROMPT+'\n\n'+args.instruction}]});
         snapshot=producerWorkSnapshot(producer,{message,operation_id,request_id:args.request_id,signal:operation.controller.signal,
           onProjection:async receipt=>{
             const directory=join(args.course_path,'project','qa','ai-supervision',operation_id,'steps');await mkdir(directory,{recursive:true});

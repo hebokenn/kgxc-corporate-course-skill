@@ -29,7 +29,7 @@ test('a real preparation failure remains visible even while the model is making 
 test('completed actual export takes precedence over an earlier separate checker error, but not a new failure',()=>{
   const native={available:true,last_export:{job_id:'real-job',at:20},issue:{label:'独立检查',count:1,at:10}};
   const input={stage:'pilot',jobs:[{id:'real-job',purpose:'pilot',status:'complete',progress:1}],native};
-  assert.equal(productionProgress(input).value,1);native.issue.at=30;assert.equal(productionProgress(input).tone,'failed');
+  assert.equal(productionProgress(input).value,null);native.issue.at=30;assert.equal(productionProgress(input).tone,'failed');
 });
 test('delivered course suppresses old preparation errors across tabs and retains later failures',()=>{
   const at=Date.parse('2026-11-05T19:44:44+08:00');
@@ -46,7 +46,7 @@ test('current final export is separate from retained failed attempts and pilot j
   assert.equal(result.current.id,'good');assert.equal(result.history.length,1);
   assert.equal(result.history[0].status,'failed');assert.equal(result.history[0].error,'old traceback');
   assert.deepEqual(result.history[0].supersededBy,{id:'good',revision:14});
-  assert.equal(productionProgress({stage:'final',jobs,native:{available:true,issue:{label:'old checker',at:100}}}).tone,'done');
+  assert.equal(productionProgress({stage:'final',jobs,native:{available:true,issue:{label:'old checker',at:100}}}).tone,'waiting');
 });
 test('new failed attempt remains current despite an earlier successful video',()=>{
   const jobs=[{id:'old-good',purpose:'final',status:'complete',revision:14},
@@ -69,5 +69,5 @@ test('supervision-cancelled current export remains paused despite old delivered 
 
 test('a technically complete held candidate is not an old delivered course or a failed render',()=>{
  const state=productionProgress({stage:'final',jobs:[{id:'candidate',purpose:'final',status:'complete',registration_status:'held',stage_registered:false,completed_at:20}],data:{gates:[{id:'final',status:'delivered',receipt:{at:new Date().toISOString()}}]}});
- assert.equal(state.value,1);assert.equal(state.tone,'waiting');assert.match(state.label,/候选/);assert.match(state.detail,/尚未登记/);
+ assert.equal(state.value,null);assert.equal(state.tone,'waiting');assert.match(state.label,/验收受阻/);assert.match(state.detail,/尚未正式交付/);
 });

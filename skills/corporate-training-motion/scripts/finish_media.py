@@ -12,6 +12,8 @@ import math
 from pathlib import Path
 import re
 import subprocess
+from fractions import Fraction
+import uuid
 
 
 def sha(path):
@@ -84,9 +86,12 @@ def finish(plan_path):
     rate=plan.get('rate',1.0);pitch=plan.get('pitch_semitones',0)
     if type(rate) not in [float,int] or not math.isfinite(rate) or not .5<=rate<=2:raise ValueError('Invalid rate')
     source=probe(paths['video']);v=next(s for s in source['streams'] if s['codec_type']=='video' and not s.get('disposition',{}).get('attached_pic'))
-    fps=plan.get('fps',30);duration=float(source['format']['duration'])
-    if type(fps) is not int or not 1<=fps<=60:raise ValueError('Invalid fps')
-    target_frames=round(duration/rate*fps);target=target_frames/fps
+    source_fps=Fraction(v['avg_frame_rate']);fps=Fraction(str(plan.get('fps',source_fps)))
+    if not 1<=fps<=120:raise ValueError('Invalid fps')
+    if rate!=1 and not plan.get('tempo_authorization'):raise ValueError('Tempo change requires its actual authorization source')
+    counted=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams',str(v['index']),'-count_frames','-show_entries','stream=nb_read_frames','-of','json',str(paths['video'])]))
+    source_frames=int(counted['streams'][0]['nb_read_frames']);duration=source_frames/float(source_fps)
+    target_frames=round(duration/rate*float(fps));target=target_frames/float(fps)
     for name in ['speech','bed']:
         if abs(float(probe(paths[name])['format']['duration'])-duration)>.05:
             raise ValueError('Stem is not aligned to the source timeline: '+name)
@@ -95,35 +100,61 @@ def finish(plan_path):
     content_warnings=closing_warnings(source_cues,additions,duration)
     cues=retime(source_cues,rate,[{k:a[k] for k in ['start','end','text']} for a in additions])
     if cues[-1]['end']>target+.05:raise ValueError('Captions extend beyond video')
-    width,height=v['width'],v['height'];hold=plan.get('cover_hold_seconds',.65);fade=plan.get('cover_fade_seconds',.35)
-    if hold<0 or fade<=0 or hold+fade>min(5,target):raise ValueError('Invalid cover interval')
-    cmd=['ffmpeg','-hide_banner','-loglevel','warning','-n','-i',str(paths['video']),'-loop','1','-framerate',str(fps),'-i',str(paths['cover']),'-i',str(paths['speech']),'-i',str(paths['bed'])]
-    graph=[f'[0:v:0]setpts=(PTS-STARTPTS)/{rate},fps={fps},format=yuv420p[base]',
-           f'[1:v]scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},setsar=1,format=rgba,fade=t=out:st={hold}:d={fade}:alpha=1[cover]',
-           '[base][cover]overlay=shortest=1:eof_action=pass[v0]']
+    # Candidate-only: no mkdir/write in the formal desktop tree, including symlinks.
+    project=(root/plan.get('project_dir','.')).resolve();allowed=project.parent if 'project_dir'in plan else root
+    for name in ['output_video','output_srt']:
+        output=paths[name]
+        if (not output.is_relative_to(allowed) or any(output.parts[i:i+2]==('Desktop','ai 制课') for i in range(len(output.parts)-1))):
+            raise ValueError('Formal Desktop delivery is forbidden; finish_media only writes a course candidate')
+    width,height=v['width'],v['height'];hold=plan.get('cover_hold_seconds',0);fade=plan.get('cover_fade_seconds',0)
+    timed=bool(hold or fade)
+    if timed and not plan.get('cover_timing_authorization'):raise ValueError('Extended cover requires its actual authorization source')
+    if hold<0 or fade<0 or hold+fade>min(5,target):raise ValueError('Invalid cover interval')
+    work=project/'work/finish-media'/(sha(plan_path)[:16]+'-'+uuid.uuid4().hex[:8]);work.mkdir(parents=True,exist_ok=True)
+    video_only=work/'video-complete.mp4';audio_only=work/'audio-complete.m4a'
+    cmd=['ffmpeg','-hide_banner','-loglevel','warning','-n','-i',str(paths['video']),'-loop','1','-framerate',str(fps),'-i',str(paths['cover'])]
+    graph=[f'[0:{v["index"]}]setpts=(PTS-STARTPTS)/{rate},fps={fps},format=yuv420p[base]',
+           f'[1:v]scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},setsar=1,format=rgba'+
+             (f',fade=t=out:st={hold}:d={fade}:alpha=1' if timed and fade else '')+'[cover]',
+           '[base][cover]overlay=shortest=1:eof_action=pass:'+('enable=\'lt(t,%0.9f)\''%(hold+fade) if timed else "enable='eq(n,0)'")+'[v0]']
     last='v0'
     for i,c in enumerate(additions):
         overlay=(root/c['overlay']).resolve()
         if not overlay.is_file():raise ValueError('Missing caption overlay')
         cmd+=['-loop','1','-framerate',str(fps),'-i',str(overlay)]
         label=f'v{i+1}'
-        graph.append(f'[{last}][{i+4}:v]overlay=shortest=1:enable=\'between(t,{c["start"]/rate:.9f},{c["end"]/rate:.9f})\'[{label}]');last=label
-    graph += [f'[2:a]{pitch_filter(rate,pitch)},apad,atrim=duration={target:.9f}[speech]',
-              f'[3:a]atempo={rate},apad,atrim=duration={target:.9f}[bed]',
-              '[speech][bed]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.95:level=0:latency=1[a]']
-    cmd+=['-filter_complex',';'.join(graph),'-map',f'[{last}]','-map','[a]','-frames:v',str(target_frames),'-t',f'{target:.9f}',
-          '-c:v','libx264','-crf',str(plan.get('crf',18)),'-preset','medium','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-ar','48000','-movflags','+faststart',str(paths['output_video'])]
+        graph.append(f'[{last}][{i+2}:v]overlay=shortest=1:enable=\'between(t,{c["start"]/rate:.9f},{c["end"]/rate:.9f})\'[{label}]');last=label
+    cmd+=['-filter_complex',';'.join(graph),'-map',f'[{last}]','-an','-map_metadata','0','-map_chapters','0','-frames:v',str(target_frames),
+          '-c:v','libx264','-crf',str(plan.get('crf',18)),'-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(video_only)]
     paths['output_video'].parent.mkdir(parents=True,exist_ok=True)
     subprocess.run(cmd,check=True)
+    # Finish audio independently. No video frame cap, -t, -shortest, implicit pad or trim.
+    audio_graph=[f'[0:a]{pitch_filter(rate,pitch)}[speech]',f'[1:a]atempo={rate}[bed]',
+        '[speech][bed]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.95:level=0:latency=1[a]']
+    subprocess.run(['ffmpeg','-hide_banner','-loglevel','warning','-n','-i',str(paths['speech']),'-i',str(paths['bed']),
+        '-filter_complex',';'.join(audio_graph),'-map','[a]','-vn','-c:a','aac','-b:a','192k','-ar','48000',str(audio_only)],check=True)
+    # Packet-copy completed tracks. The one-frame attached image has no output cap.
+    subprocess.run(['ffmpeg','-hide_banner','-loglevel','warning','-n','-i',str(video_only),'-i',str(audio_only),'-i',str(paths['cover']),
+        '-map','0:v:0','-map','1:a:0','-map','2:v:0','-map_metadata','0','-map_chapters','0','-c','copy',
+        '-disposition:v:1','attached_pic','-movflags','+faststart',str(paths['output_video'])],check=True)
+    def audio_packets(path):
+        value=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','a:0','-show_packets','-show_data_hash','sha256','-show_entries','packet=data_hash','-of','json',str(path)]))
+        return [row['data_hash']for row in value['packets']]
+    before_packets=audio_packets(audio_only);after_packets=audio_packets(paths['output_video'])
+    if not before_packets or before_packets!=after_packets:raise ValueError('AAC packet payload/order changed during candidate remux')
+    paths['output_srt'].parent.mkdir(parents=True,exist_ok=True)
     paths['output_srt'].write_text(''.join(f'{i+1}\n{stamp(c["start"])} --> {stamp(c["end"])}\n{c["text"]}\n\n' for i,c in enumerate(cues)))
     output=probe(paths['output_video']);actual=float(output['format']['duration'])
-    if abs(actual-target)>.05:raise ValueError('Encoded duration mismatch')
+    main=next(s for s in output['streams']if s['codec_type']=='video'and not s.get('disposition',{}).get('attached_pic'))
+    if abs(float(main['duration'])-target)>.05:raise ValueError('Encoded main video duration mismatch')
     subprocess.run(['ffmpeg','-v','error','-i',str(paths['output_video']),'-f','null','-'],check=True)
-    receipt=dict(schema='course-media-finish/1',status='technical-pass-awaiting-review',plan_sha256=sha(plan_path),
+    receipt=dict(schema='course-media-finish/2',status='encoded-candidate-awaiting-release-check',plan_sha256=sha(plan_path),
         inputs={n:dict(path=str(paths[n]),sha256=sha(paths[n])) for n in required[:5]},
         outputs={n:dict(path=str(paths[n]),sha256=sha(paths[n])) for n in required[5:]},
         rate_relative_to_input=rate,speech_pitch_semitones=pitch,music_pitch_semitones=0,
-        duration=actual,fps=fps,frames=target_frames,captions=len(cues),cover_first_frame=True,full_decode=True,content_warnings=content_warnings,
+        duration=actual,fps=str(fps),frames=target_frames,captions=len(cues),cover_first_frame=not timed,cover_mode='authorized-timed' if timed else 'single-frame',
+        audio_complete_path=str(audio_only),audio_complete_sha256=sha(audio_only),audio_packet_count=len(after_packets),audio_packet_payloads_preserved=True,
+        video_only_path=str(video_only),video_only_sha256=sha(video_only),full_decode=True,content_warnings=content_warnings,production_released=False,
         limits='Technical timing and decode proof; thumbnail aesthetics, speech intelligibility and user acceptance remain separate.')
     paths['output_video'].with_suffix('.finish.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+'\n')
     return receipt

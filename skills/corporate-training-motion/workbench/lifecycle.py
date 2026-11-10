@@ -198,6 +198,8 @@ def serve(root, port=0, idle_seconds=IDLE_SECONDS, check_seconds=CHECK_SECONDS):
     if (server.workspace.project/'course-state.json').is_file():
         from workflow import VERSION,service_build
         server.runtime_build=service_build()
+        from execution_runtime_identity import capture
+        server.execution_runtime=capture()
         backend.atomic(server.workspace.project/'work/workbench-service.json',
                        dict(pid=os.getpid(), version=VERSION, url=url, lifecycle_policy=POLICY,runtime_build=server.runtime_build))
     stopped = threading.Event()

@@ -104,7 +104,7 @@ def clean_caption(text):
 
 
 def validate(doc, project):
-    if doc.get('schema') != 'course-workbench/1' or doc.get('fps') != 30:
+    if doc.get('schema') != 'course-workbench/1' or type(doc.get('fps')) not in [int,float] or not math.isfinite(doc['fps']) or not 1<=doc['fps']<=120:
         raise ValueError('不支持的工程格式或帧率')
     if (doc.get('width'),doc.get('height')) != (1920,1080) or doc.get('adapter') not in ['national-world-v1','scene-graph-v1','seek-bridge-v1']:
         raise ValueError('不支持的画布规格或课程适配器')
@@ -308,6 +308,8 @@ class Workspace:
 
     def save(self, doc, revision):
         with LOCK, document_lock(self.project):
+            from render_input_guard import ensure_mutation_allowed
+            ensure_mutation_allowed(self.project,'Workspace.save',dict(document=doc,revision=revision))
             current=read(self.file)
             if current['revision'] != revision:
                 raise FileExistsError('工程已被其他窗口修改；请重新载入并核对，未覆盖修改')
@@ -435,6 +437,10 @@ class Workspace:
             atomic(directory/'motion-preflight.json',motion_preflight)
             from authoring import native_fingerprint
             native_hash=native_fingerprint(self.project)
+            audio=self.audio(doc,production=True)
+            if native_hash!=native_fingerprint(self.project):raise ValueError('INPUT_CHANGED_DURING_RENDER: inputs changed while preparing actual render audio')
+            from render_input_guard import freeze_render
+            frozen_inputs=freeze_render(self.project,job_id,directory/'document.json',extra_inputs={'prepared_audio':str(audio)})
             job=dict(id=job_id,status='queued',progress=0,firstFrame=first,lastFrame=last,revision=revision,purpose=key)
             self.jobs[job_id]=job
         def worker():
@@ -445,7 +451,6 @@ class Workspace:
                 continuity=audit_continuity(doc,self.project,first,last)
                 atomic(directory/'continuity-preflight.json',continuity)
                 if continuity['status']=='fail':raise ValueError('旁白连贯性检查未通过：'+'；'.join(continuity['errors']))
-                audio=self.audio(doc,production=True)
                 config=tools()
                 interpreter=os.environ.get('COURSE_PYTHON',config.get('python',sys.executable))
                 command=[interpreter,str(APP/'render_worker.py'),'--url',url+'/renderer.html?job='+job_id,
@@ -454,7 +459,7 @@ class Workspace:
                 with (directory/'render.log').open('w') as log:
                     self.require_production_active()
                     process=owned_export_process(command,stdout=log,stderr=subprocess.STDOUT,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
-                    atomic(directory/'execution.json',dict(pid=process.pid,process_group=process.pid,scope='owned-export-process-group',job_id=job_id,files_retained=True))
+                    atomic(directory/'execution.json',dict(pid=process.pid,process_group=process.pid,scope='owned-export-process-group',job_id=job_id,argv=command,files_retained=True))
                     while process.poll() is None:
                         self.require_production_active(process)
                         status=directory/'progress.json'
@@ -464,6 +469,8 @@ class Workspace:
                         time.sleep(.4)
                     if process.returncode:raise ValueError((directory/'render.log').read_text()[-1800:])
                 self.require_production_active()
+                from render_input_guard import check_render
+                check_render(self.project,frozen_inputs)
                 if native_hash!=native_fingerprint(self.project):raise ValueError('导出期间源码或媒体已改变，请重新导出；没有把旧帧绑定到新源码')
                 if render_context is not None and read(self.file)!=doc:raise ValueError('导出期间编辑版本已改变，请重新生成当前版本')
                 delivery=self.root/'delivery';ensure_dir(delivery)
@@ -496,9 +503,14 @@ class Workspace:
                 # A current encoded candidate is needed before its visual/audio
                 # evidence can be checked. Keep it viewable without registering
                 # a stage or replacing a prior accepted export prematurely.
-                from production_contract import inspect as inspect_contract
-                contract=inspect_contract(self.project,document=directory/'document.json',video=video,purpose=key)
-                contract_pending=contract.get('required') and not contract.get('ready')
+                if (self.project/'course-state.json').is_file():
+                    from workflow import Course
+                    Course(self.root).stage_candidate(key,[str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1),str(srt.relative_to(self.project.parent)).replace('delivery/','../delivery/',1)],directory/'document.json',render_context)
+                from release_gate import evaluate,build_context
+                contract=evaluate(self.project,build_context(self.project,key,directory/'document.json',video,entrypoint='backend.export'))
+                atomic(self.project/'qa/release-gate'/(job_id+'.json'),contract)
+                if (self.project/'course-state.json').is_file():Course(self.root).record_release_check(key,contract)
+                contract_pending=contract.get('allow_release') is not True
                 metadata.update(registration_status='held' if contract_pending else 'pending',
                                 stage_registered=False,contract_pending=contract if contract_pending else None)
                 atomic(video.with_suffix('.json'),metadata)
@@ -562,12 +574,16 @@ class Workspace:
                            srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),
                            package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata,
                            registration_status=metadata['registration_status'],stage_registered=metadata['stage_registered'],
-                           contract_pending=contract if contract_pending else None)
+                           release_state='acceptance_blocked' if contract_pending else 'allowed_for_formal_delivery',
+                           candidate_generated=True,user_acceptance=False,contract_pending=contract if contract_pending else None)
                 atomic(directory/'result.json',job)
             except ProductionHeld as exc:
                 job.update(status='cancelled',error=str(exc),files_retained=True);atomic(directory/'result.json',job)
             except Exception as exc:
                 job.update(status='failed',error=str(exc));atomic(directory/'result.json',job)
+            finally:
+                from render_input_guard import end_render
+                end_render(self.project,job_id,job.get('status','unknown'))
         threading.Thread(target=worker,daemon=True).start()
         return job
 
@@ -626,10 +642,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     state['render_request']=editor.render_update(request['id'],status,job=job,error=job.get('error'))
                 return self.json(state)
             if path=='/api/identity':
-                from workflow import VERSION
+                from workflow import VERSION,service_build
                 from lifecycle import POLICY
                 state=read(self.space.project/'course-state.json') if (self.space.project/'course-state.json').is_file() else {}
-                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION,lifecycle_policy=POLICY,runtime_build=getattr(self.server,'runtime_build',None)))
+                return self.json(dict(course_id=state.get('course_id'),course_root=str(self.space.root.resolve()),pid=os.getpid(),version=VERSION,lifecycle_policy=POLICY,runtime_build=getattr(self.server,'runtime_build',None),runtime_disk_build=service_build(),execution_runtime=getattr(self.server,'execution_runtime',None)))
             if path=='/api/workflow':
                 from workflow import Course
                 return self.json(Course(self.space.root).status())
@@ -759,6 +775,8 @@ def serve(root,port=0):
     if (server.workspace.project/'course-state.json').is_file():
         from workflow import VERSION,service_build
         server.runtime_build=service_build()
+        from execution_runtime_identity import capture
+        server.execution_runtime=capture()
         atomic(server.workspace.project/'work/workbench-service.json',dict(pid=os.getpid(),version=VERSION,url='http://127.0.0.1:'+str(server.server_address[1])))
     print('WORKBENCH_URL=http://127.0.0.1:'+str(server.server_address[1]),flush=True)
     try:server.serve_forever()

@@ -43,12 +43,23 @@ def playback(doc, first=0, last=None):
                              playback_end=(min(b,last)-first)/fps,
                              playback_complete=a>=first and b<=last and cursor>=end))
     chapters=[];previous=None
-    for scene in doc.get('scenes',[]):
-        title=scene.get('chapter') or scene.get('title')
-        start,end=position(scene['sourceStartFrame']),position(scene['sourceEndFrame'])
-        if not title or min(end,last)<=max(start,first):continue
-        if title!=previous:
-            chapters.append(dict(id=scene['id'],title=title,start=max(0,(start-first)/fps)))
-            previous=title
+    if doc.get('chapterTable'):
+        from chapter_table import canonical_table
+        table=doc['chapterTable']
+        if canonical_table(doc,table)!=table:
+            raise ValueError('CHAPTER_TABLE_STALE: chapter table does not match the current edit clock')
+        for row in table:
+            start,end=row['display_start'],row['display_end']
+            if min(end,last)>max(start,first):
+                chapters.append(dict(id=row['chapter_id'],title=row['label'],start=max(0,(start-first)/fps)))
+    else:
+        # Legacy candidates remain inspectable. New formal release requires the table.
+        for scene in doc.get('scenes',[]):
+            title=scene.get('chapter') or scene.get('title')
+            start,end=position(scene['sourceStartFrame']),position(scene['sourceEndFrame'])
+            if not title or min(end,last)<=max(start,first):continue
+            if title!=previous:
+                chapters.append(dict(id=scene['id'],title=title,start=max(0,(start-first)/fps)))
+                previous=title
     return dict(schema='course-export-playback/1',fps=fps,duration_seconds=(last-first)/fps,
                 firstFrame=first,lastFrame=last,bindings=bindings,chapters=chapters)

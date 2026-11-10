@@ -39,16 +39,36 @@ def completed(path):
     target=str(Path(path).resolve());target=read(config_dir()/'course-relocations.json',{}).get(target,{}).get('course_path',target)
     for file in (config_dir()/'deliveries').glob('*.json'):
         value=read(file,{})
-        if value.get('course_path')==target and all(Path(f['path']).is_file() for f in value.get('files',[])):
+        decision=value.get('release_gate',{})
+        if (value.get('quality_release_allowed') is False or value.get('release_state')=='acceptance_blocked' or
+                decision.get('allow_release') is False or decision.get('checker_executed') is False):continue
+        if value.get('course_path')==target and len(value.get('files',[]))==3 and all(Path(f['path']).is_file() and not Path(f['path']).is_symlink() and digest(Path(f['path']))==f.get('sha256') for f in value.get('files',[])):
+            formal=decision.get('allow_release') is True and decision.get('checker_executed') is True
+            ref=value.get('copy_receipt_ref',{})
+            if formal:
+                proof=Path(ref.get('path',''))
+                expected_root=(config_dir()/'deliveries/evidence'/value['course_id']).resolve()
+                if not proof.is_file() or not proof.resolve().is_relative_to(expected_root) or digest(proof)!=ref.get('sha256'):continue
+                copied=read(proof,{})
+                if copied.get('status')!='formally_delivered' or copied.get('gate')!=decision:continue
+                if copied.get('visibility',{}).get('status')!='verified' or not copied.get('visibility',{}).get('method'):continue
+                if {f.get('sha256')for f in copied.get('files',[])}!={f.get('sha256')for f in value['files']}:continue
+                if decision.get('hashes',{}).get('video_sha256')!=value['files'][0]['sha256']:continue
+            current=read(Path(target)/'project/course-state.json',{})
+            if current and (current.get('candidate_artifacts',{}).get('final') or current.get('artifacts',{}).get('final')):
+                names=current.get('candidate_artifacts',{}).get('final') or current['artifacts']['final']
+                videos=[(Path(target)/'project'/n).resolve() for n in names if str(n).lower().endswith('.mp4')]
+                if len(videos)!=1 or not videos[0].is_file() or digest(videos[0])!=value['files'][0]['sha256']:continue
             return dict(ok=True,course_path=value['course_path'],delivery_only=True,delivery=value,
-                        workflow=dict(course_id=value['course_id'],title=value['title'],revision=value['revision'],stage='complete',
-                                      gates=[dict(id='final',status='delivered')],jobs=[],next_action='成品已保存；'+('过程文件此前已清理' if value.get('cleanup_status')=='complete' else '过程文件保留，清理须另行选择确认')+'，仍可在当前会话播放与下载'))
+                        workflow=dict(course_id=value['course_id'],title=value['title'],revision=value['revision'],stage='complete' if formal else 'delivery',
+                                      release_state='formally_delivered' if formal else 'historical_bytes_verified_only',quality_release_verified=formal,
+                                      gates=[dict(id='final',status='delivered' if formal else 'unverified')],jobs=[],next_action=('成品已保存；' if formal else '历史成品字节已核对，当前放行未经验证；')+('过程文件此前已清理' if value.get('cleanup_status')=='complete' else '过程文件保留，清理须另行选择确认')+'，仍可在当前会话播放与下载'))
 
 
 def open_saved_folder(course_path):
     """Open only the verified saved folder from this course's delivery receipt."""
     result=completed(course_path)
-    if not result:raise ValueError('本课尚无可核对的保存记录，请先保存成品')
+    if not result:raise ValueError('本课保存文件已改变或缺失，或尚无可核对记录，请先核对成品')
     receipt=result['delivery'];folder=Path(receipt['delivery_root'])
     if folder.is_symlink() or not folder.is_dir():raise ValueError('保存文件夹已移动或缺失，请先核对实际位置')
     for file in receipt['files']:
@@ -81,6 +101,9 @@ def copy_verified(source,target):
     return expected
 
 
+from delivery_visibility import verify_finder_files
+
+
 def deliver(course,workspace,desktop=None):
     workspace=Path(workspace).resolve();root=course.root.resolve()
     if root.parent!=workspace/'courses' or course.root.is_symlink():raise ValueError('只保存当前会话 courses 内的本课成品')
@@ -91,54 +114,55 @@ def deliver(course,workspace,desktop=None):
         files=[course.relative(name) for name in status['artifacts'].get('final',[])]
         videos=[p for p in files if p.suffix.lower()=='.mp4' and p.is_file()]
         if len(videos)!=1:raise ValueError('当前交付应只有一个已登记完整视频')
-        from production import require_contract
-        require_contract(course.project,videos[0],'final')
         video=videos[0];subtitles=next((p for p in files if p.suffix.lower()=='.srt' and p.is_file()),video.with_suffix('.srt'))
         cover_record=read(course.project/'qa/cover-review.json',{});cover=course.relative(cover_record.get('coverPath','')) if cover_record.get('coverPath') else None
         if not subtitles.is_file() or not cover or not cover.is_file() or digest(cover)!=cover_record.get('coverSha256'):raise ValueError('缺少与当前成品对应的字幕或已核对封面')
-        final_title=read(course.project/'workbench.json',{}).get('title') or status['title']
-        title=re.sub(r'[/\\\x00-\x1f]','-',final_title).strip(' .')[:120] or '课程'
+        for source in status['plan'].get('sources',[]):
+            if not course.relative(source['location']).is_file():raise ValueError('原始资料已缺失，工程保留，请先核对')
+        # Actual review and applicable user confirmation precede ANY formal write.
+        from ai_review import enabled,Review
+        view=None
+        if enabled(course):
+            view=Review(course).require_pass('final')
+            if not view['user_confirmed']:raise ValueError('本版成片尚未由用户确认，不能登记正式交付')
+        title=re.sub(r'[/\\\x00-\x1f]','-',read(course.project/'workbench.json',{}).get('title') or status['title']).strip(' .')[:120] or '课程'
         parent=(Path(desktop) if desktop is not None else Path.home()/'Desktop/ai 制课').resolve();folder=parent/title
         previous=read(receipt_file(status['course_id']),{})
-        if previous.get('course_path')==str(root) and previous.get('revision')==status['revision'] and previous.get('cleanup_status')!='complete':
-            expected=[digest(file) for file in [video,subtitles,cover]]
-            if [file.get('sha256') for file in previous.get('files',[])]==expected and all(Path(file['path']).is_file() and digest(file['path'])==file['sha256'] for file in previous['files']):
-                make_visible(folder)
-                for file in previous['files']:make_visible(file['path'])
-                return completed(root)
-        if folder.exists() and any(folder.iterdir()):folder=parent/(title+'-'+status['course_id'][:8])
-        if folder.exists() and any(folder.iterdir()):folder=parent/(title+'-'+status['course_id'][:8]+'-r'+str(status['revision']))
-        if folder.exists() and any(folder.iterdir()):raise ValueError('本课目标文件夹已有文件，请先核对')
-        originals=[]
-        for source in status['plan'].get('sources',[]):
-            path=course.relative(source['location'])
-            if not path.is_file():raise ValueError('原始资料已缺失，工程保留，请先核对')
-        staging=parent/('.kgxc-delivery-'+status['course_id']+'-'+uuid.uuid4().hex[:8]);outputs=[]
+        if folder.exists() and (folder.is_symlink() or not folder.is_dir()):raise ValueError('交付目标不是本课真实目录')
+        if folder.exists() and any(folder.iterdir()) and previous.get('delivery_root')!=str(folder):raise ValueError('目标目录尚未有本课所有权回执，保留原件，请先核对')
+        from release_gate import build_context,deliver as guarded_deliver
+        copy_set=[dict(source=str(src),destination=str(folder/name),sha256=digest(src),role=role) for src,name,role in
+                  [(video,title+'.mp4','video'),(subtitles,title+'.srt','subtitles'),(cover,title+'-封面'+cover.suffix.lower(),'cover')]]
+        context=build_context(course.project,'delivery',course.project/'workbench.json',video,course_id=status['course_id'],entrypoint='plugin.delivery')
+        context['delivery_files']=copy_set
         try:
-            staging.mkdir(parents=True)
-            for source,name in [(video,title+'.mp4'),(subtitles,title+'.srt'),(cover,title+'-封面'+cover.suffix.lower())]:
-                target=staging/name;sha=copy_verified(source,target);outputs.append(dict(name=name,path=str(folder/name),sha256=sha,bytes=target.stat().st_size))
-            if folder.is_dir():folder.rmdir()  # The earlier check permits only an empty destination.
-            staging.replace(folder)
+            copied=guarded_deliver(course.project,context,copy_set)
             make_visible(folder)
-            for output in outputs:make_visible(output['path'])
-        finally:
-            if staging.is_dir():shutil.rmtree(staging)
-        export=read(video.with_suffix('.json'),{});chapters=export.get('playback',{}).get('chapters',[]) if export.get('video_sha256')==digest(video) else []
+            outputs=[]
+            for item in copied['files']:
+                path=Path(item['destination']);make_visible(path)
+                outputs.append(dict(name=path.name,path=str(path),sha256=item['sha256'],bytes=path.stat().st_size))
+            visibility=copied['visibility']
+        except Exception as error:
+            atomic(course.project/'qa/release-gate'/('delivery-failure-'+uuid.uuid4().hex+'.json'),dict(status='acceptance_blocked',error=str(error),files_retained=True,course_complete=False))
+            raise
         policy=read(course.project/'retention-policy.json',{})
         decision=dict(choice='keep',at=now(),evidence=policy.get('evidence'),actor=policy.get('actor','user')) if policy.get('mode')=='keep' and policy.get('evidence') else None
-        value=dict(schema='course-delivery-receipt/1',at=now(),course_path=str(root),course_id=status['course_id'],title=title,revision=status['revision'],
-                   delivery_root=str(folder),files=outputs,originals=originals,chapters=chapters,review_context=read(course.project/'workbench-review-context.json',{}).get('scope','course-review'),cleanup_status='retained',cleanup_decision=decision)
-        from ai_review import enabled,Review
-        if enabled(course):
-            state=read(course.state_file);view=Review(course).require_pass('final')
-            if not view['user_confirmed']:raise ValueError('本版成片尚未由用户确认，不能登记正式交付')
-            state.setdefault('formal_deliveries',[]).append(dict(at=now(),review_id=view['run']['id'],fingerprint=view['fingerprint'],files=outputs))
+        export=read(video.with_suffix('.json'),{})
+        chapters=export.get('playback',{}).get('chapters',[]) if export.get('video_sha256')==digest(video) else []
+        value=dict(schema='course-delivery-receipt/2',at=now(),course_path=str(root),course_id=status['course_id'],title=title,revision=status['revision'],
+                   delivery_root=str(folder),files=outputs,originals=[],chapters=chapters,cleanup_status='retained',cleanup_decision=decision,
+                   release_gate=copied['gate'],finder_readback=visibility,release_state='formally_delivered',user_acceptance=bool(view and view['user_confirmed']))
+        proof=Path(copied['receipt_path']);proof_copy=config_dir()/'deliveries/evidence'/status['course_id']/(digest(proof)+'.json')
+        proof_copy.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(proof,proof_copy)
+        if digest(proof)!=digest(proof_copy):raise ValueError('DELIVERY_COPY_MISMATCH: durable receipt copy')
+        value['copy_receipt_ref']=dict(path=str(proof_copy),sha256=digest(proof_copy))
+        if view:
+            state=read(course.state_file)
+            state.setdefault('formal_deliveries',[]).append(dict(at=now(),review_id=view['run']['id'],fingerprint=view['fingerprint'],files=outputs,release_gate=copied['gate']))
             course._commit(state,'formal_delivery_saved',dict(review_id=view['run']['id'],folder=str(folder)))
             value.update(revision=state['revision'],ai_review_id=view['run']['id'],user_confirmation=view['run']['id'])
-        receipt=receipt_file(status['course_id']);atomic(receipt,value)
-        # Saving verified deliverables never authorizes removal of source work.
-        # Retention is the default, including unattended and delegated production.
+        atomic(receipt_file(status['course_id']),value)
     return completed(root)
 
 

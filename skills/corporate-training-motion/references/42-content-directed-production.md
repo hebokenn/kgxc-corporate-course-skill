@@ -67,3 +67,15 @@ python3 SKILL_DIR/scripts/course_tools.py direction-check --spec COURSE/project/
 
 
 文字及信息更新按[阅读与信息节奏](45-reading-and-information-pacing.md)独立编排与检查；恢复时读取 `production_handoff.reading_pacing`，不要把动作间空档或通用“读图”理由当作实际阅读证据。
+
+## 可计算的作者与导演交接
+
+由[统一执行合同](55-execution-contract-and-release.md)调用 `author_input_checks.inspect()`，数据位于 `requirements.direction.author_input`；允许该字段引用本课JSON文件，不把课程资料放进Skill。`script_text`为当前讲稿；`terms`记录术语、首次字符位置、解释和资料依据，英文缩写会自动提取，中文专业术语由 `specialist_terms`登记。未知定义返回 `TERM_UNVERIFIED`，检查器不补造业务含义。
+
+`source_coverage`保留独立要点、舍弃、新增、理由、关键规则/条件/例外及原件完整阅读状态；未读全不得填写完整覆盖率。此处是输入结构核对，原件逐项语义比对与已有人工确认继续走原覆盖流程，作者自检不能生成用户批准。
+
+每个 `demonstrations`项目填 `object_ids,action,before,process,after`；只有“加强沟通”等概述或没有实际主体操作分别报 `DEMONSTRATION_ABSTRACT/DEMONSTRATION_NOT_IMPLEMENTED`。练习提供 `question_node_ids/material_node_ids/option_node_ids/answer_node_ids/question_start/pause_cue/answer_trigger`，答案在作答期可读报 `EXERCISE_ANSWER_EARLY`，反馈时必要材料消失报 `EXERCISE_MATERIAL_GONE`。
+
+对白登记 `speaker_id/addressee_ids/speech_range/listen_state/facing_target/response_action/leave_after_frame`；业务图示登记 `object_ids/label_node_ids/direction/meaning/frame_window`。实际运行证据放 `runtime_review`，含当前文档/视频哈希、前中后编码PNG和 `object_states`、接触/遮挡回执；只写keyframes不能关闭 `ACTING_RUNTIME_UNVERIFIED`。标题、字幕、导航不能代正文标签；受话人缺席、提前离开或运行朝向无法证明分别保留具体缺口。
+
+编码图片证据由 `production_validation.current_review()`精确从头选择主视频流解码，将PNG像素摘要和实际PTS与当前视频核对；给旧图片换一个新视频哈希不能通过。实际观察仍需检查者填写逐图看到什么，程序不生成“清楚、美观、已听过”的结论。

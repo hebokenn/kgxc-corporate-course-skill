@@ -86,7 +86,11 @@ function rippleCut(doc,start,end){
  const move=t=>t<=start?t:t>=end?t-(end-start):start;d.captions=d.captions.map(c=>({...c,startFrame:move(c.startFrame),endFrame:move(c.endFrame)})).filter(c=>c.endFrame>c.startFrame);return d;
 }
 
-return {displayFrame,totalFrames,segments,sourceFrame,rippleCut};})();
+// One immutable chapter table, measured on the edited display clock (seek-safe).
+function chapterProgress(chapter,frame){const a=chapter.display_start,z=chapter.display_end;if(!Number.isFinite(a)||!Number.isFinite(z)||z<=a)throw Error('Invalid chapter display range');return Math.max(0,Math.min(1,(frame-a)/(z-a)))}
+function chapterAt(doc,frame){return (doc.chapterTable||[]).find(c=>c.display_start<=frame&&frame<c.display_end)||null}
+
+return {displayFrame,totalFrames,segments,sourceFrame,rippleCut,chapterProgress,chapterAt};})();
 modules["activity"]=(()=>{
 // Only real interactions, unsaved edits and playback hold the local service open.
 // Workflow/job polling deliberately does not count as activity.
@@ -139,13 +143,15 @@ function productionProgress({stage,busy=false,data={},jobs=[],native}) {
   const {current:latest}=productionJobHistory(list,stage);
   if(latest?.status==='failed')return {label:'本次合成未完成',value:0,detail:String(latest.error||'').trim().split('\n').filter(Boolean).at(-1)?.slice(0,240)||'请在右侧查看原因，修正后继续制作。',tone:'failed'};
   if(latest?.status==='cancelled')return {label:'本次合成已暂停，过程文件保留',value:null,detail:String(latest.error||'制作或监督暂停了本次任务；解除暂停后重新制作当前版本。'),tone:'waiting'};
+  if(data.release_status?.state==='acceptance_blocked')return {label:'候选保留 · 当前验收受阻',value:null,
+    detail:(data.release_status.errors||[]).map(e=>(e.code?e.code+'：':'')+e.message).slice(0,5).join('；')||'当前版本必检证据尚未齐备。',tone:'waiting'};
   if(['storyboard','pilot','final'].includes(stage)&&data.production_preferences?.required&&!data.production_preferences.storyboard_current)
     return {label:data.production_preferences.ready?'制作偏好已修改，等待更新对应成果':'待选择课程制作偏好',value:0,detail:'已有视频和历史记录保留；更新相关分镜与音视频后再登记当前结果。',tone:'waiting'};
-  if(latest?.status==='complete'&&latest.registration_status==='held')return {label:'制作候选已生成 · 100%',value:1,detail:'渲染与编码检查已完成；制作检查尚未齐备，候选可查看，尚未登记成品。',tone:'waiting'};
+  if(latest?.status==='complete'&&latest.registration_status==='held')return {label:'候选已生成 · 验收受阻',value:null,detail:'编码完成。当前缺项：'+(latest.contract_pending?.errors||[]).map(e=>e.code||e.message).slice(0,5).join('、')+'。候选可查看，尚未正式交付。',tone:'waiting'};
   const finalGate=data.gates?.find(g=>g.id==='final'),deliveredAt=Date.parse(finalGate?.receipt?.at||'');
   if(finalGate?.status==='delivered'&&Number.isFinite(deliveredAt)&&!busy&&!data.editor?.changed&&list.at(-1)?.status!=='failed'&&(!native?.issue||native.issue.at<deliveredAt))return {label:'整课制作与登记已完成',value:1,detail:'当前成品已通过制作端检查；历史失败保留在折叠记录中，不代表当前制作失败。',tone:'done'};
   const completedAt=latest?.completed_at|| (latest?.id&&native?.last_export?.job_id===latest.id?native.last_export.at:0);
-  if(latest?.status==='complete'&&completedAt&&(!native?.issue||native.issue.at<completedAt)&&!data.editor?.changed&&data.gates?.find(g=>g.id===stage)?.status!=='stale')return {label:'视频合成已完成 · 100%',value:1,detail:native?.issue?'此前独立检查的问题保留在步骤明细；当前合成已完成，等待成品审阅。':'当前合成已完成，等待成品审阅。',tone:'done'};
+  if(latest?.status==='complete'&&completedAt&&(!native?.issue||native.issue.at<completedAt)&&!data.editor?.changed&&data.gates?.find(g=>g.id===stage)?.status!=='stale')return {label:'候选编码完成 · 待成品审阅',value:null,detail:'当前候选可查看。正式交付与用户验收分别记录。',tone:'waiting'};
   if(native?.available){
     const issue=native.issue,current=native.current;
     if(issue)return {label:issue.label+(issue.count>1?'连续失败 '+issue.count+' 次':'失败')+(native.status==='stopped'?' · 已停止':''),value:0,
@@ -670,7 +676,7 @@ function samplesView(root){
     const file=(data.artifacts.pilot||[]).find(item=>item.available&&item.current_storyboard&&item.bindings?.some(b=>b.segment_id===selected.segment_id&&b.option_id===selected.option_id&&b.playback_complete));const binding=file?.bindings.find(b=>b.segment_id===selected.segment_id);let video;
     if(file){video=samplePlayer(file,binding,index);card.append(video,el('p','本段位置 '+stamp(binding.playback_start)+'—'+stamp(binding.playback_end)+'；完整片段 '+(binding.playback_end-binding.playback_start).toFixed(1)+' 秒。','meta'));}else card.append(el('p','本段有声视频尚未生成，或尚未核对与当前分镜的完整对应关系。','impact'));
     card.append(el('p','音色与语速：'+(file?.audio_settings?.summary||'此视频尚未单独记录，请以实际样段核对')+'；字幕与画面按实际视频审阅。','meta'),feedbackForm('pilot',selected.segment_id,video,file,binding));grid.append(card);});root.append(grid);
-  if((data.artifacts.pilot||[]).some(file=>file.available&&!file.bindings?.length)){const extra=el('section',null,'card');extra.append(el('h3','已生成、尚待核对对应关系的视频'));for(const file of data.artifacts.pilot.filter(f=>f.available&&!f.bindings?.length)){const video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';extra.append(video);}root.append(extra);}
+  if((data.artifacts.pilot||[]).some(file=>file.available&&/\.mp4$/i.test(file.path)&&!file.bindings?.length)){const extra=el('section',null,'card');extra.append(el('h3','已生成、尚待核对对应关系的视频'));for(const file of data.artifacts.pilot.filter(f=>f.available&&/\.mp4$/i.test(f.path)&&!f.bindings?.length)){const video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';extra.append(video);}root.append(extra);}
 }
 function finalView(root){
   root.append(el('p','这里展示实际制作任务和完整视频。可以定位问题返修，再导出当前成品。','intro'));impactPanel(root);
@@ -679,17 +685,17 @@ function finalView(root){
   if(current)root.append(exportJobCard(current,false));
   if(history.length){const archive=el('details',null,'job-history'),failed=history.filter(job=>job.status==='failed').length;archive.append(el('summary','历史制作记录 · '+history.length+' 次'+(failed?'，其中 '+failed+' 次当时未通过':'')));archive.append(el('p','历史文件和错误均保留；下列记录不代表当前任务状态。','meta'));for(const job of history)archive.append(exportJobCard(job,true));root.append(archive);}
   const files=(data.artifacts.final||[]).filter(f=>f.available);if(!files.length){root.append(empty('整课尚未生成','确认三段有声小样后，AI 会沿用已经确认的讲稿与分镜制作整课。'));return;}
-  for(const file of files){const card=el('section',null,'card');let video;if(/\.mp4$/i.test(file.path)){video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';card.append(video);if(file.chapters?.length){const jumps=el('div',null,'unit-actions');for(const chapter of file.chapters)jumps.append(button(chapter.title,()=>{video.currentTime=Math.min(chapter.start,Math.max(0,(video.duration||Infinity)-.1));}));card.append(jumps);}else card.append(el('p','此文件没有经过核对的章节定位，仍可直接播放。','meta'));}card.append(link(file.path,'下载当前文件'),feedbackForm('final',undefined,video,file));root.append(card);}
+  for(const file of files){const card=el('section',null,'card');let video;if(/\.mp4$/i.test(file.path)){video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';card.append(video);if(file.chapters?.length){const jumps=el('div',null,'unit-actions');for(const chapter of file.chapters)jumps.append(button(chapter.title,()=>{video.currentTime=Math.min(chapter.start,Math.max(0,(video.duration||Infinity)-.1));}));card.append(jumps);}else card.append(el('p','此文件没有经过核对的章节定位，仍可直接播放。','meta'));}card.append(link(file.path,'下载当前文件'));if(video)card.append(feedbackForm('final',undefined,video,file));root.append(card);}
   for(const delivery of data.deliveries||[])if(delivery.path||delivery.paths)root.append(el('p','已登记交付：'+(delivery.path||delivery.paths.join('、')),'file-path'));
 }
 function exportJobCard(job,historical){
   const row=el('section',null,'job'),heading=el('div',null,'job-heading');row.dataset.status=job.status;
   let label=({queued:'排队中',rendering:'制作中',encoding:'编码中',packaging:'整理交付',complete:'合成已完成',failed:'本次未通过校验'})[job.status]||job.status;
-  if(job.status==='complete'&&job.registration_status==='held')label='制作候选已生成 · 待核验';
+  if(job.status==='complete'&&job.registration_status==='held')label='候选已生成 · 验收受阻';
   if(historical)label=job.status==='failed'?'历史失败记录':label;
   heading.append(el('strong',(historical?'':'当前任务 · ')+label,'job-label'),el('span',(Number.isFinite(job.revision)?'R'+job.revision+' · ':'')+(job.id||''),'meta'));row.append(heading);
   if(job.status==='complete')row.append(el('p',job.registration_status==='held'?'渲染与编码检查已完成；制作候选尚未登记，需补齐当前制作检查。':'已完成渲染与编码检查。','meta'));
-  if(job.registration_status==='held'&&job.contract_pending?.errors?.length){const pending=el('details',null,'job-diagnostics');pending.append(el('summary','查看待核验项'));for(const issue of job.contract_pending.errors)pending.append(el('p',issue.message));row.append(pending);}
+  if(job.registration_status==='held'&&job.contract_pending?.errors?.length){const pending=el('details',null,'job-diagnostics');pending.append(el('summary','当前缺项 · '+job.contract_pending.errors.length+' 项'));for(const issue of job.contract_pending.errors)pending.append(el('p',(issue.code?issue.code+'：':'')+issue.message));row.append(pending);}
   if(!historical&&activeJobs([job])&&typeof job.progress==='number'){const line=el('div',null,'job-progress'),bar=el('progress');bar.max=1;bar.value=Math.max(0,Math.min(1,job.progress));line.append(bar,el('span',Math.floor(bar.value*100)+'%'));row.append(line);}
   if(job.supersededBy)row.append(el('p','后续 '+(Number.isFinite(job.supersededBy.revision)?'R'+job.supersededBy.revision+' ':'')+'导出已通过；本条保留为历史诊断。','meta'));
   if(job.error){const diagnostic=el('details',null,'job-diagnostics');diagnostic.append(el('summary',historical?'查看当时的错误详情':'查看本次错误详情'),el('pre',String(job.error)));row.append(diagnostic);}

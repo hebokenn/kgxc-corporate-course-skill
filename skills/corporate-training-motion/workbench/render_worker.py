@@ -3,23 +3,63 @@ import argparse
 import base64
 import json
 import subprocess
+import hashlib
+import math
+from fractions import Fraction
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from runtime import activate, browser_options
 activate()
 
+def complete_audio_and_mux(video_only,audio,output,directory,document,first,last,fps):
+    """Finish AAC independently, preserve every encoded packet, embed one chapter clock."""
+    from timeline import duration
+    full=first==0 and last==duration(document)
+    complete=Path(directory)/'audio-complete.m4a'
+    filters=['aresample=48000']
+    if not full:
+        filters.append('atrim=start_sample=%d:end_sample=%d'%(round(first/fps*48000),round(last/fps*48000)))
+        filters.append('asetpts=PTS-STARTPTS')
+    audio_argv=['ffmpeg','-v','error','-y','-i',str(audio),'-map','0:a:0','-vn','-af',','.join(filters),
+                    '-c:a','aac','-b:a','192k','-ar','48000',str(complete)]
+    subprocess.run(audio_argv,check=True)
+    args=['ffmpeg','-v','error','-y','-i',str(video_only),'-i',str(complete)]
+    table=document.get('chapterTable')
+    if table:
+        from chapter_table import canonical_table
+        if table!=canonical_table(document,table):raise ValueError('CHAPTER_TABLE_STALE: current rendered table differs')
+        rate=Fraction(str(fps));lines=[';FFMETADATA1']
+        for row in table:
+            start=max(first,row['display_start']);end=min(last,row['display_end'])
+            if start>=end:continue
+            title=str(row['label']).replace('\\','\\\\').replace('\n',' ').replace('=','\\=').replace(';','\\;').replace('#','\\#')
+            lines+=['[CHAPTER]',f'TIMEBASE={rate.denominator}/{rate.numerator}',f'START={start-first}',f'END={end-first}','title='+title]
+        metadata=Path(directory)/'chapters.ffmetadata';metadata.write_text('\n'.join(lines)+'\n')
+        args+=['-f','ffmetadata','-i',str(metadata),'-map_metadata','2','-map_chapters','2']
+    args+=['-map','0:v:0','-map','1:a:0','-c','copy','-movflags','+faststart',str(output)]
+    subprocess.run(args,check=True)
+    def packets(path):
+        return json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','a:0','-show_packets','-show_data_hash','sha256','-show_entries','packet=data_hash,pts_time,duration_time','-of','json',str(path)]))['packets']
+    before,after=packets(complete),packets(output)
+    if not before or before!=after:raise ValueError('AAC_PAYLOAD_MISMATCH: worker final mux lost/reordered audio packets or timestamps')
+    return dict(method='independent-complete-AAC-then-packet-preserving-remux',audio_complete_path=str(complete),
+                audio_complete_sha256=hashlib.sha256(complete.read_bytes()).hexdigest(),audio_source_sha256=hashlib.sha256(Path(audio).read_bytes()).hexdigest(),
+                copied_aac_packets=len(after),all_packets_and_timestamps_equal=True,full_source_audio=full,subjective_listening=False,
+                audio_encode_argv=audio_argv,mux_argv=args)
+
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--url',required=True);p.add_argument('--directory',type=Path,required=True)
-    p.add_argument('--audio',type=Path,required=True);p.add_argument('--first',type=int,required=True);p.add_argument('--last',type=int,required=True);p.add_argument('--fps',type=int,required=True)
+    p.add_argument('--audio',type=Path,required=True);p.add_argument('--first',type=int,required=True);p.add_argument('--last',type=int,required=True);p.add_argument('--fps',type=float,required=True)
     p.add_argument('--project',type=Path)
     a=p.parse_args();output=a.directory/'video.mp4';count=a.last-a.first
+    if not math.isfinite(a.fps) or not 1<=a.fps<=120 or count<=0:raise ValueError('Invalid actual frame clock')
+    video_only=a.directory/'video-only.mp4'
     args=['ffmpeg','-v','error','-y','-f','image2pipe','-framerate',str(a.fps),'-c:v','mjpeg','-i','-',
-          '-ss',str(a.first/a.fps),'-i',str(a.audio),'-map','0:v:0','-map','1:a:0',
+          '-map','0:v:0','-an',
           '-c:v','libx264','-preset','veryfast','-crf','18','-threads','2','-pix_fmt','yuv420p',
           '-vf','scale=in_range=full:out_range=limited,format=yuv420p','-color_range','tv',
-          '-frames:v',str(count),'-c:a','aac','-b:a','192k','-ar','48000','-af','apad',
-          '-t',str(count/a.fps),'-movflags','+faststart',str(output)]
+          '-frames:v',str(count),'-movflags','+faststart',str(video_only)]
     metrics={};captured=0;motion_calls={};layout_checks={};layout_frames=0
     document=json.loads((a.directory/'document.json').read_text())
     from reading_pacing import RuntimeAudit
@@ -89,6 +129,7 @@ def main():
         except Exception:
             encoder.kill();encoder.wait();raise
         finally:browser.close()
+    audio_completion=complete_audio_and_mux(video_only,a.audio,output,a.directory,document,a.first,a.last,a.fps)
     probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(output)]))
     video=next(s for s in probe['streams'] if s['codec_type']=='video');audio=next(s for s in probe['streams'] if s['codec_type']=='audio')
     assert (video['width'],video['height'],video['pix_fmt'])==(1920,1080,'yuv420p'), str({k:video.get(k) for k in ['width','height','pix_fmt','color_range']})
@@ -125,7 +166,7 @@ def main():
     if continuity['status']=='fail':raise ValueError('实际成片讲解连贯性未通过：'+'；'.join(continuity['errors'])+'；候选保留，未登记为小样或成片')
     report=dict(frames=count,capturedFrames=captured,fps=a.fps,duration=float(probe['format']['duration']),
                 width=video['width'],height=video['height'],pixelFormat=video['pix_fmt'],colorRange=video.get('color_range'),audioCodec=audio['codec_name'],fullDecode='pass',
-                objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,readingPacing=reading,narrationContinuity=continuity,
+                video_encode_argv=args,worker_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),audioCompletion=audio_completion,objectStateProof=object_proof,captionMetrics=list(metrics.values()),bindingReceipt=receipt,seekDeterministic=True,motionAudit=motion_audit,readingPacing=reading,narrationContinuity=continuity,
                 layoutAudit=dict(status='pass' if layout_checks else 'not-declared',checkedRenderedStates=layout_frames,rules=list(layout_checks.values()),scope='declared text enclosure and row separation, not all possible visual collisions'),renderer='same renderer.html and immutable document snapshot as preview')
     (a.directory/'verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
     print(json.dumps(report,ensure_ascii=False))

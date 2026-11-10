@@ -240,7 +240,7 @@ class RuntimeAudit:
         self.doc=doc;self.fps=doc.get('fps',30);self.first=first;self.last=last;self.errors=[]
         report=inspect(doc)if doc.get('readingPolicy',{}).get('required')else{}
         self.groups=report.get('groups',[]);self.references=report.get('references',[])
-        self.states={g['id']:dict(run=0,longest=0,signature=None,last=None,missingRetentionFrames=0,firstStable=None,lastStable=None)for g in self.groups}
+        self.states={g['id']:dict(run=0,longest=0,signature=None,last=None,missingRetentionFrames=0,firstStable=None,lastStable=None,runStart=None,longestStart=None,longestEnd=None)for g in self.groups}
         self.reference_states={(r['id'],r['sceneId']):dict(missingFrames=0,movingFrames=0,signature=None,last=None)for r in self.references}
 
     def consume(self,display,source,receipts):
@@ -260,7 +260,10 @@ class RuntimeAudit:
             sig=signature(g['textIds'],g['texts'])if a<=source<z else None
             if sig is not None:
                 state['run']=state['run']+1 if sig==state['signature']and state['last']==display-1 else 1
-                state['longest']=max(state['longest'],state['run']);state['lastStable']=display
+                if state['run']==1:state['runStart']=display
+                if state['run']>state['longest']:
+                    state['longest']=state['run'];state['longestStart']=state['runStart'];state['longestEnd']=display+1
+                state['lastStable']=display
                 if state['firstStable']is None:state['firstStable']=display
             else:state['run']=0
             state['signature']=sig;state['last']=display
@@ -285,7 +288,7 @@ class RuntimeAudit:
             s=self.states[g['id']];seconds=s['longest']/self.fps
             if reading and s['longest']<math.ceil(g['minimumStableSeconds']*self.fps):errors.append(f'{g["id"]} 实际渲染文字连续停稳仅 {seconds:.2f}秒')
             if s['missingRetentionFrames']:errors.append(f'{g["id"]} 实际渲染中有 {s["missingRetentionFrames"]}帧丢失应保留的信息')
-            rows.append(dict(id=g['id'],actualStableSeconds=round(seconds,3),requiredSeconds=g['minimumStableSeconds']if reading else None,readingPhaseIncluded=reading,firstVisibleFrame=s['firstStable'],lastVisibleFrame=s['lastStable'],missingRetentionFrames=s['missingRetentionFrames']))
+            rows.append(dict(id=g['id'],actualStableSeconds=round(seconds,3),requiredSeconds=g['minimumStableSeconds']if reading else None,readingPhaseIncluded=reading,firstVisibleFrame=s['firstStable'],lastVisibleFrame=s['lastStable'],missingRetentionFrames=s['missingRetentionFrames'],actualStableWindow=[s['longestStart'],s['longestEnd']] if s['longestStart'] is not None else None))
         for r in self.references:
             if not any(max(a,self.first)<min(z,self.last)for a,z in r['windows']):continue
             s=self.reference_states[(r['id'],r['sceneId'])]

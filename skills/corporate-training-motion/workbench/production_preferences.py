@@ -18,6 +18,23 @@ from layered_customers import catalog
 CUSTOMERS = catalog()
 
 
+def _producer_design_adopted(project, request, profile):
+    """A delegated production choice, explicitly distinct from human approval."""
+    adoption=request.get('design_adoption',{})
+    ref=adoption.get('delegation_ref',{})
+    if not isinstance(ref,dict) or not ref.get('path') or not ref.get('sha256'):
+        return False
+    event_path=(Path(project)/ref['path']).resolve()
+    if not event_path.is_relative_to(Path(project).resolve()) or not event_path.is_file() or sha(event_path)!=ref['sha256']:
+        return False
+    event=read(event_path,{})
+    return bool(adoption.get('status')=='adopted' and adoption.get('actor_type')=='producer' and
+        adoption.get('actor') and adoption.get('evidence') and profile.is_file() and
+        adoption.get('profile_sha256')==sha(profile) and event.get('actor_type')=='user' and
+        event.get('event_id') and event.get('original_quote') and 'creative_choices' in event.get('scopes',[]) and
+        adoption.get('human_clicked')is False)
+
+
 def load(project):
     path = Path(project) / FILENAME
     value = read(path, dict(schema='course-production-preferences/1', choices={}))
@@ -26,7 +43,9 @@ def load(project):
     request=value.get('new_customer', {})
     profile=(Path(project)/request.get('profile_path','')).resolve()
     approved=request.get('design_approval', {})
-    customer_ready=bool(request.get('profile_path') and profile.is_relative_to(Path(project).resolve()) and profile.is_file() and approved.get('status')=='confirmed' and approved.get('actor') and approved.get('evidence'))
+    customer_ready=bool(request.get('profile_path') and profile.is_relative_to(Path(project).resolve()) and profile.is_file() and
+        ((approved.get('status')=='confirmed' and approved.get('actor_type')!='producer' and approved.get('actor') and approved.get('evidence')) or
+         _producer_design_adopted(project,request,profile)))
     # A verified older delivery can display its actual choices without changing
     # the approval basis of media produced before this contract existed.
     existing=value.get('recorded_existing_production',{})
@@ -48,6 +67,25 @@ def ensure(project):
     if not path.exists():
         atomic(path, dict(schema='course-production-preferences/1', choices={}, answers={}))
     return load(project)
+
+
+def record_design_adoption(project,profile_path,actor,evidence,delegation_ref):
+    """Retain actual delegated design evidence; never set design_approval/confirmed."""
+    from render_input_guard import ensure_mutation_allowed
+    ensure_mutation_allowed(project,'customer-design-adoption',dict(profile_path=profile_path,actor=actor,evidence=evidence,delegation_ref=delegation_ref))
+    p=Path(project).resolve();path=p/FILENAME;value=read(path,{})
+    profile=(p/profile_path).resolve()
+    if value.get('choices',{}).get('customer')!='new' or not profile.is_relative_to(p) or not profile.is_file():
+        raise ValueError('新增顾客采用须引用本课实际profile')
+    request=copy.deepcopy(value.get('new_customer',{}));request['profile_path']=profile_path
+    request['design_adoption']=dict(status='adopted',actor_type='producer',actor=actor,evidence=evidence,
+        profile_sha256=sha(profile),delegation_ref=copy.deepcopy(delegation_ref),human_clicked=False)
+    if not _producer_design_adopted(p,request,profile):raise ValueError('缺少真实本课创意选择委托或当前设计依据')
+    if path.is_file():
+        history=p/'work/production-preferences-history'/(sha(path)+'.json')
+        if not history.exists():history.parent.mkdir(parents=True,exist_ok=True);history.write_bytes(path.read_bytes())
+    value['new_customer']=request;atomic(path,value)
+    return load(p)
 
 
 def creative_basis(project):
@@ -77,6 +115,8 @@ def storyboard_current(project):
 def record_storyboard(project,actor,evidence):
     """Bind the reviewed creative choices without rewriting stable storyboard identities."""
     if not load(project)['required']:return
+    from render_input_guard import ensure_mutation_allowed
+    ensure_mutation_allowed(project,'preferences-storyboard-binding',dict(actor=actor,evidence=evidence))
     if not str(actor).strip() or not str(evidence).strip():raise ValueError('请记录制作偏好与分镜衔接的实际依据')
     from storyboard import basis
     path=Path(project)/'production-preferences-storyboard.json'
@@ -89,6 +129,8 @@ def record_storyboard(project,actor,evidence):
 def update(project, key, choice, actor, brief='', reference_path=''):
     if key not in OPTIONS or choice not in OPTIONS[key]:
         raise ValueError('制作偏好选项无效')
+    from render_input_guard import ensure_mutation_allowed
+    ensure_mutation_allowed(project,'production-preference',dict(key=key,choice=choice,actor=actor,brief=brief,reference_path=reference_path))
     value = copy.deepcopy(load(project))
     for name in ['required', 'ready', 'pending', 'customers','new_customer_ready']:
         value.pop(name, None)
@@ -130,7 +172,7 @@ def selection_errors(project):
     return errors
 
 
-def review_errors(project, gate, video):
+def review_errors(project, gate, video, document=None):
     errors = selection_errors(project)
     value = load(project)
     if not value['required'] or errors:
@@ -138,6 +180,18 @@ def review_errors(project, gate, video):
     proof = read(Path(project) / ('qa/production-preferences-' + gate + '-review.json'), {})
     if proof.get('choices_sha256') != choice_digest(project) or proof.get('video_sha256') != sha(video):
         return ['缺少绑定当前选择与当前视频的制作偏好实物复核']
+    if document is not None:
+        from production_contract import document_digest
+        path = Path(document) if not isinstance(document, dict) else None
+        if path is not None:
+            path = path if path.is_absolute() else Path(project) / path
+            if not path.is_file():return ['当前制作偏好检查缺少显式导出文档']
+        doc = document if isinstance(document, dict) else read(path,{})
+        hashes = {document_digest(doc)}
+        if path is not None:hashes.add(sha(path))
+        if (proof.get('document_sha256') not in hashes or proof.get('status') != 'verified' or
+                not proof.get('actor') or not proof.get('evidence')):
+            return ['制作偏好复核未绑定当前显式文档与实际检查范围']
     observations = proof.get('observations', {})
     for key in OPTIONS:
         if not isinstance(observations.get(key), str) or not observations[key].strip():
@@ -164,16 +218,26 @@ def review_errors(project, gate, video):
     if choice == 'new' and gate == 'final':
         profile=(Path(project)/str(implemented.get('new_customer_profile',''))).resolve()
         if not implemented.get('new_customer_profile') or not profile.is_relative_to(Path(project).resolve()) or not profile.is_file():errors.append('新增顾客还没有实际形象与设计确认记录')
-    if gate=='final':errors.extend(material_errors(project,video,value['choices'],implemented))
+    if gate=='final':errors.extend(material_errors(project,video,value['choices'],implemented,document=document))
     return errors
 
 
-def material_errors(project,video,choices,implemented):
+def material_errors(project,video,choices,implemented,document=None):
     """Check immutable export objects and the real mixer output, not checkbox counts."""
-    project=Path(project).resolve();match=re.search(r'-([a-f0-9]{12})\.mp4$',Path(video).name)
-    path=project/'work/workbench/exports'/(match[1] if match else 'missing')/'document.json'
-    if not path.is_file():return ['缺少当前成片对应的真实导出文档，无法核对制作偏好实物']
-    doc=read(path,{})
+    project=Path(project).resolve()
+    if document is not None:
+        path = None if isinstance(document,dict) else Path(document)
+        if path is not None:
+            path=(path if path.is_absolute() else project/path).resolve()
+            if not path.is_relative_to(project) or not path.is_file():return ['当前显式导出文档缺失或越出课程工程']
+        doc=document if isinstance(document,dict) else read(path,{})
+    else:
+        # Read-only compatibility for older immutable exports. New release_gate
+        # always supplies an explicit current document; names never authorize release.
+        match=re.search(r'-([a-f0-9]{12})\.mp4$',Path(video).name)
+        path=project/'work/workbench/exports'/(match[1] if match else 'missing')/'document.json'
+        if not path.is_file():return ['缺少当前成片对应的真实导出文档，无法核对制作偏好实物']
+        doc=read(path,{})
     def walk(nodes):
         for node in nodes:
             yield node

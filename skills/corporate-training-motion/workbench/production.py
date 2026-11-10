@@ -12,14 +12,95 @@ PORTABLE_CONTRACT_METADATA = (
 
 
 def require_contract(project, video, purpose='final', document=None):
-    """Reject incomplete production evidence before registering or copying media."""
-    from production_contract import inspect
-    result = inspect(project, document=document, video=video, purpose=purpose)
-    if result.get('required') and not result.get('ready'):
-        details = ['[' + str(item.get('id') or item.get('requirement') or 'contract') + '] ' +
-                   str(item.get('message') or '缺少本项制作证据') for item in result.get('errors', [])]
-        raise ValueError('制作合同未完成：' + '；'.join(details or ['缺少当前产物对应的制作证据']))
+    """All official registrations re-run the fixed, current-byte release checker."""
+    from release_gate import build_context, evaluate, ReleaseBlocked
+    from workflow import atomic
+    import uuid
+    # This is a declared entrypoint default, never a suffix-based export guess.
+    p=Path(project).resolve()
+    context=build_context(p,purpose,document or p/'workbench.json',video,entrypoint='production.require_contract')
+    result=evaluate(p,context)
+    atomic(p/'qa/release-gate'/(uuid.uuid4().hex+'.json'),result)
+    if result.get('allow_release') is not True:raise ReleaseBlocked(result)
+    return dict(result,required=True,ready=True)
+
+
+def stage_release(project,purpose,document,video=None,entrypoint='stage'):
+    """Same checker for non-media stage transitions and custom/resume callers."""
+    from release_gate import build_context, evaluate, ReleaseBlocked
+    from workflow import atomic
+    import uuid
+    p=Path(project).resolve()
+    result=evaluate(p,build_context(p,purpose,document,video,entrypoint=entrypoint))
+    atomic(p/'qa/release-gate'/(uuid.uuid4().hex+'.json'),result)
+    if result.get('allow_release') is not True:raise ReleaseBlocked(result)
     return result
+
+
+def dispatch(project,task_id,purpose):
+    """Persist the actual stage handoff before a controlled producer call."""
+    from execution_requirements import applicable
+    from evidence_versions import file_ref
+    from handoff_contract import create
+    from workflow import read
+    p=Path(project).resolve();contract=read(p/'production-contract.json',{})
+    existing=p/'work/handoffs'/(task_id+'.json')
+    if existing.is_file():
+        prior=read(existing)
+        if prior.get('purpose')!=purpose:raise ValueError('HANDOFF_ID_REUSED: task stage changed')
+        # The supervision operation performs persistent request/instruction CAS.
+        # A completed return legitimately changed output/contract bytes; replay
+        # reads the original frozen dispatch, and never re-signs current inputs.
+        return dict(ok=True,task=prior,record=file_ref(p,existing),existing_dispatch=True,
+                    return_command='kgxc-course return --project '+str(p)+' --input RESULT.json --document CURRENT.json')
+    rows=[r for r in contract.get('obligations',[]) if applicable(r,purpose)]
+    if not rows:raise ValueError('REQ_MISSING: register source-attributed obligations before dispatch')
+    plan=read(p/'design-plan.json',{})
+    names={'script':plan.get('script_file') or 'source/transcript.md','storyboard':'storyboard.json','pilot':'workbench.json','final':'workbench.json'}
+    inputs=[file_ref(p,p/'production-contract.json')]
+    for name in ['design-plan.json','production-preferences.json',plan.get('script_file'),'storyboard.json','workbench.json']:
+        if name and (p/name).is_file():inputs.append(file_ref(p,p/name))
+    task=dict(task_id=task_id,requirement_ids=[r['id'] for r in rows],inputs=inputs,
+              owned_scope=[names[purpose]],forbidden_scope=['other courses','user confirmation','billing route','process deletion'],
+              quotes={r['id']:r['original_quote'] for r in rows},actual_objects=contract.get('requirements',{}) if purpose in ['pilot','final'] else [],
+              choices=contract.get('choices') or read(p/'production-preferences.json',{}).get('choices',{}),return_files=[names[purpose]],
+              required_checks=sorted({c if isinstance(c,str) else c['id'] for r in rows for c in r['acceptance_checks']}),
+              purpose=purpose,issue_ids=sorted({i for r in rows for i in r.get('issue_ids',[])}))
+    if purpose in ['pilot','final'] and task['choices'].get('sound_effects')=='native':
+        if not any(isinstance(r.get('scope'),dict) and (r['scope'].get('feature')=='sfx' or 'sfx' in r['scope'].get('features',[])) for r in rows):
+            raise ValueError('REQ_MISSING: saved native-sfx choice needs its source-attributed current-stage obligation before dispatch')
+        task['implementation_outputs']=['native_sfx']
+    result=create(p,task)
+    if not result['ready']:raise ValueError('HANDOFF_INCOMPLETE: '+json.dumps(result['errors'],ensure_ascii=False))
+    return dict(ok=True,task=task,record=result,return_command='kgxc-course return --project '+str(p)+' --input RESULT.json --document CURRENT.json')
+
+
+def require_dispatch_return(project,task_id):
+    from handoff_contract import validate_result
+    from workflow import read
+    p=Path(project);task=read(p/'work/handoffs'/(task_id+'.json'),{})
+    result=read(p/'work/handoffs'/(task_id+'-result.json'),{})
+    errors=validate_result(p,task,result,read(p/'workbench.json',{}))
+    if errors or result.get('unresolved_items') or result.get('status')!='implemented_unverified':
+        raise ValueError('HANDOFF_RETURN_INCOMPLETE: '+json.dumps(errors,ensure_ascii=False))
+    return result
+
+
+def release_projection(project,state):
+    from workflow import read,sha
+    p=Path(project).resolve();decision=state.get('release_decisions',{}).get('final',{})
+    names=state.get('candidate_artifacts',{}).get('final') or state.get('artifacts',{}).get('final',[])
+    videos=[(p/n).resolve() for n in names if str(n).lower().endswith('.mp4')]
+    current=bool(len(videos)==1 and videos[0].is_file() and decision.get('checker_executed') is True and decision.get('checker_sha256')==sha(Path(__file__).with_name('release_gate.py')))
+    for role,path in [('document_sha256',p/'workbench.json'),('contract_sha256',p/'production-contract.json'),('video_sha256',videos[0] if videos else p/'missing')]:
+        current=current and path.is_file() and decision.get('hashes',{}).get(role)==sha(path)
+    if not videos:return dict(state='not_generated',candidate_generated=False,user_acceptance=False)
+    ready=current and decision.get('allow_release') is True
+    formal=next((r for r in reversed(state.get('formal_deliveries',[])) if all(Path(f['path']).is_file() and sha(Path(f['path']))==f['sha256'] for f in r.get('files',[])) and r.get('files')),None)
+    formal_current=bool(formal and videos and any(f.get('sha256')==sha(videos[0]) for f in formal['files']))
+    return dict(state='formally_delivered' if formal_current and ready else 'allowed_for_formal_delivery' if ready else 'acceptance_blocked',
+                candidate_generated=True,current_evidence=current,errors=decision.get('errors',[]) if current else [dict(code='EVIDENCE_STALE',message='No current-byte release decision')],
+                user_acceptance=None,user_acceptance_status='separately_recorded_in_current_review')
 
 
 def handoff(project,status):

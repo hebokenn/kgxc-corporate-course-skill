@@ -77,3 +77,17 @@ python3 -m unittest discover -s SKILL_DIR/scripts -p test_motion_quality.py
 图库明确标记无配音技术演示，不能取代连续有声课程验收。每次新增动作验证起态、过程、结果、正反向定位、实际改字/移动/换图和导出；补查8帧短动作落在2fps采样点之间仍能被精确帧检测；“拉长交接填整句”“旁白锚点是旧文本”“删除对应策略”必须失败。用“字幕会动但主体不动”“一秒动作冒充长讲解”“虚构30种名称”“原生路线缺运行回执”作负例。发布前再验证一个完整连续教学小节及可编辑工程恢复，不能仅凭图库通过承诺整课审美。
 
 新工程的实际状态断言、目标隔离编码证据和整场阅读边界按[导演与人物演出](41-direction-and-performance.md)执行。旧工程不因安装更新自动迁移。
+
+## 执行检查：实际结构与显示时钟
+
+统一入口为 `workbench/production_validation.py:inspect_extra(project, context)`；由[统一执行合同与放行](55-execution-contract-and-release.md)固定调用，仍以 `production-contract.json` 为主记录，不另写“已批准”台账。`context` 明确 `current_document/current_video/current_contract/purpose`。视频分镜检查实现，编码阶段另外检查当前媒体；大纲、独立课件不被要求提供未来视频。
+
+`requirements.direction.presentation` 登记 `chapters[{chapter_id,teaching_task,primary_structure}]`、`scenes[{scene_id,spatial_organization,interaction_order,information_order,before,process,after,reading_task}]`。实际对象引用沿用 `direction.scenes[].node_ids`。`presentation_signatures.signature()` 从真实节点类型、父子关系、归一布局、属性操作顺序与文字首显顺序生成结构签名，排除文案、颜色、名字、镜像及单独更换效果名。相同签名报 `DUPLICATE_PRESENTATION`；不同签名也不等于视觉丰富或教学有效。
+
+编码检查复用 `motion_quality.audit_encoded()`，排除字幕和导航所在区域，保留真实静止时间窗。阅读例外须给 `reading_tasks[{scene_id,object_ids,reading_group_id,source_window,display_window,reason}]`，绑定实际稳定阅读组；整场 reading/observe 标签不能作为豁免，讲解新增字段而正文静止报 `STATIC_WITH_NEW_TEACHING`。正常速度比较由 `direction.review.continuous_comparisons` 和 `chapter_viewings` 记录真实范围、方法和观察，缺失保持 `PRESENTATION_COMPARISON_UNVERIFIED`。签名或抽帧不能替代这项观看。
+
+导航唯一来源为 `requirements.chapters.chapter_table` 与完全相同的 `document.chapterTable`。每行包含 `chapter_id,label,source_start,source_end,display_start,display_end,body_visible_windows,nav_node_ids`；`table_sha256` 绑定整表。`chapter_table.canonical_table()` 用既有剪切/停顿映射生成显示边界；目录和MP4章节通过 `export_playback.playback()`消费同表。`label_mode/allow_state_words`保留本课选择，纯章节名选择下禁止自动加“已学/未学/当前/勾号”。
+
+可执行填充子节点声明 `navigation:{kind:'progress-fill',chapter_id,segment_width}`，并保留作用于实际宽度的线性 `motion`。`CourseRenderer`把实际 `displayFrame`传给新原生桥接；`scene-engine`仅对这些导航填充按章表计算宽度，正文继续用源帧。停顿期间正文冻结、进度继续，跳转直接算当前位置。旧引擎没有 `navigationClock='display-frame/1'`则拒绝忽略新导航。父标签不添加虚假动作，子节点真操作可以单独绑定。
+
+`chapter_table.inspect()`检查章界前后、10%/50%/90%、尾帧和线性端点；编码阶段逐图核对真实矩形填充像素。特殊绘制/变换无法自动量测时保留 `NAV_PIXEL_UNVERIFIED`。章表、编辑和消费者不一致报 `CHAPTER_TABLE_STALE`；静态或重置进度报 `NAV_TIME_MISMATCH`。新增合成验证实际覆盖24fps、两章、剪切、停顿、跳转和H.264像素；这不是任意片型/连续视听验收。

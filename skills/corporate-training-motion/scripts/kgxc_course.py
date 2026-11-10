@@ -61,6 +61,8 @@ def doctor(media_only=False):
 
 
 def main():
+    if len(sys.argv)>1 and sys.argv[1] in {'requirements','dispatch','return','release-check','release-copy'}:
+        return subprocess.call([sys.executable,str(ROOT/'scripts/execution_tools.py'),*sys.argv[1:]])
     workflow_commands={'start','resume','status','design','decide','checkpoint','package','review','script','director','branch','style','planning','storyboard','choose-shot','sample'}
     if len(sys.argv)>1 and sys.argv[1] in workflow_commands:
         return subprocess.call([sys.executable,str(ROOT/'scripts/workflow.py'),*sys.argv[1:]])

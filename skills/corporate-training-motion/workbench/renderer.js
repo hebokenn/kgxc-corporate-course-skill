@@ -20,6 +20,7 @@ export class CourseRenderer{
    const bridge=this.native.courseWorkbench;if(!bridge||bridge.version!==1||typeof bridge.apply!=='function'||typeof bridge.seek!=='function')throw Error('课程缺少统一工作台桥接接口');
    if(d.layoutPolicy?.required&&typeof bridge.layoutReceipt!=='function')throw Error('缺少实际文字与标注边界检查，不能忽略布局约束');
    if(d.readingPolicy?.required&&typeof bridge.readingReceipt!=='function')throw Error('缺少实际文字曝光与位置回执 readingReceipt，不能用动作回执代替阅读检查');
+   if(d.chapterTable?.length&&bridge.navigationClock!=='display-frame/1')throw Error('NAV_TIME_MISMATCH: native engine lacks the actual display-frame navigation clock');
    this.bindingReceipt=await bridge.apply(structuredClone(d));
    for(const [key,items]of [['fields',d.fields],['assets',d.assets]]){const got=this.bindingReceipt?.[key];if(!Array.isArray(got)||items.some(x=>!got.includes(x.id)))throw Error('课程引擎没有应用全部可编辑'+key)}
   }
@@ -27,13 +28,13 @@ export class CourseRenderer{
   this.lastKey='';return true;
  }
  async seekVideo(video,t){t=Math.max(0,Math.min(t,video.duration-.04));if(Math.abs(video.currentTime-t)<.00001&&video.readyState>=2)return;await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('包装视频定位超时')),10000);video.onseeked=()=>{clearTimeout(timer);resolve()};video.currentTime=t;})}
- key(frame){const d=this.doc,s=sourceFrame(frame,d.holds,d.cuts),c=d.captions.find(x=>x.startFrame<=frame&&frame<x.endFrame);let key=s<d.introFrames?'intro-'+s:s>=d.bodyEndFrame?'outro-'+s:(d.adapter==='national-world-v1'?this.native.frameKey(s/d.fps):(this.native.courseWorkbench.frameKey?.(s/d.fps)??('frame-'+s)));return key+'|'+(c?.id||'')}
+ key(frame){const d=this.doc,s=sourceFrame(frame,d.holds,d.cuts),c=d.captions.find(x=>x.startFrame<=frame&&frame<x.endFrame);let key=s<d.introFrames?'intro-'+s:s>=d.bodyEndFrame?'outro-'+s:(d.adapter==='national-world-v1'?this.native.frameKey(s/d.fps):(this.native.courseWorkbench.frameKey?.(s/d.fps)??('frame-'+s)));return key+'|'+(c?.id||'')+(d.chapterTable?.length?'|nav-'+frame:'')}
  async drawFrame(frame){
   const d=this.doc;frame=Math.max(0,Math.min(totalFrames(d)-1,Math.round(frame)));const source=sourceFrame(frame,d.holds,d.cuts),t=source/d.fps,c=this.ctx;let kind='native';
   c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,1920,1080);
   if(source<d.introFrames){kind='intro';await this.seekVideo(this.videos.intro,t);c.drawImage(this.videos.intro,0,0,1920,1080)}
   else if(source>=d.bodyEndFrame){kind='outro';await this.seekVideo(this.videos.outro,t-d.bodyEndFrame/d.fps);c.drawImage(this.videos.outro,0,0,1920,1080)}
-  else{if(d.adapter==='national-world-v1')await this.native.seek(t);else await this.native.courseWorkbench.seek(t);c.drawImage(this.sourceCanvas,0,0,1920,1080)}
+  else{if(d.adapter==='national-world-v1')await this.native.seek(t);else await this.native.courseWorkbench.seek(t,{displayFrame:frame});c.drawImage(this.sourceCanvas,0,0,1920,1080)}
   const cue=d.captions.find(x=>x.startFrame<=frame&&frame<x.endFrame);let metric=null;
   if(cue){const s=d.captionStyle;c.font=`500 ${s.fontSize}px CourseHan`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=s.strokeWidth;const m=c.measureText(cue.text),bounds=[960-m.actualBoundingBoxLeft-s.strokeWidth/2,s.y-m.actualBoundingBoxAscent-s.strokeWidth/2,960+m.actualBoundingBoxRight+s.strokeWidth/2,s.y+m.actualBoundingBoxDescent+s.strokeWidth/2];if(bounds[0]<112||bounds[2]>1808||bounds[1]<80||bounds[3]>1030)throw Error('字幕超出画面安全区：'+cue.id+'，请调整字号或位置，长句可按语义拆分');c.strokeStyle=s.stroke;c.fillStyle=s.fill;c.strokeText(cue.text,960,s.y);c.fillText(cue.text,960,s.y);metric={id:cue.id,text:cue.text,line_count:1,bounds}}
   let motionReceipt=[];if(kind==='native'&&d.motionPolicy?.required){if(typeof this.native.courseWorkbench.motionReceipt!=='function')throw Error('实际引擎未提供动效运行回执，不得通过改路线绕过检查');motionReceipt=this.native.courseWorkbench.motionReceipt()}

@@ -22,12 +22,34 @@ def design(course):
     return course.save_plan(plan,status['revision'])
 
 
+def seed_historical_qa_gate(course,key):
+    """Prepare a legacy unit-test state, never call/claim the current release gate.
+
+    Restricted to disposable system-temp courses. New execution/entrypoint tests
+    do not import this helper and must exercise the real canonical contract.
+    """
+    if not course.root.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):
+        raise ValueError('Historical QA seed is limited to temporary synthetic fixtures')
+    status=course.status();gate=next((g for g in status['gates'] if g['id']==key),None)
+    if not gate or not gate['ready']:
+        raise ValueError('Historical QA prerequisite is not ready: '+str(gate))
+    from workflow import read,now
+    with course.locked():
+        state=read(course.state_file);course._snapshot(state)
+        state['gates'][key]=dict(at=now(),actor='historical-qa-fixture',
+            evidence='Synthetic pre-execution-gate QA prerequisite; not a current release authorization',
+            fixture_scope='legacy branch/renderer/preference unit tests only',
+            sha256=course._gate_hash(key,read(course.plan_file),state))
+        course._commit(state,'historical_qa_precondition_seeded',dict(gate=key,current_release_gate_tested=False))
+    return course.status()
+
+
 def approve_script(course):
-    course.confirm('outline',course.status()['revision'],'QA：结构与讲法确认',actor='qa-operator')
+    seed_historical_qa_gate(course,'outline')
     course.save_script('先核对订单，再核对编码。现在请完成一次核对，逐项复核。',course.status()['revision'])
     from test_source_coverage_support import confirm_fixture_coverage
     confirm_fixture_coverage(course)
-    return course.confirm('script',course.status()['revision'],'QA：逐字稿确认',actor='qa-operator')
+    return seed_historical_qa_gate(course,'script')
 
 
 def director(course):
@@ -56,8 +78,11 @@ class BranchTests(unittest.TestCase):
         # production-gate failures are covered in test_production_contract_entrypoints.
         self.contract_gate=patch('production.require_contract',return_value=dict(required=False,ready=True));self.contract_gate.start()
         self.addCleanup(self.contract_gate.stop)
+        # This suite tests legacy branch/version rules, not current release admission.
+        self.stage_gate=patch('production.stage_release',return_value=dict(ready=True,scope='historical-test-precondition-only',current_release_gate_tested=False))
+        self.stage_gate.start();self.addCleanup(self.stage_gate.stop)
         self.preference_gate=patch.multiple('production_preferences',
-            selection_errors=lambda project:[],review_errors=lambda project,gate,video:[])
+            selection_errors=lambda project:[],review_errors=lambda project,gate,video,document=None:[])
         self.preference_gate.start();self.addCleanup(self.preference_gate.stop)
         self.tmp=tempfile.TemporaryDirectory();self.root=Path(self.tmp.name);atomic(self.root/'project/workbench.json',{})
         self.course=Course(self.root);self.course.init('分支验收');design(self.course)

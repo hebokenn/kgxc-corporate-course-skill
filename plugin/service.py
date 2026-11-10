@@ -114,7 +114,7 @@ def workspace_action(action, args):
 
 def summary(course, full=False):
     status = course.status()
-    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries', 'ai_review', 'production_handoff']
+    fields = ['version', 'workflow_schema', 'course_id', 'title', 'revision', 'stage', 'branch', 'next_action', 'gates', 'pending', 'jobs', 'narration_status', 'planning_workflow', 'deliveries', 'ai_review', 'production_handoff','candidate_artifacts','release_status']
     data = status if full else {key: status.get(key) for key in fields if key in status}
     from delivery import completed
     prior=completed(course.root)
@@ -360,6 +360,12 @@ def review_action(action,args):
     from ai_review import Review,STAGES,RUNNING
     course=course_at(args['course_path']);review=Review(course)
     stage=args.get('stage');run=args.get('run_id')
+    if action=='production_dispatch':
+        from production import dispatch
+        return dispatch(course.project,args['task_id'],stage)
+    if action=='capability_requirements':
+        from blind_review import checklist
+        return dict(ok=True,checklist=checklist(stage,review.arrangement() if stage in ['pilot','final'] else 'default_full_av'))
     if action=='enable':return dict(ok=True,review=review.ensure())
     if action=='status':return dict(ok=True,review=review.view())
     if action=='hold':return dict(ok=True,review=review.hold(args['held'],args.get('reason','')))
@@ -367,7 +373,11 @@ def review_action(action,args):
     if action=='select_scheme':return dict(ok=True,review=review.select_scheme(stage,args['scheme_id'],args['evidence'],args['actor']))
     if action=='user_audio_review':return dict(ok=True,review=review.record_user_audio_review(stage,args['artifact_sha256s'],args['artifacts'],args['coverage'],args['listened_completely'],args['audio_and_sync_ok'],args['evidence'],args['actor'],args['source'],args.get('feedback','')))
     if action=='requirements':return dict(ok=True,review=review.requirements(args['values'],args['evidence']))
-    if action=='production_event':return review.production_event(args['producer'],args['operation_id'],args['phase'],args.get('stage'),args.get('execution'))
+    if action=='production_event':
+        if args['phase']=='end' and (course.project/'work/handoffs'/(args['operation_id']+'.json')).is_file():
+            from production import require_dispatch_return
+            require_dispatch_return(course.project,args['operation_id'])
+        return review.production_event(args['producer'],args['operation_id'],args['phase'],args.get('stage'),args.get('execution'))
     if action=='supervisor_packet':return review.supervisor_packet(stage,run,args.get('operation_id'))
     if action=='supervisor_submit':return review.production_supervisor_submit(args['operation_id'],args['result']) if args.get('operation_id') else review.supervisor_submit(stage,run,args['result'])
     if action=='recover':
