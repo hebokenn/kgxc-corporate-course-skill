@@ -58,6 +58,8 @@ python3 SKILL_DIR/scripts/course_tools.py reveal-check --project COURSE/project 
 
 ## 片头检查整个等待，不规定全局硬时长
 
+先按[修改范围](37-cover-and-delivery-finish.md#缩短标题停留时保留原片头动画)区分整片头与标题后的等待。`max_seconds` 是整个包装预算，不能直接填用户只给标题停留的秒数；`max_static_seconds` 才用于相应的静止停留约束。保留原动画后计算合理的整个包装预算，不能为通过总时长检查换成静态短卡。当前程序的时长检查不自动证明动画保留，仍须绑定原片头并对照实际编码帧。
+
 本课可在 `introPolicy` 记录用户选定的 `max_seconds / max_static_seconds / source_ref / reason`。要核对整个品牌包装及标题停留，并检查短标题之后是否仍然长时间等到正文；不能只缩某一静帧而保留其余等待。没有本课选择时不自动套用一套秒数；某课选择1—2秒并实现为1.5秒，不升级为所有课程的统一模板。
 
 ```python
