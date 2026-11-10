@@ -16,13 +16,39 @@ activate()
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument('command', choices=['production-contract','production-check','prepare-narration','timing-check','stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
+    parser.add_argument('command', choices=['reveal-plan','reveal-check','intro-check','production-contract','production-check','prepare-narration','timing-check','stage-acting','acting-check','palette','palette-catalog','continuity-check','continuity-enable','reading-check','reading-enable','direction-check','stage-style-assets','surface-catalog','style-catalog','recommend-visuals','register-style','retail-catalog','inventory', 'capabilities', 'route', 'motion-catalog', 'motion-check', 'craft-check', 'compile-modules', 'asset-catalog', 'compile-assets', 'stage-character-rig', 'stage-contact-pose', 'stage-company-character', 'stage-performance', 'upgrade-renderer', 'sfx-catalog', 'sfx-plan', 'sfx-mix', 'prepare-web', 'prepare-illustration',
                                           'render-web', 'render-illustration',
                                           'diagnose-web', 'diagnose-illustration', 'beats', 'workbench'])
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--engine-root', type=Path)
     parser.add_argument('--dry-run', action='store_true')
     args, rest = parser.parse_known_args(argv)
+    if args.command=='reveal-plan':
+        ap=argparse.ArgumentParser(description='Exact paragraph/sentence/occurrence list plan; no fallback')
+        ap.add_argument('--input',type=Path,required=True);ap.add_argument('--out',type=Path,required=True);aa=ap.parse_args(rest)
+        if aa.out.exists() or args.dry_run:ap.error('Use a new output path; dry-run does not write plans')
+        from ordered_reveals import plan
+        try:
+            data=json.loads(aa.input.read_text());result=plan(data['mapping'],data['groups'],data['events'])
+        except (ValueError,KeyError,TypeError)as exc:
+            print(json.dumps(dict(ready=False,errors=[dict(code='REVEAL_ORDER_INVALID',message=str(exc))]),ensure_ascii=False));return 2
+        aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print(aa.out);return 0
+    if args.command in ['reveal-check','intro-check']:
+        ap=argparse.ArgumentParser(description='Check all explicitly related lesson specs; no extra blind review')
+        ap.add_argument('--project',type=Path,required=True);ap.add_argument('--spec',type=Path,nargs='+',required=True)
+        ap.add_argument('--video',type=Path,nargs='+');ap.add_argument('--purpose',choices=['storyboard','pilot','final'],default='storyboard');ap.add_argument('--out',type=Path);aa=ap.parse_args(rest)
+        if aa.video and len(aa.video)!=len(aa.spec):ap.error('Provide one current video for each related spec')
+        if aa.purpose!='storyboard' and not aa.video:ap.error('Encoded checks require the actual videos')
+        if aa.out and (aa.out.exists()or args.dry_run):ap.error('Use a new output path; dry-run does not write reports')
+        from ordered_reveals import inspect as order
+        from intro_pacing import inspect as intro
+        contract=json.loads((aa.project/'production-contract.json').read_text());rows=[]
+        for i,spec in enumerate(aa.spec):
+            doc=json.loads(spec.read_text());video=aa.video[i] if aa.video else None
+            rows.append(dict(spec=str(spec),result=(order if args.command=='reveal-check'else intro)(aa.project,doc,video,aa.purpose,contract)))
+        result=dict(ready=all(x['result']['ready']for x in rows),lessons=rows,full_continuous_listening_performed=False)
+        if aa.out:aa.out.parent.mkdir(parents=True,exist_ok=True);aa.out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+        print(json.dumps(result,ensure_ascii=False,indent=2));return 0 if result['ready']else 2
     if args.command in ['production-contract','production-check']:
         ap=argparse.ArgumentParser(description='Explicit production contract and current media evidence; does not approve content')
         ap.add_argument('course',type=Path)

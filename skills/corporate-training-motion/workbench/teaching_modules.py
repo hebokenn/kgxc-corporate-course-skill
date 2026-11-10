@@ -124,13 +124,20 @@ class Build:
     def whiteboard(self):
         labels=self.data.get('labels',[]);count=len(labels)
         if not count:raise ValueError('白板缺少步骤')
+        mode=self.data.get('numberedMode','sequential')
+        if mode not in {'sequential','simultaneous'}:raise ValueError('编号模块须明确逐条或同时呈现')
+        if mode=='sequential':
+            if len(self.beats)<count:raise ValueError('编号步骤缺少独立讲解节拍；不能复用最后一个节拍兜底')
+            starts=[b['startFrame']for b in self.beats[:count]]
+            if any(a>=b for a,b in zip(starts,starts[1:])):raise ValueError('编号步骤的布局顺序与讲解节拍不一致')
         positions=[(170+i*470,370) if i<4 else (1580-(i-4)*470,670) for i in range(count)]
         for i,(label,(x,y)) in enumerate(zip(labels,positions)):
-            self.nodes.append(self.at(self.text('step-'+str(i),label,x,y,48),i,'text-rise'))
-            self.nodes.append(self.at(self.text('number-'+str(i),str(i+1),x,y-64,32,GREEN,width=64,height=44),i,'marker',color='#dce8dd'))
+            beat=i if mode=='sequential'else 0
+            self.nodes.append(self.at(self.text('step-'+str(i),label,x,y,48),beat,'text-rise'))
+            self.nodes.append(self.at(self.text('number-'+str(i),str(i+1),x,y-64,32,GREEN,width=64,height=44),beat,'marker',color='#dce8dd'))
             if i:
                 px,py=positions[i-1];points=[[px+340,py+30],[x-20,y+30]] if y==py and i<4 else [[px+120,py+80],[x+120,y-55]] if y!=py else [[px-20,py+30],[x+360,y+30]]
-                self.nodes.append(self.line('path-'+str(i),points,effects=[self.fx('route-progress',i)]))
+                self.nodes.append(self.line('path-'+str(i),points,effects=[self.fx('route-progress',beat)]))
 
     def presenter(self):
         a=self.data.get('actorAssets',{});required=['body','kg','open','blink']

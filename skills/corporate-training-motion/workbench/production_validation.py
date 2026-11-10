@@ -126,7 +126,7 @@ def decoded_frame_hashes(video, indices):
     if missing:
         from motion_samples import balanced_sum
         expression=balanced_sum(['eq(n\\,%d)'%f for f in missing])
-        raw=subprocess.check_output(['ffmpeg','-v','error','-i',str(video),'-map','0:'+str(main_video_index(video)),
+        raw=subprocess.check_output(['ffmpeg','-v','error','-reinit_filter','0','-i',str(video),'-map','0:'+str(main_video_index(video)),
             '-vf','select='+expression+',format=rgb24','-fps_mode','passthrough','-f','framemd5','-']).decode()
         tb=Fraction(next(line.split(':',1)[1].strip() for line in raw.splitlines() if line.startswith('#tb 0:')))
         rows=[line.split(',') for line in raw.splitlines() if line and not line.startswith('#')]
@@ -198,9 +198,11 @@ def inspect_extra(project, document=None, video=None, purpose='final', contract=
     from emphasis_checks import inspect as emphasis
     from sfx_evidence import inspect as sfx
     from chapter_table import inspect as chapters
+    from ordered_reveals import inspect as reveal_order
+    from intro_pacing import inspect as intro
     checks = {}
     for name, fn in [('author_input', inputs), ('presentation', presentations), ('semantic', semantic),
-                     ('emphasis', emphasis), ('sfx', sfx), ('chapters', chapters)]:
+                     ('emphasis', emphasis), ('sfx', sfx), ('chapters', chapters), ('ordered_reveals',reveal_order), ('intro_pacing',intro)]:
         try:
             checks[name] = fn(p, doc, video, purpose, value)
         except Exception as exc:

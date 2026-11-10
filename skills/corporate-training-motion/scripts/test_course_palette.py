@@ -168,7 +168,11 @@ class PaletteTests(unittest.TestCase):
         choose_fixture_preferences(course)
         course.save_storyboard(fixture(course),course.status()['revision'])
         course.choose_shot('all','recommended',course.status()['revision'],'QA choices')
-        course.confirm('storyboard',course.status()['revision'],'QA fixture approval')
+        # Palette invalidation uses a synthetic historical confirmation; this is
+        # not an admission test or real course/user approval. Current release
+        # failures remain exercised in tests/test_execution_contract_release.py.
+        with patch('production.stage_release', return_value=dict(ready=True, scope='palette-synthetic-precondition-only', current_release_gate_tested=False)):
+            course.confirm('storyboard',course.status()['revision'],'QA fixture approval')
         old = copy.deepcopy(course.storyboard())
         target=next(p for p in catalog()['palettes'] if p['id'] != read_plan(self.project)['palette']['id'])
         select(self.project,specified=target,redraw=True,evidence='用户要求更换候选配色')

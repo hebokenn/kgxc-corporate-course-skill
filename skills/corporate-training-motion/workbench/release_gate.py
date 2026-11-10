@@ -151,7 +151,7 @@ def evaluate(project, context):
     result['status'] = 'allowed_for_formal_delivery' if result['allow_release'] else 'acceptance_blocked'
     result['checker_sha256'] = _sha(Path(__file__))
     result['checker_versions']={name:dict(path=str(module.__file__),sha256=_sha(module.__file__))
-        for name in ['production_contract','production_preferences','production_validation','final_media_checks','execution_requirements','handoff_contract','evidence_versions']
+        for name in ['production_contract','production_preferences','production_validation','final_media_checks','execution_requirements','handoff_contract','evidence_versions','ordered_reveals','intro_pacing','semantic_alignment','media_frames']
         if (module:=__import__('sys').modules.get(name)) is not None and getattr(module,'__file__',None) and Path(module.__file__).is_file()}
     return result
 

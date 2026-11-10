@@ -131,7 +131,7 @@ def configure(course, spec_path):
     timing_errors=timeline_errors(spec,probe(safe(p,spec['media']['audio'])) if spec.get('media',{}).get('audio') else None)
     if timing_errors:raise ValueError('配音与画面时间校验未通过：'+'；'.join(timing_errors[:12]))
     d=copy.deepcopy(old)
-    d.update({k:spec[k] for k in ['title','fps','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette','chapterTable'] if k in spec})
+    d.update({k:spec[k] for k in ['title','fps','sourceDurationFrames','scenes','captions','media','sceneGraph','motionPlan','narrationLinks','readingPlan','continuityPlan','teachingModules','contentAssets','visualStyles','storyboardBindings','coursePalette','chapterTable','orderedRevealGroups','introPolicy'] if k in spec})
     if 'continuityPolicy' in spec:
         d['continuityPolicy'].update({k:spec['continuityPolicy'][k] for k in ['noiseFloorDB','gapSeconds'] if k in spec['continuityPolicy']})
     d['status']='ready';d['bodyEndFrame']=spec.get('bodyEndFrame',d['sourceDurationFrames']);d['introFrames']=spec.get('introFrames',0)

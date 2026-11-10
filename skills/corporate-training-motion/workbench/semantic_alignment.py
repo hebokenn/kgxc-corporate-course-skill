@@ -1,7 +1,7 @@
 """Exact source spans and real audio-word enclosures; no nearest-cue fallback."""
 from production_validation import resolve_current_video, Check, load, path_in, sha, graph, first_readable, visible, current_review, ENCODED
 
-FORBIDDEN = {'nearest-caption', 'proportional', 'equal-split', 'fuzzy-first', 'segment-start', 'reading-clamp'}
+FORBIDDEN = {'nearest-caption', 'proportional', 'equal-split', 'fuzzy-first', 'segment-start', 'reading-clamp', 'first-match', 'max-clamp', 'sorted-time', 'duration-ratio', 'proportional-duration'}
 
 
 def resolve(mapping, event):
