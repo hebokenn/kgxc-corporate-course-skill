@@ -1,0 +1,53 @@
+name: Upload verified 6.9 preview packages
+
+# Manual recovery for an interrupted local large-file upload. This workflow
+# builds the already reviewed tag; it never publishes a release or runs models.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verified-upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Use the verified builder Python version
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.3'
+      - name: Fetch only the frozen release source
+        run: |
+          git init payload
+          git -C payload remote add origin https://github.com/hebokenn/kgxc-corporate-course-skill.git
+          git -C payload fetch --depth 1 origin refs/tags/v6.9.0-rc.1
+          git -C payload checkout --detach FETCH_HEAD
+          test "$(git -C payload rev-parse HEAD)" = a1020aadc1e0f4c8d2823a999949c9ace2e02a23
+      - name: Fetch the matching compression implementation
+        run: |
+          git clone --depth 1 --branch v1.2.12 https://github.com/madler/zlib.git exact-zlib
+          cd exact-zlib
+          test "$(git rev-parse HEAD)" = 21767c654d31d2dccdde4330529775c6c5fd5389
+          ./configure --prefix="$RUNNER_TEMP/exact-zlib"
+          make -j2
+          make install
+      - name: Reproduce and check both complete package hashes
+        working-directory: payload
+        env:
+          LD_LIBRARY_PATH: ${{ runner.temp }}/exact-zlib/lib
+        run: |
+          python -c "import zlib; assert zlib.ZLIB_RUNTIME_VERSION == '1.2.12', zlib.ZLIB_RUNTIME_VERSION"
+          python -B scripts/build_release.py
+          python -B scripts/build_plugin.py
+          echo '62cdbe4709fdcbcb05cbd146c04bdc67c509ee88824e96e6cadf4090f1423982  dist/kgxc-course-suite-v6.9.0-rc.1.zip' | sha256sum --check -
+          echo '6ae536226d5d9c27b48222594d6b110880c2ee4f3efa729689da8e0b70057cbf  dist/kgxc-course-plugin-v0.9.0-rc.1.zip' | sha256sum --check -
+      - name: Upload matching packages to the existing draft
+        working-directory: payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/hebokenn/kgxc-corporate-course-skill/releases/439984405 --jq '.draft')" = true
+          gh release upload v6.9.0-rc.1 dist/kgxc-course-suite-v6.9.0-rc.1.zip dist/kgxc-course-plugin-v0.9.0-rc.1.zip --repo hebokenn/kgxc-corporate-course-skill
