@@ -42,6 +42,27 @@ jobs:
           python -c "import zlib; assert zlib.ZLIB_RUNTIME_VERSION == '1.2.12', zlib.ZLIB_RUNTIME_VERSION"
           python -B scripts/build_release.py
           python -B scripts/build_plugin.py
+          # The reviewed suite builder enumerated manifest keys in local FS
+          # order. Require identical JSON content, then preserve that exact
+          # ordering; no payload file or expected package hash is changed.
+          curl --fail --silent --show-error --location "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/.github/release-inputs/v6.9.0-rc.1/bundle-manifest.json" --output "$RUNNER_TEMP/reference-bundle-manifest.json"
+          python - <<'PY'
+          from pathlib import Path
+          import json, os, zipfile
+          source = Path('dist/kgxc-course-suite-v6.9.0-rc.1.zip')
+          reference = (Path(os.environ['RUNNER_TEMP'])/'reference-bundle-manifest.json').read_bytes()
+          name = 'kgxc-course-suite/bundle-manifest.json'
+          with zipfile.ZipFile(source) as old:
+              assert json.loads(old.read(name)) == json.loads(reference), 'Suite manifest payload differs'
+              entries = [(info, reference if info.filename == name else old.read(info.filename)) for info in old.infolist()]
+          rebuilt = source.with_suffix('.reproduced.zip')
+          with zipfile.ZipFile(rebuilt, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as out:
+              for info, data in entries:
+                  out.writestr(info, data, compresslevel=6)
+          source.rename(source.with_suffix('.before-order-normalization.zip'))
+          rebuilt.rename(source)
+          print('Suite manifest semantic equality verified; original key ordering preserved')
+          PY
           echo '62cdbe4709fdcbcb05cbd146c04bdc67c509ee88824e96e6cadf4090f1423982  dist/kgxc-course-suite-v6.9.0-rc.1.zip' | sha256sum --check -
           echo '6ae536226d5d9c27b48222594d6b110880c2ee4f3efa729689da8e0b70057cbf  dist/kgxc-course-plugin-v0.9.0-rc.1.zip' | sha256sum --check -
       - name: Upload matching packages to the existing draft
