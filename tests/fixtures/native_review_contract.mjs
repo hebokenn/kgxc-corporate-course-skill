@@ -1,10 +1,11 @@
+import {FIXED_ROUTE} from './model-route.mjs';
 // Run with installed Electron's ELECTRON_RUN_AS_NODE=1. No network/inference,
 // production project, desktop config or installed plugin is touched.
 import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,rm,stat,realpath} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {isolatedAgentRunner,FIXED_ROUTE,REVIEW_PROTOCOL,SUPERVISION_PROTOCOL} from '../../plugin/isolated-review-agent.mjs';
+import {isolatedAgentRunner,REVIEW_PROTOCOL,SUPERVISION_PROTOCOL} from '../../plugin/isolated-review-agent.mjs';
 const base=process.env.KGXC_DSH_NATIVE_ROOT||'/Applications/DeepSeek Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/';
 const load=async name=>import(base+name+'/lib/index.js');
 const {Context}=await load('cordis');

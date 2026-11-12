@@ -1,3 +1,4 @@
+import {FIXED_ROUTE} from './fixtures/model-route.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
@@ -7,7 +8,7 @@ import {join,resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {reviewHost,PRODUCER_PROMPT,AUTHORING_PREFLIGHT_PROMPT,SOURCE_COVERAGE_PROMPT,producerInputContent} from '../plugin/review-host.mjs';
 import {callReview} from '../plugin/bridge.mjs';
-import {FIXED_ROUTE,REVIEW_PROTOCOL,SUPERVISION_PROTOCOL,SUPERVISOR_PROMPT,REVIEWER_PROMPT,blindPayload,assertReadOnlyReport} from '../plugin/isolated-review-agent.mjs';
+import {REVIEW_PROTOCOL,SUPERVISION_PROTOCOL,SUPERVISOR_PROMPT,REVIEWER_PROMPT,blindPayload,assertReadOnlyReport} from '../plugin/isolated-review-agent.mjs';
 
 const repository=resolve(import.meta.dirname,'..');
 test('blind host rejects unselected storyboard alternatives instead of exposing them to a reviewer',()=>{
@@ -157,7 +158,7 @@ function isolatedCalls({supervisorPass=true,onCall}={}){
   };return {run,calls};
 }
 function host(root,agent,independent,overrides={}){
-  const {attachments,...options}=overrides,services={attachments,llm:{prepareCall:async config=>({config})},agents:{get:id=>id===agent.session.id?agent:undefined},agentDefaultModel:{currentSelection:()=>FIXED_ROUTE}};
+  const {attachments,...options}=overrides,services={attachments,llm:{prepareCall:async config=>({config})},agents:{get:id=>id===agent.session.id?agent:undefined},agentDefaultModel:{currentSelection:()=>{throw Error('Must use the course session, not the global model default');}}};
   return reviewHost({get:name=>services[name]}, {bindings:new Map([[root,agent]]),runIsolated:independent.run,...options});
 }
 function supervisionFixture({allow=()=>true,onCall,bind=false}={}){
@@ -503,7 +504,7 @@ test('a real CAS repair rejection preserves accepted reports and earlier unknown
 
 test('no native isolated-agent capability fails explicitly and never falls back to direct LLM review',async()=>{
   const root=await fixture(),agent=producer(root);let direct=0;
-  const services={agents:{get:id=>id===agent.session.id?agent:undefined},llm:{prepareCall:()=>{direct++;throw Error('fallback forbidden');}},agentDefaultModel:{currentSelection:()=>FIXED_ROUTE}};
+  const services={agents:{get:id=>id===agent.session.id?agent:undefined},llm:{prepareCall:()=>{direct++;throw Error('fallback forbidden');}},agentDefaultModel:{currentSelection:()=>{throw Error('Must use the course session, not the global model default');}}};
   const handle=reviewHost({get:name=>services[name]},{bindings:new Map([[root,agent]])});
   try{
     await handle('sync',{course_path:root,session_id:agent.session.id});await handle.whenIdle();

@@ -432,8 +432,15 @@ class BlindReviewTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.review.production_event(PRODUCER,'leaking-event','start','script',[dict(type='tool/call',body='PRIVATE_SOURCE')])
         with self.assertRaises(ValueError):self.review.production_event(PRODUCER,'nested-leaking-event','start','script',[dict(type='tool/call',tools=[dict(arguments='PRIVATE_SOURCE')])])
 
-    def test_wrong_provider_or_billing_route_never_falls_back(self):
-        with self.assertRaisesRegex(ValueError,'不能切换'):self.review.begin('script','wrong','continue',route=dict(provider='deepseek-account',model='anything'),producer=PRODUCER)
+    def test_native_route_is_allowed_but_bound_call_cannot_change_provider(self):
+        native=dict(provider='deepseek',model='deepseek-chat')
+        value=self.review.begin('script','native','continue',route=native,producer=PRODUCER)
+        self.assertTrue(value['started'])
+        with self.assertRaisesRegex(ValueError,'不一致'):
+            self.review.reserve_call('script',value['run']['id'],'wrong',ROUTE)
+        self.assertTrue(self.review.reserve_call('script',value['run']['id'],'native',native)['reserved'])
+        for invalid in [None,{},dict(provider='',model='x'),dict(provider='x',model=' ')]:
+            with self.assertRaises(ValueError):blind.route(invalid)
         self.assertEqual(STAGES,('script','storyboard','pilot','final'))
 
     def test_minimal_course_interface_still_enforces_canonical_dsh_state(self):

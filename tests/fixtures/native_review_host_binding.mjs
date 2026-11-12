@@ -1,3 +1,4 @@
+import {FIXED_ROUTE} from './model-route.mjs';
 // Installed native Agent + registration-bound LLM services. Synthetic adapters
 // only: no production project, account, configuration, network or model calls.
 import assert from 'node:assert/strict';
@@ -6,7 +7,7 @@ import {mkdtemp,mkdir,writeFile,readFile,readdir,rm,realpath,stat} from 'node:fs
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {readFileSync} from 'node:fs';
-import {isolatedAgentRunner,FIXED_ROUTE,SUPERVISION_PROTOCOL} from '../../plugin/isolated-review-agent.mjs';
+import {isolatedAgentRunner,SUPERVISION_PROTOCOL} from '../../plugin/isolated-review-agent.mjs';
 const base=process.env.KGXC_DSH_NATIVE_ROOT||'/Applications/DeepSeek Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/';
 const load=async name=>import(base+name+'/lib/index.js');
 const {Context}=await load('cordis'),ctx=new Context(),fibers=[],calls=[];

@@ -1,3 +1,4 @@
+import {FIXED_ROUTE} from './model-route.mjs';
 // Installed native Agent/LLM services; every adapter response is synthetic.
 // No network, account, production course or installed settings are used.
 import assert from 'node:assert/strict';
@@ -6,7 +7,7 @@ import {mkdtemp,rm,realpath,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {producerQASnapshot,producerReadOnlyTools} from '../../plugin/producer-qa-snapshot.mjs';
-import {FIXED_ROUTE,sessionCallAudit} from '../../plugin/isolated-review-agent.mjs';
+import {sessionCallAudit} from '../../plugin/isolated-review-agent.mjs';
 const base=process.env.KGXC_DSH_NATIVE_ROOT||'/Applications/DeepSeek Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/';
 const load=async name=>import(base+name+'/lib/index.js');
 const {Context}=await load('cordis'),ctx=new Context(),fibers=[],calls=[],signals=new Map();

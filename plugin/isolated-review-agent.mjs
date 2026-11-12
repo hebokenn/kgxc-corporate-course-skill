@@ -7,7 +7,6 @@ import {assertCleanLearnerPayload,probeReviewer} from './review-preflight.mjs';
 
 export const REVIEW_PROTOCOL='course-blind-review/1';
 export const SUPERVISION_PROTOCOL='course-execution-supervision/1';
-export const FIXED_ROUTE=Object.freeze({provider:'codex-chatgpt',model:'gpt-6.1-sol'});
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const textOf=message=>(message?.content||[]).filter(block=>block.type==='text').map(block=>block.text||'').join('\n');
 
@@ -47,8 +46,9 @@ export function failedInvocationState(observation,{admitted=false}={}){
   return prepared?{execution_phase:'unknown',model_invoked:null}:{execution_phase:'preflight',model_invoked:false};
 }
 
-export function requireRoute(selection){
-  if(selection?.provider!==FIXED_ROUTE.provider||selection?.model!==FIXED_ROUTE.model)throw Error('独立审阅仅允许当前 Codex ChatGPT 登录通道 codex-chatgpt / gpt-6.1-sol；未调用替代供应商。');
+export function requireRoute(selection,expected){
+  if(!selection||['provider','model'].some(key=>typeof selection[key]!=='string'||!selection[key].trim()))throw Error('当前会话尚未选择有效的模型通道，请在 DSH 中选择可用模型。');
+  if(expected&&['provider','model'].some(key=>selection[key]!==expected[key]))throw Error('实际模型通道与本轮绑定不一致，停止调用；不会自动切换或回退。');
   return {provider:selection.provider,model:selection.model,...selection.reasoningEffort===undefined?{}:{reasoningEffort:selection.reasoningEffort}};
 }
 
@@ -120,7 +120,7 @@ export function sessionCallAudit(agent,selection,{fromSeq=0,role,artifact_ids=[]
   const messages=events.filter(event=>['assistant/message','assistant/attempt'].includes(event.type));
   const usage={};
   for(const event of messages)for(const [key,value] of Object.entries(event.data.usage||{}))if(typeof value==='number')usage[key]=(usage[key]||0)+value;
-  for(const header of headers)requireRoute(header.config||header);
+  for(const header of headers)requireRoute(header.config||header,selection);
   const calls=turns.map(event=>agent.session.id+':step:'+event.seq);
   const audit={id:agent.id||agent.session.id,session_id:agent.session.id,role,isolated:role!=='producer',read_only:role!=='producer',artifact_ids,
     route:{provider:selection.provider,model:selection.model},invocation_ids:calls.length?calls:headers.map(header=>header.id),capabilities:role==='reviewer'?['text','images']:['text'],
@@ -148,7 +148,7 @@ export function isolatedAgentRunner(ctx){
     const payload=freezeReviewInput(role==='reviewer'?blindPayload(packet):packet);
     if(role==='supervisor'&&payload?.protocol!==SUPERVISION_PROTOCOL)throw Error('缺少真实执行监督包。');
     // Preparation resolves the composed adapter config without making an inference.
-    const prepared=await llm.prepareCall({...selection,maxTokens:14000},signal);requireRoute(prepared.config);
+    const prepared=await llm.prepareCall({...selection,maxTokens:14000},signal);requireRoute(prepared.config,selection);
     if(role==='reviewer')await probeReviewer({get,selection,prepared,packet,course_path});
     const sessionId=randomUUID(),cwd=await mkdtemp(join(tmpdir(),'kgxc-readonly-'+role+'-'));
     const prompt=role==='reviewer'?REVIEWER_PROMPT:SUPERVISOR_PROMPT;
@@ -181,7 +181,7 @@ export function isolatedAgentRunner(ctx){
           agentCtx.tools.guard(()=> '只读独立 Agent 禁止任何工具执行。');
           agentCtx.tools.setExecutor(denyAllExecutor(names=>names.forEach(name=>registeredTools.add(name))));
           isolatePromptReads(agentCtx,agent,names=>names.forEach(name=>suppressedContexts.add(name)));
-          boundary=isolatedReviewBoundary(agentCtx,agent,{message:ownedMessage,packet:payload,prompt,role,signal,requireRoute});
+          boundary=isolatedReviewBoundary(agentCtx,agent,{message:ownedMessage,packet:payload,prompt,role,signal,requireRoute:value=>requireRoute(value,selection)});
           agentCtx.systemPrompt.section({name:'kgxc:isolated-review',order:0,complete:true,interpolate:false,text:prompt});
           agentCtx.systemPrompt.suppressRuntimeContext();
           // Creation metadata already establishes this fresh neutral cwd. Calling
@@ -192,7 +192,7 @@ export function isolatedAgentRunner(ctx){
           // Do not call next(): source-aware global instruction/skill/history injectors
           // never run at the admitted pre-step boundary of this fresh session.
           agentCtx.on('agent/pre-step',async({messages,modelSelection,step})=>{
-            requireRoute(modelSelection);signal.throwIfAborted();
+            requireRoute(modelSelection,selection);signal.throwIfAborted();
             if(step>1)throw Error('只读独立 Agent 不允许工具循环或追加上下文。');
             if(messages.some(message=>message.id!==id))throw Error('独立 Agent 收到未授权上下文，停止调用。');
             const actual=await agentCtx.systemPrompt.assemble({scope:agent,agent,modelSelection,signal});

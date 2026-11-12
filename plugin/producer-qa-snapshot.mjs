@@ -32,6 +32,7 @@ export async function producerReadOnlyTools(producer){
 // Only the original registration-bound prepared handle is dispatched. No
 // Session surface, durable event, provider registration or model is replaced.
 export function producerQASnapshot(producer,{message,packet,signal,onProjection}){
+  const selectedRoute=requireRoute(producer.model?.current?.()||producer.options);
   if(!producer?.ctx?.on||!producer.session?.id||message?.source?.kind!=='kgxc-producer-qa'||!packet?.run_id||!['script','storyboard','pilot','final'].includes(packet.stage)||packet.binding?.run_id!==packet.run_id||packet.binding?.stage!==packet.stage)throw Error('制作端 QA 缺少精确身份、当前消息或成果绑定，不能投影请求。');
   const expected=sha(message),sessionId=producer.session.id,disposers=[],fromSeq=[...producer.session.log].at(-1)?.seq??-1,suppressed=[];
   const automatic=input=>['user','developer'].includes(input.role)&&automaticSources.has(input.source?.kind);
@@ -79,7 +80,7 @@ export function producerQASnapshot(producer,{message,packet,signal,onProjection}
         return Object.freeze({...prepared,stream:request=>{
           if(request.sessionId!==sessionId)return prepared.stream(request);
           assertLive();if(used)throw Error('制作端 QA 快照已经使用，不重复执行或接管后续对话。');
-          requireRoute(request);requireRoute(prepared.config);
+          requireRoute(request,selectedRoute);requireRoute(prepared.config,selectedRoute);
           for(const [key,value] of Object.entries(prepared.config))if(JSON.stringify(request[key])!==JSON.stringify(value))throw Error('制作端 QA 原生调用配置发生变化：'+key);
           if((request.tools||[]).length)throw Error('制作端 QA 原生请求暴露了执行工具。');
           if(!Array.isArray(request.messages)||!request.signal)throw Error('制作端 QA 原生请求缺少完整消息或取消信号。');

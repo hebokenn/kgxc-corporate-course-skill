@@ -165,3 +165,19 @@ test('a cleanup inventory warning appears once and does not block retaining the 
   await button(ui,'保留全部（推荐）').props.onClick();await settle();
   assert.equal(calls.find(c=>c.data?.action==='retention').data.choice,'keep');app.unmount();
 });
+
+test('persistent toolbar chat control survives collapse, reload and repeated toggles outside the studio',async()=>{
+  for(const initiallyOpen of [true,false]){
+    const app=await client(async(url)=>response(url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}),{chatOpen:initiallyOpen});
+    app.render();app.flush();await settle();
+    for(let i=0;i<4;i++){
+      const tree=app.render(),toolbar=nodes(tree).find(n=>n.props.className==='kgxc-switch'),toggle=nodes(toolbar).find(n=>n.props.className==='kgxc-chat-toggle');
+      assert.ok(toggle);const before=toggle.props['aria-expanded'];
+      assert.equal(nodes(tree).some(n=>n.props.id==='kgxc-ai-chat'),before);
+      assert.equal(nodes(tree).filter(n=>n.props.className==='kgxc-editor').flatMap(nodes).includes(toggle),false);
+      toggle.props.onClick();assert.equal(app.storage.get('kgxc-chat-open'),String(!before));
+      assert.equal(nodes(app.render()).find(n=>n.props.className==='kgxc-chat-toggle').props['aria-expanded'],!before);
+    }
+    app.unmount();
+  }
+});

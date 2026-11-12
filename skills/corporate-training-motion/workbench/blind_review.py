@@ -8,7 +8,6 @@ from workflow import hashed
 
 PROTOCOL = 'course-blind-review/1'
 PRODUCER_PROTOCOL = 'course-producer-qa/1'
-ROUTE = dict(provider='codex-chatgpt', model='gpt-6.1-sol')
 LEGACY_PROTOCOL = 'legacy-source-aware/0'
 CAPABILITIES = ['text', 'images']
 DEFAULT_ARRANGEMENT = 'default_full_av'
@@ -22,9 +21,9 @@ WRITE_KEYS = {'repairs', 'repair', 'patch', 'patches', 'edits', 'edit', 'writes'
 
 
 def route(value):
-    if value != ROUTE:
-        raise ValueError('审阅必须沿用 codex-chatgpt / gpt-6.1-sol 的 ChatGPT 登录通道，不能切换或回退')
-    return copy.deepcopy(ROUTE)
+    if not isinstance(value, dict) or set(value) != {'provider', 'model'} or any(not isinstance(value.get(k), str) or not value[k].strip() for k in ['provider', 'model']):
+        raise ValueError('审阅需要当前会话明确选择的有效模型通道')
+    return copy.deepcopy(value)
 
 
 def artifact_digest(text):

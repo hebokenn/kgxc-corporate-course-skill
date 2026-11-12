@@ -48,6 +48,7 @@ function jobNoticeTexts(job,read,expectedText){
 // tools, executor, permission policy, durable history and prepared handles stay
 // owned by the original producer and Runtime.
 export function producerWorkSnapshot(producer,{message,operation_id,request_id,signal,onProjection,onSteering}){
+  const selectedRoute=requireRoute(producer.model?.current?.()||producer.options);
   if(!producer?.ctx?.on||!producer.ctx.tools?.guard||!producer.session?.id||message?.source?.kind!=='kgxc-producer-work'||!operation_id||!request_id)throw Error('制作任务快照缺少真实身份、明确指令或操作绑定。');
   const expected=hash(message),sessionId=producer.session.id,disposers=[],requests=new WeakMap(),receipts=[],jobNotices=new Map(),catalogs=new Map(),repeatNotices=new Map(),pendingRepeats=new Set();let disposed=false,steered=false,steeringTask,derivedCatalog,currentDerived;
   const pending=[...(producer.inbox?.nextStep||[]),...(producer.inbox?.nextTurn||[])];
@@ -149,7 +150,7 @@ export function producerWorkSnapshot(producer,{message,operation_id,request_id,s
   },{prepend:true}));
   disposers.push(producer.ctx.tools.guard(()=>{try{live();}catch(error){return error.message;}}));
   disposers.push(producer.ctx.on('agent/pre-step',async(payload,next)=>{
-    if(payload.agent!==producer)return next();live();requireRoute(payload.modelSelection);
+    if(payload.agent!==producer)return next();live();requireRoute(payload.modelSelection,selectedRoute);
     // Inspect incoming identities before tool-skill can replace an existing
     // catalog-shaped message; a source label never authorizes claimed input.
     for(const input of payload.messages)if(input.id!==message.id&&!automatic.has(input.source?.kind)&&!approvedJobNotice(input)&&!approvedRepeat(input)&&staleNotices.get(input.id)?.message_sha256!==hash(input)){steer(input);live();}
@@ -192,7 +193,7 @@ export function producerWorkSnapshot(producer,{message,operation_id,request_id,s
         if(!prepared?.config||typeof prepared.stream!=='function')throw Error('原生制作模型缺少绑定的 prepared stream。');
         return Object.freeze({...prepared,stream:request=>{
           if(request.sessionId!==sessionId)return prepared.stream(request);
-          live();if(used)throw Error('制作步骤的 prepared stream 不得重复调用。');requireRoute(request);requireRoute(prepared.config);
+          live();if(used)throw Error('制作步骤的 prepared stream 不得重复调用。');requireRoute(request,selectedRoute);requireRoute(prepared.config,selectedRoute);
           for(const [key,value] of Object.entries(prepared.config))if(JSON.stringify(request[key])!==JSON.stringify(value))throw Error('制作快照的原生模型配置发生变化：'+key);
           if(!Array.isArray(request.messages)||!request.signal||!request.toolHistory)throw Error('制作快照缺少完整原生请求或工具历史。');
           const owned=request.messages.filter(item=>item.id===message.id),position=request.messages.findIndex(item=>item.id===message.id);

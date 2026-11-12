@@ -108,7 +108,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
     }finally{clearTimeout(timer);signal.removeEventListener('abort',abort);}
   }
   async function producerCall(args,packet,key,selection,signal,producer){
-    signal.throwIfAborted();requireRoute(producer.model?.current?.()||producer.options);
+    signal.throwIfAborted();
     packet=freezeReviewInput(packet);
     const input=await producerInputContent({packet,course_path:args.course_path,attachments:get('attachments')});
     signal.throwIfAborted();
@@ -135,7 +135,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
       disposers.push(producer.ctx.tools.guard(()=> '制作端核对禁止直接写入；宿主检查版本和预算后再修复。'));
       disposers.push(await producerReadOnlyTools(producer));
       disposers.push(producer.ctx.on('agent/pre-step',async(payload,next)=>{
-        requireRoute(payload.modelSelection);signal.throwIfAborted();if(payload.step>1)throw Error('制作端核对不允许工具循环。');return next();
+        requireRoute(payload.modelSelection,selection);signal.throwIfAborted();if(payload.step>1)throw Error('制作端核对不允许工具循环。');return next();
       },{prepend:true}));
       const message=Object.freeze({id:randomUUID(),role:'user',source:{kind:'kgxc-producer-qa'},content:input.content});
       snapshot=producerQASnapshot(producer,{message,packet,signal,onProjection:async projection=>{
@@ -192,7 +192,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
   }
   async function produce(args,continuationRun){
     if(disposed)throw Error('插件已停止，不能启动制作。');
-    const producer=producerFor(args),selection=requireRoute(get('agentDefaultModel')?.currentSelection());requireRoute(producer.model?.current?.()||producer.options);
+    const producer=producerFor(args),selection=requireRoute(producer.model?.current?.()||producer.options);
     if(!STAGES.includes(args.stage)||typeof args.instruction!=='string'||!args.instruction.trim()||args.instruction.length>8000||typeof args.request_id!=='string'||!args.request_id.trim()||args.request_id.length>2000)throw Error('明确制作任务需要有效阶段、完整指令和稳定 request_id。');
     const operation_id='produce-'+createHash('sha256').update(args.course_path+'\0'+args.request_id).digest('hex'),existing=workTasks.get(args.course_path);
     if(existing){if(existing.operation_id===operation_id&&existing.instruction===args.instruction&&existing.stage===args.stage)return {ok:true,started:false,operation_id,request_id:args.request_id};throw Error('当前课程已有受控制作任务，不能并行重放。');}
@@ -204,7 +204,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
         const dispatch=await runCall('production_dispatch',{course_path:args.course_path,stage:args.stage,task_id:operation_id});
         const llm=get('llm');
         if(!llm?.prepareCall)throw Error('REVIEW_CAPABILITY_MISSING: composed route preparation unavailable');
-        const prepared=await llm.prepareCall({...selection,maxTokens:14000},new AbortController().signal);requireRoute(prepared.config);
+        const prepared=await llm.prepareCall({...selection,maxTokens:14000},new AbortController().signal);requireRoute(prepared.config,selection);
         const requirements=await runCall('capability_requirements',{course_path:args.course_path,stage:args.stage});
         dispatch.capability_preflight=await probeReviewer({get,selection,prepared,packet:{run_id:operation_id,checklist:requirements.checklist},course_path:args.course_path,strict:false});
         const claim=await handle.production({course_path:args.course_path,producer,stage:args.stage,operation_id,phase:'start',user_instruction:args.instruction,
@@ -310,8 +310,8 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
   }
   async function start(args){
     if(disposed)throw Error('插件已停止，请重新打开后明确继续。');
-    const producer=producerFor(args),selection=requireRoute(get('agentDefaultModel')?.currentSelection());
-    requireRoute(producer.model?.current?.()||producer.options);const operation=productions.get(args.course_path);
+    const producer=producerFor(args),selection=requireRoute(producer.model?.current?.()||producer.options);
+    const operation=productions.get(args.course_path);
     const value=await runCall('begin',{...args,route:{provider:selection.provider,model:selection.model},owner,producer:identity(producer),supervision_operation_id:operation?.id});
     if(value.started)launch({course_path:args.course_path,stage:args.stage,run_id:value.run.id},selection,producer,value.producer_only?{...value,producer_only:true}:undefined);
     return value;
@@ -341,8 +341,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
     }
     if(action==='resume_producer'){
       if(disposed)throw Error('插件已停止，请重新打开后明确恢复制作端核验。');
-      const producer=producerFor(args),selection=requireRoute(get('agentDefaultModel')?.currentSelection()),request_id=args.request_id||randomUUID();
-      requireRoute(producer.model?.current?.()||producer.options);
+      const producer=producerFor(args),selection=requireRoute(producer.model?.current?.()||producer.options),request_id=args.request_id||randomUUID();
       const active=[...tasks.values()].find(task=>task.args.course_path===args.course_path);
       if((active&&active.resume_request_id!==request_id)||(!active&&(args.busy||producer.status==='running')))throw Error('当前课程正在制作或审阅，不能并行恢复制作端核验。');
       const value=await runCall('resume_producer',{...args,request_id,producer:identity(producer),route:{provider:selection.provider,model:selection.model},owner});
@@ -374,17 +373,18 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
   handle.production=async({course_path,producer,stage,phase='start',execution=[],operation_id,user_instruction,auto_review=true,scope}={})=>{
     if(disposed)throw Error('插件已停止，不能启动制作。');
     if(!producer||get('agents')?.get(producer.session.id)!==producer)throw Error('监督缺少真实绑定制作 Agent。');
-    const selection=requireRoute(get('agentDefaultModel')?.currentSelection());requireRoute(producer.model?.current?.()||producer.options);
+    const selection=requireRoute(producer.model?.current?.()||producer.options);
     let operation=productions.get(course_path);
     if(phase==='start'){
       if(operation&&!operation.finished&&!operation.stopped)throw Error('当前课程已有受监督制作任务。');
-      operation={id:operation_id||randomUUID(),course_path,producer,stage,auto_review:auto_review!==false,scope,user_direction_id:directions.get(producer)?.id,controller:new AbortController(),tail:Promise.resolve(),finished:false,stopped:false,events:0,progress_events:0,calls:new Map()};productions.set(course_path,operation);
+      operation={id:operation_id||randomUUID(),course_path,producer,selection,stage,auto_review:auto_review!==false,scope,user_direction_id:directions.get(producer)?.id,controller:new AbortController(),tail:Promise.resolve(),finished:false,stopped:false,events:0,progress_events:0,calls:new Map()};productions.set(course_path,operation);
       const direction=user_instruction||directions.get(producer)?.text;
       if(direction)execution=[...execution,{type:'production/dispatch',operation:user_instruction?'workbench-stage':'conversation',user_instruction:String(direction).slice(0,8000),agent_id:identity(producer).id,stage}];
     }
     if(!operation||operation.producer!==producer||operation.stopped)throw Error('制作监督身份或生命周期已失效。');
     const perform=async()=>{
       const args={course_path,stage,operation_id:operation.id};
+      requireRoute(selection,operation.selection);
       let correlationError;
       execution=execution.map(fact=>{
         if(CALL_FACTS.has(fact.type)&&fact.call_id){
@@ -401,7 +401,7 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
       const recorded=await runCall('production_event',{...args,producer:identity(producer),phase,execution});
       if(phase==='start'&&recorded.started===false){operation.finished=true;return {ok:true,started:false,operation_id:operation.id};}
       if(phase==='start'&&execution.some(event=>event.type==='production/request')&&recorded.started!==true)throw Error('制作任务缺少已持久登记的原子首次启动回执。');
-      for(const fact of execution)if(fact.route)requireRoute(fact.route);
+      for(const fact of execution)if(fact.route)requireRoute(fact.route,operation.selection);
       if(correlationError)throw correlationError;
       operation.progress_events+=execution.length;
       const checkpoint=phase==='progress'&&(operation.progress_events>=32||execution.some(fact=>fact.type==='production/user-direction'||fact.type?.startsWith('export/')||(CALL_FACTS.has(fact.type)||RESULT_FACTS.has(fact.type))&&formalFact(fact)||RESULT_FACTS.has(fact.type)&&!fact.name));

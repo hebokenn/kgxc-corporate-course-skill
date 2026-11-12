@@ -1,3 +1,4 @@
+import {FIXED_ROUTE} from './model-route.mjs';
 // Installed native services and native tool executor. All inference is a
 // synthetic in-process adapter; the sole file is a temporary fixture.
 import assert from 'node:assert/strict';
@@ -7,7 +8,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {producerWorkSnapshot} from '../../plugin/producer-work-snapshot.mjs';
 import {producerQASnapshot,producerReadOnlyTools} from '../../plugin/producer-qa-snapshot.mjs';
-import {FIXED_ROUTE} from '../../plugin/isolated-review-agent.mjs';
+
 const base=process.env.KGXC_DSH_NATIVE_ROOT||'/Applications/DeepSeek Harness.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/';
 const load=async name=>import(base+name+'/lib/index.js');
 const {Context}=await load('cordis'),ctx=new Context(),fibers=[],handles=[],calls=[],signals=new Map();let preparations=0,reads=0,steeringSeen=false;
