@@ -75,3 +75,15 @@ test('DSH create automatically uses its real session workspace instead of the ol
     await rm(folder,{recursive:true,force:true});
   }
 });
+test('local update API returns stable metadata without invoking a model or changing courses',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'kgxc-update-api-')),originalFetch=globalThis.fetch,previousCache=process.env.XDG_CACHE_HOME;let handler,calls=0;
+ try{
+  process.env.XDG_CACHE_HOME=dir;
+  globalThis.fetch=async url=>{calls++;assert.equal(url,'https://api.github.com/repos/hebokenn/kgxc-corporate-course-skill/releases/latest');return {ok:true,headers:new Map(),text:async()=>JSON.stringify({tag_name:'v99.0.0',draft:false,prerelease:false,assets:[{name:'kgxc-course-plugin-v99.0.0.zip',state:'uploaded',size:100}]})};};
+  apply({tools:{register:()=>{}},inject:(deps,action)=>{if(deps.includes('webServer'))action({effect:fn=>fn(),webServer:{register:route=>{handler=route.handler;return()=>{};}}});}});
+  globalThis.fetch=originalFetch;
+  let value,status;
+  await handler({url:'/api/kgxc-course/updates',method:'GET',headers:{host:'localhost'},socket:{remoteAddress:'127.0.0.1'}},{writeHead:n=>status=n,end:body=>value=JSON.parse(body)});
+  assert.equal(status,200);assert.equal(value.update.version,'99.0.0');assert.equal(value.channel,'stable');assert.equal(calls,1);
+ }finally{globalThis.fetch=originalFetch;if(previousCache===undefined)delete process.env.XDG_CACHE_HOME;else process.env.XDG_CACHE_HOME=previousCache;await rm(dir,{recursive:true,force:true});}
+});

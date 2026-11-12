@@ -9,12 +9,14 @@ import {z} from 'zod';
 import {productionProjection,productionSnapshot} from './production-monitor.mjs';
 import {reviewHost} from './review-host.mjs';
 import {studioProxy} from './studio-proxy.mjs';
+import {updateChecker} from './update-check.mjs';
 
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 
 export const name = 'kgxc-course';
 export const inject = ['tools'];
 export function apply(ctx) {
+  const checkUpdate=updateChecker({version});
   const bindings = new Map();
   const courses = new SessionCourses();
   const reviews=reviewHost(ctx,{bindings});
@@ -72,6 +74,7 @@ export function apply(ctx) {
         if (req.method === 'GET' && route === '/api/kgxc-course/meta') {
           return json(res, 200, {ok: true, version, token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
         }
+        if (req.method === 'GET' && route === '/api/kgxc-course/updates') return json(res,200,await checkUpdate());
         if (req.method === 'GET' && route === '/api/kgxc-course/courses') return json(res, 200, await callTool('kgxc_course_list'));
         if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
         const supplied = req.headers['x-kgxc-token'];

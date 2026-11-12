@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function client(fetcher,{pending,chatOpen}={}){
+async function client(fetcher,{pending,chatOpen,updateDismissed}={}){
   let index=0,states=[],effects=[],cleanups=[],clickListener;const entries=[],animation=[],dependencies=[],listeners=new Map();
   const react={createElement:(type,props,...children)=>({type,props:{...props,children}}),
     useState:initial=>{const i=index++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return [states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;}];},
     useRef:initial=>{const i=index++;return states[i]??=( {current:initial} );},
     useEffect:(fn,deps)=>{const i=index++,before=dependencies[i];if(!before||!deps||deps.some((value,j)=>!Object.is(value,before[j]))){dependencies[i]=deps;effects.push(()=>{cleanups[i]?.();cleanups[i]=fn();});}}};
   const storage=new Map([['kgxc-active-course','/tmp/old-global-course']]);let plugin;
+  if(updateDismissed)storage.set('kgxc-update-dismissed',updateDismissed);
   if(chatOpen!==undefined)storage.set('kgxc-chat-open',String(chatOpen));
   const browser={__ModuleLoader__:{load:spec=>{plugin=spec.factory(()=>react);}},addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener:(name,fn)=>listeners.get(name)?.delete(fn)};
   vm.runInNewContext(await readFile(new URL('../plugin/client.js',import.meta.url),'utf8'),{
@@ -180,4 +181,25 @@ test('persistent toolbar chat control survives collapse, reload and repeated tog
     }
     app.unmount();
   }
+});
+
+test('stable update notice is non-blocking, links to release and dismisses only that version',async()=>{
+ const update={version:'0.9.0',release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v6.9.0'};
+ const app=await client(async url=>response(url.endsWith('/updates')?{ok:true,update}:url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}));
+ app.render();app.flush();await settle();let tree=app.render();
+ assert.ok(nodes(tree).some(n=>n.props.className==='kgxc-update-notice'));
+ assert.equal(nodes(tree).find(n=>n.type==='a').props.href,update.release_url);
+ assert.ok(nodes(tree).some(n=>n.props.className==='kgxc-chat-toggle'));
+ nodes(tree).find(n=>n.props['aria-label']==='忽略此版本更新提醒').props.onClick();
+ assert.equal(app.storage.get('kgxc-update-dismissed'),update.version);assert.equal(nodes(app.render()).some(n=>n.props.className==='kgxc-update-notice'),false);app.unmount();
+});
+test('offline update check does not become a course error or prevent opening chat',async()=>{
+ const app=await client(async url=>{if(url.endsWith('/updates'))throw Error('offline');return response(url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]});},{chatOpen:false});
+ app.render();app.flush();await settle();const tree=app.render();assert.equal(app.states[2],'');assert.equal(nodes(tree).some(n=>n.props.className==='kgxc-update-notice'),false);button(tree,'打开 AI 对话').props.onClick();assert.equal(app.storage.get('kgxc-chat-open'),'true');app.unmount();
+});
+test('dismissed version stays hidden across reopening but a later release is shown',async()=>{
+ for(const version of ['0.9.0','0.9.1']){
+  const app=await client(async url=>response(url.endsWith('/updates')?{update:{version,release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v6.9.1'}}:url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}),{updateDismissed:'0.9.0'});
+  app.render();app.flush();await settle();assert.equal(nodes(app.render()).some(n=>n.props.className==='kgxc-update-notice'),version==='0.9.1');app.unmount();
+ }
 });
