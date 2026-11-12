@@ -1,6 +1,6 @@
 {
   "name": "kgxc-course-plugin",
-  "version": "0.9.0-rc.2",
+  "version": "0.9.0-rc.3",
   "description": "DSH 课程工作台：资料、大纲、逐字稿、分镜、有声小样与整课交付。工程位于当前会话工作区。",
   "type": "module",
   "main": "./plugin/dsh.mjs",
