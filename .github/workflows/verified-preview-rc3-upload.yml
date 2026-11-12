@@ -1,0 +1,53 @@
+name: One-time verified rc.3 cloud upload
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upload-fixed-release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch frozen reviewed source
+        run: |
+          git init payload
+          git -C payload remote add origin https://github.com/hebokenn/kgxc-corporate-course-skill.git
+          git -C payload fetch --depth 1 origin 6ca59fcadc0e350738f685187ea8b7c37bb98b10
+          git -C payload checkout --detach FETCH_HEAD
+          test "$(git -C payload rev-parse HEAD)" = 6ca59fcadc0e350738f685187ea8b7c37bb98b10
+      - name: Build and verify every package entry
+        working-directory: payload
+        run: |
+          python3 -B scripts/build_release.py
+          python3 -B scripts/build_plugin.py
+          python3 - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          expected = {
+            'kgxc-course-plugin-v0.9.0-rc.3.zip': ('00eb6ad4bdb8788aba1b7d1bc4a6dd2e58e1958507f64e274542797e34d6b720', 1595),
+            'kgxc-course-suite-v6.9.0-rc.3.zip': ('18b35a2246390a128eaab6b7422fd1608ebed44d27867344de99014983355227', 1488),
+          }
+          for name, (digest, count) in expected.items():
+              with zipfile.ZipFile(Path('dist') / name) as z:
+                  assert z.testzip() is None
+                  assert len(z.namelist()) == len(set(z.namelist())) == count
+                  manifest = {}
+                  for member in sorted(z.namelist()):
+                      data = z.read(member)
+                      if member.endswith('bundle-manifest.json'):
+                          data = json.dumps(json.loads(data), sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+                      manifest[member] = hashlib.sha256(data).hexdigest()
+                  actual = hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+                  assert actual == digest, (name, actual)
+                  print(name, 'all payload entries match reviewed local packages')
+          PY
+      - name: Upload only to existing rc.3 draft
+        working-directory: payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh release view v6.9.0-rc.3 --repo hebokenn/kgxc-corporate-course-skill --json isDraft --jq .isDraft)" = true
+          gh release upload v6.9.0-rc.3 dist/kgxc-course-suite-v6.9.0-rc.3.zip dist/kgxc-course-plugin-v0.9.0-rc.3.zip --repo hebokenn/kgxc-corporate-course-skill
+          gh release upload v6.9.0-rc.3 dist/SHA256SUMS dist/PLUGIN-SHA256SUMS --clobber --repo hebokenn/kgxc-corporate-course-skill
