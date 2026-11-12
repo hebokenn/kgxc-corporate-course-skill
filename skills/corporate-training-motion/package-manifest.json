@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "6.9.0-rc.2",
+  "version": "6.9.0-rc.3",
   "usage": "KGXC course production suite",
   "files": {
     "INSTALL.md": "0e17f6dd8f7ec133ad47ec904535e6346a5010619a246a7bea6fbe4bed4f4076",
-    "SKILL.md": "6c1e586ff5dae4e72532e06b3ac9b3ff7997eaec937661c0427df1ccd081e95d",
+    "SKILL.md": "d3b2ba444efe7ed622e0dd6a35ece59b0d21bd22ba198b4a6a6a2bd9f6cde561",
     "agents/openai.yaml": "242d3df86fbb3e74231f81e6740a54f3d4bc4a6f16b6308cce4216542aef655d",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",
@@ -1047,7 +1047,7 @@
     "libraries/web/templates/engine.html": "db00f75d5657f41906419bbc3599d78e72160433a83265bca5eb53aff601b874",
     "references/01-evidence.md": "9478a98141821bd56ad45ad1fc10ad11ed9619410bf921edcc82e419c4c2187b",
     "references/02-teaching.md": "ce780211979dcec8e8143f9a9071473ab6a5b9963a1c961c6bdcdc121e40a6d5",
-    "references/03-visual.md": "0ab85337dec2bd9990ef5c868d3b49cad4a32cc3199b9fec225d929f7e87624e",
+    "references/03-visual.md": "cdaea407f4d13b1274e267f9e38724cc13f741f300ee91d5cf5787bc908edc86",
     "references/04-storyboard.md": "ecc7836cec718379488977659984432742cc00af7d5627bb4cd70f7d78dd0a5f",
     "references/05-render-pipeline.md": "5f86ed916ac50d8c854f7e6ab26bb6472c9267e8fc114e342d2b4c3777752240",
     "references/06-qa.md": "dedbc9dbb998092c61d405e163476a6caa9354437819d78db36a17d9f7926d00",
@@ -1089,9 +1089,9 @@
     "references/41-direction-and-performance.md": "4e04ec5f9ac3c52092d8cadc5f701bf230c1753ab7fc67259180bd9c0d6035b4",
     "references/42-content-directed-production.md": "820cb226f82b425651a774c6b01a8c1d65eca22679233504c4453c51658da02d",
     "references/43-reference-teaching-and-voice.md": "5a75d688742087db1ccd2016fcabe347a0e13f11277c8557da7b333b9d6a7a23",
-    "references/44-storyboard-and-sampling.md": "5e44f88412e5ffb56fce48a8417acab03197dd0d655d186d5cc47d0fed977264",
+    "references/44-storyboard-and-sampling.md": "6abd22dbbb252691647bd6cb45bf377b807e4bda55e8b12b31aa847836d6d1ca",
     "references/45-reading-and-information-pacing.md": "9013458fb6f37249a630bab6703d7dae17ae24bcb247d6fc7170e6aa7518d644",
-    "references/46-flower-text-and-native-sfx.md": "2030fa29b9bace27d6e67a8c2cc8308133c6bd37674e75ef4bd6915a009a552e",
+    "references/46-flower-text-and-native-sfx.md": "3ea493ed6169493e76576e7fee52b0299bd3e26d7f0a4a94f2fbcf3a546c3687",
     "references/47-course-palette.md": "e9f5b7175ca2359d858d7f37fa913a9dfbbec08f9d5c1d75eb59d3cfd5828fde",
     "references/48-situational-acting.md": "d54bb5cee62eb4f7146e025d89e285fc77ae40dbe2ad9c9098de71c04c931719",
     "references/49-cross-host-plugin.md": "3fb7d61d51302e53b1e0ea80f3a28df90e5eb2c8b4a61f942cc3b42a0ec6a802",
@@ -1099,6 +1099,7 @@
     "references/51-production-contract.md": "3adfb8e156e66c5e8e923e8aa73d14366d29982039b18bd6782f51c32d980349",
     "references/55-execution-contract-and-release.md": "e3d119ce9c69673a036dc659fb84b86b17beb6cc73fd65382a2787ff9b602dcb",
     "references/56-ordered-reveals-and-intro.md": "9085cfa1600231b56f986a291a8cc94238fb1fc55aed5363ce5d94260d4c27fa",
+    "references/57-series-quality-baseline.md": "64ac0d6765878d6106f1f1594f09c03f8fc78af3a23c961999b2326ee0da5777",
     "references/script-quality.md": "af44c94277abf4af51a98460eaeb48a7bc1e928d2f1e91f7eadd64eb11bdc9ea",
     "scripts/asset_library.py": "7038a2f2809566e8f6964d1b9b408ebc07318ad392107c255ee51eb01a8a2250",
     "scripts/azure_tts.py": "e0c5ca6dba024bd23782e2d5712e60a3c32443dcbfc39649470e10a03a6c03b2",
@@ -1193,7 +1194,7 @@
     "workbench/author_input_checks.py": "cef87c93be6b5ea3bc8c1858d260d62cdc7e04495a7e668708b2526420ec398d",
     "workbench/authoring.py": "6f1e0da11fdc005af44cf19fd4f57c59dc9a3b75e1de2b7b00eb412220537b1e",
     "workbench/backend.py": "76f3ab4f89813e3798c789022adb803b237e9b245d56e88c1297d097a52a28ab",
-    "workbench/blind_review.py": "bb48c93161214eaef6492e02d4e306bd38f0c2885028593ed2401b0663302689",
+    "workbench/blind_review.py": "89f2cd46fc977cca4f347f92608188ce5ee9f2e3169adbb252b1c8254ec51b26",
     "workbench/chapter_table.py": "0fd4314b059d3fde9433f9ebc78ecf3bf3e4ccfadc1f63241e3ebdef95a2a795",
     "workbench/character_performance.py": "c39aa157989ed80bc294b8b914850e4e5ac33b42775c22903f2837fea62de7e7",
     "workbench/character_pose.py": "cb59e4d3cda8ac4b944f35248651af88aaf84b0a4df8e25fb5b9e356f7465fc5",
@@ -1292,6 +1293,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "ddc8bec0b32972ac32006ff8c61e1ab027f87718a2f55a3296a36cfed0b5798a",
-    "workbench/workflow.py": "90b9ea9f4a99e200e89fcdd8afa503d876f609396a11934ab458d3463733734f"
+    "workbench/workflow.py": "4151c259540c1418a7800f4b00a8255530057cc0f36772b35fd033dae7d646a0"
   }
 }
