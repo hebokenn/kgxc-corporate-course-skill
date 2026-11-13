@@ -340,24 +340,33 @@ class Workspace:
             return doc
 
     def waveform(self):
-        cache=self.work/'waveform.json'
-        if cache.exists():
-            return read(cache)
         doc=read(self.file)
         if not doc['media'].get('audio'):return dict(peaks=[],duration=doc['sourceDurationFrames']/doc['fps'])
-        result=subprocess.run(['ffmpeg','-v','error','-i',str(safe(self.project,doc['media']['audio'])),
+        from performance_cache import sha
+        source=safe(self.project,doc['media']['audio']);source_hash=sha(source)
+        cache=self.work/('waveform-v2-'+source_hash+'.json')
+        if cache.is_file():
+            try:
+                data=read(cache)
+                if data.get('source_sha256')==source_hash and isinstance(data.get('peaks'),list) and type(data.get('duration')) in [int,float]:
+                    return data
+            except (OSError,ValueError,AttributeError):pass
+        result=subprocess.run(['ffmpeg','-v','error','-i',str(source),
                                '-f','s16le','-ac','1','-ar','8000','-'],capture_output=True,check=True)
+        if sha(source)!=source_hash:raise ValueError('波形生成期间音轨发生变化，请重试')
         samples=array.array('h');samples.frombytes(result.stdout)
         size=max(1,math.ceil(len(samples)/4000))
         peaks=[round(max(abs(x) for x in samples[i:i+size])/32768,4) for i in range(0,len(samples),size)]
-        data=dict(peaks=peaks,duration=len(samples)/8000)
+        data=dict(peaks=peaks,duration=len(samples)/8000,source_sha256=source_hash)
         atomic(cache,data)
         return data
 
     def audio_key(self, doc):
-        source=safe(self.project,doc['media']['audio']);stat=source.stat()
-        value=[doc['media']['audio'],stat.st_mtime_ns,stat.st_size,doc['sourceDurationFrames'],doc['holds'],doc.get('cuts',[]),doc['audio']['gain']]
-        return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()[:20]
+        from performance_cache import sha
+        from timeline import audio_filters
+        source=safe(self.project,doc['media']['audio'])
+        value=['prepared-audio-v2',doc['media']['audio'],sha(source),audio_filters(doc),'pcm_s16le/48000/mono']
+        return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()
 
     def audio(self, doc, production=False):
         validate(doc,self.project)
@@ -366,11 +375,16 @@ class Workspace:
             return safe(self.project,doc['media']['audio'])
         key=self.audio_key(doc)
         path=self.work/(key+'.wav')
-        if path.exists():return path
+        receipt=path.with_suffix('.json')
+        from performance_cache import sha
+        if path.is_file() and receipt.is_file():
+            try:
+                if read(receipt)==dict(input_key=key,sha256=sha(path)):return path
+            except (OSError,ValueError):pass
         from timeline import audio_filters
         temporary=path.with_name(path.stem+'.'+uuid.uuid4().hex+'.pending.wav')
         command=['ffmpeg','-v','error','-y','-i',str(safe(self.project,doc['media']['audio'])),
-                 '-filter_complex',audio_filters(doc),'-map','[out]','-ar','48000','-ac','1',str(temporary)]
+                 '-filter_complex',audio_filters(doc),'-map','[out]','-ar','48000','-ac','1','-c:a','pcm_s16le',str(temporary)]
         if production:
             self.require_production_active()
             with temporary.with_suffix('.log').open('w') as log:
@@ -381,7 +395,10 @@ class Workspace:
                 self.require_production_active(process)
                 if process.returncode:raise ValueError('导出音轨处理失败，保留日志：'+str(temporary.with_suffix('.log')))
         else:subprocess.run(command,check=True)
+        if self.audio_key(doc)!=key:raise ValueError('预处理期间音轨或剪辑输入发生变化；未缓存候选')
+        output_hash=sha(temporary)
         temporary.replace(path)
+        atomic(receipt,dict(input_key=key,sha256=output_hash))
         return path
 
     def archive_previous_exports(self, current_job):
@@ -465,18 +482,25 @@ class Workspace:
                 command=[interpreter,str(APP/'render_worker.py'),'--url',url+'/renderer.html?job='+job_id,
                          '--directory',str(directory),'--project',str(self.project),'--audio',str(audio),'--first',str(first),'--last',str(last),
                          '--fps',str(doc['fps'])]
+                if render_context is not None and (doc['introFrames']>0 or doc['bodyEndFrame']<doc['sourceDurationFrames']):
+                    command.append('--seam-preflight')
+                    job['phase']='seam_preflight'
                 with (directory/'render.log').open('w') as log:
                     self.require_production_active()
                     process=owned_export_process(command,stdout=log,stderr=subprocess.STDOUT,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
                     atomic(directory/'execution.json',dict(pid=process.pid,process_group=process.pid,scope='owned-export-process-group',job_id=job_id,argv=command,files_retained=True))
                     while process.poll() is None:
                         self.require_production_active(process)
+                        if job.get('phase')=='seam_preflight' and (directory/'seam-preflight.json').exists():
+                            if read(directory/'seam-preflight.json',{}).get('status') in ['pass','not-applicable']:
+                                job['phase']='render'
                         status=directory/'progress.json'
                         if status.exists():
                             try:job['progress']=read(status)['progress']
                             except ValueError:pass
                         time.sleep(.4)
                     if process.returncode:raise ValueError((directory/'render.log').read_text()[-1800:])
+                if job.get('phase')=='seam_preflight':job['phase']='render'
                 self.require_production_active()
                 from render_input_guard import check_render
                 check_render(self.project,frozen_inputs)

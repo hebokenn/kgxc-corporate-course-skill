@@ -136,6 +136,8 @@ export function describeCall(name,args){
     if(/qwen|generate[_-]?(?:voice|speech)|tts\.py/i.test(command+' '+args.description)){kind='voice';label='生成配音';}
     else if(/transcrib|whisper|(?:^|[^a-z])asr(?:[^a-z]|$)/i.test(command+' '+args.description)){kind='alignment';label='核对配音内容与字幕时间';}
     else if(scripts.some(s=>/^build_/.test(s))){kind='build';label='构建画面与时间轴';}
+    else if(scripts.includes('export_preflight.py')){kind='check';label='检查片头、正文与片尾拼接';subject='接缝预检';}
+    else if(scripts.includes('incremental_production.py')){kind='check';label='核对可复用成果与需重做的片段';subject='局部更新';}
     else if(/ffprobe/.test(command)){kind='check';label='核对媒体时长与格式';subject='媒体参数';}
     else if(/(?:workbench|workflow)\.py["']?\s+export\b|render_worker\.py/.test(command)||/^(?:Render|Export)\b/i.test(args.description||'')){kind='render';label='导出视频';}
     else {kind='execute';label='执行制作步骤';subject=String(args.description||subject).slice(0,140);}

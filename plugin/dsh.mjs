@@ -1,7 +1,7 @@
 import {randomBytes, timingSafeEqual,randomUUID} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync} from 'node:fs';
 import {join} from 'node:path';
-import {root, tools, callTool, callWorkspace, callReview} from './bridge.mjs';
+import {root, tools, callTool, callWorkspace, callReview, pythonExecutable} from './bridge.mjs';
 import {editorHost} from './editor-host.mjs';
 import {SessionCourses} from './session-courses.mjs';
 import {serveDelivery} from './delivery-files.mjs';
@@ -9,7 +9,8 @@ import {z} from 'zod';
 import {productionProjection,productionSnapshot} from './production-monitor.mjs';
 import {reviewHost} from './review-host.mjs';
 import {studioProxy} from './studio-proxy.mjs';
-import {updateChecker} from './update-check.mjs';
+import {updateChecker,getStableRelease} from './update-check.mjs';
+import {createUpdateInstaller} from './update-install.mjs';
 import {createStageConfirmationHost} from './stage-confirmation.mjs';
 
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
@@ -33,6 +34,34 @@ export function apply(ctx) {
       segment_id:f.segment_id,time:f.version_binding.time,artifact_path:f.artifact_path,artifact_sha256:f.artifact_sha256,feedback_id:f.id,
       user_instruction:f.text,instruction:'用户通过右侧提交了这条针对当前版本的修改意见（已登记反馈 ID '+f.id+'）。只处理该意见及其关联范围，保留现有制作流程、审批与盲审边界；不要凭意见提交补填任何确认。'})
   });
+  function updateBusyReason(){
+    const agents=ctx.get?.('agents');
+    if(typeof agents?.list!=='function')return '暂时无法确认 DSH 是否空闲，未开始安装。';
+    const jobs=ctx.get?.('jobs');
+    const liveAgents=agents.list();
+    const hasJobs=[undefined,...liveAgents.map(agent=>agent.session?.id??agent.id).filter(Boolean)].some(id=>
+      jobs?.list?.(id).some(job=>['running','stopping'].includes(job.status)));
+    if(liveAgents.some(agent=>agent.status!=='idle')||hasJobs||attaching.size||relocating.size)
+      return 'DSH 还有任务在运行。已下载更新，等任务完成后再安装。';
+    const paths=new Set([...bindings.keys(),...Object.values(courses.entries).map(row=>row.course_path).filter(Boolean)]);
+    for(const path of paths){
+      if(reviews.courseBusy(path)||confirmations.courseBusy(path))return '课程仍在审阅或等待确认，完成后再安装。';
+      const locks=join(path,'project','work','render-locks');
+      try{
+        for(const entry of readdirSync(locks,{withFileTypes:true})){
+          if(!entry.isFile()||!entry.name.endsWith('.json'))continue;
+          const lock=JSON.parse(readFileSync(join(locks,entry.name),'utf8'));
+          if(lock.status!=='running')continue;
+          if(!Number.isSafeInteger(lock.owner_pid)||lock.owner_pid<=0)throw Error('invalid render owner');
+          try{process.kill(lock.owner_pid,0);return '课程正在渲染，完成后再安装。';}
+          catch(error){if(error.code!=='ESRCH')throw error;}
+        }
+      }catch(error){if(error.code!=='ENOENT')return '暂时无法确认课程是否正在渲染，未开始安装。';}
+    }
+    return null;
+  }
+  const installer=createUpdateInstaller({version,getRelease:getStableRelease,busyReason:updateBusyReason,
+    helperPath:join(root,'plugin','update-install-helper.py'),python:pythonExecutable()});
   ctx.on?.('dispose',()=>confirmations.dispose());
   ctx.on?.('session/event',(session,event)=>{
     const agent=ctx.get?.('agents')?.get(session.id);
@@ -108,14 +137,20 @@ export function apply(ctx) {
           return json(res, 200, {ok: true, version, token, media_origin:scoped.webServer.getOrigin?.()||'', tools: tools.map(tool => tool.name)});
         }
         if (req.method === 'GET' && route === '/api/kgxc-course/updates') return json(res,200,await checkUpdate());
+        if (req.method === 'GET' && route === '/api/kgxc-course/update-install') return json(res,200,await installer());
         if (req.method === 'GET' && route === '/api/kgxc-course/courses') return json(res, 200, await callTool('kgxc_course_list'));
-        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view','/api/kgxc-course/updates'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
+        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view','/api/kgxc-course/updates','/api/kgxc-course/update-install'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
         const supplied = req.headers['x-kgxc-token'];
         if (typeof supplied !== 'string' || supplied.length !== token.length || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) return json(res, 403, {ok: false, error: '请重新打开制课工作台'});
         if (!String(req.headers['content-type'] || '').startsWith('application/json')) return json(res, 415, {ok: false, error: '需要 JSON 请求'});
         let body = '', bytes = 0;
         for await (const chunk of req) { bytes += chunk.length; if (bytes > 4 * 1024 * 1024) return json(res, 413, {ok: false, error: '请求过大'}); body += chunk; }
         const request = JSON.parse(body);
+        if(route.endsWith('/update-install')){
+          if(!request||Object.keys(request).some(key=>!['action','version'].includes(key))||
+              !['download','install'].includes(request.action)||(request.version!==undefined&&!/^(0|[1-9]\d*)(\.(0|[1-9]\d*)){2}$/.test(request.version)))return json(res,400,{ok:false,error:'更新请求无效。'});
+          const value=await installer(request.action,request.version);return json(res,value.ok?200:value.code==='install_busy'?409:400,value);
+        }
         if(route.endsWith('/updates'))return json(res,200,await checkUpdate({force:true}));
         if(route.endsWith('/view'))return json(res,200,await views.open(request));
         if(route.endsWith('/review')){

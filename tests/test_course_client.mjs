@@ -202,7 +202,7 @@ test('persistent toolbar chat control survives collapse, reload and repeated tog
     const app=await client(async(url)=>response(url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}),{chatOpen:initiallyOpen});
     app.render();app.flush();await settle();
     for(let i=0;i<4;i++){
-      const tree=app.render(),toolbar=nodes(tree).find(n=>n.props.className==='kgxc-switch'),toggle=nodes(toolbar).find(n=>n.props.className==='kgxc-chat-toggle');
+      const tree=app.render(),toolbar=nodes(tree).find(n=>n.props.className?.split(' ').includes('kgxc-switch')),toggle=nodes(toolbar).find(n=>n.props.className==='kgxc-chat-toggle');
       assert.ok(toggle);const before=toggle.props['aria-expanded'];
       assert.equal(nodes(tree).some(n=>n.props.id==='kgxc-ai-chat'),before);
       assert.equal(nodes(tree).filter(n=>n.props.className==='kgxc-editor').flatMap(nodes).includes(toggle),false);
@@ -213,12 +213,12 @@ test('persistent toolbar chat control survives collapse, reload and repeated tog
   }
 });
 
-test('stable update notice is non-blocking, links to release and dismisses only that version',async()=>{
+test('stable update notice is non-blocking, offers an in-app download and dismisses only that version',async()=>{
  const update={version:'0.9.0',release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v6.9.0'};
  const app=await client(async url=>response(url.endsWith('/updates')?{ok:true,update}:url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}));
  app.render();app.flush();await settle();let tree=app.render();
  assert.ok(nodes(tree).some(n=>n.props.className==='kgxc-update-notice'));
- assert.equal(nodes(tree).find(n=>n.type==='a').props.href,update.release_url);
+ assert.ok(button(tree,'下载更新'));assert.equal(nodes(tree).some(n=>n.type==='a'),false);
  assert.ok(nodes(tree).some(n=>n.props.className==='kgxc-chat-toggle'));
  nodes(tree).find(n=>n.props['aria-label']==='忽略此版本更新提醒').props.onClick();
  assert.equal(app.storage.get('kgxc-update-dismissed'),update.version);assert.equal(nodes(app.render()).some(n=>n.props.className==='kgxc-update-notice'),false);app.unmount();
@@ -282,9 +282,7 @@ test('GitHub updater appears only on this installed plugin detail and works with
   button(tree,'检查 GitHub 更新').props.onClick();await settle();
   tree=render(own);
   assert.equal(calls.filter(([url,method])=>url.endsWith('/updates')&&method==='POST').length,1);
-  const download=nodes(tree).find(node=>node.type==='a');
-  assert.match(download.props.href,/github\.com\/hebokenn/);
-  assert.ok(download.props.children.includes('查看稳定版 9.0.1 与下载'));
+  assert.ok(button(tree,'下载更新'));assert.equal(nodes(tree).some(node=>node.type==='a'),false);
   app.unmount();
 });
 
@@ -326,9 +324,10 @@ test('top right update action is present before opening a course and only sends 
   });
   try {
     app.render();app.flush();await settle();
-    const tree=app.render(),bar=nodes(tree).find(n=>n.props.className==='kgxc-switch');
+    const tree=app.render(),bar=nodes(tree).find(n=>n.props.className?.split(' ').includes('kgxc-switch'));
     const update=button(bar,'检查更新');
     assert.equal(bar.props.children.at(-1),update);
+    assert.ok(bar.props.className.split(' ').includes('kgxc-window-drag'));
     assert.equal(nodes(tree).some(n=>n.type==='kgxc-studio-view'),false);
     update.props.onClick();update.props.onClick();await settle();
     assert.equal(posts,1);
@@ -337,4 +336,62 @@ test('top right update action is present before opening a course and only sends 
     assert.ok(button(app.render(),'检查更新'));
     assert.ok(nodes(app.render()).some(n=>n.props.role==='status'&&n.props.children.includes('已是最新版。')));
   }finally{app.unmount();}
+});
+
+
+test('macOS window drag CSS only scopes the toolbar and excludes interactive controls',async()=>{
+  const source=await readFile(new URL('../plugin/client.js',import.meta.url),'utf8');
+  assert.match(source,/html\[data-platform="darwin"\]:not\(\[data-fullscreen\]\) \.kgxc-window-drag\{-webkit-app-region:drag;app-region:drag\}/);
+  assert.match(source,/\.kgxc-window-drag :is\(button,select,input,textarea,a,label,\[role="button"\],\[tabindex\],\[contenteditable\]\)\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+  assert.equal((source.match(/className:'[^']*kgxc-window-drag/g)||[]).length,1);
+});
+
+test('plugin detail offers verified in-app download progress then explicit restart, with fallback only on failure',async()=>{
+  const calls=[],update={version:'9.0.1',release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v9.0.1'};
+  let phase='idle',attempts=0;
+  const app=await client(async(url,options)=>{
+    const body=options?.body&&JSON.parse(options.body);calls.push({url,body});
+    if(url.endsWith('/meta'))return response({ok:true,token:'test'});
+    if(url.endsWith('/updates'))return response({ok:true,status:'checked',update});
+    if(body?.action==='download'){attempts++;phase=attempts===1?'failed':'downloading';}
+    if(body?.action==='install')phase='installing';
+    return response({ok:true,phase,version:update.version,received:phase==='downloading'?25:0,total:100,...(phase==='failed'?{error:'下载校验失败'}:{})});
+  });
+  const own={kind:'bundle',pkg:{name:'kgxc-course-plugin'}},detail=app.entries.find(x=>x.options.name==='plugins.detail.actions').component;
+  const render=()=>app.renderChild({type:detail,props:{subject:own}});
+  let tree=render();app.flush();button(tree,'检查 GitHub 更新').props.onClick();await settle();
+  tree=render();assert.equal(nodes(tree).some(n=>n.type==='a'),false);button(tree,'下载更新').props.onClick();await settle();
+  tree=render();assert.equal(nodes(tree).find(n=>n.type==='a').props.href,update.release_url);
+  button(tree,'重试下载').props.onClick();await settle();tree=render();app.flush();
+  assert.equal(nodes(tree).find(n=>n.type==='progress').props.value,25);
+  assert.equal(calls.some(x=>x.body?.action==='install'),false);
+  phase='ready';await new Promise(resolve=>setTimeout(resolve,500));tree=render();app.flush();
+  await button(tree,'退出并安装').props.onClick();await settle();
+  assert.equal(calls.filter(x=>x.body?.action==='install').length,1);assert.ok(nodes(render()).some(x=>x.props.children?.includes('请正常退出 DeepSeek Harness。更新完成后会自动重开；不用退出 Codex。')));
+  app.unmount();
+});
+test('rate-limited update checks are not presented as latest installed',async()=>{
+  const app=await client(async(url)=>response(url.endsWith('/meta')?{ok:true,token:'test'}:{ok:true,status:'unavailable',reason:'rate_limited'}));
+  const detail=app.entries.find(x=>x.options.name==='plugins.detail.actions').component;
+  const render=()=>app.renderChild({type:detail,props:{subject:{kind:'bundle',pkg:{name:'kgxc-course-plugin'}}}});
+  let tree=render();app.flush();button(tree,'检查 GitHub 更新').props.onClick();await settle();tree=render();
+  assert.ok(nodes(tree).some(x=>x.props.children?.some(v=>typeof v==='string'&&v.includes('限制更新检查频率'))));
+  assert.equal(nodes(tree).some(x=>x.props.children?.includes('已是最新稳定版。')),false);app.unmount();
+});
+
+test('server busy leaves the downloaded package pending instead of opening the release page',async()=>{
+  const app=await client(async(url,options)=>{
+    const body=options?.body&&JSON.parse(options.body);
+    if(url.endsWith('/meta'))return response({ok:true,token:'test'});
+    if(body?.action==='install')return {ok:false,status:409,json:async()=>({ok:false,code:'busy',error:'课还没有停'})};
+    return response({ok:true,phase:'ready',version:'9.0.1'});
+  });
+  const detail=app.entries.find(x=>x.options.name==='plugins.detail.actions').component;
+  const render=()=>app.renderChild({type:detail,props:{subject:{kind:'bundle',pkg:{name:'kgxc-course-plugin'}}}});
+  render();app.flush();await settle();
+  await button(render(),'退出并安装').props.onClick();await settle();
+  const tree=render();
+  assert.ok(nodes(tree).some(x=>x.props.children?.includes('更新已下载，等当前工作结束后再安装。')));
+  assert.equal(nodes(tree).some(x=>x.type==='a'),false);
+  assert.ok(button(tree,'退出并安装'));app.unmount();
 });

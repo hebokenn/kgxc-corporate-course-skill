@@ -9,6 +9,11 @@ test('an actual export is visible across tabs and uses its reported progress',()
   const state=productionProgress({stage:'outline',busy:true,jobs:[{purpose:'final',status:'rendering',progress:.427}]});
   assert.equal(state.value,.427);assert.match(state.label,/整课视频.*42%/);
 });
+test('a real automatic seam test is shown without an invented percentage or confirmation',()=>{
+  const state=productionProgress({stage:'pilot',jobs:[{purpose:'pilot',status:'rendering',phase:'seam_preflight',progress:0}]});
+  assert.match(state.label,/试拼片头、正文与片尾/);assert.match(state.detail,/无需确认/);
+  assert.equal(state.value,null);assert.equal(state.tone,'working');
+});
 test('saved alternatives finish generation while choices remain explicitly pending',()=>{
   const state=productionProgress({stage:'storyboard',data:{storyboard:{segments:[{},{}]},gates:[{id:'storyboard',status:'open',ready:false}]}});
   assert.equal(state.value,1);assert.match(state.detail,/请选择方案/);

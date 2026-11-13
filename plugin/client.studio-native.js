@@ -148,6 +148,7 @@ function productionProgress({stage,busy=false,data={},jobs=[],native}) {
   if(active){
     const value=Number.isFinite(active.progress)?Math.max(0,Math.min(1,active.progress)):null;
     const title=active.purpose==='pilot'?'有声小样':'整课视频';
+    if(active.phase==='seam_preflight')return {label:'正在试拼片头、正文与片尾',value:null,detail:'用本次真实画面和音轨做短合成检查；通过后自动继续，无需确认。',tone:'working'};
     return {label:active.status==='queued'?title+'已进入合成队列':title+'正在渲染与编码'+(value===null?'':' · '+Math.floor(value*100)+'%'),value,
       detail:'进度来自实际合成任务，完成后还会校验成品。',tone:'working'};
   }

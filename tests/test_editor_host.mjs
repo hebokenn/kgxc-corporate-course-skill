@@ -5,6 +5,15 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {editorHost} from '../plugin/editor-host.mjs';
 import {AUTHORING_PREFLIGHT_PROMPT,SOURCE_COVERAGE_PROMPT} from '../plugin/review-host.mjs';
+import {fastProductionPrompt} from '../plugin/fast-production.mjs';
+
+test('the controlled producer gets the same fast workflow by stage with no new authorization',()=>{
+  assert.match(fastProductionPrompt('storyboard'),/逐字稿真实确认后.*两线并行/);
+  assert.match(fastProductionPrompt('pilot'),/自动接缝短试，无需另开审阅或用户确认/);
+  assert.match(fastProductionPrompt('final'),/主体，再独立加入并检查花字和音效/);
+  assert.match(fastProductionPrompt('final'),/incremental_production\.py/);
+  assert.equal(fastProductionPrompt('questions'),'');
+});
 
 test('inline rewriting uses the host model once, records its input, returns a suggestion without saving text',async()=>{
   const root=await mkdtemp(join(tmpdir(),'kgxc-editor-host-'));const calls=[];

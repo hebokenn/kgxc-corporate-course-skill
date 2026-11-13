@@ -7,9 +7,72 @@ window.__ModuleLoader__.load({
       if(data&&!token)token=(await request('/meta')).token;
       const response=await fetch(API+path,data?{method:'POST',headers:{'Content-Type':'application/json','X-KGXC-Token':token},body:JSON.stringify(data)}:{});
       if(data&&response.status===403&&!retried){token=(await request('/meta')).token;return request(path,data,true);}
-      const value=await response.json();if(!response.ok||value.ok===false)throw Error(value.error||'操作失败');return value;
+      const value=await response.json();if(!response.ok||value.ok===false){const error=Error(value.error||'操作失败');error.code=value.code||value.reason;error.status=response.status;throw error;}return value;
     }
     const call=(name,args={})=>request('/call',{name,arguments:args});
+    function updateNotice(value,detail=false){
+      if(value?.status==='rate-limited'||value?.status==='rate_limited'||['rate_limited','rate-limited','github_anonymous_rate_limit'].includes(value?.reason)){
+        const retry=Number(value.retry_at??value.retryAt);
+        return 'GitHub 暂时限制更新检查频率。'+(Number.isFinite(retry)&&retry>Date.now()?'可在 '+new Date(retry).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' 后重试。':'请稍后再试。');
+      }
+      return value?.update?'发现新版 '+value.update.version+'。':value?.status==='checked'?(detail?'已是最新稳定版。':'已是最新版。'):'暂时无法确认最新版本，请稍后重试。';
+    }
+    function useUpdateInstall(enabled){
+      const [state,setState]=useState({phase:'idle'}),live=useRef(false),op=useRef(false),serial=useRef(0);
+      useEffect(()=>{
+        live.current=enabled;
+        if(!enabled)return;
+        const ticket=serial.current;
+        void request('/update-install').then(value=>{if(live.current&&ticket===serial.current&&value.phase)setState(value);}).catch(()=>{});
+        return()=>{live.current=false;serial.current++;};
+      },[enabled]);
+      useEffect(()=>{
+        if(!enabled||!['downloading','installing'].includes(state.phase))return;
+        let stop=false,timer,failures=0;
+        const tick=async()=>{
+          try{
+            const value=await request('/update-install');
+            failures=0;if(!stop&&value.phase&&value.phase!=='idle')setState(value);
+            if(!stop&&(!value.phase||['downloading','installing'].includes(value.phase)))timer=setTimeout(tick,700);
+          }catch(error){
+            if(!stop&&++failures<3)timer=setTimeout(tick,900);
+            else if(!stop&&state.phase!=='installing')setState({...state,phase:'failed',error:'无法读取下载进度，请重试。'});
+          }
+        };
+        timer=setTimeout(tick,450);return()=>{stop=true;clearTimeout(timer);};
+      },[enabled,state.phase]);
+      async function act(action,version){
+        if(op.current||!enabled)return;
+        op.current=true;++serial.current;
+        setState(previous=>({...previous,phase:action==='download'?'downloading':'installing',version:version||previous.version,error:null,pending:false}));
+        try{
+          const value=await request('/update-install',{action,...(version?{version}:{})});
+          if(live.current&&value.phase)setState(value);
+        }catch(error){
+          if(live.current){
+            const blocked=action==='install'&&(error.status===409||['busy','pending','install_busy'].includes(error.code)||/正在|进行中|稍后|busy|pending|运行中/i.test(error.message));
+            setState(previous=>({...previous,phase:blocked?'ready':'failed',pending:blocked,error:error.message}));
+          }
+        }finally{op.current=false;}
+      }
+      return {state,act};
+    }
+    function updateControls(flow,update,{busy=false,save}={}){
+      const {state,act}=flow,phase=state.phase,version=state.version||update?.version;
+      if(typeof navigator!=='undefined'&&!/Mac/i.test(navigator.platform||navigator.userAgent||''))return update&&h('a',{href:update.release_url,target:'_blank',rel:'noopener noreferrer'},'打开发布页下载');
+      if(phase==='idle'&&!update)return null;
+      const total=Number(state.total),received=Number(state.received),known=total>0&&Number.isFinite(received);
+      const percentage=known?Math.min(100,Math.max(0,Math.floor(100*received/total))):null;
+      const button=(text,action,disabled=false)=>h('button',{type:'button',disabled,onClick:action},text);
+      if(phase==='downloading')return h('span',{className:'kgxc-update-flow',role:'status'},'正在下载更新'+(percentage===null?'…':' '+percentage+'%'),h('progress',{max:100,...(percentage===null?{}:{value:percentage}),'aria-label':'更新下载进度'}));
+      if(phase==='installing')return h('span',{role:'status'},state.message||'请正常退出 DeepSeek Harness。更新完成后会自动重开；不用退出 Codex。');
+      if(phase==='ready')return h('span',{className:'kgxc-update-flow'},h('span',{role:'status'},busy||state.pending||state.busy?'更新已下载，等当前工作结束后再安装。':'更新已下载'+(version?'（'+version+'）':'')+'。'),
+        button('退出并安装',async()=>{try{if(save)await save();await act('install',version);}catch{/* workbench retains its own unsaved-draft error */}},busy));
+      if(phase==='failed')return h('span',{className:'kgxc-update-flow'},h('span',{role:'alert'},state.error||'更新失败，请重试。'),
+        update&&button('重试下载',()=>void act('download',update.version)),
+        h('a',{href:update?.release_url||'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/latest',target:'_blank',rel:'noopener noreferrer'},'打开发布页备用下载'));
+      return button('下载更新',()=>void act('download',update.version));
+    }
     function defineNativeStudio(){
       if(typeof customElements==='undefined'||customElements.get('kgxc-studio-view'))return;
       customElements.define('kgxc-studio-view',class extends HTMLElement{
@@ -169,6 +232,7 @@ window.__ModuleLoader__.load({
         return()=>clearTimeout(timer);
       },[active?.course_path,pendingConfirmation?.id,pendingConfirmation?.decision_status,stageMeta?.unsaved_edits,running,sessionStatus?.pendingInteraction,confirmation?.status]);
       const [availableUpdate,setAvailableUpdate]=useState(null);
+      const updateInstall=useUpdateInstall(true);
       const updateGeneration=useRef(0);
       const [updateBusy,setUpdateBusy]=useState(false);
       const [updateMessage,setUpdateMessage]=useState('');
@@ -182,7 +246,7 @@ window.__ModuleLoader__.load({
           const value=await request('/updates',{});
           if(!alive.current||generation!==updateGeneration.current)return;
           showUpdate(value,true);
-          setUpdateMessage(value.update?'发现新版 '+value.update.version+'。':value.status==='checked'?'已是最新版。':'暂时无法确认最新版本，请稍后重试。');
+          setUpdateMessage(updateNotice(value));
         }catch{
           if(alive.current)setUpdateMessage('暂时无法检查更新，请稍后重试。');
         }finally{
@@ -410,10 +474,12 @@ window.__ModuleLoader__.load({
       const url=active&&!active.delivery_only?active.workbench_url+'/studio.html?stage='+stage+(stage==='final'?'&phase='+finalPhase:'')+'&parentOrigin='+encodeURIComponent(location.origin):null;
       const tabLabel=TABS.find(([key,,phase])=>key===stage&&(!phase||phase===finalPhase))?.[1]||'工作台';
       return h('section',{className:'kgxc-panel','aria-label':'课程工作台'},
-        h('div',{className:'kgxc-switch'},h('button',{onClick:newCourse,disabled:loading},'新建课程'),h('label',{htmlFor:'kgxc-course'},active?'当前课程':'继续已有课程'),h('select',{id:'kgxc-course',value:active?.course_path||'',disabled:loading||!sessionId,onChange:e=>e.target.value&&open(e.target.value)},h('option',{value:'',disabled:true},'选择已有课程…'),courses.map(c=>h('option',{key:c.course_id,value:c.course_path},c.title))),active&&!active.delivery_only&&workspacePath&&!active.course_path.startsWith(workspacePath+'/')&&h('button',{onClick:moveIntoWorkspace,disabled:loading},'工程迁入当前工作区'),h('button',{type:'button',className:'kgxc-chat-toggle',onClick:toggleChat,'aria-expanded':chatOpen,'aria-controls':'kgxc-ai-chat'},chatOpen?'收起 AI 对话':'打开 AI 对话'),h('button',{type:'button',className:'kgxc-update-top',disabled:updateBusy,'aria-busy':updateBusy,onClick:()=>void checkUpdates()},updateBusy?'正在检查…':'检查更新')),
+        h('div',{className:'kgxc-switch kgxc-window-drag'},h('button',{onClick:newCourse,disabled:loading},'新建课程'),h('label',{htmlFor:'kgxc-course'},active?'当前课程':'继续已有课程'),h('select',{id:'kgxc-course',value:active?.course_path||'',disabled:loading||!sessionId,onChange:e=>e.target.value&&open(e.target.value)},h('option',{value:'',disabled:true},'选择已有课程…'),courses.map(c=>h('option',{key:c.course_id,value:c.course_path},c.title))),active&&!active.delivery_only&&workspacePath&&!active.course_path.startsWith(workspacePath+'/')&&h('button',{onClick:moveIntoWorkspace,disabled:loading},'工程迁入当前工作区'),h('button',{type:'button',className:'kgxc-chat-toggle',onClick:toggleChat,'aria-expanded':chatOpen,'aria-controls':'kgxc-ai-chat'},chatOpen?'收起 AI 对话':'打开 AI 对话'),h('button',{type:'button',className:'kgxc-update-top',disabled:updateBusy,'aria-busy':updateBusy,onClick:()=>void checkUpdates()},updateBusy?'正在检查…':'检查更新')),
         updateMessage&&h('div',{className:'kgxc-update-status',role:'status'},updateMessage),
         courseOffer&&h('div',{className:'kgxc-update-notice',role:'status'},h('span',null,'「'+courseOffer.title+'」没有独立对话。当前课程和运行中的任务不会被切换。'),h('button',{type:'button',disabled:loading,onClick:()=>void open(courseOffer.path,{separate:true})},'为该课程打开独立对话'),h('button',{type:'button',onClick:()=>setCourseOffer(null)},'取消')),
-        availableUpdate&&h('div',{className:'kgxc-update-notice',role:'status'},h('span',null,'课程插件有新稳定版 '+availableUpdate.version+'。当前课程可继续制作，更新前请保存并退出 DSH。'),h('a',{href:availableUpdate.release_url,target:'_blank',rel:'noopener noreferrer'},'查看更新与下载'),h('button',{type:'button',onClick:dismissUpdate,'aria-label':'忽略此版本更新提醒'},'稍后')) ,
+        (availableUpdate||updateInstall.state.phase!=='idle')&&h('div',{className:'kgxc-update-notice'},availableUpdate&&updateInstall.state.phase==='idle'&&h('span',null,'课程插件有新稳定版 '+availableUpdate.version+'。'),
+          updateControls(updateInstall,availableUpdate,{busy:running||Boolean(sessionStatus?.pendingInteraction)||Boolean(stageMeta?.producing),save:async()=>{try{await prepareLeave();}catch(error){setUpdateMessage(error.message);throw error;}}}),
+          availableUpdate&&updateInstall.state.phase==='idle'&&h('button',{type:'button',onClick:dismissUpdate,'aria-label':'忽略此版本更新提醒'},'稍后')),
         error&&h('div',{className:'kgxc-error',role:'alert'},error),
         active&&!active.delivery_only&&h('nav',{className:'kgxc-stages',role:'tablist','aria-label':'制课阶段'},TABS.map(([key,label,phase])=>h('button',{key:phase||key,role:'tab','aria-selected':stage===key&&(!phase||phase===finalPhase),onClick:()=>navigateStage(key,phase)},h('strong',null,label)))),
         h('div',{className:'kgxc-layout',ref:layout,style:{'--kgxc-chat-width':chatWidth+'px'}},h('div',{className:'kgxc-editor'},active?(active.delivery_only?h(DeliveryView,{course:active,onRetention:()=>showRetention(),onResume:resumeEngineering,onOpenFolder:openSavedFolder}):h('kgxc-studio-view',{class:'kgxc-frame kgxc-native',ref:frame,'session-id':sessionId,'course-path':active.course_path,key:active.course_path+':'+frameEpoch.current,title:'课程'+tabLabel,src:url})):h('div',{className:'kgxc-empty'},h('h1',null,loading?'正在打开课程…':'开始一门新课程'),!loading&&h('div',{className:'kgxc-onboarding'},h('p',null,'上传讲稿、文档或实拍照片，或说说你想教什么。发送后，AI 先给你一份可编辑的大纲，不会直接做视频。'),h('div',{className:'kgxc-onboarding-actions'},h('button',{type:'button',className:'kgxc-onboarding-primary',disabled:running||Boolean(sessionStatus?.pendingInteraction),onClick:()=>startOnboarding('upload')},'上传资料，开始做课'),h('button',{type:'button',disabled:running||Boolean(sessionStatus?.pendingInteraction),onClick:()=>startOnboarding('describe')},'描述课程，开始做课')),h('p',{className:'kgxc-onboarding-hint'},'已有课程？可从上方选择继续制作。')))),chatOpen&&h('div',{className:'kgxc-divider',role:'separator','aria-label':'调整 AI 对话栏宽度','aria-orientation':'vertical',onPointerDown:resize}),chatOpen&&h('aside',{id:'kgxc-ai-chat',className:'kgxc-chat','aria-label':'课程 AI 对话'},h('div',{className:'kgxc-chat-head'},h('strong',null,'AI 对话'),reask&&h('button',{type:'button',title:confirmation?.error||undefined,disabled:running||Boolean(sessionStatus?.pendingInteraction),onClick:()=>void askConfirmation(pendingConfirmation,true)},'重新打开'+pendingConfirmation.label+'确认'),h('button',{onClick:toggleChat,'aria-label':'收起 AI 对话'},'收起')),rightActions,renderSlot('kgxc.chat',{coursePath:active?.delivery_only?undefined:active?.course_path,courseTitle:active?.workflow?.title,onCourseUpdate:refresh,onboarding:!active?onboarding:null,onboardingHandled:()=>setOnboarding(null)}))),
@@ -496,10 +562,11 @@ window.__ModuleLoader__.load({
       const phase=settling?'settling':active?'active':'hero';
       return h('div',{className:'kgxc-chat-body',ref:chatBody},h('div',{className:'kgxc-chat-tools'},h('button',{onClick:chooseFolder,disabled:picking},picking?'正在选择…':'引用文件夹'),h('button',{onClick:chooseFiles,disabled:!sessionId},'上传文件')),h('p',{className:'kgxc-chat-note'},courseTitle?'当前课程：'+courseTitle:'沿用 DSH 当前对话，可发送资料开始制课。'),message&&h('p',{className:'kgxc-chat-error',role:'alert'},message),h('div',{className:'kgxc-chat-native'},renderFactorySlot('conversation.content',{variant:'embedded',phase,hero:phase==='hero'},{slots:{views:ChatView}})));
     }
-    const ONBOARDING_UPDATE_CSS=`.kgxc-plugin-update-action{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:12px;color:inherit}.kgxc-plugin-update-action button{font:inherit;color:inherit;cursor:pointer;background:transparent;border:1px solid #a9b1c277;border-radius:7px;padding:5px 8px}.kgxc-plugin-update-action button:disabled{opacity:.65;cursor:default}.kgxc-plugin-update-action a{color:inherit;text-decoration:underline}`;
+    const ONBOARDING_UPDATE_CSS=`.kgxc-plugin-update-action{display:flex;align-items:center;flex-wrap:wrap;gap:7px;font-size:12px;color:inherit}.kgxc-plugin-update-action button{font:inherit;color:inherit;cursor:pointer;background:transparent;border:1px solid #a9b1c277;border-radius:7px;padding:5px 8px}.kgxc-plugin-update-action button:disabled{opacity:.65;cursor:default}.kgxc-update-flow{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.kgxc-update-flow progress{width:100px;height:8px}.kgxc-plugin-update-action a{color:inherit;text-decoration:underline}`;
     function PluginUpdateAction({subject}){
       const own=subject?.kind==='bundle'&&subject.pkg?.name==='kgxc-course-plugin';
       const [result,setResult]=useState(null),[busy,setBusy]=useState(false);
+      const flow=useUpdateInstall(own);
       const live=useRef(false),pending=useRef(false);
       useEffect(()=>{live.current=true;return()=>{live.current=false;};},[]);
       if(!own)return null;
@@ -513,13 +580,12 @@ window.__ModuleLoader__.load({
       const update=result?.update;
       return h('div',{className:'kgxc-plugin-update-action'},
         h('button',{type:'button',disabled:busy,onClick:()=>void check()},busy?'正在检查 GitHub…':'检查 GitHub 更新'),
-        result&&h('span',{role:'status'},result.status==='unavailable'?'暂时无法连接 GitHub，请稍后重试。':
-          update?h('a',{href:update.release_url,target:'_blank',rel:'noopener noreferrer'},'查看稳定版 '+update.version+' 与下载'):
-          '已是最新稳定版。'));
+        result&&h('span',{role:'status'},updateNotice(result,true)),
+        updateControls(flow,update));
     }
     function apply(ctx){
       defineNativeStudio();
-      ctx.effect(()=>{const style=document.createElement('style');style.dataset.plugin='kgxc-course-plugin';style.textContent=CSS+QUESTION_CSS+ONBOARDING_UPDATE_CSS+`.kgxc-stages{display:grid;grid-template-columns:repeat(6,minmax(95px,1fr));overflow-x:auto;flex-shrink:0;background:#fafbfc;border-bottom:1px solid #e1e5eb}.kgxc-stages button{border:0;border-right:1px solid #e6e9ee;background:transparent;padding:13px 15px;cursor:pointer;text-align:left;color:#525d6b}.kgxc-stages button[aria-selected=true]{background:#edf2fa;box-shadow:inset 0 -2px #6682b6;color:#324e7e}.kgxc-stages strong,.kgxc-stages span{display:block;font-size:13px}.kgxc-stages span{font-size:10px;color:#8a929d;margin-top:4px}.kgxc-panel{font-family:Inter,"PingFang SC",sans-serif;background:#f6f6f8;color:#17191f}.kgxc-switch{padding:12px 24px;background:#fff;border-color:#e9e9ed;gap:14px}.kgxc-switch::before{content:'K / STUDIO';font-size:11px;letter-spacing:.12em;font-weight:800;color:#17191f;margin-right:12px}.kgxc-switch label{display:none}.kgxc-switch .kgxc-update-top{margin-inline-start:auto;white-space:nowrap}.kgxc-update-status{flex-shrink:0;padding:4px 24px;text-align:right;font-size:12px;color:#565c65}.kgxc-switch button{border:1px solid #e4e4e9;background:#fff;border-radius:8px;padding:6px 11px;color:#40434e}.kgxc-stages{background:#fff!important;border-color:#e9e9ed!important;padding:0 24px;gap:12px;display:flex!important}.kgxc-stages button{border:0!important;border-radius:0!important;padding:10px 4px!important;color:#8a8e99!important;min-width:60px}.kgxc-stages button[aria-selected=true]{background:transparent!important;box-shadow:inset 0 -2px #2455ee!important;color:#2455ee!important}.kgxc-stages strong{font-size:12px!important;font-weight:500}.kgxc-stages span{display:none!important}.kgxc-chat{background:#fff;border-color:#e8e8ee}.kgxc-chat-head{padding:20px 22px;border-bottom:0}.kgxc-chat-head strong{font-size:14px;color:#20232c}.kgxc-chat-note{display:none}.kgxc-chat-tools{padding:0 22px 10px}.kgxc-chat button{border-radius:8px;border-color:#e5e5eb}.kgxc-chat-checkpoint{margin:0 16px 12px;padding:12px;border:1px solid #e4e8f1;border-radius:9px;background:#f8faff}.kgxc-chat-checkpoint p{margin:0 0 6px}.kgxc-chat-checkpoint textarea{box-sizing:border-box;display:block;width:100%;margin:5px 0 9px;padding:7px;font:inherit;border:1px solid #cad2e1;border-radius:6px;resize:vertical}.kgxc-chat-checkpoint form button+button{margin-left:6px}.kgxc-divider{background:#ececf1;width:4px}.kgxc-chat-toggle{color:#424759!important}.kgxc-native{background:#f6f6f8}@media(max-width:800px){.kgxc-layout{position:relative}.kgxc-editor{min-width:0}.kgxc-chat{position:absolute;right:0;top:0;bottom:0;width:min(360px,100%);max-width:100%;min-width:0;z-index:30;box-shadow:-12px 0 35px #1a234415}.kgxc-divider{display:none}}`;document.head.appendChild(style);return()=>style.remove();},'kgxc-course: editor styles');
+      ctx.effect(()=>{const style=document.createElement('style');style.dataset.plugin='kgxc-course-plugin';style.textContent=CSS+QUESTION_CSS+ONBOARDING_UPDATE_CSS+`.kgxc-stages{display:grid;grid-template-columns:repeat(6,minmax(95px,1fr));overflow-x:auto;flex-shrink:0;background:#fafbfc;border-bottom:1px solid #e1e5eb}.kgxc-stages button{border:0;border-right:1px solid #e6e9ee;background:transparent;padding:13px 15px;cursor:pointer;text-align:left;color:#525d6b}.kgxc-stages button[aria-selected=true]{background:#edf2fa;box-shadow:inset 0 -2px #6682b6;color:#324e7e}.kgxc-stages strong,.kgxc-stages span{display:block;font-size:13px}.kgxc-stages span{font-size:10px;color:#8a929d;margin-top:4px}.kgxc-panel{font-family:Inter,"PingFang SC",sans-serif;background:#f6f6f8;color:#17191f}.kgxc-switch{padding:12px 24px;background:#fff;border-color:#e9e9ed;gap:14px}.kgxc-switch::before{content:'K / STUDIO';font-size:11px;letter-spacing:.12em;font-weight:800;color:#17191f;margin-right:12px}.kgxc-switch label{display:none}html[data-platform="darwin"]:not([data-fullscreen]) .kgxc-window-drag{-webkit-app-region:drag;app-region:drag}html[data-platform="darwin"]:not([data-fullscreen]) .kgxc-window-drag :is(button,select,input,textarea,a,label,[role="button"],[tabindex],[contenteditable]){-webkit-app-region:no-drag;app-region:no-drag}.kgxc-switch .kgxc-update-top{margin-inline-start:auto;white-space:nowrap}.kgxc-update-status{flex-shrink:0;padding:4px 24px;text-align:right;font-size:12px;color:#565c65}.kgxc-switch button{border:1px solid #e4e4e9;background:#fff;border-radius:8px;padding:6px 11px;color:#40434e}.kgxc-stages{background:#fff!important;border-color:#e9e9ed!important;padding:0 24px;gap:12px;display:flex!important}.kgxc-stages button{border:0!important;border-radius:0!important;padding:10px 4px!important;color:#8a8e99!important;min-width:60px}.kgxc-stages button[aria-selected=true]{background:transparent!important;box-shadow:inset 0 -2px #2455ee!important;color:#2455ee!important}.kgxc-stages strong{font-size:12px!important;font-weight:500}.kgxc-stages span{display:none!important}.kgxc-chat{background:#fff;border-color:#e8e8ee}.kgxc-chat-head{padding:20px 22px;border-bottom:0}.kgxc-chat-head strong{font-size:14px;color:#20232c}.kgxc-chat-note{display:none}.kgxc-chat-tools{padding:0 22px 10px}.kgxc-chat button{border-radius:8px;border-color:#e5e5eb}.kgxc-chat-checkpoint{margin:0 16px 12px;padding:12px;border:1px solid #e4e8f1;border-radius:9px;background:#f8faff}.kgxc-chat-checkpoint p{margin:0 0 6px}.kgxc-chat-checkpoint textarea{box-sizing:border-box;display:block;width:100%;margin:5px 0 9px;padding:7px;font:inherit;border:1px solid #cad2e1;border-radius:6px;resize:vertical}.kgxc-chat-checkpoint form button+button{margin-left:6px}.kgxc-divider{background:#ececf1;width:4px}.kgxc-chat-toggle{color:#424759!important}.kgxc-native{background:#f6f6f8}@media(max-width:800px){.kgxc-layout{position:relative}.kgxc-editor{min-width:0}.kgxc-chat{position:absolute;right:0;top:0;bottom:0;width:min(360px,100%);max-width:100%;min-width:0;z-index:30;box-shadow:-12px 0 35px #1a234415}.kgxc-divider{display:none}}`;document.head.appendChild(style);return()=>style.remove();},'kgxc-course: editor styles');
       ctx.effect(()=>{document.addEventListener('click',submitLastChoice,true);return()=>document.removeEventListener('click',submitLastChoice,true);},'kgxc-course: submit last explicit choice');
       ctx.effect(()=>{const receive=event=>{const owner=ownedFrames.get(event.source),data=event.data;if(!owner||owner.origin!==event.origin||data?.type!=='kgxc-editor-draft'||data.course_path!==owner.path)return;if(data.dirty){localStorage.setItem(draftKey(owner.path),JSON.stringify({text:data.text,base_text:data.base_text,base_revision:data.base_revision}));}else if(savedDraft(owner.path)?.text===data.text)localStorage.removeItem(draftKey(owner.path));};window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive);},'kgxc-course: preserve pending manual edits');
       ctx.slots.inject('main',()=>ctx.slots.register({name:'main',key:'kgxc-course',children:{'kgxc.workspace':{kind:'single',scope:'session-maybe'}}},Workspace));

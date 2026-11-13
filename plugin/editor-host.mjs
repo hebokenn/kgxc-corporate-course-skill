@@ -3,6 +3,7 @@ import {randomUUID} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {callTool} from './bridge.mjs';
+import {fastProductionPrompt} from './fast-production.mjs';
 
 export function editorHost(ctx, bindings, invoke = callTool,{supervision,assertBound}={}) {
   const requests = new Map();
@@ -63,7 +64,7 @@ export function editorHost(ctx, bindings, invoke = callTool,{supervision,assertB
         '若状态中 ai_review.enabled 为真，逐字稿、分镜、实际有声小样、当前完整成片四个节点各对当前选定方案做唯一一次独立只读盲审，审阅者集中列出全部有证据问题；制作 Agent 核对并经版本和累计预算检查集中修复一批，重新导出后仅由制作端按固定问题清单定向验收一次，未闭环保留卡点停止，不再交新 Agent 重审。不能制作人自审、向盲审者提供原件或既有结论，也不能通过CLI或工具补填用户确认。分镜完成后先保存已委托的推荐选择及明确起态、过程、结果、对象/信息/焦点变化和阅读停稳节拍，再停在正式分镜盲审；不得让审阅者选择方案。当前分镜盲审通过后，可依据真实已有选择及制作授权，以 ai-production-preflight 记录制作预检并继续小样，不新增用户点击或把制作决定冒充用户选择。逐字稿、小样及整课仍沿用其真实用户确认；小样未经用户确认不能制作整课。'+
         '新建或调整大纲时完整保存素材去向与稳定 units.id；生成逐字稿时以 data.sections=[{unit_id,body}] 调用 kgxc_course_update(stage=script)，每章绑定现有 units.id，不以标题或数字序号反推身份。分镜使用 plan.script_mapping.paragraphs 中的稳定段落ID。已有内容的 AI 返修先提出差异建议，由人采用，不覆盖人工稿；只更新选择范围及其关联配音、字幕、分镜。'+
         '分镜须全课每段至少三个方案；小样按已保存抽样计划制作三个完整真实有声片段，登记实际文件和对应关系；整课只在当前小样确认后制作并登记真实任务。不要因本次按钮操作代填其他阶段确认。时长、受众、事实缺口等需要人选择时保存待选事项并调用 ask_user_question 主动展示，收到真实答案再记录。'+
-        AUTHORING_PREFLIGHT_PROMPT+'\n'+SOURCE_COVERAGE_PROMPT+'\n'+
+        AUTHORING_PREFLIGHT_PROMPT+'\n'+SOURCE_COVERAGE_PROMPT+'\n'+fastProductionPrompt(target)+'\n'+
         '本次是实际执行请求：完成目标阶段内容并保存到当前工程，不能只回复计划。制作必须遵循已有 Skill 的质量检查与真实导出流程；失败则说明具体错误和可恢复状态。'+
         '配音裁切与交付变速复用 course_tools.py prepare-narration；用输出元数据及 audio_timing.NarrationClock 换算词句帧，配置前执行 timing-check。不要用输出端截时长掩盖词句越界，不重复生成未变化的配音。同一构建错误连续两次仍未解决，应停止重复执行并报告具体卡点；检查明确异常和所需函数，不反复通读无变化的源码。'+
         '用户当前定位与要求：'+JSON.stringify({segment_id:args.segment_id,time:args.time,artifact_path:args.artifact_path,artifact_sha256:args.artifact_sha256,instruction})+'。questions 目标只展示实际尚未回答的问题；已有有效选择不得反复问。';
@@ -130,7 +131,7 @@ export function editorHost(ctx, bindings, invoke = callTool,{supervision,assertB
       if (!agent) throw Error('尚未连接这门课程的 AI 对话。请先在 DSH 对话中让 AI 继续这门课程，再点击渲染。');
       if(supervision)await supervision.production({course_path:editor.course_path,producer:agent,stage:'final',phase:'start',execution:[{type:'production/request',operation:'workbench-render',call_id:request.id,agent_id:agent.id||agent.session.id,stage:'final'}]});
       const prompt = `用户在逐字稿编辑窗口点击了“渲染视频”。这是实际渲染指令，不是修改建议。course_path=${JSON.stringify(editor.course_path)}，render_request_id=${request.id}。先调用 kgxc_course_editor(action=read)，使用 render_request.text 中冻结的稿件（sha256=${request.sha256}），不要采用之后的新草稿。按 corporate-training-motion 更新本课对应配音、字幕、场景绑定并实际导出。此次按钮是用户对所见稿件及本次渲染的明确授权，可据实记录逐字稿确认；不得补填其他未确认的教学方案、视觉方案或小样认可。缺少必要前置时只报告具体缺项，不绕过。提交真实导出任务后，用 kgxc_course_editor(action=render_result,request_id=${request.id},job_id=实际ID)关联；失败或缺少前置时以 error 写明具体原因。不要在没有真实任务时报告正在渲染或已经生成。`;
-      deliver(agent,prompt,'请按我在工作台点击渲染时的稿件制作视频。');
+      deliver(agent,prompt+'\n'+fastProductionPrompt('final'),'请按我在工作台点击渲染时的稿件制作视频。');
       bindings.set(editor.course_path,agent);
       void agent.whenIdle().then(async()=>{
         const latest = await course(editor.course_path);

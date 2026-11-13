@@ -18,6 +18,35 @@ from backend import Workspace,Handler
 from workflow import read
 
 class DefaultExportTests(unittest.TestCase):
+    def test_actual_pilot_runs_both_packaging_seams_before_rendering(self):
+        fixture=legacy_fixture.NewCourseTests();fixture.setUp()
+        server=None
+        try:
+            for name,color in [('intro','red'),('outro','blue')]:
+                subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',f'color=c={color}:s=320x180:r=24:d=0.25',
+                                '-c:v','libx264','-threads','1','-pix_fmt','yuv420p',str(fixture.p/f'media/{name}.mp4')],check=True)
+            doc=fixture.ready(dict(fps=24,sourceDurationFrames=24,introFrames=6,bodyEndFrame=18,
+                media=dict(audio='audio/test.wav',intro='media/intro.mp4',outro='media/outro.mp4'),
+                scenes=[dict(id='X',chapter='技术',title='对象',sourceStartFrame=6,sourceEndFrame=18)],
+                captions=[dict(id='c',sceneId='X',text='核对',startFrame=6,endFrame=18)]))
+            space=Workspace(fixture.course);server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);server.workspace=space
+            threading.Thread(target=server.serve_forever,daemon=True).start()
+            url='http://127.0.0.1:'+str(server.server_port)
+            job=space.start_export(doc['revision'],6/24,18/24,url,purpose='pilot')
+            deadline=time.monotonic()+65
+            while job['status'] not in ['complete','failed','cancelled'] and time.monotonic()<deadline:time.sleep(.1)
+            self.assertEqual(job['status'],'complete',job)
+            proof=job['verification']['verification'];self.assertEqual(proof['frames'],12)
+            preflight=proof['seamPreflight'];self.assertEqual(preflight['status'],'pass')
+            self.assertEqual([(x['edge'],x['left'],x['right']) for x in preflight['seams']],[(6,'intro','native'),(18,'native','outro')])
+            self.assertTrue(all(x['verified_aac_packets']>0 and len(x['frames'])==6 for x in preflight['seams']))
+            directory=space.work/'exports'/job['id'];self.assertEqual(read(directory/'seam-preflight.json'),preflight)
+            self.assertTrue(all((directory/x['clip']).is_file() for x in preflight['seams']))
+            self.assertFalse(job['stage_registered'])
+        finally:
+            if server:server.shutdown();server.server_close()
+            fixture.tearDown()
+
     def test_packaging_is_only_for_final_after_worker_finishes(self):
         fixture=legacy_fixture.NewCourseTests();fixture.setUp()
         try:

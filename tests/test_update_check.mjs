@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm,readFile,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {updateChecker,newer,stableRelease,CACHE_MS,RETRY_MS,RELEASE_API} from '../plugin/update-check.mjs';
+import {updateChecker,getStableRelease,newer,stableRelease,CACHE_MS,RETRY_MS,RELEASE_API,RELEASE_WEB} from '../plugin/update-check.mjs';
 const release=(version='0.9.0',tag='v6.9.0')=>({tag_name:tag,draft:false,prerelease:false,assets:[{name:`kgxc-course-plugin-v${version}.zip`,state:'uploaded',size:12345}]});
 const response=value=>({ok:true,headers:new Map(),text:async()=>JSON.stringify(value)});
 test('version comparisons handle stable, preview and numeric ordering without downgrades',()=>{
@@ -51,5 +51,66 @@ test('manual check bypasses cached results and background failures retry after t
   clock+=RETRY_MS-1;assert.equal((await check()).status,'unavailable');assert.equal(calls,2);
   clock++;assert.equal((await check()).update.version,'0.9.1');
   assert.equal(calls,3);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+const repo='/hebokenn/kgxc-corporate-course-skill';
+const redirect=location=>({status:302,headers:new Map([['location',location]])});
+const rateLimited={ok:false,status:403,headers:new Map([['x-ratelimit-remaining','0']])};
+const checksum=body=>({ok:true,headers:new Map(),text:async()=>body});
+const manifest='a'.repeat(64)+'  kgxc-course-plugin-v0.9.1.zip\n';
+test('anonymous quota fallback uses only the official stable tag and pinned checksum manifest',async()=>{
+ const checksums=`https://github.com${repo}/releases/download/v6.9.1/PLUGIN-SHA256SUMS`;
+ const asset='https://release-assets.githubusercontent.com/github-production-release-asset/abc?signature=fixture';
+ const calls=[];
+ const fetcher=async(url,options)=>{
+  calls.push(url);
+  assert.equal(options.redirect,url===RELEASE_API?'error':'manual');
+  assert.equal(options.headers?.Authorization,undefined);
+  return new Map([[RELEASE_API,rateLimited],[RELEASE_WEB,redirect(`${repo}/releases/tag/v6.9.1`)],[checksums,redirect(asset)],[asset,checksum(manifest)]]).get(url);
+ };
+ assert.deepEqual(await getStableRelease({fetcher}),{
+  status:'checked',reason:null,source:'github-web',release:{version:'0.9.1',tag:'v6.9.1',asset:'kgxc-course-plugin-v0.9.1.zip'}
+ });
+ assert.deepEqual(calls,[RELEASE_API,RELEASE_WEB,checksums,asset]);
+});
+
+test('rate-limit fallback refuses prereleases, other repositories, third-party redirects, and bad manifests',async()=>{
+ for(const [location,manifestResponse] of [
+  ['https://example.org'+repo+'/releases/tag/v6.9.1',null],
+  ['/other/repo/releases/tag/v6.9.1',null],
+  [`${repo}/releases/tag/v6.9.1-rc.1`,null],
+  [`${repo}/releases/tag/v6.9.1`,redirect('https://example.org/checksum')],
+  [`${repo}/releases/tag/v6.9.1`,checksum(manifest+manifest)],
+  [`${repo}/releases/tag/v6.9.1`,checksum(manifest.replace('kgxc','../kgxc'))],
+  [`${repo}/releases/tag/v6.9.1`,checksum('invalid checksum')],
+ ]){
+  const urls=[];
+  const result=await getStableRelease({fetcher:async url=>{
+   urls.push(url);
+   if(url===RELEASE_API)return {status:429};
+   if(url===RELEASE_WEB)return redirect(location);
+   return manifestResponse;
+  }});
+  assert.equal(result.reason,'github_anonymous_rate_limit');
+  assert.equal(result.release,null);
+  assert.equal(urls.length,manifestResponse?3:2);
+  assert.ok(!urls.some(url=>new URL(url).hostname==='example.org'));
+ }
+});
+
+test('expired cached stable update is not shown after unsuccessful live check',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'kgxc-update-test-'));let clock=10000;
+ try{
+  const cachePath=join(dir,'cache');
+  const check=updateChecker({version:'0.9.0',now:()=>clock,cachePath,fetcher:async url=>
+   clock===10000?response(release('0.9.1')):url===RELEASE_API?rateLimited:{ok:false,status:503}
+  });
+  assert.equal((await check()).update.version,'0.9.1');
+  clock+=CACHE_MS;
+  const value=await check();
+  assert.equal(value.status,'unavailable');
+  assert.equal(value.reason,'github_anonymous_rate_limit');
+  assert.equal(value.update,null);
  }finally{await rm(dir,{recursive:true,force:true});}
 });

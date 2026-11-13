@@ -4,6 +4,8 @@
 
 共同前段：原始素材→ATD教学分析、推荐讲法和大纲→确认outline→逐字稿→确认script。逐字稿确认后，选择独立课件或导演视频。v5新工程使用course-workflow/2和design-plan schema_version=2；v4工程保持旧流程，不自动迁移。
 
+逐字稿获确认且已选择视频后，按[并行制作与局部返工](58-fast-production.md)默认并行推进已授权配音与可提前做的视觉准备；小样用实际配音定时并提前验证导出接缝。整课仍等小样确认；先做主体，再加花字与音效。新的制作排程不改变历史确认算法。
+
 ## 操作与恢复
 
 `python3 SKILL_DIR/scripts/kgxc_course.py start COURSE --title 课名 --source 原件` 建档并默认打开工作台。`resume COURSE` 从文件恢复实际阶段、分支、选择、产物和未决事项，复用或启动后台服务。输出的WORKBENCH_IDENTITY已核对课程ID、根目录与版本；WORKFLOW_STATE_URL是实际/api/workflow接口，不必猜接口或重读后端。
