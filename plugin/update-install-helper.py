@@ -24,6 +24,8 @@ MAX_ARCHIVE = 350 * 1024 * 1024
 MAX_TOTAL = 550 * 1024 * 1024
 MAX_MEMBER = 140 * 1024 * 1024
 WAIT_SECONDS = 900
+RESTART_WAIT_SECONDS = 15
+RESTART_DEFERRED = "未能正常重启 DSH。更新包已保留，保存工作后可再次选择安装更新。"
 SHA = re.compile(r'[0-9a-f]{64}')
 
 
@@ -170,6 +172,15 @@ def desktop_consumers(processes, installed):
     return found
 
 
+def request_normal_quit(*, run=subprocess.run, read_processes=process_table):
+    # A normal macOS quit event lets DSH keep its own busy/unsaved-work prompts.
+    # Never force termination. Avoid a quit request that launches an already closed app.
+    if str(APP_EXECUTABLE) not in read_processes().values():
+        return
+    script = 'tell application "/Applications/DeepSeek Harness.app" to quit'
+    run(['/usr/bin/osascript', '-e', script], check=True, capture_output=True, timeout=15)
+
+
 def wait_for_exit(pids, installed, *, seconds=WAIT_SECONDS, read_processes=process_table,
                   clock=time.monotonic, sleep=time.sleep):
     observed = read_processes()
@@ -197,6 +208,7 @@ def main():
     parser.add_argument('--sha256', required=True)
     parser.add_argument('--status', type=Path, required=True)
     parser.add_argument('--wait-pid', type=int, action='append', default=[])
+    parser.add_argument('--request-restart', action='store_true')
     args = parser.parse_args()
     private_file(args.status, existing=False)
     try:
@@ -216,8 +228,18 @@ def main():
         with tempfile.TemporaryDirectory(prefix='.verified-', dir=args.archive.parent) as stage:
             source = Path(stage)
             verify_extract(args.archive, args.version, args.sha256, source)
-            write_status(args.status, 'waiting', args.version, '等待你正常退出 DSH，课程与配置保持原样。')
-            wait_for_exit(args.wait_pid, installed)
+            write_status(args.status, 'waiting', args.version, '正在等待 DSH 正常退出。')
+            if args.request_restart:
+                try:
+                    request_normal_quit()
+                    wait_for_exit(args.wait_pid, installed, seconds=RESTART_WAIT_SECONDS)
+                except (OSError, ValueError, subprocess.SubprocessError):
+                    # Permission denied, quit canceled, or still busy: never install on
+                    # some later unrelated quit without a fresh explicit restart request.
+                    write_status(args.status, 'deferred', args.version, RESTART_DEFERRED)
+                    return 1
+            else:
+                wait_for_exit(args.wait_pid, installed)
             write_status(args.status, 'installing', args.version, '正在通过 DSH 安装已校验版本。')
             result = subprocess.run([sys.executable, '-B', str(source / 'scripts/install_plugin.py'),
                                      '--host', 'dsh', '--profile', 'desktop', '--dsh', str(CLI)],

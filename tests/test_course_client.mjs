@@ -355,7 +355,7 @@ test('plugin detail offers verified in-app download progress then explicit resta
     if(url.endsWith('/updates'))return response({ok:true,status:'checked',update});
     if(body?.action==='download'){attempts++;phase=attempts===1?'failed':'downloading';}
     if(body?.action==='install')phase='installing';
-    return response({ok:true,phase,version:update.version,received:phase==='downloading'?25:0,total:100,...(phase==='failed'?{error:'下载校验失败'}:{})});
+    return response({ok:true,phase,version:update.version,received:phase==='downloading'?25:0,total:100,...(phase==='idle'&&attempts>0?{installedVersion:update.version}:{}),...(phase==='failed'?{error:'下载校验失败'}:{})});
   });
   const own={kind:'bundle',pkg:{name:'kgxc-course-plugin'}},detail=app.entries.find(x=>x.options.name==='plugins.detail.actions').component;
   const render=()=>app.renderChild({type:detail,props:{subject:own}});
@@ -366,8 +366,20 @@ test('plugin detail offers verified in-app download progress then explicit resta
   assert.equal(nodes(tree).find(n=>n.type==='progress').props.value,25);
   assert.equal(calls.some(x=>x.body?.action==='install'),false);
   phase='ready';await new Promise(resolve=>setTimeout(resolve,500));tree=render();app.flush();
-  await button(tree,'退出并安装').props.onClick();await settle();
-  assert.equal(calls.filter(x=>x.body?.action==='install').length,1);assert.ok(nodes(render()).some(x=>x.props.children?.includes('请正常退出 DeepSeek Harness。更新完成后会自动重开；不用退出 Codex。')));
+  button(tree,'安装更新').props.onClick();
+  tree=render();assert.ok(nodes(tree).some(x=>x.props.role==='dialog'));
+  button(tree,'稍后重启').props.onClick();await settle();
+  assert.equal(calls.filter(x=>x.body?.action==='install').length,0);
+  assert.ok(button(render(),'安装更新'));
+  button(render(),'安装更新').props.onClick();
+  await button(render(),'立即重启').props.onClick();await settle();
+  tree=render();app.flush();
+  assert.equal(calls.filter(x=>x.body?.action==='install').length,1);
+  assert.ok(nodes(tree).some(x=>x.props.children?.includes('正在准备重启 DSH 并安装更新…')));
+  assert.equal(nodes(tree).some(x=>x.props.children?.some(v=>typeof v==='string'&&v.includes('Codex'))),false);
+  phase='idle';await new Promise(resolve=>setTimeout(resolve,500));tree=render();
+  assert.equal(button(tree,'下载更新'),undefined);
+  assert.equal(button(tree,'安装更新'),undefined);
   app.unmount();
 });
 test('rate-limited update checks are not presented as latest installed',async()=>{
@@ -389,11 +401,12 @@ test('server busy leaves the downloaded package pending instead of opening the r
   const detail=app.entries.find(x=>x.options.name==='plugins.detail.actions').component;
   const render=()=>app.renderChild({type:detail,props:{subject:{kind:'bundle',pkg:{name:'kgxc-course-plugin'}}}});
   render();app.flush();await settle();
-  await button(render(),'退出并安装').props.onClick();await settle();
+  button(render(),'安装更新').props.onClick();
+  await button(render(),'立即重启').props.onClick();await settle();
   const tree=render();
-  assert.ok(nodes(tree).some(x=>x.props.children?.includes('更新已下载，等当前工作结束后再安装。')));
+  assert.ok(nodes(tree).some(x=>x.props.children?.includes('课还没有停')));
   assert.equal(nodes(tree).some(x=>x.type==='a'),false);
-  assert.ok(button(tree,'退出并安装'));app.unmount();
+  assert.ok(button(tree,'安装更新'));app.unmount();
 });
 
 test('course toolbar shows the corporate logo without making it draggable as an image',async()=>{

@@ -50,7 +50,7 @@ function archiveHash(text,asset){
 export function createUpdateInstaller({version,getRelease,busyReason,helperPath,python='python3',
    fetcher=globalThis.fetch,launch=spawn,platform=process.platform,
    directory=join(process.env.XDG_DATA_HOME||join(homedir(),'.local/share'),'kgxc-course','updates')}={}){
-  let state={phase:'idle'},candidate=null,operation=null,receipt=null;
+  let state={phase:'idle'},candidate=null,operation=null,receipt=null,installedVersion=version;
   const statePath=join(directory,'pending.json');
   async function save(data){
     await mkdir(directory,{recursive:true,mode:0o700});await chmod(directory,0o700);
@@ -79,18 +79,24 @@ export function createUpdateInstaller({version,getRelease,busyReason,helperPath,
         if(r.version===state.version){
           if(r.status==='failed')state={...state,phase:'failed',error:r.message||'安装失败，旧版未自动覆盖。'};
           if(r.status==='waiting'||r.status==='installing')state={...state,phase:'installing'};
+          if(r.status==='deferred')state={...state,phase:'ready',deferred:true,message:r.message||'重启未完成，更新包已保留。请保存工作后重试。'};
+          if(r.status==='installed'){
+            installedVersion=r.version;
+            state={phase:'idle',installedVersion};
+            candidate=null;receipt=null;
+          }
         }
       }catch{}
     }
     const busy=state.phase==='ready'?await busyReason?.():null;
-    return {ok:true,...state,...(busy?{busy}:{}),...(state.phase==='installing'?{message:'请正常退出 DeepSeek Harness。更新完成后会自动重开；不用退出 Codex。'}:{})};
+    return {ok:true,...state,...(busy?{busy}:{}),...(state.phase==='installing'?{message:'正在准备重启 DeepSeek Harness 并安装更新…'}:{})};
   }
   async function download(expected){
     let folder;
     try{
       const {release}=await getRelease();
       if(expected&&release?.version!==expected)throw Error('可用更新已变化，请重新检查。');
-      if(!release||!validStable(release.version)||!newer(release.version,version)||release.asset!=='kgxc-course-plugin-v'+release.version+'.zip')throw Error('没有可下载的较新稳定版。');
+      if(!release||!validStable(release.version)||!newer(release.version,installedVersion)||release.asset!=='kgxc-course-plugin-v'+release.version+'.zip')throw Error('没有可下载的较新稳定版。');
       state={phase:'downloading',version:release.version,received:0,total:release.size||0};
       await mkdir(directory,{recursive:true,mode:0o700});await chmod(directory,0o700);
       folder=await realpath(await mkdtemp(join(directory,'bundle-')));
@@ -125,6 +131,7 @@ export function createUpdateInstaller({version,getRelease,busyReason,helperPath,
     if(!action)return view();
     if(platform!=='darwin')return {ok:false,error:'应用内安装仅支持 macOS 桌面版。'};
     if(action==='download'){
+      if(expected&&!newer(expected,installedVersion))return view();
       if(!operation&&!['ready','installing'].includes(state.phase)){
         receipt=null;candidate=null;state={phase:'downloading',received:0,total:0};
         operation=download(expected).finally(()=>{operation=null;});
@@ -136,11 +143,15 @@ export function createUpdateInstaller({version,getRelease,busyReason,helperPath,
       const busy=await busyReason?.();
       if(busy)return {ok:false,code:'install_busy',error:busy};
       if(state.phase!=='ready')return view();
-      state={...state,phase:'installing'};
+      state={...state,phase:'installing',deferred:false,message:undefined};
+      const launchReceipt=receipt;
+      receipt=null; // Don't reapply an old deferred status while the retry is starting.
       try{
+        await rm(launchReceipt,{force:true});
         const detachedHelper=join(candidate.folder,'install-helper-'+randomUUID()+'.py');
         await writeFile(detachedHelper,await readFile(helperPath),{flag:'wx',mode:0o600});
-        const child=launch(python,[detachedHelper,'--archive',candidate.archive,'--version',candidate.version,'--sha256',candidate.sha,'--status',receipt,'--wait-pid',String(process.pid)],{detached:true,stdio:'ignore'});
+        const child=launch(python,[detachedHelper,'--archive',candidate.archive,'--version',candidate.version,'--sha256',candidate.sha,'--status',launchReceipt,'--wait-pid',String(process.pid),'--request-restart'],{detached:true,stdio:'ignore'});
+        receipt=launchReceipt;
         child.once('error',()=>{state={...state,phase:'failed',error:'未能启动安装助手，旧版未改动。'};});
         child.unref();
       }catch{state={...state,phase:'failed',error:'未能启动安装助手，旧版未改动。'};}

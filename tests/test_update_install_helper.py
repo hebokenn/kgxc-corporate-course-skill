@@ -4,6 +4,9 @@ import importlib.util
 import json
 from pathlib import Path
 import stat
+import subprocess
+import sys
+from unittest.mock import Mock, patch
 import tempfile
 import unittest
 import zipfile
@@ -107,6 +110,43 @@ class UpdateInstallHelperTests(unittest.TestCase):
             helper.wait_for_exit([101], self.base / 'plugin', seconds=1,
                                  read_processes=lambda: {101: 'node host'}, clock=lambda: ticks[0],
                                  sleep=lambda delta: ticks.__setitem__(0, ticks[0] + delta))
+
+    def test_only_normal_quit_of_official_running_app(self):
+        run = Mock()
+        executable = str(helper.APP_EXECUTABLE)
+        helper.request_normal_quit(run=run, read_processes=lambda: {101: executable + ' --background-node'})
+        run.assert_not_called()
+        helper.request_normal_quit(run=run, read_processes=lambda: {101: executable})
+        run.assert_called_once_with(
+            ['/usr/bin/osascript', '-e', 'tell application "/Applications/DeepSeek Harness.app" to quit'],
+            check=True, capture_output=True, timeout=15)
+
+    def test_denied_or_timed_out_normal_restart_defers_without_install_or_retry(self):
+        digest = self.archive()
+        home = self.base / 'home'
+        installed = home / '.dsh/profiles/desktop/node_modules' / helper.NAME
+        installed.mkdir(parents=True)
+        (installed / 'package.json').write_text('{}')
+        cli = self.base / 'cli'
+        cli.touch(mode=0o700)
+        status = self.base / 'status.json'
+        argv = ['installer', '--archive', str(self.package), '--sha256', digest, '--status', str(status),
+                '--version', '0.9.3', '--wait-pid', '101', '--request-restart']
+        for failure in ['denied', 'wait-timeout']:
+            with self.subTest(failure=failure), patch.object(sys, 'argv', argv), patch.object(sys, 'platform', 'darwin'), \
+                 patch.object(Path, 'home', return_value=home), patch.object(helper, 'CLI', cli), \
+                 patch.object(helper, 'request_normal_quit', side_effect=subprocess.CalledProcessError(1, 'quit') if failure == 'denied' else None) as quit_app, \
+                 patch.object(helper, 'wait_for_exit', side_effect=ValueError('quit timeout')) as wait, \
+                 patch.object(helper.subprocess, 'run') as install:
+                self.assertEqual(helper.main(), 1)
+                quit_app.assert_called_once_with()
+                if failure == 'denied':
+                    wait.assert_not_called()
+                else:
+                    wait.assert_called_once_with([101], installed, seconds=helper.RESTART_WAIT_SECONDS)
+                install.assert_not_called()
+                self.assertEqual(json.loads(status.read_text())['status'], 'deferred')
+                self.assertEqual(hashlib.sha256(self.package.read_bytes()).hexdigest(), digest)
 
 
 if __name__ == '__main__':
