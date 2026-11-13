@@ -1,0 +1,66 @@
+name: Verify KGXC 6.9.5 and DSH 0.9.6
+on:
+  push:
+    branches: [release/6.9.5-sidebar-spacing]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'hebokenn/kgxc-corporate-course-skill' && github.ref == 'refs/heads/release/6.9.5-sidebar-spacing'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up the test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python3 -m venv /tmp/kgxc-qa
+          /tmp/kgxc-qa/bin/python -m pip install -r requirements.lock
+          /tmp/kgxc-qa/bin/python -m playwright install --with-deps chromium
+          npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Verify course exports and update safeguards
+        env:
+          COURSE_BROWSER_CHANNEL: chromium
+        run: |
+          export PATH="/tmp/kgxc-qa/bin:$PATH"
+          python -B scripts/check_readme.py
+          node --test tests/test_course_client.mjs tests/test_update_check.mjs tests/test_update_install.mjs tests/test_stage_confirmation_host.mjs tests/test_editor_host.mjs tests/test_production_progress.mjs tests/test_production_monitor.mjs tests/test_session_courses.mjs
+          for pattern in test_execution_default_export.py test_workbench_seams.py test_export_preflight.py test_incremental_production.py test_production_audio_reuse.py test_stage_confirmation.py test_update_install_helper.py; do
+            python -B -m unittest discover -s tests -p "$pattern" -v
+          done
+          python -B scripts/build_release.py
+          python -B scripts/build_plugin.py
+          (cd dist && sha256sum -c SHA256SUMS && sha256sum -c PLUGIN-SHA256SUMS)
+          python - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          expected = {
+            'kgxc-course-plugin-v0.9.6.zip': (1624, '912a70cc30d4241417330a3af1109e13d4780c48c3375309852afdf838a43898'),
+            'kgxc-course-suite-v6.9.5.zip': (1500, '355410ee2238b50ffd337346d93a1b640890891d5e47ecc683cf30e140088aeb'),
+          }
+          for name, (count, digest) in expected.items():
+              with zipfile.ZipFile(Path('dist') / name) as z:
+                  names = z.namelist()
+                  assert z.testzip() is None and len(names) == len(set(names)) == count
+                  entries = {}
+                  for member in sorted(names):
+                      data = z.read(member)
+                      if member.endswith('bundle-manifest.json'):
+                          data = json.dumps(json.loads(data), sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+                      entries[member] = hashlib.sha256(data).hexdigest()
+                  assert hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(',', ':')).encode()).hexdigest() == digest, name
+          PY
+      - name: Publish verified Skill and plugin together
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v6.9.5 --target "$GITHUB_SHA" --draft --title 'KGXC 6.9.5 / DSH 0.9.6' --notes '修复左侧栏收起后顶栏重叠。工作台按宿主窗口保留空间，Logo、拖窗、课程操作和更新入口不变。'
+          gh release upload v6.9.5 dist/kgxc-course-suite-v6.9.5.zip dist/kgxc-course-plugin-v0.9.6.zip dist/SHA256SUMS dist/PLUGIN-SHA256SUMS
+          gh release view v6.9.5 --json assets --jq '.assets | map(select(.size > 0)) | length' | grep -Fx 4
+          gh release edit v6.9.5 --draft=false --latest

@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "6.9.4",
+  "version": "6.9.5",
   "usage": "KGXC course production suite",
   "files": {
     "INSTALL.md": "0e17f6dd8f7ec133ad47ec904535e6346a5010619a246a7bea6fbe4bed4f4076",
-    "SKILL.md": "826353e22d099d130cb8d08c84b40bddca792640336f381a18722de750df3086",
+    "SKILL.md": "2fb16b26f9b6e7388291549122ec30aa949eb16a5dc7e584825f3f8f498ca2b5",
     "agents/openai.yaml": "242d3df86fbb3e74231f81e6740a54f3d4bc4a6f16b6308cce4216542aef655d",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",

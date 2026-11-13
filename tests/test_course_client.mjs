@@ -406,3 +406,10 @@ test('course toolbar shows the corporate logo without making it draggable as an 
   assert.ok(button(toolbar,'检查更新'));
   app.unmount();
 });
+
+test('toolbar leaves the host-provided titlebar space for collapsed and drawer sidebar modes', async()=>{
+  const src=await readFile(new URL('../plugin/client.js',import.meta.url),'utf8');
+  assert.match(src,/\.kgxc-switch\{padding:12px 24px;padding-inline-start:max\(24px,var\(--dsh-frame-leading-clearance,0px\)\)/);
+  assert.match(src,/\.kgxc-switch\{display:flex;flex-wrap:wrap/);
+  assert.match(src,/\.kgxc-window-drag\{-webkit-app-region:drag/);
+});
