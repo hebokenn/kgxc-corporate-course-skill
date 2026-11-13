@@ -395,3 +395,14 @@ test('server busy leaves the downloaded package pending instead of opening the r
   assert.equal(nodes(tree).some(x=>x.type==='a'),false);
   assert.ok(button(tree,'退出并安装'));app.unmount();
 });
+
+test('course toolbar shows the corporate logo without making it draggable as an image',async()=>{
+  const app=await client(async()=>response({ok:true}));
+  const tree=nodes(app.render());
+  const toolbar=tree.find(n=>n.props.className==='kgxc-switch kgxc-window-drag');
+  const logo=nodes(toolbar).find(n=>n.type==='img'&&n.props.alt==='酷果星创');
+  assert.ok(logo);assert.equal(logo.props.draggable,false);
+  assert.match(logo.props.src,/^data:image\/png;base64,/);
+  assert.ok(button(toolbar,'检查更新'));
+  app.unmount();
+});
