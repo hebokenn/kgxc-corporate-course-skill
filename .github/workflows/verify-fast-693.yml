@@ -41,8 +41,8 @@ jobs:
           import hashlib, json, zipfile
           from pathlib import Path
           expected = {
-            'kgxc-course-plugin-v0.9.4.zip': (1624, '1cd7b754ed1dc546c7c97e0b417ced23c0c92c0670906af431dde364a1b6b533'),
-            'kgxc-course-suite-v6.9.3.zip': (1500, 'd609fe61c3419e85222ad699a8308bf392e708e2d32f8c22e2a29332fa700541'),
+            'kgxc-course-plugin-v0.9.4.zip': (1624, '99b1d3051cf810e4c9c96f93b3a3ce9bd09e7ad44f37ee78746bad9377a60e15'),
+            'kgxc-course-suite-v6.9.3.zip': (1500, '92e0fc933bf7aa34638b6b2073f64236033687d6f1e827d569cbbd76b720d4bb'),
           }
           for name, (count, digest) in expected.items():
               with zipfile.ZipFile(Path('dist') / name) as z:

@@ -492,7 +492,7 @@ class Workspace:
                     while process.poll() is None:
                         self.require_production_active(process)
                         if job.get('phase')=='seam_preflight' and (directory/'seam-preflight.json').exists():
-                            if read(directory/'seam-preflight.json',{}).get('status') in ['pass','not-applicable']:
+                            if read(directory/'seam-preflight.json').get('status') in ['pass','not-applicable']:
                                 job['phase']='render'
                         status=directory/'progress.json'
                         if status.exists():
