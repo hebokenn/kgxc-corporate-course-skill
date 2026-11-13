@@ -87,3 +87,39 @@ test('local update API returns stable metadata without invoking a model or chang
   assert.equal(status,200);assert.equal(value.update.version,'99.0.0');assert.equal(value.channel,'stable');assert.equal(calls,1);
  }finally{globalThis.fetch=originalFetch;if(previousCache===undefined)delete process.env.XDG_CACHE_HOME;else process.env.XDG_CACHE_HOME=previousCache;await rm(dir,{recursive:true,force:true});}
 });
+
+test('host rejects cross-course binding, stale mutation, and relocation while the owning AI runs',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'kgxc-isolation-api-')),previous=process.env.COURSE_CONFIG_DIR;
+  process.env.COURSE_CONFIG_DIR=dir;
+  let handler;
+  const courseA=join(dir,'course-a'),courseB=join(dir,'course-b');
+  const current={id:'a-session',header:{cwd:dir},log:[]};
+  const agent={session:current,status:'running'};
+  const raw=await import('node:fs/promises');
+  try{
+    await raw.writeFile(join(dir,'dsh-session-courses.json'),JSON.stringify({sessions:{'a-session':{course_path:courseA,updated_at:1}}}));
+    apply({tools:{register:()=>{}},get:key=>key==='agents'?new Map([['a-session',agent]]):undefined,
+      inject:(deps,cb)=>{if(deps.includes('webServer'))cb({effect:fn=>fn(),webServer:{register:route=>{handler=route.handler;return()=>{};}}});}});
+    async function send(route,body,token){
+      let data,status;
+      const req={url:'/api/kgxc-course/'+route,method:body?'POST':'GET',headers:{host:'localhost','content-type':'application/json','x-kgxc-token':token},
+        socket:{remoteAddress:'127.0.0.1'},async *[Symbol.asyncIterator](){if(body)yield Buffer.from(JSON.stringify(body));}};
+      await handler(req,{writeHead:s=>status=s,end:value=>data=JSON.parse(value)});
+      return {data,status};
+    }
+    const token=(await send('meta')).data.token;
+    const args={session_id:'a-session',course_path:courseB};
+    const bind=await send('editor',{action:'bind',arguments:{...args,select:true}},token);
+    assert.equal(bind.status,400);assert.match(bind.data.error,/已有自己的课程/);
+    const stage=await send('editor',{action:'stage',arguments:{...args,target_stage:'pilot'}},token);
+    assert.equal(stage.status,400);assert.match(stage.data.error,/当前课程不一致/);
+    const relocation=await send('workspace',{session_id:'a-session',course_path:courseA,action:'relocate'},token);
+    assert.equal(relocation.status,400);assert.match(relocation.data.error,/还在制作/);
+    const noAction=await send('workspace',{session_id:'a-session'},token);
+    assert.equal(noAction.status,400);assert.match(noAction.data.error,/明确指定/);
+    assert.equal((await send('context',{session_id:'a-session'},token)).data.course_path,courseA);
+  }finally{
+    if(previous===undefined)delete process.env.COURSE_CONFIG_DIR;else process.env.COURSE_CONFIG_DIR=previous;
+    await rm(dir,{recursive:true,force:true});
+  }
+});

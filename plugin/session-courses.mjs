@@ -40,6 +40,16 @@ export class SessionCourses {
     try { this.entries = JSON.parse(readFileSync(this.file,'utf8')).sessions || {}; }
     catch (error) { if (error.code !== 'ENOENT') throw error; this.entries = {}; }
   }
+  attach(sessionId,coursePath,session) {
+    const owner=this.resolve(sessionId,session).course_path;
+    if(owner&&owner!==coursePath)throw Error('该对话已有自己的课程；请打开目标课程的独立对话，原任务不会切换。');
+    if(owner===coursePath)return owner;
+    return this.set(sessionId,coursePath);
+  }
+  sessionsFor(coursePath) {
+    return Object.entries(this.entries).filter(([,value])=>value.course_path===coursePath)
+      .sort((a,b)=>b[1].updated_at-a[1].updated_at).map(([id])=>id);
+  }
   set(sessionId,coursePath) {
     if (typeof sessionId !== 'string' || !/^[a-zA-Z0-9_-]{1,150}$/.test(sessionId)) throw Error('会话标识无效');
     if (coursePath !== null && !validPath(coursePath)) throw Error('课程路径无效');
@@ -61,7 +71,7 @@ export class SessionCourses {
   record(name,value,agent) {
     if (!value.ok || !validPath(value.course_path) || !agent?.session?.id) return;
     const id = agent.session.id;
-    if (selectors.has(name) || operations.has(name) && !Object.hasOwn(this.entries,id)) this.set(id,value.course_path);
+    if (operations.has(name) && !Object.hasOwn(this.entries,id)) this.set(id,value.course_path);
   }
   relocate(previous,current) {
     for(const [id,value] of Object.entries(this.entries))if(value.course_path===previous)this.set(id,current);

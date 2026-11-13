@@ -20,8 +20,14 @@ export function apply(ctx) {
   const checkUpdate=updateChecker({version});
   const bindings = new Map();
   const courses = new SessionCourses();
+  const sessionOf=id=>ctx.get?.('agents')?.get(id)?.session||ctx.get?.('sessions')?.get(id);
+  const courseOf=id=>courses.resolve(id,sessionOf(id)).course_path;
+  const attaching=new Map(),attachingCourse=new Set(),relocating=new Set();
   const reviews=reviewHost(ctx,{bindings});
-  const editor = editorHost(ctx, bindings,callTool,{supervision:reviews});
+  function assertBound(args,path=args.course_path){
+    if(!args.session_id||path!==courseOf(args.session_id)||relocating.has(path))throw Error('请求与本对话的当前课程不一致；没有更改任何课程。');
+  }
+  const editor = editorHost(ctx, bindings,callTool,{supervision:reviews,assertBound});
   const confirmations=createStageConfirmationHost(ctx,{review:callReview,resolveCourse:(id,session)=>courses.resolve(id,session).course_path,
     dispatchFeedback:({course_path,session_id,feedback:f})=>editor('stage',{course_path,session_id,target_stage:f.stage,
       segment_id:f.segment_id,time:f.version_binding.time,artifact_path:f.artifact_path,artifact_sha256:f.artifact_sha256,feedback_id:f.id,
@@ -37,6 +43,10 @@ export function apply(ctx) {
   });
   ctx.tools.guard?.(execution=>reviews.blockReason(execution.agent));
   ctx.on?.('tools/pre-execute',async(execution,next)=>{
+    const path=execution.agent?.session&&courses.resolve(execution.agent.session.id,execution.agent.session).course_path;
+    if(path&&relocating.has(path))throw Error('当前课程正在迁移，完成后再操作。');
+    if(path&&execution.name?.startsWith('kgxc_course_')&&(execution.name==='kgxc_course_create'||
+      execution.arguments?.course_path&&execution.arguments.course_path!==path))throw Error('本对话不能操作其他课程，请打开目标课程的独立对话。');
     await reviews.beforeTool(execution.agent,execution.name,execution.arguments);return next();
   },{prepend:true});
   ctx.inject(['sessionProjections'],scoped=>scoped.sessionProjections.register(productionProjection(z)));
@@ -45,12 +55,28 @@ export function apply(ctx) {
       name: spec.name, description: spec.description, parameters: spec.inputSchema, timeoutMs: 60000,
       output: {schema: {type: 'object'}, render: (_args, value) => [{type: 'text', text: JSON.stringify(value)}]},
       execute: async (args, execution) => {
+        const session=execution?.agent?.session;
+        const owned=session&&courses.resolve(session.id,session).course_path;
+        const selecting=['kgxc_course_create','kgxc_course_resume'].includes(spec.name);
+        if(owned&&(spec.name==='kgxc_course_create'||args.course_path&&args.course_path!==owned))
+          return {ok:false,error:'本对话已绑定另一门课程。请打开目标课程的独立对话，原任务不会切换。'};
+        if((owned&&relocating.has(owned))||(args.course_path&&relocating.has(args.course_path)))return {ok:false,error:'当前课程正在迁移，完成后再操作。'};
+        if(session?.id&&(attaching.has(session.id)||args.course_path&&attachingCourse.has(args.course_path)))return {ok:false,error:'该对话正在关联课程，请稍候。'};
+        const claim=session?.id&&selecting?Symbol():null;
+        const targetPath=claim&&args.course_path;
+        if(targetPath&&!owned&&courses.sessionsFor(targetPath).some(id=>id!==session.id))
+          return {ok:false,error:'这门课已有独立对话，请从课程列表打开。'};
+        if(claim)attaching.set(session.id,claim);
+        if(targetPath)attachingCourse.add(targetPath);
+        try{
         if (spec.name === 'kgxc_course_create' && !args.course_path && execution?.agent?.session?.header?.cwd) args = {...args,workspace_path:execution.agent.session.header.cwd};
         const value = await callTool(spec.name, args, {signal: execution?.signal});
-        if (value.ok && value.course_path && execution?.agent) bindings.set(value.course_path, execution.agent);
         courses.record(spec.name,value,execution?.agent);
+        if(value.ok&&value.course_path&&session&&courses.resolve(session.id,session).course_path===value.course_path&&
+          (!bindings.has(value.course_path)||bindings.get(value.course_path)===execution.agent))bindings.set(value.course_path,execution.agent);
         if(value.ok&&value.course_path&&execution?.agent&&['kgxc_course_create','kgxc_course_resume'].includes(spec.name))void reviews.onIdle(execution.agent).catch(error=>ctx.logger?.warn?.('关联课程后的独立审阅未启动：'+error.message));
         return value;
+        }finally{if(targetPath)attachingCourse.delete(targetPath);if(claim&&attaching.get(session.id)===claim)attaching.delete(session.id);}
       },
     });
   }
@@ -113,26 +139,68 @@ export function apply(ctx) {
           const session=agent?.session || ctx.get?.('sessions')?.get(request.session_id);
           const path=courses.resolve(request.session_id,session).course_path;
           if(!path||!session?.header?.cwd)throw Error('当前课程或会话工作区尚未就绪');
-          const operation=request.action||'relocate';
+          if(request.course_path&&request.course_path!==path)throw Error('当前对话不拥有请求中的课程，未进行任何操作。');
+          const operation=request.action;
+          if(!operation)throw Error('请明确指定工作区操作。');
+          const moving=operation==='relocate';
+          if(moving||operation==='deliver'||operation==='retention'){
+            const boundAgent=bindings.get(path);
+            const anyRunning=[agent,boundAgent,...courses.sessionsFor(path).map(id=>ctx.get?.('agents')?.get(id))].some(owner=>owner?.status==='running');
+            if(relocating.has(path)||anyRunning||reviews.courseBusy(path)||confirmations.courseBusy(path))
+              throw Error('这门课还在制作、检查或等待确认，不能迁移、交付或清理。');
+          }
+          if(moving)relocating.add(path);
+          try{
           const value=await callWorkspace(operation,{course_path:path,workspace_path:session.header.cwd,choice:request.choice,request_id:request.request_id},{timeout:120000});
-          if(value.ok&&operation==='relocate'){courses.relocate(value.previous_path,value.course_path);if(agent)bindings.set(value.course_path,agent);await editor('bind',{course_path:value.course_path,session_id:request.session_id});}
+          if(value.ok&&moving){
+            courses.relocate(value.previous_path,value.course_path);
+            if(value.previous_path!==value.course_path)bindings.delete(value.previous_path);
+          }
           if(value.ok&&operation==='deliver'&&agent)agent.inject(Object.freeze({id:randomUUID(),role:'user',source:Object.freeze({kind:'kgxc-course-context'}),content:Object.freeze([Object.freeze({type:'text',text:'当前课程已完成桌面交付，逐字稿、小样、配音与过程工程均保留。制作授权不构成删除授权；只有用户在具体清理范围弹窗中明确选择后才能清理。交付位置：'+value.delivery.delivery_root})])}));
           return json(res,200,value);
+          }finally{if(moving)relocating.delete(path);}
         }
-        if (route.endsWith('/editor') && request.action === 'bind' && !request.arguments?.select) {
-          const args = request.arguments || {};
-          const session = ctx.get?.('sessions')?.get(args.session_id) || ctx.get?.('agents')?.get(args.session_id)?.session;
-          if (courses.resolve(args.session_id,session).course_path !== args.course_path) return json(res,200,{ok:true,stale:true});
+        if(route.endsWith('/editor')){
+          const args=request.arguments||{},action=request.action;
+          if(action==='course-session'){
+            if(typeof args.course_path!=='string'||!args.course_path.startsWith('/'))throw Error('课程路径无效。');
+            const eligible=Array.isArray(args.session_ids)?new Set(args.session_ids.slice(0,500)):null;
+            for(const id of eligible||[])if(typeof id==='string'&&/^[a-zA-Z0-9_-]{1,150}$/.test(id))courseOf(id);
+            const owners=courses.sessionsFor(args.course_path);
+            // Do not create a session if an original owner exists but cannot be opened in this UI.
+            return json(res,200,{ok:true,session_id:owners.find(id=>!eligible||eligible.has(id))||owners[0]||null});
+          }
+          if(action==='attach-course'||action==='select_delivery'||action==='bind'&&args.select){
+            const session=sessionOf(args.session_id);
+            if(!session)throw Error('目标独立对话尚未连接，请先打开后重试。');
+            const owned=courseOf(args.session_id);
+            if(owned&&owned!==args.course_path)throw Error('该对话已有自己的课程；请打开目标课程的独立对话，原任务不会切换。');
+            if(owned===args.course_path)return json(res,200,{ok:true,session_id:args.session_id});
+            if(attaching.has(args.session_id)||attachingCourse.has(args.course_path)||relocating.has(args.course_path)||ctx.get?.('agents')?.get(args.session_id)?.status==='running')
+              throw Error('目标对话或课程正在执行其他操作，未关联。');
+            const claim=Symbol();attaching.set(args.session_id,claim);attachingCourse.add(args.course_path);
+            try{
+              const value=await callTool('kgxc_course_resume',{course_path:args.course_path});
+              if(!value.ok)throw Error(value.error);
+              if(value.course_path!==args.course_path||relocating.has(args.course_path))throw Error('课程目录已变更，请刷新课程列表。');
+              const other=courses.sessionsFor(value.course_path).find(id=>id!==args.session_id);
+              if(other)return json(res,200,{ok:true,session_id:other,existing:true});
+              if(ctx.get?.('agents')?.get(args.session_id)?.status==='running')throw Error('目标对话开始了其他任务，未关联。');
+              courses.attach(args.session_id,value.course_path,session);
+              return json(res,200,{ok:true,session_id:args.session_id});
+            }finally{attachingCourse.delete(args.course_path);if(attaching.get(args.session_id)===claim)attaching.delete(args.session_id);}
+          }
+          if(action==='bind'&&courseOf(args.session_id)!==args.course_path)return json(res,200,{ok:true,stale:true});
+          assertBound(args);
+          if(['stage-confirmation-request','stage-confirmation-status','stage-confirmation-cancel','stage-feedback-submit'].includes(action))return json(res,200,await confirmations(action,args));
+          return json(res,200,await editor(action,args));
         }
-        if(route.endsWith('/editor')&&['stage-confirmation-request','stage-confirmation-status','stage-confirmation-cancel','stage-feedback-submit'].includes(request.action))return json(res,200,await confirmations(request.action,request.arguments));
-        if(route.endsWith('/editor')&&request.action==='select_delivery'){
-          const args=request.arguments||{},value=await callTool('kgxc_course_resume',{course_path:args.course_path});
-          if(!value.delivery_only)throw Error('当前课程仍有工程，请从普通工作台打开');
-          courses.set(args.session_id,value.course_path);return json(res,200,{ok:true});
+        const readCalls=new Set(['kgxc_course_environment','kgxc_course_resume','kgxc_course_status','kgxc_course_job','kgxc_course_list']);
+        if(!readCalls.has(request.name)){
+          if(!request.arguments?.course_path)throw Error('请从已关联课程的对话执行此操作。');
+          assertBound({...request.arguments,session_id:request.session_id});
         }
-        const result = route.endsWith('/editor') ? await editor(request.action, request.arguments || {}) : await callTool(request.name, request.arguments || {});
-        if (route.endsWith('/editor') && request.action === 'bind' && request.arguments.select && result.ok) courses.set(request.arguments.session_id,request.arguments.course_path);
-        return json(res, 200, result);
+        return json(res,200,await callTool(request.name,request.arguments||{}));
       } catch (error) { return json(res, 400, {ok: false, error: error.message}); }
     }}), 'kgxc-course: local course API');
   });

@@ -1,5 +1,5 @@
 {
-  "version": "6.9.1",
+  "version": "6.9.2",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -10,10 +10,10 @@
     "elearning-course-design"
   ],
   "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.9.1",
+  "plugin_version": "0.9.3",
   "skill_versions": {
-    "corporate-training-motion": "6.9.1",
+    "corporate-training-motion": "6.9.2",
     "elearning-course-design": "2.1.0"
   },
-  "release_status": "stable-channel updater patch; desktop update-path and end-to-end course verification recorded separately"
+  "release_status": "top-right GitHub update check; course isolation and workflow repair"
 }

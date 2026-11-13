@@ -502,6 +502,11 @@ export function reviewHost(ctx,{invoke=callReview,tool=callTool,bindings=new Map
     await handle.production({course_path:path,producer,stage,phase:'start',...coverageOnly?{scope:'source-coverage',auto_review:false}:{},execution:[{type:'production/request',operation:coverageOnly?'source-coverage':'conversation-tool',call_id:randomUUID(),agent_id:identity(producer).id,stage}]});
   };
   handle.active=()=>tasks.size+workTasks.size;
+  handle.courseBusy=path=>{
+    const operation=productions.get(path);
+    return Boolean(workTasks.has(path)||idleTasks.has(path)||[...tasks.values()].some(task=>task.args.course_path===path)||
+      (operation&&!operation.finished&&!operation.stopped));
+  };
   handle.whenIdle=async()=>{
     for(let boundary=0;boundary<64;boundary++){
       await Promise.allSettled([...idleTasks.values()]);await Promise.all([...tasks.values(),...workTasks.values()].map(task=>task.promise));

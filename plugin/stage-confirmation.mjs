@@ -79,6 +79,7 @@ export function createStageConfirmationHost(ctx,{review,resolveCourse,dispatchFe
     })();
     return view(attempt);
   }
+  handle.courseBusy=path=>[...pending.entries()].some(([key,value])=>value.status==='pending'&&JSON.parse(key)[1]===path);
   handle.dispose=()=>{for(const controller of controllers)controller.abort();controllers.clear();};
   return handle;
 }

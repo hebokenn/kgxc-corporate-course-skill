@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import wave
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'skills/corporate-training-motion/workbench'))
@@ -58,6 +59,22 @@ class FinalSyntheticMedia(unittest.TestCase):
         self.contract(plan);context=copy.deepcopy(self.context)
         if video:context['current_video']=str(video)
         return media.inspect(self.p,context)
+    def test_technical_decode_reused_only_for_unchanged_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target=Path(directory)/'candidate.mp4'
+            shutil.copyfile(self.video,target)
+            media._decoded_clock.cache_clear()
+            with patch.object(media,'run',wraps=media.run) as execute:
+                initial=media.decoded_clock(target,media.sha(target))
+                self.assertEqual(len(initial[1]),48)
+                self.assertEqual(execute.call_count,3)
+                self.assertEqual(media.decoded_clock(target,media.sha(target)),initial)
+                self.assertEqual(execute.call_count,3)
+                with target.open('ab') as stream:
+                    stream.write(bytes.fromhex('0000000866726565'))
+                self.assertEqual(media.decoded_clock(target,media.sha(target))[1],initial[1])
+                self.assertEqual(execute.call_count,6)
+
     def test_01_first_frame_only_native24fps_and_all_audio_packets_survive(self):
         r=self.check();codes={e['code']for e in r['errors']}
         self.assertEqual(r['checks']['decode']['frames'],48);self.assertEqual(r['checks']['decode']['fps'],'24')

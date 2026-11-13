@@ -5,7 +5,7 @@ description: 酷果星创课程设计与制作统一入口。设计新课或继�
 
 # 酷果星创课程共创与制作
 
-版本 **6.9.1**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
+版本 **6.9.2**。共同成果是已确认逐字稿。课件和视频分别制作、分别完成，工作台保存选择、证据、版本与交付记录。安装说明见[INSTALL.md](INSTALL.md)。
 
 
 用户明确授权以效果优先、临时取消本课调用与返修次数门槛时，记录真实答复来源并启用仅本课可恢复的临时不限模式；保留旧上限及全部累计，不改变新课默认、质量检查、隔离或模型通道。恢复有限模式后继续按保留的累计与原上限判断。已有独立token预算不会因此取消。
@@ -86,7 +86,9 @@ description: 酷果星创课程设计与制作统一入口。设计新课或继�
 
 已安装酷果制课插件且有 `kgxc_course_*` 工具时，新课优先调用 `kgxc_course_create`，工程默认位于当前 DSH 会话工作区的 `courses/` 下，恢复优先调用 `kgxc_course_resume`；打开工具返回并已核验身份的实际工作台。DSH 在当前会话工作区保存本课文件和确认记录；本次插件升级只推进 DSH，Codex 适配暂缓，工具缺失时继续使用下方 CLI。保存草稿不等于用户确认，不为使用插件跳过前置步骤。工具、编辑与恢复边界见[跨宿主制课插件](references/49-cross-host-plugin.md)。
 
-没有插件工具时，新课先运行 `python3 SKILL_DIR/scripts/kgxc_course.py start COURSE --title 课名 --source 原件`，保留原件并默认打开实际工作台。没有插件工具时，继续制作的首个操作是完整命令 `python3 SKILL_DIR/scripts/kgxc_course.py resume COURSE`；独立工程也可运行 `python3 COURSE/project/editor/scripts/workflow.py resume COURSE`。返回摘要已包含当前分支、确认原话、时间、产物与未决项；从摘要进入当前阶段，再按需读取该阶段参考，沿用有效确认。界面未打开时展示实际URL并使用宿主浏览器能力打开；不要直接打开Skill目录中的design.html。
+先区分只读诊断、开工前检与正式制作。查看状态、读取适用 Skill、核对工件或已有前检，均不启动生产、不登记模型用量、不改变人工确认；发现问题先定位，不自动绑定、迁移或重试。已有同课、同阶段、同选案的有效冻结派工时，第一条会改变工程状态、调用模型或启动渲染的制作命令须走冻结入口，不限制第一条只读工具。依赖变化只补核受影响项，仍走原监督与放行。[受控恢复和局部返修](references/55-execution-contract-and-release.md#受控恢复和局部返修)
+
+没有插件工具时，新课先运行 `python3 SKILL_DIR/scripts/kgxc_course.py start COURSE --title 课名 --source 原件`，保留原件并默认打开实际工作台。没有插件工具时，开始实际恢复使用完整命令 `python3 SKILL_DIR/scripts/kgxc_course.py resume COURSE`；独立工程也可运行 `python3 COURSE/project/editor/scripts/workflow.py resume COURSE`。返回摘要已包含当前分支、确认原话、时间、产物与未决项；从摘要进入当前阶段，再按需读取该阶段参考，沿用有效确认。界面未打开时展示实际URL并使用宿主浏览器能力打开；不要直接打开Skill目录中的design.html。
 
 问题与分析只完成所求。旧版工程保留原流程，不自动迁移或重新渲染。完整字段、命令和分支见[课程工作流](references/28-course-workflow.md)。
 

@@ -4,7 +4,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {callTool} from './bridge.mjs';
 
-export function editorHost(ctx, bindings, invoke = callTool,{supervision}={}) {
+export function editorHost(ctx, bindings, invoke = callTool,{supervision,assertBound}={}) {
   const requests = new Map();
   const contexts = new WeakMap();
   const get = name => typeof ctx.get === 'function' ? ctx.get(name) : undefined;
@@ -24,6 +24,7 @@ export function editorHost(ctx, bindings, invoke = callTool,{supervision}={}) {
       return {ok:true};
     }
     const editor = await course(args.course_path);
+    assertBound?.(args,editor.course_path);
     if(action==='source-coverage'){
       const agents=get('agents'),agent=agents?.get(args.session_id)||bindings.get(editor.course_path);
       if(!agent||agents?.get(agent.session.id)!==agent)throw Error('当前课程对话尚未连接，请先在右侧发送消息。');

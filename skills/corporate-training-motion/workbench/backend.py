@@ -523,39 +523,41 @@ class Workspace:
                 metadata.update(registration_status='held' if contract_pending else 'pending',
                                 stage_registered=False,contract_pending=contract if contract_pending else None)
                 atomic(video.with_suffix('.json'),metadata)
-                packages=self.root/'packages';ensure_dir(packages)
-                archive=packages/f'editable-r{revision}-{job_id}.zip'
-                with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=1) as z:
-                    modern=doc['adapter']!='national-world-v1'
-                    editor_prefix='project/editor' if modern else 'editor'
-                    z.write(directory/'document.json','project/workbench.json')
-                    for f in self.project.rglob('*'):
-                        rel=f.relative_to(self.project)
-                        # work/style-previews 是风格确认引用的预览件，不是缓存；缺它则重开副本无法通过风格闸门
-                        preview=len(rel.parts)>1 and rel.parts[0]=='work' and rel.parts[1]=='style-previews'
-                        if f.is_file() and not f.name.startswith('.') and f!=self.file and '__pycache__' not in rel.parts and (rel.parts[0] not in ['work','workbench-history','editor','qa'] or preview):
-                            z.write(f,'project/'+str(rel))
-                    for f in APP.rglob('*'):
-                        if f.is_file() and '__pycache__' not in f.parts:z.write(f,editor_prefix+'/workbench/'+str(f.relative_to(APP)))
-                    for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:
-                        z.write(APP.parent/'scripts'/name,editor_prefix+'/scripts/'+name)
-                    if modern:
-                        from production import PORTABLE_CONTRACT_METADATA
-                        for name in PORTABLE_CONTRACT_METADATA:
-                            source=APP.parent/name
-                            if not source.is_file():raise ValueError('可编辑工程缺少制作基准元数据：'+name)
-                            z.write(source,editor_prefix+'/'+name)
-                        z.writestr('README.md','# 可编辑企业课程\n\n运行 python3 project/editor/scripts/workbench.py serve . 打开工作台。\n建议先按Skill仓库README完成完整安装，再运行 kgxc-course serve .。视频导出使用本机配置的ffmpeg、Python Playwright和Chromium。\n')
-                        for folder in ['inputs/','delivery/','packages/']:z.writestr(folder,b'')
-                        workspace=self.root/'workspace.json'
-                        if workspace.exists():z.write(workspace,'workspace.json')
-                        else:z.writestr('workspace.json',json.dumps(dict(layout_version=2,project_dir='project',delivery_dir='delivery',package_dir='packages',retain_artifacts=[])))
-                        for f in (self.root/'inputs').rglob('*'):
-                            if f.is_file():z.write(f,'inputs/'+str(f.relative_to(self.root/'inputs')))
-                    else:z.writestr('打开说明.txt','运行 python3 editor/scripts/workbench.py serve . 打开课程。\n编辑无需额外Python包；视频导出需要已有ffmpeg和Playwright运行环境。\n')
-                with zipfile.ZipFile(archive) as z:
-                    if z.testzip():raise ValueError('工程包CRC校验失败')
-                if native_hash!=native_fingerprint(self.project):raise ValueError('打包期间素材发生变化，请重试')
+                archive=None
+                if key=='final':
+                    packages=self.root/'packages';ensure_dir(packages)
+                    archive=packages/f'editable-r{revision}-{job_id}.zip'
+                    with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=1) as z:
+                        modern=doc['adapter']!='national-world-v1'
+                        editor_prefix='project/editor' if modern else 'editor'
+                        z.write(directory/'document.json','project/workbench.json')
+                        for f in self.project.rglob('*'):
+                            rel=f.relative_to(self.project)
+                            # work/style-previews 是风格确认引用的预览件，不是缓存；缺它则重开副本无法通过风格闸门
+                            preview=len(rel.parts)>1 and rel.parts[0]=='work' and rel.parts[1]=='style-previews'
+                            if f.is_file() and not f.name.startswith('.') and f!=self.file and '__pycache__' not in rel.parts and (rel.parts[0] not in ['work','workbench-history','editor','qa'] or preview):
+                                z.write(f,'project/'+str(rel))
+                        for f in APP.rglob('*'):
+                            if f.is_file() and '__pycache__' not in f.parts:z.write(f,editor_prefix+'/workbench/'+str(f.relative_to(APP)))
+                        for name in ['workbench.py','single_line_subtitles.py','check_workbench.py','workflow.py','course_tools.py','character_assets.py']:
+                            z.write(APP.parent/'scripts'/name,editor_prefix+'/scripts/'+name)
+                        if modern:
+                            from production import PORTABLE_CONTRACT_METADATA
+                            for name in PORTABLE_CONTRACT_METADATA:
+                                source=APP.parent/name
+                                if not source.is_file():raise ValueError('可编辑工程缺少制作基准元数据：'+name)
+                                z.write(source,editor_prefix+'/'+name)
+                            z.writestr('README.md','# 可编辑企业课程\n\n运行 python3 project/editor/scripts/workbench.py serve . 打开工作台。\n建议先按Skill仓库README完成完整安装，再运行 kgxc-course serve .。视频导出使用本机配置的ffmpeg、Python Playwright和Chromium。\n')
+                            for folder in ['inputs/','delivery/','packages/']:z.writestr(folder,b'')
+                            workspace=self.root/'workspace.json'
+                            if workspace.exists():z.write(workspace,'workspace.json')
+                            else:z.writestr('workspace.json',json.dumps(dict(layout_version=2,project_dir='project',delivery_dir='delivery',package_dir='packages',retain_artifacts=[])))
+                            for f in (self.root/'inputs').rglob('*'):
+                                if f.is_file():z.write(f,'inputs/'+str(f.relative_to(self.root/'inputs')))
+                        else:z.writestr('打开说明.txt','运行 python3 editor/scripts/workbench.py serve . 打开课程。\n编辑无需额外Python包；视频导出需要已有ffmpeg和Playwright运行环境。\n')
+                    with zipfile.ZipFile(archive) as z:
+                        if z.testzip():raise ValueError('工程包CRC校验失败')
+                    if native_hash!=native_fingerprint(self.project):raise ValueError('打包期间素材发生变化，请重试')
                 self.require_production_active()
                 # Only a whole-course export establishes complete editable-engine evidence.
                 if first==0 and last==duration(doc) and read(self.file)==doc:
@@ -577,11 +579,11 @@ class Workspace:
                     cfg=self.project/'project.json'
                     if cfg.exists():
                         config=read(cfg);config.setdefault('render_artifacts',{})['final' if key=='final' else 'preview']=str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1);atomic(cfg,config)
-                if (self.project/'course-state.json').is_file():
-                    bundle_course(self.root,archive)
+                if archive is not None:
+                    if (self.project/'course-state.json').is_file():bundle_course(self.root,archive)
+                    job['package']='/download/'+urllib.parse.quote(str(archive.relative_to(self.root)))
                 job.update(status='complete',progress=1,video='/download/'+urllib.parse.quote(str(video.relative_to(self.root))),
-                           srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),
-                           package='/download/'+urllib.parse.quote(str(archive.relative_to(self.root))),verification=metadata,
+                           srt='/download/'+urllib.parse.quote(str(srt.relative_to(self.root))),verification=metadata,
                            registration_status=metadata['registration_status'],stage_registered=metadata['stage_registered'],
                            release_state='acceptance_blocked' if contract_pending else 'allowed_for_formal_delivery',
                            candidate_generated=True,user_acceptance=False,contract_pending=contract if contract_pending else None)

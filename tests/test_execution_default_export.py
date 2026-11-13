@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import unittest
+from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/'skills/corporate-training-motion/scripts'),str(ROOT/'skills/corporate-training-motion/workbench')]
 import test_new_course_workbench as legacy_fixture
@@ -17,6 +18,42 @@ from backend import Workspace,Handler
 from workflow import read
 
 class DefaultExportTests(unittest.TestCase):
+    def test_packaging_is_only_for_final_after_worker_finishes(self):
+        fixture=legacy_fixture.NewCourseTests();fixture.setUp()
+        try:
+            doc=fixture.ready()
+            space=Workspace(fixture.course)
+            from workflow import atomic
+            def finished_worker(command,**kwargs):
+                directory=Path(command[command.index('--directory')+1])
+                (directory/'video.mp4').write_bytes(b'test packaging fixture; not video')
+                atomic(directory/'verification.json',dict(fullDecode=True))
+                return type('Completed',(),dict(pid=0,returncode=0,poll=lambda self:0))()
+            with patch('backend.owned_export_process',side_effect=finished_worker), \
+                 patch('backend.Workspace.require_production_active'), \
+                 patch('workflow.Course.require_video'), \
+                 patch('release_gate.evaluate',return_value=dict(allow_release=False)), \
+                 patch('release_gate.build_context'), \
+                 patch('workflow.bundle_course') as bundle:
+                for purpose in ['pilot','final']:
+                    job=space.start_export(doc['revision'],0,1,'http://127.0.0.1:1',purpose=purpose)
+                    directory=space.work/'exports'/job['id']
+                    deadline=time.monotonic()+8
+                    while not (directory/'result.json').exists() and time.monotonic()<deadline:time.sleep(.02)
+                    receipt=read(directory/'result.json')
+                    self.assertEqual(receipt['status'],'complete',receipt)
+                    self.assertTrue(receipt['video'].endswith('.mp4'))
+                    self.assertTrue(receipt['srt'].endswith('.srt'))
+                    if purpose=='pilot':
+                        self.assertNotIn('package',receipt)
+                        self.assertFalse(list((fixture.course/'packages').glob('*.zip')))
+                        bundle.assert_not_called()
+                    else:
+                        self.assertTrue(receipt['package'].endswith('.zip'))
+                        self.assertEqual(len(list((fixture.course/'packages').glob('*.zip'))),1)
+                        bundle.assert_called_once()
+        finally:fixture.tearDown()
+
     def test_actual_24fps_default_export_keeps_complete_aac_and_chapters_as_held_candidate(self):
         fixture=legacy_fixture.NewCourseTests('test_authoring_generates_bindings_and_does_not_overwrite_edits');fixture.setUp()
         server=None
@@ -33,6 +70,8 @@ class DefaultExportTests(unittest.TestCase):
             deadline=time.monotonic()+60
             while job['status'] not in ['complete','failed','cancelled'] and time.monotonic()<deadline:time.sleep(.1)
             self.assertEqual(job['status'],'complete',job)
+            self.assertNotIn('package',job)
+            self.assertFalse(list((fixture.course/'packages').glob('*.zip')))
             self.assertEqual(job['registration_status'],'held');self.assertFalse(job['stage_registered'])
             proof=job['verification']['verification'];self.assertEqual(proof['frames'],24);self.assertEqual(proof['fps'],24)
             self.assertTrue(proof['audioCompletion']['all_packets_and_timestamps_equal']);self.assertGreater(proof['audioCompletion']['copied_aac_packets'],0)

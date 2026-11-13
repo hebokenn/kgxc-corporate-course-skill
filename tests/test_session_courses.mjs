@@ -42,6 +42,9 @@ test('late activity in another session cannot switch the current session or repl
     assert.equal(contexts.resolve('session-b').course_path,'/tmp/course-b');
     contexts.record('kgxc_course_resume',{ok:true,course_path:'/tmp/course-c'},agent('session-a'));
     assert.equal(contexts.resolve('session-b').course_path,'/tmp/course-b');
+    assert.equal(contexts.resolve('session-a').course_path,'/tmp/course-a');
+    assert.throws(()=>contexts.attach('session-a','/tmp/course-c'),/已有自己的课程/);
+    assert.deepEqual(contexts.sessionsFor('/tmp/course-a'),['session-a']);
     contexts.set('session-b',null);
     assert.equal(contexts.resolve('session-b',{log:result('kgxc_course_create','/tmp/stale')}).course_path,null);
   }finally{await rm(dir,{recursive:true,force:true});}

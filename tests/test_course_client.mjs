@@ -40,10 +40,10 @@ test('plugin reload refreshes a stale connection token once before retrying the 
 });
 function nodes(node){return Array.isArray(node)?node.flatMap(nodes):node&&typeof node==='object'?[node,...nodes(node.props?.children)]:[];}
 function button(tree,label){return nodes(tree).find(node=>node.type==='button'&&node.props.children.includes(label));}
-async function loadedClient({deliveryChoice,expired=false,cleanupError}={}){
+async function loadedClient({deliveryChoice,expired=false,cleanupError,courseOwner}={}){
   const calls=[],course={ok:true,course_path:'/tmp/current-course',workbench_url:'http://127.0.0.1:1234',workflow:{stage:'final'}},saved={...course,delivery_only:true,delivery:{course_id:'fixture',title:'本课',delivery_root:'/tmp/desktop/本课',files:[],cleanup_status:'retained',...(deliveryChoice?{cleanup_decision:{choice:deliveryChoice}}:{})}};
   const app=await client(async(url,options)=>{const data=options?.body?JSON.parse(options.body):undefined;calls.push({url,data});
-    return response(url.endsWith('/meta')?{ok:true,token:'test'}:url.endsWith('/context')?{ok:true,ready:true,course_path:course.course_path}:data?.name==='kgxc_course_resume'?course:data?.action==='workbench_live'?{ok:true,alive:!expired}:data?.action==='deliver'?saved:data?.action==='cleanup_preview'?(cleanupError?{ok:false,error:cleanupError}:{ok:true,preview:{request_id:'current-inventory',file_count:12,bytes:12345,groups:[{label:'逐字稿与小样',files:12,bytes:12345}]}}):data?.action==='retention'?saved:{ok:true,courses:[]});
+    return response(url.endsWith('/meta')?{ok:true,token:'test'}:url.endsWith('/context')?{ok:true,ready:true,course_path:course.course_path}:data?.name==='kgxc_course_resume'?course:data?.action==='course-session'?{ok:true,session_id:courseOwner}:data?.action==='attach-course'?{ok:true,session_id:data.arguments.session_id}:data?.action==='workbench_live'?{ok:true,alive:!expired}:data?.action==='deliver'?saved:data?.action==='cleanup_preview'?(cleanupError?{ok:false,error:cleanupError}:{ok:true,preview:{request_id:'current-inventory',file_count:12,bytes:12345,groups:[{label:'逐字稿与小样',files:12,bytes:12345}]}}):data?.action==='retention'?saved:{ok:true,courses:[]});
   });
   app.render();app.flush();await settle();const tree=app.render(),sender={postMessage:()=>{}};
   const native=nodes(tree).find(node=>node.type==='kgxc-studio-view');assert.equal(native.props.class,'kgxc-frame kgxc-native');assert.equal(native.props.className,undefined);native.props.ref.current={contentWindow:sender};app.flush();await settle();
@@ -107,7 +107,7 @@ test('delivery opens the retention dialog, closing it preserves files, and only 
   const delivery=nodes(app.render()).find(node=>node.type?.name==='DeliveryView');await delivery.props.onRetention();await settle();
   dialog=nodes(app.render()).find(node=>node.type?.name==='RetentionDialog');ui=app.renderChild(dialog);
   button(ui,'稍后提醒我').props.onClick();await settle();
-  assert.deepEqual(calls.filter(call=>call.data?.action==='retention').map(call=>call.data),[{action:'retention',session_id:'new-session',choice:'later'}]);assert.equal(calls.some(call=>call.data?.action==='cleanup_preview'),false);app.unmount();
+  assert.deepEqual(calls.filter(call=>call.data?.action==='retention').map(call=>call.data),[{action:'retention',session_id:'new-session',course_path:'/tmp/current-course',choice:'later'}]);assert.equal(calls.some(call=>call.data?.action==='cleanup_preview'),false);app.unmount();
 });
 
 test('cleanup requires a second trusted click and explicit keep suppresses the automatic reminder',async()=>{
@@ -151,7 +151,7 @@ test('opening a saved folder is available in the delivery view and retention dia
   const delivery=nodes(app.render()).find(node=>node.type?.name==='DeliveryView');
   const page=app.renderChild(delivery);await button(page,'打开保存文件夹').props.onClick();
   assert.deepEqual(calls.filter(c=>c.data?.action==='open_delivery').map(c=>c.data),[
-    {action:'open_delivery',session_id:'new-session'},{action:'open_delivery',session_id:'new-session'}]);
+    {action:'open_delivery',session_id:'new-session',course_path:'/tmp/current-course'},{action:'open_delivery',session_id:'new-session',course_path:'/tmp/current-course'}]);
   assert.equal(calls.some(c=>c.data?.action==='cleanup_preview'||c.data?.action==='retention'),false);app.unmount();
 });
 
@@ -263,4 +263,78 @@ test('first-use native intake only inserts into an empty draft, then opens the o
   app.renderChild({type:chat,props:scope});app.flush();await new Promise(resolve=>setTimeout(resolve,15));
   assert.match(insertions[0][0],/可编辑的大纲/);assert.equal(insertions[0][1].revision,1);assert.equal(handled,2);
   app.unmount();
+});
+
+test('GitHub updater appears only on this installed plugin detail and works without a course session',async()=>{
+  const calls=[];
+  const app=await client(async(url,options)=>{
+    calls.push([url,options?.method]);
+    return response(url.endsWith('/meta')?{ok:true,token:'test'}:{ok:true,status:'checked',update:{version:'9.0.1',release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v9.0.1'}});
+  });
+  const update=app.entries.find(x=>x.options.name==='plugins.detail.actions');
+  assert.ok(update);
+  const render=subject=>app.renderChild({type:update.component,props:{subject}});
+  assert.equal(render({kind:'bundle',pkg:{name:'other-plugin'}}),null);
+  assert.equal(render({kind:'row',pkg:{name:'kgxc-course-plugin'},row:{}}),null);
+  assert.deepEqual(calls,[]);
+  const own={kind:'bundle',pkg:{name:'kgxc-course-plugin'}};
+  let tree=render(own);app.flush();
+  button(tree,'检查 GitHub 更新').props.onClick();await settle();
+  tree=render(own);
+  assert.equal(calls.filter(([url,method])=>url.endsWith('/updates')&&method==='POST').length,1);
+  const download=nodes(tree).find(node=>node.type==='a');
+  assert.match(download.props.href,/github\.com\/hebokenn/);
+  assert.ok(download.props.children.includes('查看稳定版 9.0.1 与下载'));
+  app.unmount();
+});
+
+test('opening another course navigates to the existing session without rebinding the old session',async()=>{
+  const {app,calls,sender,event}=await loadedClient({courseOwner:'course-b-session'}),opened=[];
+  app.ctx.uiWorkspace.workspaces={list:{getSnapshot:()=>({items:[{workspaceId:'w',sessionIds:['new-session','course-b-session']}]})}};
+  app.ctx.uiWorkspace.openSession=id=>opened.push(id);app.ctx.layout={selectPanel:()=>{}};
+  const request=nodes(app.render()).find(n=>n.type==='select'&&n.props.id==='kgxc-course').props.onChange;
+  sender.postMessage=data=>{if(data.type==='kgxc-editor-leave')void app.message(event({type:'kgxc-editor-leave-result',id:data.id}));};
+  request({target:{value:'/tmp/course-b'}});await settle();
+  assert.deepEqual(opened,['course-b-session']);assert.equal(calls.some(x=>x.data?.action==='attach-course'||x.data?.action==='bind'),false);
+  app.unmount();
+});
+test('browsing an unbound course does not create a session; explicit separate open attaches only the new ID',async()=>{
+  const {app,calls,sender,event}=await loadedClient(),opened=[],created=[];
+  app.ctx.uiWorkspace.workspaces={list:{getSnapshot:()=>({items:[{workspaceId:'w',sessionIds:['new-session']}]})}};
+  app.ctx.uiWorkspace.sessions={create:async args=>{created.push(args);return 'separate-session';}};
+  app.ctx.uiWorkspace.openSession=id=>opened.push(id);app.ctx.layout={selectPanel:()=>{}};
+  sender.postMessage=data=>{if(data.type==='kgxc-editor-leave')void app.message(event({type:'kgxc-editor-leave-result',id:data.id}));};
+  nodes(app.render()).find(n=>n.type==='select'&&n.props.id==='kgxc-course').props.onChange({target:{value:'/tmp/course-b'}});await settle();
+  assert.deepEqual(created,[]);assert.deepEqual(opened,[]);
+  button(app.render(),'为该课程打开独立对话').props.onClick();await settle();
+  assert.equal(created.length,1);assert.deepEqual(opened,['separate-session']);
+  assert.equal(calls.find(x=>x.data?.action==='attach-course').data.arguments.session_id,'separate-session');
+  assert.equal(calls.some(x=>x.data?.action==='bind'&&x.data?.arguments?.select),false);
+  app.unmount();
+});
+
+test('top right update action is present before opening a course and only sends one manual request',async()=>{
+  let posts=0,finish;
+  const app=await client(async(url,options)=>{
+    if(url.endsWith('/meta'))return response({ok:true,token:'test'});
+    if(url.endsWith('/context'))return response({ok:true,ready:true,course_path:null});
+    if(url.endsWith('/updates')&&options.method==='POST'){
+      posts++;
+      return new Promise(resolve=>{finish=()=>resolve(response({ok:true,status:'checked',update:null}));});
+    }
+    return response({ok:true,courses:[]});
+  });
+  try {
+    app.render();app.flush();await settle();
+    const tree=app.render(),bar=nodes(tree).find(n=>n.props.className==='kgxc-switch');
+    const update=button(bar,'检查更新');
+    assert.equal(bar.props.children.at(-1),update);
+    assert.equal(nodes(tree).some(n=>n.type==='kgxc-studio-view'),false);
+    update.props.onClick();update.props.onClick();await settle();
+    assert.equal(posts,1);
+    assert.equal(button(app.render(),'正在检查…').props.disabled,true);
+    finish();await settle();
+    assert.ok(button(app.render(),'检查更新'));
+    assert.ok(nodes(app.render()).some(n=>n.props.role==='status'&&n.props.children.includes('已是最新版。')));
+  }finally{app.unmount();}
 });

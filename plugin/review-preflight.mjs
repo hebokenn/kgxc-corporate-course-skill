@@ -23,7 +23,7 @@ export async function probeReviewer({get,selection,prepared,packet,course_path,s
   const probes=[{kind:'composed-route',ok:prepared?.config?.provider===selection.provider&&prepared?.config?.model===selection.model}];
   const attachments=get('attachments');
   if(attachments?.saveImage){
-    const data=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
+    const data=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNQiFjwHwADzAIY3R2iUgAAAABJRU5ErkJggg==','base64');
     const ref=await attachments.saveImage({data,mediaType:'image/png',name:'kgxc-capability-probe.png'});
     const ok=ref!==undefined&&ref!==null;
     probes.push({kind:'image-attachment-ingress',ok,sha256:createHash('sha256').update(data).digest('hex')});

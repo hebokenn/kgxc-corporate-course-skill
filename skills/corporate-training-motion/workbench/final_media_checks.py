@@ -1,10 +1,12 @@
 """Actual final bytes and honestly scoped AV evidence. Candidate checks never imply listening."""
 from pathlib import Path
 from fractions import Fraction
+from functools import lru_cache
 import hashlib
 import json
 import re
 import subprocess
+import shutil
 from execution_requirements import error,read
 from evidence_versions import sha
 
@@ -24,6 +26,36 @@ def main_video(meta):
     streams=[s for s in meta.get('streams',[]) if s.get('codec_type')=='video' and not s.get('disposition',{}).get('attached_pic')]
     if len(streams)!=1:raise ValueError('Exactly one non-attached main video stream required')
     return streams[0]
+
+
+def _file_identity(path):
+    st=Path(path).stat()
+    return st.st_dev,st.st_ino,st.st_size,st.st_mtime_ns,st.st_ctime_ns
+
+
+@lru_cache(maxsize=16)
+def _decoded_clock(video, video_sha, identity, tools):
+    # Cache only machine facts, in this process. No receipt on disk can grant approval.
+    meta=probe(video,True)
+    main=main_video(meta)
+    frame_clock=json.loads(run(['ffprobe','-v','error','-select_streams',str(main['index']),'-show_frames',
+        '-show_entries','frame=best_effort_timestamp_time','-of','json',str(video)])).get('frames',[])
+    run(['ffmpeg','-v','error','-err_detect','explode','-i',str(video),'-map','0:'+str(main['index']),'-map','0:a:0','-f','null','-'])
+    return meta,tuple(float(row.get('best_effort_timestamp_time',-999)) for row in frame_clock)
+
+
+def decoded_clock(video, video_sha):
+    path=Path(video).resolve()
+    identity=_file_identity(path)
+    def tool_identity():
+        resolved=[shutil.which(name) for name in ('ffprobe','ffmpeg')]
+        if not all(resolved):raise ValueError('ffprobe and ffmpeg are required')
+        return tuple((str(Path(x).resolve()),_file_identity(x)) for x in resolved)
+    tools=tool_identity()
+    value=_decoded_clock(str(path),video_sha,identity,tools)
+    if identity!=_file_identity(path) or tools!=tool_identity():
+        raise ValueError('Video or decoding tools changed during the technical check')
+    return value
 
 
 def ref_path(project,ref,allow_delivery=False):
@@ -142,16 +174,13 @@ def inspect(project,context):
         cover=ref_path(p,plan.get('cover')) if purpose in {'final','delivery'} or plan.get('cover') else None
         fps=Fraction(str(expected['fps']));count=expected['frames']
         if type(count)is not int or count<2 or fps<=0:raise ValueError('Invalid expected frame clock')
-        meta=probe(video,True);main=main_video(meta);source_main=main_video(probe(source))
+        meta,frame_clock=decoded_clock(video,vs);main=main_video(meta);source_main=main_video(probe(source))
         actual_frames=int(main.get('nb_read_frames',main.get('nb_frames',0)))
         actual_fps=Fraction(main.get('avg_frame_rate','0/1'))
         if (actual_frames!=count or actual_fps!=fps or main['width']!=expected['width'] or main['height']!=expected['height']):
             errors.append(error('FINAL_VIDEO_CLOCK_MISMATCH','Actual main stream differs from the current expected clock.'))
-        frame_clock=json.loads(run(['ffprobe','-v','error','-select_streams',str(main['index']),'-show_frames',
-            '-show_entries','frame=best_effort_timestamp_time','-of','json',str(video)])).get('frames',[])
-        if len(frame_clock)!=count or any(abs(float(row.get('best_effort_timestamp_time',-999))-i/float(fps))>.000002 for i,row in enumerate(frame_clock)):
+        if len(frame_clock)!=count or any(abs(t-i/float(fps))>.000002 for i,t in enumerate(frame_clock)):
             errors.append(error('FINAL_VIDEO_CLOCK_MISMATCH','Actual decoded timestamps are not the declared zero-based frame clock.'))
-        run(['ffmpeg','-v','error','-err_detect','explode','-i',str(video),'-map','0:'+str(main['index']),'-map','0:a:0','-f','null','-'])
         checks['decode']=dict(ready=True,frames=actual_frames,fps=str(actual_fps),width=main['width'],height=main['height'],main_stream_index=main['index'],attached_pic_excluded=True)
         w,h=expected['width'],expected['height']
         first=rgb_frame(video,0,main['index'],w,h);second=rgb_frame(video,1,main['index'],w,h)
