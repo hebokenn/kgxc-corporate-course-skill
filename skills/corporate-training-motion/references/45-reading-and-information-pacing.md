@@ -1,0 +1,129 @@
+# 画面可读、讲解连贯与有目的的停顿
+
+适用于视频分镜、构图、编辑和小样/整课复核。6.0新视频工程默认同时启用阅读与讲解连贯性契约；独立课件和已完成旧课不自动改写。用户要求修复某课时先保留原稿、原片和有效确认，仅修改受影响画面或讲解。
+
+## 先安排学员怎样理解
+
+动作变化可以利落，新增信息的节奏由学习任务决定。不要把动作完成、口播下一句或页面无动画当作“学员已读懂”。动作、信息和讲解三种节奏分别安排，但不机械首尾相加。**稳定阅读时间是文字在画面上的有效保留时间，可以与解释同一任务的旁白重叠，不等于无声等待时间。** 不能以“留足阅读”为由，在每次换字、动作结束或每段末尾自动插静音。旁白转入另一任务前，应完成当前必要的信息处理，不能把互不相关的讲解全部计成阅读帮助。
+
+同一画面要分别安排：
+
+- **信息组**：本次新增什么，学员要读懂、比较或作出什么判断；屏幕文字用当前任务必需的短句/字段，旁白解释关系。保留正常字幕，不以删字幕掩盖正文过载。
+- **动作时间**：对象从起态到结果的实际过程。若需要移动带字物件，先让学员读清，移动时保留身份，停稳后再引入下一组文字；不在移动途中同时换正文。
+- **稳定阅读时间**：字已完整显示、位置和大小稳定后，仍实际保留多久；期间可继续相关解释、举例或移动不遮字的焦点。淡入、逐字出现、遮罩、卡片移动、镜头移动及被遮挡的时间不当作完整稳定阅读。
+- **信息保留**：后面还要比较或引用的内容，在原处留下结果或同屏摘要；结束时能回看必要的流程和关系。独立情境不强制把全部历史文字堆在画面上，明确替换理由。
+- **焦点顺序**：新信息逐组推进。确需同时比较的左右内容作为一个阅读组一起预算，避免两处同时引入互不关联的正文。
+
+分镜每种备选增加 `reading_design`，写 `information_groups`（每组的 `screen_text/read_task/motion_seconds/stable_read_seconds/retention`）和 `focus_order`。没有新增正文时用空数组并写 `no_new_text_reason`，说明如何靠图像观察理解。完整分镜声明 `reading_contract=reading-pacing-v1`；工作台与离线分镜同时展示这些信息。
+
+抽样风险同时考虑多字段比较、快速替换和需要回看的信息；沿用三段分层随机抽样，未抽中的阅读风险列入整课复核，不为挑选容易画面反复重抽。
+
+不要把这次样例的四栏、固定位置或某个秒数推广成所有课程模板。表单填写、人物对白、空间演示、数值关系和练习各自决定看什么；陌生术语、多字段、条件/例外或需要比较时，制作端增加理解时间。若完整口播不足以支撑画面任务，先减少冗余文字、调整信息组织，仍需增加讲解则修订相关稿件并沿用原有确认规则。不要用整片降速、拉长同一个动作或批量补静音代替重新编排。
+
+按顺序解决时间冲突：精简屏幕正文并保留完整字幕 → 按任务分组、提前呈现必要条件 → 保留前项与同屏摘要、只移动观看焦点 → 调整相关讲解与画面次序 → 确需增加内容时只修改受影响稿件。阅读检查发现不足时返回缺口，不生成静音修复方案，也不能下调预算或把正文改称常驻标签绕过检查。
+
+## 实际时间线的阅读计划
+
+`workbench.json.readingPolicy.required=true`；新工程的 `motion-contract.json.readingRequired=true` 防止删策略绕过导出。`readingPlan` 用源帧，编辑中的剪切与明确任务停顿由系统换算为实际播放帧：
+
+```json
+{
+  "schema": "course-reading-plan/1",
+  "referenceTextIds": ["flow-header", "step-label"],
+  "groups": [{
+    "id": "handover-fields",
+    "sceneId": "handover",
+    "textIds": ["receiver-name", "handover-date"],
+    "task": "看清接收人与交接日期",
+    "window": {"startFrame": 90, "endFrame": 300},
+    "minimumStableSeconds": 5,
+    "retention": {
+      "mode": "keep",
+      "untilFrame": 420,
+      "viaTextIds": ["completed-handover-summary"],
+      "reason": "后面核对异常记录时还要回看本步结果"
+    }
+  }]
+}
+```
+
+示例ID和数字需按本课实际对象填写，不是可直接提交的空壳。`textIds`绑定真实可编辑文字；子节点会同时检查父容器运动和显隐。需要后续回看时 `mode=keep`，原字段或`viaTextIds`摘要须真正保留到`untilFrame`；不需要回看时用 `mode=replace` 并说明理由。摘要的语义是否足够仍要实际复看，检查器不能理解它是否替代了所有必要条件。
+
+全部教学正文须被阅读组覆盖。`referenceTextIds`只能登记真正常驻、稳定的结构标签，临时正文不能改称标签避检。标题、品牌及导航保留原角色，不以它们代替需要读懂的教学内容。
+
+检查内置一项**工程估算下限**：按中文字符、英文词、数字组和行数估算首次定位与阅读成本，短组也有最低曝光量。它不是实测阅读速度、普遍教学秒数或理解达标线；`minimumStableSeconds`应根据本课学习任务在此基础上增加。设置更小数字、写一句“旁白已读过”或声明一个`read`节拍均不能豁免。确实不需读这么多文字时应调整画面内容，避免用例外名单逐条放行问题。
+
+```sh
+# 只读；也可诊断未启用契约的旧课，不改变文件/确认
+python3 SKILL_DIR/scripts/course_tools.py reading-check --spec COURSE/project/workbench.json
+# 用户已明确要求旧课返修时才启用；保存历史、实际授权，不生成/认可视频
+python3 SKILL_DIR/scripts/course_tools.py reading-enable COURSE --evidence 实际返修授权
+```
+
+结构检查失败返回非零状态；导出调用同一检查。它按实际文字编辑结果、文字及祖先的显隐/运动、显示/消失边界、剪切和停留计算**连续**窗口，不把多段零碎空档相加。新增信息的阅读窗口竞争时，顺次安排或合成同一个比较任务。剪切、加字或加速后重新计算，不沿用旧版本的秒数或报告。
+
+## 从实际渲染再检查一次
+
+旧课显式启用后，先保留原生引擎并接入新的文字回执；不能只添加策略就假定旧引擎具有检测能力。标准引擎可按已有渲染升级流程更新，自定义引擎在原实现内补接口，缺失时导出明确失败。
+
+新生成的生产画布提供 `readingReceipt()`，由同一 `drawFrame` 返回实际文字、透明度、画面边界、已知裁切、位置及后绘制的不透明遮盖；每个编码帧积累真实连续曝光。父容器的遮罩与裁切传给子文字；计数器尚未到终值不算完整正文。常驻标签也逐帧检查，只有回看阶段的局部导出仍检查保留内容。最终字幕在外层绘制后再次检查与正文的重叠，半透明标记不当作完全不透明覆盖。自定义画布也须提供同一回执，缺失会停止导出，不能把路线改名来关闭检查。
+
+`reading-audit.json`及视频导出回执中的`readingPacing`绑定本次渲染。文字未完整显示、出框、被检测到的遮盖、持续位移、实际文案与计划不符或阅读时间不足，候选保留但不登记为当前小样/成片。该检查与完整解码、动作状态和布局检查并列；不是对MP4文字做全面OCR，也不能保证识别一切透明图片遮挡、低对比度或语义难度。
+
+
+## 连贯性与计划停顿
+
+自然语气停顿不必逐项登记。较长停顿仅用于明确的作答、观察任务或真实品牌包装：写清学员做什么、实际提示、时间窗口与总静音预算。练习默认明确邀请学员自行暂停，视频只作短促交接；需要倒计时或较长观察时按教学任务说明理由，不能把某课的两秒或某个检测阈值规定为普遍标准。目录与章节页用本课路线介绍或简短过渡语衔接，不用无声占位；已有开场路线足够时仅调整画面，不机械追加口播。
+
+6.0新工程的 `continuityPolicy.required=true` 与 `motion-contract.json.continuityRequired=true` 防止删检查。制作 spec 绑定 `media.narration`：与原始源帧轴等长、含实际授课声音的旁白干声；`media.audio` 是同轴混音。没有背景音乐和音效时可明确绑定同一干声文件。`sfx-mix --bind` 在6.0工程同时保存输入干声与输出混音，不能拿音乐分轨或带背景音乐的混音冒充干声。
+
+`continuityPlan` 无计划停顿时也写 `{"schema":"course-continuity-plan/1","pauses":[]}`。确需停顿时，例如：
+
+```json
+{
+  "schema": "course-continuity-plan/1",
+  "pauses": [{
+    "id": "practice-end", "sceneId": "exercise",
+    "kind": "practice",
+    "window": {"startFrame": 210, "endFrame": 270},
+    "maxSeconds": 4,
+    "learnerCue": "请自行暂停，完成判断后继续",
+    "reason": "完整引导后的作答交接，后续讲解继续"
+  }]
+}
+```
+
+源帧窗口从所属场景内开始，必要时可包含紧邻场景开始前的实际交接，但整段窗口仍受总预算限制，不能整场豁免。源帧窗口映射同一剪切/停顿时轴；`maxSeconds` 预算包含自然尾静音和新增停顿，不能逐项相加后漏算总空白。示例不代表每道题必须停四秒。`kind` 为 `practice/observation/brand`，品牌停顿只用于真实 `scene.kind=brand`。不得用“阅读”“转场”或整场标签豁免普通讲解。新增 `holds` 必须落入实际任务窗口，不能穿过仍在讲述的字幕句子；修改停顿后重新检查实际声音与语义边界。
+
+```sh
+# 只诊断计划；不修改课程或自动插入停顿
+python3 SKILL_DIR/scripts/course_tools.py continuity-check --spec COURSE/project/workbench.json
+# 检查实际干声、剪切/停顿后的时轴及最终编码声音
+python3 SKILL_DIR/scripts/course_tools.py continuity-check --spec COURSE/project/workbench.json --project COURSE/project --video ACTUAL_FINAL_MP4
+# 旧课只有明确返修授权后才启用；保留原文档、产物与有效确认
+python3 SKILL_DIR/scripts/course_tools.py continuity-enable COURSE --evidence 实际返修授权
+```
+
+导出在渲染前分析同轴干声，编码后同时分析实际MP4音轨，保存 `continuity-preflight.json/continuity-audit.json` 与最终验证回执。切掉说话后可能把两个短静音拼成一个长空白；插入停顿也会与自然尾音空白合并，因此直接使用与播放器相同的采样级编辑滤镜，不仅相加JSON秒数。检查器只报告异常，不移动音轨、加速、补话或插静音；失败候选保留，不能登记完成。
+
+默认 `gapSeconds=2.5/noiseFloorDB=-42` 是保守的声学诊断起点，可在允许范围内按录音条件调整并记录依据；它既不要求每句停这么久，也不保证低于阈值就自然。背景音乐不能掩盖旁白中断：旁白干声单独检查，最终混音也检查。声明的“干声”仍须来自实际配音链，声学检测不能识别所有错轨、漏字、语义断句与被音乐遮住的人声，正常速度连续听看仍不可省略。
+
+## 正常速度首次观看复核
+
+三段小样与整课在提交用户前均复看当前实际导出：先静音核对信息去向、层次、旧信息回看和焦点，再以正常速度连续看听当前片段及其必要衔接：是否突然中断、目录/章节是否空等、要点能否在讲解中稳定回看；检查开头立即有可识别内容，并核对实际开始发声与画面出现。把自己放在第一次看且不知道结论的学员位置：本组文字能否读完，能否解释“谁、什么、何时、为何”，下一步需要的信息还在不在，旁白/字幕/正文是否抢注意力。必要时用一位真实新学员的回述验证；没有做就不写“学员理解通过”。
+
+新契约的完整候选在现有导演/工艺复核中补 `qa/reading-review.json`：`schema=course-reading-review/1`、`status=reviewed`、当前`videoSha256/documentSha256`、实际`reviewer`、`playback.speed=1/method/ranges`，逐阅读组的`id/readingTask/observedReadability/retentionObserved/attentionObservation`，以及真实`unresolvedIssues`。6.0工程的 `playback.continuityObservation` 另记实际连贯性与停顿用途观察。首次观看的“首次”表示按陌生学员视角评估，不冒称审阅者从未见过稿件。此记录不新增用户批准阶段，不代填小样确认，也不能靠批量复制“已读清”完成。
+
+自动估算、实际渲染、首次观看判断和用户认可分别报告。安装新Skill不自动给旧课补一份“通过”，不把技术验证样例当正式课程交付。
+
+## 精确语义锚点和真实连续曝光
+
+`requirements.direction.semantic_alignment`保存 `audio_path/audio_sha256/map_path/events/encoded_mapping/review`，由 `semantic_alignment.inspect()`与[统一放行](55-execution-contract-and-release.md)消费。词图按片段记录原始 `narration`、`words[{word_id,start_frame,end_frame,alignment_kind}]`和 `char_map[{raw_start,raw_end,word_ids,alignment_kind}]`；必须绑定当前实际干声SHA。ASR包络属于近似边界，不能改称逐音素听审。
+
+每个事件提供 `id,segment_id,quote,raw_span:[a,z],occurrence,semantic_anchor:{raw_span,word_ids},node_ids,new_value_node_ids,trigger_frame,result_frame`。同一句内分别讲到的数值/条件/答案分别绑定，结果对象另给 `result_anchor/result_node_ids`。保留旧对象的动作可明确 `new_value_node_ids:[]`，中性支架须以 `neutral_scaffolds[{node_id,reason}]`说明；不能把未讲到的新事实藏进中性容器。
+
+`resolve()`严格核对完整原文区间和明确出现次数，再读取真实词ID及包络；没有短串首匹配、最近字幕、段长均分、首项段首或阅读预算夹移回退。技术证明点单独用 `technical_anchor`，必须与同源词包络和实际字幕交叉，不能改变语义触发帧。缺口返回 `SEMANTIC_ANCHOR_MISSING`；父容器/子字段提前可读、结果抢先或证明对象已退场有独立错误码。
+
+编码后 `encoded_mapping`须绑定当前视频/干声、明确 `display_frame_offset`和至少三个 `source_checkpoints`；检查器实际以48k干声窗口对当前编码声音测时，低置信匹配保持unknown，超出整数帧量化报 `SEMANTIC_ENCODED_TIME_MISMATCH`。触发前、触发、中点、落位和阅读末端图像须来自同一当前视频。这个测时不证明声音自然、内容被理解或完整连续听过。
+
+花字同时满足已有阅读预算与 `estimate()`估算下限。`RuntimeAudit`现在保存最长真实连续 `actualStableWindow`，每帧消费同一次绘制的完整文字、透明度、位置、裁切与遮挡回执；零碎曝光不能相加。`requirements.emphasis.runtime_reading`绑定当前doc/video及实际 `report/report_path`。`emphasis_checks`只计与花字计划阅读窗的真实交集，缺实际回执或曝光不足报 `EMPHASIS_RUNTIME_READING_MISSING/SHORT`，不能靠计划窗声明已读完。

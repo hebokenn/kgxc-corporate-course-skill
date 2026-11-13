@@ -1,0 +1,398 @@
+{
+  "status": "pass",
+  "count": 48,
+  "actions": [
+    {
+      "id": "chars-in",
+      "title": "逐字进入",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 32724,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "text-rise",
+      "title": "文字遮罩升起",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 26800,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "blur-in",
+      "title": "文字由虚到实",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 51800,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "typewriter",
+      "title": "逐字书写",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 9665,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "draw-on",
+      "title": "按真实弧长描线",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 5048,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "mask-reveal",
+      "title": "对象遮罩揭示",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 31013,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "marker",
+      "title": "重点底色标记",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 153708,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "underline",
+      "title": "下划线强调",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 4180,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "assemble",
+      "title": "部件构建",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 120090,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "explode",
+      "title": "空间拆层",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 74435,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "paper-fold",
+      "title": "纸艺折页",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 97969,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "scan",
+      "title": "扫描检视",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 74880,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "spotlight",
+      "title": "主体聚光",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 477144,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "magnify",
+      "title": "局部放大",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 186820,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "path-follow",
+      "title": "沿业务路径移动",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 148877,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "handoff",
+      "title": "物件交接",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 149112,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "sort",
+      "title": "流程归位",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 152397,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "group-collect",
+      "title": "信息归组",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 167441,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "branch-grow",
+      "title": "知识分枝",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 93378,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "compare-wipe",
+      "title": "对照揭示",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 42964,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "correct-replace",
+      "title": "差异纠正",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 39936,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "count-up",
+      "title": "数量累计",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 4852,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "odometer",
+      "title": "数位滚动",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 8740,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "bar-grow",
+      "title": "数量条增长",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 128960,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "ring-progress",
+      "title": "比例圆环",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 8586,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "area-fill",
+      "title": "区域占比填充",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 130000,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "record-filter",
+      "title": "记录筛选",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 46065,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "dot-aggregate",
+      "title": "个体聚合",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 90149,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "timeline-reflow",
+      "title": "时段编排",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 33990,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "route-progress",
+      "title": "步骤路径推进",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 5118,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "dialogue",
+      "title": "分镜对话",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 103907,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "quiz-feedback",
+      "title": "选择与反馈",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 94305,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "callout",
+      "title": "引线标注",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 64612,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "flow-token",
+      "title": "关系流转",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 1129,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "presenter-gesture",
+      "title": "品牌人物手势",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 3730,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "pixel-walk",
+      "title": "任务闯关移动",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 115746,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "split-merge",
+      "title": "拆分再合并",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 70204,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "balance",
+      "title": "共同基线比较",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 67211,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "rotate-inspect",
+      "title": "转面检查",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 93594,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "gauge-sweep",
+      "title": "仪表指针",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 7847,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "threshold-cross",
+      "title": "阈值判断",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 296670,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "venn-intersect",
+      "title": "范围交集",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 63744,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "swimlane-transfer",
+      "title": "泳道职责交接",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 147361,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "parallel-sync",
+      "title": "并行汇合",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 96941,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "evidence-attach",
+      "title": "证据归因",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 110188,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "check-draw",
+      "title": "完成勾选",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 2039,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "cross-draw",
+      "title": "异常划除",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 2862,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    },
+    {
+      "id": "brace-draw",
+      "title": "范围括注",
+      "actualPixelsChanged": true,
+      "maximumChangedPixels": 2496,
+      "reverseSeekIdentical": true,
+      "runtimeInvoked": true
+    }
+  ],
+  "issues": [],
+  "realEdits": {
+    "position": true,
+    "image": true,
+    "text": true
+  },
+  "negativeControlRejected": true,
+  "scope": "real canvas pixels, API calls and deterministic seeks; not whole-course aesthetic approval"
+}

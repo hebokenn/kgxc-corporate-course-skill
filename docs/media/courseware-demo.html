@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>收货核对 · 三项信息核对与交接 — 自行录课课件</title>
+<style>
+  :root{
+    --ink:#1a2332; --ink-soft:#4a5568; --line:#dbe2ec; --bg:#f5f7fa; --card:#ffffff;
+    --accent:#0f5c8c; --accent-soft:#e3eef7; --warn:#8a5a00; --warn-bg:#fff6e0; --warn-line:#f0d9a0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  header{width:100%;max-width:960px;padding:18px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .badge{display:inline-block;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+    font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:999px;letter-spacing:.02em}
+  .counter{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  main{width:100%;max-width:960px;flex:1;display:flex;align-items:center;padding:20px 24px}
+  .slide{display:none;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:44px 48px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+  .slide.active{display:block}
+  .kicker{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+  h1{font-size:32px;line-height:1.3;margin-bottom:14px}
+  h2{font-size:24px;margin-bottom:18px}
+  .sub{color:var(--ink-soft);font-size:15px;margin-bottom:8px}
+  .quote{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;
+    padding:16px 20px;font-size:17px;margin:18px 0}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}
+  .item{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#fbfcfe}
+  .item .no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:14px;font-weight:700;margin-bottom:8px}
+  .item h3{font-size:16.5px;margin-bottom:6px}
+  .item p{font-size:13.5px;color:var(--ink-soft)}
+  ol.steps{margin:14px 0 14px 22px}
+  ol.steps li{margin-bottom:10px;font-size:15.5px}
+  .note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:14px 18px;
+    font-size:13.5px;color:var(--warn);margin-top:20px}
+  .meta{margin-top:22px;font-size:13px;color:var(--ink-soft);border-top:1px dashed var(--line);padding-top:14px}
+  .meta code{background:#eef1f6;border-radius:4px;padding:1px 6px;font-size:12px}
+  footer{width:100%;max-width:960px;padding:0 24px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  button{font:inherit;font-size:14px;padding:8px 20px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);cursor:pointer}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  button:disabled{opacity:.4;cursor:default}
+  .dots{display:flex;gap:6px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#cdd6e2;cursor:pointer;border:none;padding:0}
+  .dot.on{background:var(--accent)}
+  @media print{
+    body{background:#fff}
+    header .counter,footer{display:none}
+    .slide{display:block;page-break-after:always;border:none;box-shadow:none;padding:24px}
+    .slide:last-child{page-break-after:auto}
+  }
+  @media (max-width:720px){.grid3{grid-template-columns:1fr}.slide{padding:28px 24px}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<header>
+  <span class="badge">虚构验收用途 · 技术测试种子 · 非正式公司制度</span>
+  <span class="counter" id="counter">1 / 6</span>
+</header>
+
+<main>
+  <!-- 1 封面 -->
+  <section class="slide active">
+    <div class="kicker">自行录课课件 · 依据已确认逐字稿</div>
+    <h1>收货核对 · 三项信息核对与交接</h1>
+    <p class="sub">受众：课程技能验收操作者 &nbsp;|&nbsp; 建议录制时长：约 1–2 分钟 &nbsp;|&nbsp; 用途：自行录课参照</p>
+    <div class="quote">口播原文：收货时先核对订单 再检查商品SN编码和外包装 最后拍照留存 确认三项信息对应 再完成交接</div>
+    <p class="sub">本课件按任务顺序示范三项信息的对应核对，供讲授或自行录制使用；内容与已确认逐字稿一致，未作扩展。</p>
+    <div class="note">本课件为课程 Skill v5 技术验收测试种子：课程结构与逐字稿由 QA 夹具确认为验收用途。内容虚构，仅用于分支功能验收，不是企业课程审批，也不是正式公司制度。</div>
+    <div class="meta">课程：收货核对 · 双分支验收 &nbsp;|&nbsp; 逐字稿 SHA-256：<code>e2e08f3232198a8930d1c135884382e30808f29862f63ecc4890df369db98b1a</code> &nbsp;|&nbsp; 工作流 v5.0.0</div>
+  </section>
+
+  <!-- 2 目标与任务 -->
+  <section class="slide">
+    <div class="kicker">教学目标</div>
+    <h2>学完要能做到什么</h2>
+    <ol class="steps">
+      <li><strong>表现性任务：</strong>识别订单、SN编码和外包装的对应关系。</li>
+      <li><strong>学习目标：</strong>指出收货核对的三项对应信息。</li>
+      <li><strong>达成判据：</strong>订单、编码和外包装对应（对照示例核对三项信息）。</li>
+    </ol>
+    <p class="sub">讲法说明：按任务顺序逐项示范，再作对应核对——把三个对象的对应关系转成可观察的核对动作。</p>
+    <div class="note">虚构验收用途：本页目标与判据来自验收种子工程，仅用于课件分支功能验收，非业务审批。</div>
+  </section>
+
+  <!-- 3 逐字稿 -->
+  <section class="slide">
+    <div class="kicker">逐字稿 · 照读稿</div>
+    <h2>讲解原文（已确认）</h2>
+    <div class="quote" style="font-size:18px">收货时先核对订单 再检查商品SN编码和外包装 最后拍照留存 确认三项信息对应 再完成交接</div>
+    <p class="sub">自行录课时照此稿播讲即可；本课件各页与逐字稿逐步对应：核对订单 → 检查商品SN编码和外包装 → 拍照留存 → 确认三项信息对应 → 完成交接。</p>
+    <div class="note">虚构验收用途：该逐字稿为 QA 夹具确认的测试种子文本，与已有原声音轨一致，仅用于验收，不得当作正式课程内容对外使用。</div>
+  </section>
+
+  <!-- 4 三项信息核对 -->
+  <section class="slide">
+    <div class="kicker">核心内容</div>
+    <h2>三项信息核对</h2>
+    <div class="grid3">
+      <div class="item"><span class="no">1</span><h3>核对订单</h3><p>收货时先核对订单：以订单为基准，确认本次收货对象。</p></div>
+      <div class="item"><span class="no">2</span><h3>检查商品SN编码</h3><p>再检查商品SN编码：逐件核对编码，与订单记录相对应。</p></div>
+      <div class="item"><span class="no">3</span><h3>检查外包装</h3><p>同时检查外包装：外观与编码信息一并核对，留存状态证据。</p></div>
+    </div>
+    <p class="sub">三项信息彼此对应：订单 ↔ SN编码 ↔ 外包装。任一项对不上，先不交接。</p>
+    <div class="note">虚构验收用途：三项核对动作为验收种子内容，仅用于技术验收，非正式公司制度。</div>
+  </section>
+
+  <!-- 5 练习与反馈 -->
+  <section class="slide">
+    <div class="kicker">练习与反馈</div>
+    <h2>练一练：指出应对应的三项信息</h2>
+    <ol class="steps">
+      <li><strong>练习任务：</strong>给出一组到货场景，指出应对应的三项信息。</li>
+      <li><strong>完成判据：</strong>答案包含订单、SN编码与外包装。</li>
+      <li><strong>练习反馈：</strong>回看三项信息对应后再交接。</li>
+      <li><strong>流程收束：</strong>最后拍照留存，确认三项信息对应，再完成交接。</li>
+    </ol>
+    <div class="note">虚构验收用途：练习与反馈文案来自验收种子工程，仅用于课件分支验收，不是正式考核标准。</div>
+  </section>
+
+  <!-- 6 收束 -->
+  <section class="slide">
+    <div class="kicker">收束</div>
+    <h2>四步回顾</h2>
+    <ol class="steps">
+      <li>先核对订单；</li>
+      <li>再检查商品SN编码和外包装；</li>
+      <li>拍照留存；</li>
+      <li>确认三项信息对应，再完成交接。</li>
+    </ol>
+    <p class="sub">课件与逐字稿一并交付；本稿后续如需视频，仍从同一份已确认逐字稿另选视频分支，本课件不作为视频制作基础。</p>
+    <div class="note">虚构验收用途声明：本课件全部内容为课程 Skill v5 技术验收测试种子（工程 kgxc-branch-upgrade-20261020-114735），由 qa-fixture 确认，仅用于分支功能验收，不是企业课程审批，不得用于正式培训。</div>
+  </section>
+</main>
+
+<footer>
+  <button id="prev">上一页</button>
+  <div class="dots" id="dots"></div>
+  <button id="next">下一页</button>
+</footer>
+
+<script>
+(function(){
+  var slides=document.querySelectorAll('.slide'),i=0,n=slides.length;
+  var counter=document.getElementById('counter'),dots=document.getElementById('dots');
+  for(var k=0;k<n;k++){var d=document.createElement('button');d.className='dot'+(k===0?' on':'');
+    d.setAttribute('aria-label','第 '+(k+1)+' 页');d.dataset.i=k;dots.appendChild(d);}
+  function show(j){i=Math.max(0,Math.min(n-1,j));
+    slides.forEach(function(s,idx){s.classList.toggle('active',idx===i)});
+    counter.textContent=(i+1)+' / '+n;
+    document.getElementById('prev').disabled=i===0;
+    document.getElementById('next').disabled=i===n-1;
+    dots.querySelectorAll('.dot').forEach(function(d,idx){d.classList.toggle('on',idx===i)});
+    document.title='收货核对 · 三项信息核对与交接 — '+(i+1)+'/'+n;
+  }
+  document.getElementById('prev').onclick=function(){show(i-1)};
+  document.getElementById('next').onclick=function(){show(i+1)};
+  dots.addEventListener('click',function(e){if(e.target.dataset.i!==undefined)show(+e.target.dataset.i)});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ')show(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+    if(e.key==='Home')show(0); if(e.key==='End')show(n-1);
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>

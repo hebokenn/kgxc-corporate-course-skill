@@ -1,0 +1,68 @@
+{
+  "videoSha256": "150da5461467be0674e45b48f227db27360a613ca74b8f2329abc90b9ff02247",
+  "seconds": 315.53333333333336,
+  "sceneCount": 39,
+  "maximumActionSeconds": 0.8666666666666667,
+  "medianActionSeconds": 0.3333333333333333,
+  "narration": {
+    "status": "pass",
+    "errors": [],
+    "slowTransitions": [],
+    "narrationLinks": 184,
+    "semanticJudgement": "structural links and pacing only; actual appropriateness and listening review required"
+  },
+  "encodedActionProofs": 189,
+  "encodedMotion": "pass",
+  "audioSameB2NormalSpeed": [
+    {
+      "second": 12,
+      "pcmCorrelation": 0.9999535547774204
+    },
+    {
+      "second": 58,
+      "pcmCorrelation": 0.9997514270827449
+    },
+    {
+      "second": 106,
+      "pcmCorrelation": 0.999784463293901
+    },
+    {
+      "second": 142,
+      "pcmCorrelation": 0.9996527432268556
+    },
+    {
+      "second": 184,
+      "pcmCorrelation": 0.9997599399000479
+    },
+    {
+      "second": 204,
+      "pcmCorrelation": 0.9996529516490402
+    },
+    {
+      "second": 229,
+      "pcmCorrelation": 0.9996654122088284
+    },
+    {
+      "second": 268,
+      "pcmCorrelation": 0.999805538273267
+    },
+    {
+      "second": 302,
+      "pcmCorrelation": 0.999923903693985
+    }
+  ],
+  "frozenFullCourseSha256": "1e3f4e2b1670e99f8e066bb171e71aa2b73e909950716988a423c142e48dca71",
+  "userAcceptance": "pending",
+  "scope": "Technical evidence only. Not a human listening or aesthetic acceptance. Actual screenshot review is recorded separately.",
+  "regressionTests": {
+    "count": 101,
+    "status": "pass"
+  },
+  "observedPreviousFailure": {
+    "actionCount": 96,
+    "medianSeconds": 5.15,
+    "overFiveSeconds": 49,
+    "maximumSeconds": 12.2,
+    "cause": "whole narration window passed to one transition; pixel movement mistaken for relevance"
+  }
+}

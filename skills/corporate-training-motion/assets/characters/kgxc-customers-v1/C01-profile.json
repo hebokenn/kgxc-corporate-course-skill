@@ -1,0 +1,94 @@
+{
+  "schema": "course-character/1",
+  "id": "C01",
+  "title": "成年男性顾客",
+  "role": "customer",
+  "outfit": "靛蓝牛仔夹克与休闲长裤",
+  "approval": {
+    "stage": "design",
+    "evidence": "三张都可以，按这版继续（推荐）",
+    "actor": "human-user",
+    "at": "2026-10-21T11:17:41.227461+08:00",
+    "approvedFiles": [
+      {
+        "path": "C01-design-v1.png",
+        "sha256": "aeb37960e684bf40385dd6223369768ede8079361d5225ce9216535cb4569b16"
+      }
+    ]
+  },
+  "assets": {
+    "design": {
+      "path": "C01-design-v1.png",
+      "sha256": "aeb37960e684bf40385dd6223369768ede8079361d5225ce9216535cb4569b16"
+    },
+    "master": {
+      "path": "C01-full-v1.png",
+      "sha256": "51373a45767214b133c0e4469180f8a8b69624d107b535f6c1f1dc2494f3bd62",
+      "size": [
+        1024,
+        1536
+      ],
+      "alpha": true,
+      "derivedFrom": "aeb37960e684bf40385dd6223369768ede8079361d5225ce9216535cb4569b16"
+    }
+  },
+  "views": {
+    "full": {
+      "crop": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "label": "全身"
+    },
+    "half": {
+      "crop": [
+        0.1,
+        0,
+        0.8,
+        0.61
+      ],
+      "label": "半身，同一原图重新取景"
+    }
+  },
+  "identity": {
+    "locked": [
+      "face",
+      "hair",
+      "body-proportions",
+      "skin",
+      "clothing",
+      "shoes"
+    ],
+    "roleDistinction": "casual clothing; no employee polo, badge or logo"
+  },
+  "expressions": {
+    "states": [
+      "neutral-smile",
+      "listen",
+      "concern",
+      "relieved"
+    ],
+    "source": "approved-design-board",
+    "productionTexturesReady": false
+  },
+  "performance": {
+    "validated": [
+      "static-full",
+      "static-half",
+      "diagrammatic-position"
+    ],
+    "concepts": [
+      "listen",
+      "phone-use",
+      "curious-look"
+    ],
+    "naturalJointAnimationReady": false,
+    "limitations": [
+      "顾客不自动使用旁白口型",
+      "M1关节坐标不能套用本角色",
+      "自然走路、接物、转身需补图和独立绑定验证"
+    ]
+  }
+}

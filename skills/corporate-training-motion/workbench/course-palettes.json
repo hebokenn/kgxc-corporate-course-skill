@@ -1,0 +1,84 @@
+{
+  "schema": "course-palette-catalog/1",
+  "selection": "one complete palette per course; legacy style recipe colours are references, not new-course defaults",
+  "palettes": [
+    {
+      "id": "cobalt-orange",
+      "name": "钴蓝与陶橙",
+      "canvas": "#F4F6FD",
+      "ink": "#1C2544",
+      "accent": "#2C51C7",
+      "secondary": "#94400D",
+      "stroke": "#C8D0E3",
+      "muted": "#535E76",
+      "surface": "#FFFFFF",
+      "error": "#AA3446",
+      "soft": "#DCE4FA"
+    },
+    {
+      "id": "violet-sand",
+      "name": "紫罗兰与沙金",
+      "canvas": "#F7F3FC",
+      "ink": "#30203F",
+      "accent": "#7034A9",
+      "secondary": "#8A5715",
+      "stroke": "#D7CDE3",
+      "muted": "#695875",
+      "surface": "#FFFFFF",
+      "error": "#A52C45",
+      "soft": "#E6DAF1"
+    },
+    {
+      "id": "midnight-gold",
+      "name": "午夜蓝与金黄",
+      "canvas": "#111B32",
+      "ink": "#F7F4E9",
+      "accent": "#F4C86B",
+      "secondary": "#C6B5FC",
+      "stroke": "#6D7890",
+      "muted": "#C0C7D7",
+      "surface": "#1E2B44",
+      "error": "#FFA8B2",
+      "soft": "#34445E"
+    },
+    {
+      "id": "burgundy-cream",
+      "name": "酒红与奶油白",
+      "canvas": "#FCF7EE",
+      "ink": "#39242A",
+      "accent": "#993247",
+      "secondary": "#88561D",
+      "stroke": "#DCCBC9",
+      "muted": "#705C60",
+      "surface": "#FFFCF6",
+      "error": "#AB2F21",
+      "soft": "#EFDBD7"
+    },
+    {
+      "id": "charcoal-coral",
+      "name": "炭灰与珊瑚橙",
+      "canvas": "#202128",
+      "ink": "#F8F3EC",
+      "accent": "#FFB099",
+      "secondary": "#C8BBFF",
+      "stroke": "#777581",
+      "muted": "#CCC5D0",
+      "surface": "#2E2F39",
+      "error": "#FFB2C4",
+      "soft": "#47414A"
+    },
+    {
+      "id": "ochre-paper",
+      "name": "赭金与米白",
+      "canvas": "#FAF5E9",
+      "ink": "#3B3024",
+      "accent": "#8B5413",
+      "secondary": "#6943A2",
+      "stroke": "#D8CCB5",
+      "muted": "#6C5D48",
+      "surface": "#FFFCF5",
+      "error": "#A3313D",
+      "soft": "#EBDAB8"
+    }
+  ]
+}

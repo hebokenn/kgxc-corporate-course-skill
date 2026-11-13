@@ -1,0 +1,48 @@
+{
+  "version": "kgxc-bookends-r5-intro-r8-outro",
+  "status": "approved",
+  "approved_on": "2026-10-17",
+  "approved_by": "user",
+  "approval_text": "好的，片头片尾最终版确认，现在是否可以正常调用 skill",
+  "intro_revision": "r5-rigid-camera",
+  "outro_revision": "r8-airy-background",
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "intro_seconds": 10.5,
+  "outro_minimum_seconds": 7,
+  "editable_fields": [
+    "course_name",
+    "subtitle"
+  ],
+  "default_for": "new KGXC courses in this workspace",
+  "existing_frozen_courses": "Do not modify automatically",
+  "assets": {
+    "intro-preview.mp4": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/intro-preview.mp4",
+      "sha256": "d1ae1b1d8f1a986ac8cf3101cba1b7d1366c4b04f4458b786b080310b7e21492"
+    },
+    "intro.mp4": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/intro.mp4",
+      "sha256": "2102f0870b79a1e65779c4c4d1e89c5e3c4a21b82a3dd3fcafb488eca06073a2"
+    },
+    "intro-soundtrack.wav": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/intro-soundtrack.wav",
+      "sha256": "c668c54fdf5db0f02f0da589f26fd34421e1dabec79957f2be6c58d7174e7cee"
+    },
+    "outro-preview.mp4": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/outro-preview.mp4",
+      "sha256": "2ca1b91ad5794d83d6727dab2347dd69d75709ed2f8ffd148445f73539a0b061"
+    },
+    "outro.mp4": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/outro.mp4",
+      "sha256": "8b65d9904b22e2852f18d2999750d4d4490a93582dd2a81264e33e82cf4b7edf"
+    },
+    "outro-soundtrack.wav": {
+      "path": "v8-reference-master/revisions/r8-airy-background/output/outro-soundtrack.wav",
+      "sha256": "69e2090b63db7a7f0f91f7ffc9315a87f4ffac1dc33c7a1712d2464ace72fd51"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "version": "5.0.2",
+  "date": "2026-10-20",
+  "components": {
+    "corporate-training-motion": "5.0.2",
+    "elearning-course-design": "2.0.0"
+  },
+  "checks": {
+    "skill_unittest_cases": 71,
+    "standalone_script_groups": 5,
+    "installer_unittest_cases": 7,
+    "skill_metadata": "pass",
+    "prior_installed_workbuddy_resume": "pass",
+    "prior_installed_workbuddy_export": {
+      "duration_seconds": 6,
+      "frames": 180,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "full_decode": "pass"
+    },
+    "sound_palette_files": 21
+  },
+  "limits": [
+    "Native WorkBuddy chat auto-routing for 5.0.2 has not been tested",
+    "User listening acceptance of the new SFX has not been recorded",
+    "This release did not repeat first-time media-runtime or Aiden-model downloads",
+    "Existing and frozen courses are not automatically migrated or rerendered"
+  ],
+  "verification_notes": "V5.0.2-VERIFICATION.md",
+  "previous_native_host_verification": "V5-VERIFICATION.md"
+}

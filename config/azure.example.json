@@ -1,0 +1,9 @@
+{
+  "provider": "azure",
+  "region": "eastasia",
+  "voice": "zh-CN-Yunxiao:DragonHDFlashLatestNeural",
+  "credential": {
+    "type": "environment",
+    "variable": "AZURE_SPEECH_KEY"
+  }
+}

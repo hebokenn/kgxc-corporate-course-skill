@@ -1,0 +1,122 @@
+{
+  "version": "5.2.1",
+  "tests": 118,
+  "skillTests": "pass",
+  "fullDecode": "pass",
+  "zipCRC": "pass",
+  "layoutAudit": {
+    "status": "pass",
+    "checkedRenderedStates": 471,
+    "rules": [
+      {
+        "objectId": "offers-row-0",
+        "rule": "separate-text",
+        "checkedStates": 283,
+        "firstFrame": 564,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "offers-row-focus-0",
+        "rule": "enclose-text",
+        "checkedStates": 30,
+        "firstFrame": 564,
+        "lastFrame": 593
+      },
+      {
+        "objectId": "offers-row-1",
+        "rule": "separate-text",
+        "checkedStates": 253,
+        "firstFrame": 594,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "offers-row-focus-1",
+        "rule": "enclose-text",
+        "checkedStates": 31,
+        "firstFrame": 594,
+        "lastFrame": 624
+      },
+      {
+        "objectId": "offers-row-2",
+        "rule": "separate-text",
+        "checkedStates": 222,
+        "firstFrame": 625,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "offers-row-focus-2",
+        "rule": "enclose-text",
+        "checkedStates": 28,
+        "firstFrame": 625,
+        "lastFrame": 652
+      },
+      {
+        "objectId": "services-row-0",
+        "rule": "separate-text",
+        "checkedStates": 132,
+        "firstFrame": 715,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "services-row-focus-0",
+        "rule": "enclose-text",
+        "checkedStates": 32,
+        "firstFrame": 715,
+        "lastFrame": 746
+      },
+      {
+        "objectId": "services-row-1",
+        "rule": "separate-text",
+        "checkedStates": 100,
+        "firstFrame": 747,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "services-row-focus-1",
+        "rule": "enclose-text",
+        "checkedStates": 32,
+        "firstFrame": 747,
+        "lastFrame": 778
+      },
+      {
+        "objectId": "services-row-2",
+        "rule": "separate-text",
+        "checkedStates": 68,
+        "firstFrame": 779,
+        "lastFrame": 846
+      },
+      {
+        "objectId": "services-row-focus-2",
+        "rule": "enclose-text",
+        "checkedStates": 34,
+        "firstFrame": 779,
+        "lastFrame": 812
+      },
+      {
+        "objectId": "scope-row-0",
+        "rule": "separate-text",
+        "checkedStates": 188,
+        "firstFrame": 1170,
+        "lastFrame": 1357
+      },
+      {
+        "objectId": "scope-row-1",
+        "rule": "separate-text",
+        "checkedStates": 188,
+        "firstFrame": 1170,
+        "lastFrame": 1357
+      },
+      {
+        "objectId": "scope-row-2",
+        "rule": "separate-text",
+        "checkedStates": 188,
+        "firstFrame": 1170,
+        "lastFrame": 1357
+      }
+    ],
+    "scope": "declared text enclosure and row separation, not all possible visual collisions"
+  },
+  "videoSha256": "412b1e255a2d2b115984966868902eb5f7cf02facec760a39b2a74bd95a8fc9e",
+  "packageSha256": "962df423098b2b38de5155b21b1dbb6cd83b96b85326ba8384336b86df1f6df4",
+  "scope": "declared text layout and known unbranded source checks; human quality and user acceptance separate"
+}

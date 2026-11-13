@@ -1,0 +1,36 @@
+{
+  "scope": "",
+  "keyframes": [],
+  "dynamic_sample": {
+    "path": "",
+    "sha256": "",
+    "timing_basis": "estimated"
+  },
+  "review": {
+    "spatial_continuity": {
+      "status": "not_run",
+      "method": "",
+      "range": ""
+    },
+    "diagram_expression": {
+      "status": "not_run",
+      "method": "",
+      "range": ""
+    },
+    "reading_time": {
+      "status": "not_run",
+      "method": "",
+      "range": ""
+    },
+    "occlusion": {
+      "status": "not_run",
+      "method": "整课最终帧率扫描推近/平移/拉回，检查当前内容及可见相邻说明的未裁切边界与实际字幕遮罩；原缺陷负向对照、修复后最终编码连续片段及播放器控制条复核",
+      "range": ""
+    },
+    "explanation_alignment": {
+      "status": "not_run",
+      "method": "逐项核对实际可见业务点与本段讲解，记录缺失、移除/补讲及编码片段复查",
+      "range": ""
+    }
+  }
+}

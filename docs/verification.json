@@ -1,0 +1,51 @@
+{
+  "version": "3.4.0",
+  "date": "2026-10-19",
+  "platform": {
+    "os": "macOS27.2",
+    "arch": "arm64",
+    "python": "3.12.13",
+    "node": "25.8.1",
+    "ffmpeg": "9.0.2",
+    "blender": "5.2.2 LTS",
+    "codex_cli": "0.163.0-alpha.10.2"
+  },
+  "checks": {
+    "isolated_full_install": "pass",
+    "actual_Aiden_generation": "pass",
+    "repeat_full_install": "pass",
+    "native_codex_skills_list": "pass",
+    "installer_test_cases": 7,
+    "skill_regression_scripts": 10,
+    "editor_changes_save_reload_export": "pass",
+    "unmodified_source_audio": "pass",
+    "editable_zip_crc": "pass",
+    "bookends_six_mp4_full_decode": "pass",
+    "blender_external_missing": 0,
+    "distribution_static_scan": "pass",
+    "uv_absent_bootstrap": "pass",
+    "unpacked_workbench_browser_open": "pass",
+    "blender_relative_render_outputs": "pass"
+  },
+  "voice_probe": {
+    "status": "pass",
+    "model_revision": "52f4770fd9726457eae3d3b6aa92047a25a10776",
+    "voice_id": "Aiden",
+    "speed": 1.0,
+    "duration_seconds": 2.56,
+    "audio_sha256": "b7aba293b99bc2ae475b25bb2c376d42d1ebff1b79a8df606051f5b18b06e0ab"
+  },
+  "skill_manifest_sha256": "5dcb71b380ea46f54fc6deae511d66cae6abd59cdf20747444ddb24108e1df29",
+  "artifact": {
+    "file": "corporate-training-motion-v3.4.0.zip",
+    "bytes": 127483043,
+    "sha256": "fd638b04212465bb591bf895c622f62a4892b8bf3cd72914cdd44bf551b66bb6"
+  },
+  "limits": [
+    "Existing host ffmpeg/Node/Codex reused; not a blank macOS virtual machine",
+    "Homebrew bootstrap, first Codex login and Blender installation not performed",
+    "Other OS/architectures/tools and paid cloud integrations unverified",
+    "Technical sample is not full-course business, listening or user acceptance"
+  ],
+  "remote_validation": "Results recorded in GitHub Release notes after publishing"
+}

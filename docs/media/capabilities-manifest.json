@@ -1,0 +1,252 @@
+{
+  "producer": {
+    "skill": "huashu-motion",
+    "version": "0.1.1"
+  },
+  "effect_count": 17,
+  "new_visual_styles": [
+    "瑞士字体海报",
+    "等距空间拆解",
+    "纸艺层叠",
+    "品牌人物漫画",
+    "深色诊断台",
+    "水墨知识图",
+    "像素任务场景"
+  ],
+  "main": {
+    "sha256": "efab837b7f42db4a90eb61fe36bdc0516c2868c36def1c97c1b32cc09f3eb97c",
+    "url": "https://github.com/user-attachments/assets/d66985f1-e143-4a30-83d4-336f45908d54",
+    "bytes": 10013937,
+    "file": "capability-showreel.mp4",
+    "seconds": 80,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "web_audio_kbps": 192,
+    "video_bitstream": "copied from full-quality master",
+    "original_master_sha256": "36869dda28d9ed43d53c484734714ff3c5a683722acf8adf5177f6312fc19534"
+  },
+  "samples": [
+    {
+      "number": 1,
+      "title": "扫描连线",
+      "style": "工程蓝图",
+      "motion": "扫描线扫过标签；连线连接同一SN；逐项勾选",
+      "seconds": 10,
+      "file": "sample-blueprint.mp4",
+      "url": "https://github.com/user-attachments/assets/b9cb36c9-e6bf-4b3f-ac22-890e83f44521",
+      "bytes": 999208,
+      "sha256": "b072eb7d4f22d692cf9948b58f3fd5e8f00c8da6ed838226737cfdfec6059765"
+    },
+    {
+      "number": 2,
+      "title": "公式拆解",
+      "style": "编辑式排版",
+      "motion": "分子分母归位；分数线展开；圈出对应范围",
+      "seconds": 10,
+      "file": "sample-editorial.mp4",
+      "url": "https://github.com/user-attachments/assets/4b709201-255c-4baf-a5be-0ba3543c68b4",
+      "bytes": 876848,
+      "sha256": "644cf98896719ed5c3ebd27be7263161ac8eb010108128d6f47e0862baef9385"
+    },
+    {
+      "number": 3,
+      "title": "逐笔路径",
+      "style": "手写白板",
+      "motion": "路径逐笔绘制；步骤连续展开；手绘圈注",
+      "seconds": 10,
+      "file": "sample-whiteboard.mp4",
+      "url": "https://github.com/user-attachments/assets/a9086358-c463-49b2-88cc-9f082d1dbd76",
+      "bytes": 825421,
+      "sha256": "4695cb245753c187d84d32dc835d5dafd33a043f1fd0fc1f595d24b12817ae19"
+    },
+    {
+      "number": 4,
+      "title": "人物手势",
+      "style": "公司虚拟讲师",
+      "motion": "连续网格抬手、眨眼与知识点选中协同",
+      "seconds": 10,
+      "file": "sample-presenter.mp4",
+      "url": "https://github.com/user-attachments/assets/12c5efa5-d6f2-4e30-b60b-a50259ecf42e",
+      "bytes": 1329836,
+      "sha256": "9e86b7fabc3cbf5ba593c4c91cdfd5e7386cd846b8cb67ec0a775723d1cc4d74"
+    },
+    {
+      "number": 5,
+      "title": "聚光放大",
+      "style": "细节检视",
+      "motion": "背景压暗；局部放大；引导线接入核对位置",
+      "seconds": 8,
+      "file": "sample-spotlight.mp4",
+      "url": "https://github.com/user-attachments/assets/a2adf5be-3ee2-4fc2-9e7d-c6aebded7b65",
+      "sha256": "a77fc55ed07861b1ecb0715f25355afa6c9412398573ae0a2004dd93a5fcb44e",
+      "bytes": 761314
+    },
+    {
+      "number": 6,
+      "title": "对比纠错",
+      "style": "双栏对照",
+      "motion": "差异抖动；末位替换；由异常切换为对应状态",
+      "seconds": 8,
+      "file": "sample-correction.mp4",
+      "url": "https://github.com/user-attachments/assets/1d11a7ad-c4a0-4266-b3c9-eaa942e0612e",
+      "sha256": "13b88a990906658b35925ba276a09c3ed11a2f0144dc7da63c2654ed2d620731",
+      "bytes": 576457
+    },
+    {
+      "number": 7,
+      "title": "排序归组",
+      "style": "流程卡片",
+      "motion": "四张内容卡从错序移动到对应步骤",
+      "seconds": 8,
+      "file": "sample-sorting.mp4",
+      "url": "https://github.com/user-attachments/assets/55e2d65e-4dd3-4a86-9743-0ce6e8a9b8fc",
+      "sha256": "bdd24c0cd293231cd7af5cf9837b04bfc9b23200d9155616c49f3c5685e20bee",
+      "bytes": 825688
+    },
+    {
+      "number": 8,
+      "title": "练习反馈",
+      "style": "课中问答",
+      "motion": "预设选择；错误解释；正确答案与反馈显现",
+      "seconds": 8,
+      "file": "sample-quiz.mp4",
+      "url": "https://github.com/user-attachments/assets/261f7281-61e4-42ed-81d7-1d8a73f33372",
+      "sha256": "1885623be43a08f7175c8b9f112e90340ca4dd75a1804fd5cfe6e8cc657dbfe4",
+      "bytes": 605876
+    },
+    {
+      "number": 9,
+      "title": "时间轴编排",
+      "style": "排班信息图",
+      "motion": "任务区间移动补位；时段覆盖数同步变化",
+      "seconds": 8,
+      "file": "sample-timeline.mp4",
+      "url": "https://github.com/user-attachments/assets/7ee4f707-2dfd-414f-8f1b-1be9e7685766",
+      "sha256": "c051200a930c89bce8ac054dd466d7fd71e42e4d7a36864e1ed42c764cdb1b2a",
+      "bytes": 627467
+    },
+    {
+      "number": 10,
+      "title": "数据聚合",
+      "style": "量化教学",
+      "motion": "100条记录选出20条；聚合成分子；比例显现",
+      "seconds": 8,
+      "file": "sample-data.mp4",
+      "url": "https://github.com/user-attachments/assets/b1eb5814-4ed0-426d-85f3-64af771e163c",
+      "sha256": "8d3a21e1d9baa4e261c8d6a08bc2b97dcc264aa7e8bff1532f29bc0b41a71190",
+      "bytes": 763061
+    },
+    {
+      "number": 11,
+      "title": "字体层级",
+      "style": "瑞士字体海报",
+      "motion": "大字遮罩上升；基线游标切换；提问层级建立",
+      "seconds": 8,
+      "file": "sample-swiss.mp4",
+      "url": "https://github.com/user-attachments/assets/129abcc7-cdab-4aca-8679-97cda4269ab6",
+      "sha256": "7e2ff66a0c9fd03e6a4b7da78f13f2f8a158e29aa0d118ebe6973e121f6fbfc0",
+      "bytes": 753267
+    },
+    {
+      "number": 12,
+      "title": "空间分层",
+      "style": "等距空间拆解",
+      "motion": "包装和信息层沿空间轴拆开；引线逐层标注",
+      "seconds": 8,
+      "file": "sample-isometric.mp4",
+      "url": "https://github.com/user-attachments/assets/5b539c55-b9aa-45ed-99b1-0a9ebc5ce42d",
+      "sha256": "42ecbee41067eb3ca08b59fe336de46290f5d291fc172cc4581782e5ecd3d3cc",
+      "bytes": 874141
+    },
+    {
+      "number": 13,
+      "title": "折页展开",
+      "style": "纸艺层叠",
+      "motion": "三层纸面依次翻开；露出对应步骤；折角和投影随动",
+      "seconds": 8,
+      "file": "sample-papercut.mp4",
+      "url": "https://github.com/user-attachments/assets/b9b4d6a5-3bf4-4661-a1a6-cb5a07068b0f",
+      "sha256": "d2edd6fa03715335ad01518c9c100b1e0252f6e131c898d41b61c664bf402573",
+      "bytes": 614599
+    },
+    {
+      "number": 14,
+      "title": "分镜对话",
+      "style": "品牌人物漫画",
+      "motion": "三个分镜推进；原始M1与员工角色入画；气泡弹出",
+      "seconds": 8,
+      "file": "sample-comic.mp4",
+      "url": "https://github.com/user-attachments/assets/9ea812c4-e1a9-4642-8efd-c498afc8566d",
+      "sha256": "7b0bcdc128a0897457a6f9970791104abbf7691dbb39eb8d8d7980ac21471cf2",
+      "bytes": 1195379
+    },
+    {
+      "number": 15,
+      "title": "筛选追踪",
+      "style": "深色诊断台",
+      "motion": "无关记录划除；信号连入结果；同口径数字聚合",
+      "seconds": 8,
+      "file": "sample-terminal.mp4",
+      "url": "https://github.com/user-attachments/assets/c6a58b13-cb9e-46c9-8ae2-5eb01635abff",
+      "sha256": "a53b275a8a301241f5029bb3f6c24565993943bb5ef41d3c0c72960083537e7a",
+      "bytes": 663781
+    },
+    {
+      "number": 16,
+      "title": "知识分枝",
+      "style": "水墨知识图",
+      "motion": "手绘分枝生长；知识节点顺势展开；朱印收束",
+      "seconds": 8,
+      "file": "sample-ink.mp4",
+      "url": "https://github.com/user-attachments/assets/2738bee1-8b12-484a-bfe6-b64a57efd578",
+      "sha256": "92dd93fead7f0dd88995a69c6802de87ff4935d9dc9e477d58e5c8e50001a5b0",
+      "bytes": 614040
+    },
+    {
+      "number": 17,
+      "title": "情境闯关",
+      "style": "像素任务场景",
+      "motion": "商品小车经过任务站；逐关插旗；任务完成反馈",
+      "seconds": 8,
+      "file": "sample-pixel.mp4",
+      "url": "https://github.com/user-attachments/assets/b0a91e06-b2a0-44c7-a6ca-e99c49a020eb",
+      "sha256": "9e87cafbe1237b7fae8945c7859047136db8891023c0948854cfb1334e1cce80",
+      "bytes": 631237
+    }
+  ],
+  "extras": [
+    {
+      "file": "v5-course-demo.mp4",
+      "url": "https://github.com/user-attachments/assets/a3710430-2c9f-482e-8d03-6fb9078e4471",
+      "sha256": "d961adaba799ba51cdb95878e6baba8af3245333bbb1f813fc9bdfa80c9d19a0",
+      "bytes": 885591
+    },
+    {
+      "file": "sample-pages.mp4",
+      "url": "https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921",
+      "bytes": 949475,
+      "sha256": "ddad6ac67d0b6e701a8364b206b7078940c489696ebdab12d5508bf41921bc90"
+    }
+  ],
+  "verification": {
+    "full_decode": "pass",
+    "main_frames": 2400,
+    "max_encoded_cut_displacement_frames": 1,
+    "bgm_sha256": "6beebae9b2c339f2db855ff42ac2869c502b7fbfc3991181180698ccc0603b36",
+    "normal_speed_native_player": "80/80 seconds, 1x, no playback error",
+    "portable_archive": "CRC pass, 17 self-contained source checks, relocated main visual check 0 errors"
+  },
+  "voiceover": false,
+  "new_ai_scene_images": false,
+  "old_bookends": false,
+  "user_visual_approval": false,
+  "skill_release": {
+    "version": "v5.0.0",
+    "installation_package_unchanged": true
+  },
+  "downloads": {
+    "videos": "https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip",
+    "editable": "https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip"
+  }
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "R004",
+    "clause": "fixture-A",
+    "page": 1,
+    "exact_excerpt": "测试对象先核对再交接",
+    "summary": "合成规则用于验证引用",
+    "modality": "mandatory",
+    "scope": "测试数据非公司政策",
+    "exceptions": [],
+    "importance": "critical",
+    "review_status": "verified",
+    "teaching_status": "covered"
+  },
+  {
+    "id": "R005",
+    "clause": "fixture-B",
+    "page": 1,
+    "exact_excerpt": "待确认测试规则",
+    "summary": "验证阻断",
+    "modality": "conditional",
+    "scope": "测试数据非公司政策",
+    "exceptions": [],
+    "importance": "normal",
+    "review_status": "pending",
+    "blocking_issue": "Q001",
+    "teaching_status": "planned"
+  }
+]

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="PingFang SC,Hiragino Sans GB,Microsoft YaHei,sans-serif">
+  <defs>
+    <marker id="arrowC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f5c8c"/>
+    </marker>
+  </defs>
+  <rect width="1920" height="1080" fill="#edf1f4"/>
+
+  <text x="64" y="92" font-size="36" font-weight="700" fill="#1a2332">收货核对 · 工位动线</text>
+  <text x="1856" y="92" text-anchor="end" font-size="24" fill="#9aa3af">虚构验收示意 · 非业务标准</text>
+  <rect x="64" y="120" width="230" height="54" rx="27" fill="#0f5c8c"/>
+  <text x="179" y="155" text-anchor="middle" font-size="24" fill="#ffffff">第 2 步 / 共 5 步</text>
+
+  <polygon points="960,220 1810,620 960,1020 110,620" fill="#e7ecf0" stroke="#d3dbe2" stroke-width="2"/>
+  <polygon points="960,320 1660,620 960,920 260,620" fill="none" stroke="#dae2e8" stroke-width="2"/>
+  <polygon points="960,420 1510,620 960,820 410,620" fill="none" stroke="#dae2e8" stroke-width="2"/>
+
+  <ellipse cx="620" cy="800" rx="245" ry="60" fill="#d3dbe2" opacity="0.55"/>
+  <ellipse cx="1350" cy="792" rx="255" ry="62" fill="#d3dbe2" opacity="0.55"/>
+  <ellipse cx="960" cy="782" rx="95" ry="30" fill="#d3dbe2" opacity="0.55"/>
+
+  <path d="M690,780 L850,730 L1010,690 L1150,665" stroke="#0f5c8c" stroke-width="5" stroke-dasharray="14 12" fill="none" marker-end="url(#arrowC)"/>
+  <circle cx="690" cy="780" r="7" fill="#0f5c8c"/>
+  <circle cx="850" cy="730" r="7" fill="#0f5c8c"/>
+  <circle cx="1010" cy="690" r="7" fill="#0f5c8c"/>
+  <text x="905" y="822" text-anchor="middle" font-size="24" fill="#0f5c8c">核对动线</text>
+
+  <polygon points="410,690 620,795 620,705 410,600" fill="#b9c4cd"/>
+  <polygon points="620,795 830,690 830,600 620,705" fill="#a7b3bd"/>
+  <polygon points="410,600 620,495 830,600 620,705" fill="#f4f6f8" stroke="#d5dde4" stroke-width="2"/>
+  <polygon points="500,650 610,615 690,648 580,683" fill="#ffffff" stroke="#d5dde2" stroke-width="2"/>
+  <line x1="530" y1="646" x2="640" y2="620" stroke="#c9d2da" stroke-width="3"/>
+  <line x1="545" y1="664" x2="655" y2="638" stroke="#c9d2da" stroke-width="3"/>
+
+  <polygon points="505,615 600,662 600,577 505,530" fill="#b58a52"/>
+  <polygon points="600,662 695,615 695,530 600,577" fill="#c9a06a"/>
+  <polygon points="505,530 600,483 695,530 600,577" fill="#e3c399" stroke="#c9a06a" stroke-width="2"/>
+
+  <rect x="930" y="640" width="24" height="112" rx="10" fill="#2c3a4a"/>
+  <rect x="966" y="640" width="24" height="112" rx="10" fill="#2c3a4a"/>
+  <rect x="912" y="500" width="96" height="150" rx="36" fill="#0f5c8c"/>
+  <line x1="922" y1="532" x2="1008" y2="576" stroke="#0f5c8c" stroke-width="22" stroke-linecap="round"/>
+  <line x1="1002" y1="532" x2="1078" y2="562" stroke="#0f5c8c" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="960" cy="455" r="38" fill="#f0c8a0"/>
+  <path d="M924,455 a38,38 0 0 1 72,0" fill="#34404e"/>
+  <g transform="rotate(-8 1042 597)">
+    <rect x="1000" y="545" width="84" height="104" rx="8" fill="#ffffff" stroke="#c9d2da" stroke-width="2"/>
+    <line x1="1014" y1="575" x2="1070" y2="575" stroke="#c9d2da" stroke-width="3"/>
+    <line x1="1014" y1="595" x2="1070" y2="595" stroke="#c9d2da" stroke-width="3"/>
+    <line x1="1014" y1="615" x2="1052" y2="615" stroke="#c9d2da" stroke-width="3"/>
+  </g>
+
+  <polygon points="1160,690 1350,785 1350,555 1160,460" fill="#b58a52"/>
+  <polygon points="1350,785 1540,690 1540,460 1350,555" fill="#c9a06a"/>
+  <polygon points="1160,460 1350,365 1540,460 1350,555" fill="#e0bd8f" stroke="#c9a06a" stroke-width="2"/>
+
+  <polygon points="1235,430 1350,487 1350,377 1235,320" fill="#c09a68"/>
+  <polygon points="1350,487 1465,430 1465,320 1350,377" fill="#cfa970"/>
+  <polygon points="1235,320 1350,262 1465,320 1350,377" fill="#e8c9a0" stroke="#c9a06a" stroke-width="2"/>
+
+  <g transform="rotate(-6 1305 620)">
+    <rect x="1180" y="560" width="250" height="120" rx="10" fill="#ffffff" stroke="#d8d2c4" stroke-width="2"/>
+    <text x="1204" y="590" font-size="20" fill="#8a93a3">SN编码</text>
+    <g fill="#1a2332">
+      <rect x="1204" y="600" width="5" height="34"/>
+      <rect x="1214" y="600" width="3" height="34"/>
+      <rect x="1223" y="600" width="6" height="34"/>
+      <rect x="1234" y="600" width="3" height="34"/>
+      <rect x="1242" y="600" width="5" height="34"/>
+      <rect x="1252" y="600" width="3" height="34"/>
+      <rect x="1260" y="600" width="6" height="34"/>
+      <rect x="1271" y="600" width="4" height="34"/>
+      <rect x="1280" y="600" width="5" height="34"/>
+      <rect x="1290" y="600" width="3" height="34"/>
+      <rect x="1298" y="600" width="6" height="34"/>
+      <rect x="1309" y="600" width="4" height="34"/>
+      <rect x="1318" y="600" width="5" height="34"/>
+      <rect x="1328" y="600" width="3" height="34"/>
+      <rect x="1336" y="600" width="6" height="34"/>
+      <rect x="1347" y="600" width="4" height="34"/>
+      <rect x="1356" y="600" width="5" height="34"/>
+      <rect x="1366" y="600" width="3" height="34"/>
+      <rect x="1374" y="600" width="6" height="34"/>
+      <rect x="1385" y="600" width="4" height="34"/>
+      <rect x="1394" y="600" width="5" height="34"/>
+      <rect x="1404" y="600" width="3" height="34"/>
+    </g>
+    <text x="1204" y="664" font-size="24" font-weight="700" fill="#1a2332">SN-KG-2026-1043</text>
+  </g>
+
+  <rect x="1010" y="430" width="200" height="52" rx="26" fill="#0f5c8c"/>
+  <text x="1110" y="463" text-anchor="middle" font-size="24" fill="#ffffff">SN编码核对</text>
+  <line x1="1210" y1="482" x2="1242" y2="546" stroke="#0f5c8c" stroke-width="3" stroke-dasharray="8 6"/>
+
+  <rect x="980" y="800" width="190" height="48" rx="24" fill="#ffffff" stroke="#d5dde2" stroke-width="2"/>
+  <text x="1075" y="831" text-anchor="middle" font-size="22" fill="#6b7686">查看外包装</text>
+  <line x1="1170" y1="818" x2="1240" y2="772" stroke="#9aa3af" stroke-width="2" stroke-dasharray="6 6"/>
+
+  <text x="960" y="1002" text-anchor="middle" font-size="42" font-weight="600" fill="#ffffff" stroke="#172b38" stroke-width="8" paint-order="stroke">再检查商品SN编码和外包装</text>
+</svg>

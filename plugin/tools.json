@@ -1,0 +1,272 @@
+[
+  {
+    "name": "kgxc_course_environment",
+    "description": "检查制课插件和本机媒体环境，不下载依赖、不调用模型。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_list",
+    "description": "列出本插件已建立或恢复的课程及实际路径；不扫描审计备份或恢复已清理课程。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_create",
+    "description": "在当前 DSH 会话工作区建立新课程并启动真实工作台，保存原件。只建档，不自动确认或生成视频。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "course_path": {
+          "type": "string"
+        },
+        "source_path": {
+          "type": "string"
+        },
+        "workspace_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "当前会话的实际工作区绝对路径；未指定 course_path 时在其 courses 子目录建课。DSH 自动提供。"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_status",
+    "description": "读取课程实际阶段、版本、待确认项和下一步；full=true 可读取完整工作流数据。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "full": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "course_path"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_resume",
+    "description": "恢复指定课程，核验服务身份并启动或复用真实工作台。沿用有效确认，不自动重做旧课。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "course_path"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_update",
+    "description": "保存教学方案、逐字稿或全课分镜；base_revision 使用最新 workflow.revision。保存不代表确认；人工内容变更先保存建议，由用户在工作台采用。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "design",
+            "script",
+            "storyboard"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "description": "design：完整 design-plan，保留稳定 units.id，章节含 content_points（数组）、activity、objective_ids、source_refs（source_id/locator）、duration_minutes（分钟）。script：{sections:[{unit_id,body}]}，章节对应现有 units.id；不要按标题猜配。storyboard：完整 course-storyboard/1，source_paragraph_ids 使用 plan.script_mapping.paragraphs 的稳定 ID。格式参见路径返回的制作 Skill；不需要读取插件 UI 源码。"
+        }
+      },
+      "required": [
+        "course_path",
+        "base_revision",
+        "stage"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_source_coverage",
+    "description": "读取或保存当前原始资料与逐字稿的逐项对照：按原件要点统计覆盖率，列出舍弃、新增及其理由与依据。保存不代表人工确认，确认只能由用户在工作台完成。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "status",
+            "save"
+          ]
+        },
+        "expected_script_sha256": {
+          "type": "string",
+          "pattern": "[a-f0-9]{64}"
+        },
+        "report": {
+          "type": "object"
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24000
+        }
+      },
+      "required": [
+        "course_path",
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_export",
+    "description": "提交现有已制作时间线的小样或整片导出，返回任务ID。复用后端前置确认和画面检查，缺少确认会拒绝；不会替用户批准。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "pilot",
+            "final"
+          ]
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "course_path",
+        "base_revision",
+        "purpose"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_job",
+    "description": "查询本课导出任务进度和实际结果，不把排队或生成中冒称已交付。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "job_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{12}$"
+        }
+      },
+      "required": [
+        "course_path",
+        "job_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "kgxc_course_editor",
+    "description": "读取或保存人机共用的逐字稿编辑草稿；读取用户点击渲染时冻结的稿件。render_result只能绑定真实导出任务，不会生成或冒称视频。",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "course_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "read",
+            "save",
+            "render_result"
+          ]
+        },
+        "base_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{12}$"
+        },
+        "job_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{12}$"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "course_path",
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "file": "kgxc-logo.png",
+  "sha256": "e3af5f28d205ba05c96c72379430f7eef42885229301a7474436e8827dd12179",
+  "size": [
+    3840,
+    2160
+  ],
+  "mode": "RGBA",
+  "visible_bounds": [
+    1311,
+    779,
+    2753,
+    1193
+  ],
+  "provenance": "User supplied corporate logo; bytes unchanged",
+  "color_status": "Source artwork authoritative; no invented brand palette"
+}

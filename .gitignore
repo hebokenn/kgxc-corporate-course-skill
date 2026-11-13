@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+work/
+reports/local/
+config/tools.json
+config/voice.json
+dist/
+
+*.pem
+*.key
+*.log
+*.blend1
+
+# Local experimental host registration; the public plugin targets DSH.
+.agents/
+.codex-plugin/
+.mcp.json
+mcp.json

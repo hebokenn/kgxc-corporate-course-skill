@@ -1,0 +1,19 @@
+{
+  "version": "6.9.0",
+  "repository": "hebokenn/kgxc-corporate-course-skill",
+  "skill": "corporate-training-motion",
+  "skill_path": "skills/corporate-training-motion",
+  "default_tool": "DSH plugin / standalone Codex or WorkBuddy Skill",
+  "verified_platform": "macOS arm64 (target; this release desktop E2E pending)",
+  "skills": [
+    "corporate-training-motion",
+    "elearning-course-design"
+  ],
+  "distribution": "GitHub Release installable bundle and versioned source tag",
+  "plugin_version": "0.9.0",
+  "skill_versions": {
+    "corporate-training-motion": "6.9.0",
+    "elearning-course-design": "2.1.0"
+  },
+  "release_status": "stable-channel update-path trial; real desktop end-to-end course verification pending"
+}

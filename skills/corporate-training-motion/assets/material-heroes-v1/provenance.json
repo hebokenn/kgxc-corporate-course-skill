@@ -1,0 +1,136 @@
+{
+  "method": "local Blender independent geometry and procedural materials",
+  "products": "Apple-family teaching illustrations; not exact CAD or teardown specifications",
+  "noGenerativeImages": true,
+  "materials": [
+    {
+      "surface": "brushed-metal",
+      "description": "separated front display, metal body plate and rear shell; exterior teaching schematic, not a teardown",
+      "file": "brushed-metal.png",
+      "sha256": "3810e92ca3032cb82c323ef20d2f1bdf869c300060a165e386b0eb2694aae30d",
+      "blend": "brushed-metal.blend",
+      "labelAnchors": [
+        {
+          "label": "正面显示",
+          "point": [
+            0.25722697377204895,
+            0.43399471044540405
+          ]
+        },
+        {
+          "label": "金属机身",
+          "point": [
+            0.5095832347869873,
+            0.4809899926185608
+          ]
+        },
+        {
+          "label": "背面镜组",
+          "point": [
+            0.7651338577270508,
+            0.5250480473041534
+          ]
+        }
+      ],
+      "imageSize": [
+        1200,
+        800
+      ]
+    },
+    {
+      "surface": "clay-matte",
+      "description": "hand-moulded style AirPods and Apple Watch with rough clay surfaces and separate round plinths",
+      "file": "clay-matte.png",
+      "sha256": "54c11a989cb0cc4ddab9d0abb5f9cba0b9c0e170a035a027d51f7a3029913d37",
+      "blend": "clay-matte.blend",
+      "labelAnchors": [
+        {
+          "label": "AirPods",
+          "point": [
+            0.3126804232597351,
+            0.34496885538101196
+          ]
+        },
+        {
+          "label": "Apple Watch",
+          "point": [
+            0.7220080494880676,
+            0.4421424865722656
+          ]
+        }
+      ],
+      "imageSize": [
+        1200,
+        800
+      ]
+    },
+    {
+      "surface": "lowpoly-facets",
+      "description": "entire angular retail diorama: charcoal fascia, light accessory wall, wood floor and two iPhone tables",
+      "file": "lowpoly-facets.png",
+      "sha256": "1b0a040707ddcacbac4cf18a1c4700be9cf69699dd97f6ecbf0e095d8d79944e",
+      "blend": "lowpoly-facets.blend",
+      "labelAnchors": [
+        {
+          "label": "接待通道",
+          "point": [
+            0.20944428443908691,
+            0.6945955455303192
+          ]
+        },
+        {
+          "label": "体验桌",
+          "point": [
+            0.5680991411209106,
+            0.6194053888320923
+          ]
+        },
+        {
+          "label": "配件墙",
+          "point": [
+            0.6452780961990356,
+            0.3273618817329407
+          ]
+        }
+      ],
+      "imageSize": [
+        1200,
+        800
+      ]
+    },
+    {
+      "surface": "clear-acrylic",
+      "description": "three diagonal overlapping transparent acrylic plates with distinct iPhone, iPad and Mac silhouettes; transmission visible against a reference grid",
+      "file": "clear-acrylic.png",
+      "sha256": "4fdbdf1a181621db9c321fc4d2c3505ef67072e6a11072ed66844849f74a5479",
+      "blend": "clear-acrylic.blend",
+      "labelAnchors": [
+        {
+          "label": "iPhone",
+          "point": [
+            0.2404288947582245,
+            0.44131505489349365
+          ]
+        },
+        {
+          "label": "iPad",
+          "point": [
+            0.5142232179641724,
+            0.4223695397377014
+          ]
+        },
+        {
+          "label": "Mac",
+          "point": [
+            0.7560155987739563,
+            0.42930084466934204
+          ]
+        }
+      ],
+      "imageSize": [
+        1200,
+        800
+      ]
+    }
+  ]
+}

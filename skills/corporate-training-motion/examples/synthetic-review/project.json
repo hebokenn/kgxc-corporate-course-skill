@@ -1,0 +1,21 @@
+{
+  "project_id": "synthetic-review",
+  "course_title": "合成测试流程",
+  "source_file": "synthetic-fixture.txt",
+  "source_version": "synthetic-not-policy",
+  "source_pages": 1,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "deliverable": "pilot",
+  "pilot_rule_ids": [
+    "R004"
+  ],
+  "approvals": {
+    "content": false,
+    "visual": false,
+    "pilot": false,
+    "final": false
+  },
+  "production_mode": "local_only"
+}

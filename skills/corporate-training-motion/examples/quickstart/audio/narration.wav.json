@@ -1,0 +1,22 @@
+{
+  "provider": "qwen3_tts",
+  "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-bf16",
+  "voice_id": "Aiden",
+  "parameters": {
+    "language": "auto",
+    "instruct": null,
+    "temperature": 0.65,
+    "top_p": 0.9,
+    "repetition_penalty": 1.05,
+    "max_tokens": 4096,
+    "stream": false
+  },
+  "seed": 20261019,
+  "speed": 1.0,
+  "duration_seconds": 9.04,
+  "sample_rate": 24000,
+  "generation_seconds": 8.456948041915894,
+  "text_sha256": "a4802f544d70d99b6573f6dacbd15910701702dcb8ec54e8c66f61f42381f8a4",
+  "audio_sha256": "3db0852c99c3e0ebffc183b24e74ddf196e739dabfb27a879a0e68c7410b71a0",
+  "review_status": "candidate_requires_content_and_listening_check"
+}

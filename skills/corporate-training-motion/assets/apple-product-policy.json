@@ -1,0 +1,103 @@
+{
+  "policy": {
+    "schema": "course-products/1",
+    "allowedBrands": [
+      "Apple"
+    ],
+    "allowedCompatibleAccessories": "unbranded with explicit Apple device compatibility",
+    "otherBrandsAllowed": false,
+    "checked": "2026-10-23"
+  },
+  "references": [
+    {
+      "id": "ipad",
+      "url": "https://www.apple.com.cn/ipad/",
+      "features": "rounded thin slab, landscape camera and full-display bezel",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "macbook-air",
+      "url": "https://www.apple.com.cn/macbook-air/",
+      "features": "thin aluminium base, rounded display and central notch",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "imac",
+      "url": "https://www.apple.com.cn/imac/",
+      "features": "thin coloured display, lower chin and aluminium stand",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "apple-watch",
+      "url": "https://www.apple.com.cn/watch/",
+      "features": "rounded rectangular face, band and right digital crown",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "airpods",
+      "url": "https://www.apple.com.cn/airpods/",
+      "features": "white open-fit earbuds with short stems and compact charging case",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "homepod-mini",
+      "url": "https://www.apple.com.cn/homepod-mini/",
+      "features": "spherical fabric-mesh body, flat foot and luminous top touch surface",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "magic-keyboard",
+      "url": "https://www.apple.com.cn/shop/mac/accessories/mice-keyboards",
+      "features": "low aluminium body, white square keys and extended space bar",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "magic-mouse",
+      "url": "https://www.apple.com.cn/shop/mac/accessories/mice-keyboards",
+      "features": "smooth seamless white multitouch top, no visible scroll wheel or split buttons",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "apple-pencil",
+      "url": "https://www.apple.com.cn/apple-pencil/",
+      "features": "white elongated pencil with narrow tip and flat side",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "magsafe-charger",
+      "url": "https://www.apple.com.cn/shop/accessories/all",
+      "features": "round magnetic charging disc with connected USB-C cable",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "apple-usb-c-cable",
+      "url": "https://www.apple.com.cn/shop/accessories/all",
+      "features": "white cable and symmetric rounded USB-C connectors",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "apple-usb-c-adapter",
+      "url": "https://www.apple.com.cn/shop/accessories/all",
+      "features": "white rounded power adapter with a USB-C port",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "iphone-18-pro-case",
+      "url": "https://www.apple.com.cn/iphone-18-pro/",
+      "features": "unbranded iPhone-compatible case; wide camera platform opening",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "iphone-screen-film",
+      "url": "https://www.apple.com.cn/iphone/",
+      "features": "unbranded iPhone-compatible clear protective film",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    },
+    {
+      "id": "iphone-display-stand",
+      "url": "https://www.apple.com.cn/iphone-18-pro/",
+      "features": "display fixture with the existing iPhone 18 Pro geometry",
+      "precision": "family teaching drawing; exact generation/specification requires fresh reference"
+    }
+  ]
+}

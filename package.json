@@ -1,0 +1,46 @@
+{
+  "name": "kgxc-course-plugin",
+  "version": "0.9.0",
+  "description": "DSH 课程工作台：资料、大纲、逐字稿、分镜、有声小样与整课交付。工程位于当前会话工作区。",
+  "type": "module",
+  "main": "./plugin/dsh.mjs",
+  "exports": {
+    ".": "./plugin/dsh.mjs",
+    "./client": "./plugin/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "plugin",
+    "skills",
+    "plugin.json",
+    "cordis.patch.yml",
+    "VERSION",
+    "README.md",
+    "docs",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.2-rc.1 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "slots",
+        "layout",
+        "uiWorkspace",
+        "uiConversation",
+        "conversation"
+      ]
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "zod": "4.4.3"
+  }
+}
