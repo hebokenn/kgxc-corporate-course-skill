@@ -13,6 +13,17 @@ export function productionJobHistory(jobs=[],purpose='final') {
   return {current,history};
 }
 
+// Derive a recoverable next action only from persisted job facts.
+export function exportRecovery(jobs=[],stage='final',busy=false) {
+  if(busy||activeJobs(jobs)||!['pilot','final'].includes(stage))return null;
+  const {current}=productionJobHistory(jobs,stage);
+  if(!current||!['failed','cancelled'].includes(current.status))return null;
+  const title=stage==='pilot'?'小样':'成片';
+  return {job_id:current.id,stage,label:'继续制作'+title,
+    summary:(current.status==='failed'?title+'导出没完成':title+'制作已暂停'),
+    detail:'已保存的成果会保留。继续时先检查能复用的文件，再补没做完的部分。'};
+}
+
 // Percentages describe a measured export job, never an estimate of AI thinking or remaining time.
 export function productionProgress({stage,busy=false,data={},jobs=[],native}) {
   const list=jobs.length?jobs:data.jobs||[],active=list.filter(job=>ACTIVE.has(job.status)).at(-1);

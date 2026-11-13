@@ -128,8 +128,8 @@ class ReviewUITests(unittest.TestCase):
         for i in range(3):self.assertIn(str(i+1)*64,text)
         self.assertEqual(self.page.get_by_role('link',name='打开这一版完整视频').count(),3)
         checkbox.check();self.page.evaluate('ui.sync()');self.assertTrue(checkbox.is_checked())
-        self.page.get_by_role('button',name='关闭，稍后处理').click();self.page.get_by_role('button',name='AI 审阅 · 待你确认',exact=True).click();self.assertFalse(checkbox.is_checked())
-        checkbox.check();self.page.reload();self.page.wait_for_function('window.ready');self.page.get_by_role('button',name='AI 审阅 · 待你确认',exact=True).click();self.assertFalse(checkbox.is_checked())
+        self.page.get_by_role('button',name='关闭，稍后处理').click();self.page.get_by_role('button',name='检查记录与问题清单',exact=True).click();self.assertFalse(checkbox.is_checked())
+        checkbox.check();self.page.reload();self.page.wait_for_function('window.ready');self.page.get_by_role('button',name='检查记录与问题清单',exact=True).click();self.assertFalse(checkbox.is_checked())
         self.assertFalse(self.page.evaluate('reviewFixture.nodes.pilot.user_confirmed'));self.assertFalse(self.page.evaluate('events.some(e=>e.action==="review-approve")'))
     def test_producer_audio_mode_removes_listening_approval_and_keeps_critical_unknown_visible(self):
         self.media('pilot',1)
@@ -191,7 +191,7 @@ class ReviewUITests(unittest.TestCase):
         self.media('pilot',1);self.page.evaluate('reviewFixture.policy.review_arrangement.mode="default_full_av";ui.sync()')
         self.assertEqual(self.page.get_by_role('checkbox').count(),0);self.page.get_by_role('button',name='确认并进入下一阶段',exact=True).click();self.page.wait_for_function('events.some(e=>e.action==="next-stage")')
         self.assertFalse(self.page.evaluate('"audio_declaration" in events.find(e=>e.action==="review-approve")'))
-    def test_actual_studio_primary_uses_same_confirmation_and_exposes_every_complete_pilot_video(self):
+    def test_actual_studio_only_exposes_readonly_evidence_and_every_complete_pilot_video(self):
         self.media();fixture=self.page.evaluate('({ai_review:structuredClone(reviewFixture),artifacts:structuredClone(fixtureArtifacts)})')
         data=dict(title='完整媒体工作台夹具',course_id='ui-synthetic',course_path='/synthetic/course',revision=1,ai_review=fixture['ai_review'],artifacts=fixture['artifacts'],
             plan=dict(units=[],decisions=[]),sources=[],sections=[],editor=dict(text='',changed=False),gates=[dict(id='storyboard',status='confirmed'),dict(id='pilot',status='ready',ready=True)],
@@ -213,17 +213,22 @@ class ReviewUITests(unittest.TestCase):
             video=self.page.get_by_label('完整听审小样 '+str(i+1),exact=True)
             self.assertIn('sample-'+str(i)+'.mp4',video.get_attribute('src'));self.assertNotIn('#t=',video.get_attribute('src'))
         self.page.evaluate('window.postMessage({type:"kgxc-editor-host",running:false},location.origin)')
-        self.page.locator('dialog.ai-review-dialog[open]').wait_for();self.page.get_by_role('button',name='关闭，稍后处理').click()
-        self.page.get_by_role('button',name='查看AI文字画面审阅与听审确认',exact=True).click()
-        self.assertTrue(self.page.locator('dialog.ai-review-dialog[open]').is_visible());self.assertFalse(self.page.get_by_role('checkbox').is_checked())
-        self.assertTrue(self.page.get_by_role('button',name='确认并进入下一阶段',exact=True).is_disabled());self.assertEqual(mutations,[])
+        self.page.wait_for_function('uiHostEvents.some(e=>e.review_action==="sync")')
+        self.assertEqual(self.page.locator('dialog.ai-review-dialog[open]').count(),0)
+        self.assertTrue(self.page.locator('#primary').is_hidden())
+        self.page.get_by_text('课程设置与记录',exact=True).click()
+        self.page.get_by_role('button',name='检查记录与问题清单',exact=True).click()
+        self.assertTrue(self.page.locator('dialog.ai-review-dialog[open]').is_visible())
+        self.assertEqual(self.page.get_by_role('checkbox').count(),0)
+        self.assertEqual(self.page.get_by_role('button',name='确认并进入下一阶段',exact=True).count(),0)
+        self.assertEqual(mutations,[])
         self.assertFalse(self.page.evaluate('uiHostEvents.some(e=>e.action==="stage"||e.action==="deliver")'))
     def test_close_keeps_pending_input_and_reopen_after_refresh_without_approval(self):
         self.assertTrue(self.page.locator('dialog').is_visible());self.assertEqual(self.page.get_by_role('button',name='确认并进入下一阶段').count(),0)
         self.page.get_by_role('textbox',name='审阅重点或修改意见').fill('先检查身份转变，再核对完整示范')
         self.page.get_by_role('button',name='关闭，稍后处理').click();self.page.wait_for_function('!document.querySelector("dialog").open')
         self.page.reload();self.page.wait_for_function('window.ready');self.assertEqual(self.page.locator('dialog[open]').count(),0)
-        self.page.get_by_role('button',name='AI 审阅 · 待你确认',exact=True).click()
+        self.page.get_by_role('button',name='检查记录与问题清单',exact=True).click()
         self.assertEqual(self.page.get_by_role('textbox',name='审阅重点或修改意见').input_value(),'先检查身份转变，再核对完整示范')
         self.assertFalse(self.page.evaluate('reviewFixture.nodes.script.user_confirmed'));self.assertEqual(self.page.evaluate('reviewFixture.nodes.script.calls'),2)
         self.assertEqual(self.page.evaluate('document.documentElement.scrollWidth>innerWidth'),False)
@@ -267,12 +272,12 @@ class ReviewUITests(unittest.TestCase):
         self.page.get_by_role('textbox',name='审阅重点或修改意见').fill('刷新前刚输入的意见')
         self.page.reload();self.page.wait_for_function('window.ready')
         self.assertEqual(self.page.get_by_role('textbox',name='审阅重点或修改意见').input_value(),'刷新前刚输入的意见')
-    def test_initial_manual_draft_can_start_review_without_an_older_report(self):
+    def test_review_launch_waits_for_workflow_to_start_the_initial_review(self):
         self.page.get_by_role('button',name='关闭，稍后处理').click()
-        self.page.evaluate('reviewFixture.nodes.script.run={};reviewFixture.nodes.script.status="not_started";ui.sync()')
-        self.page.get_by_role('button',name='AI 审阅',exact=True).click()
-        self.page.wait_for_function('events.some(e=>e.review_action==="continue")')
-        self.assertEqual(self.page.evaluate('reviewFixture.nodes.script.calls'),3)
+        self.page.evaluate('async()=>{reviewFixture.nodes.script.run={};reviewFixture.nodes.script.status="not_started";await ui.sync();}')
+        self.assertTrue(self.page.get_by_role('button',name='检查记录与问题清单',exact=True).is_disabled())
+        self.assertFalse(self.page.evaluate('events.some(e=>e.review_action==="continue")'))
+        self.assertEqual(self.page.evaluate('reviewFixture.nodes.script.calls'),2)
         self.assertEqual(self.page.evaluate('errors'),[])
     def test_closing_progress_still_opens_one_summary_when_the_round_finishes(self):
         self.page.get_by_role('button',name='关闭，稍后处理').click()

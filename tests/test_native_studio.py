@@ -79,7 +79,9 @@ class NativeStudioTests(unittest.TestCase):
     def tearDown(self):self.context.close();self.server.shutdown();self.server.server_close();self.temp.cleanup()
     def test_actual_script_and_review_controls_render_inside_plugin_without_a_visible_iframe(self):
         editor=self.page.get_by_role('textbox',name='当前章节逐字稿');self.assertTrue(editor.is_visible());self.assertIn('订单A',editor.input_value())
-        self.page.get_by_role('button',name='AI 审阅 · 课程已暂停',exact=True).wait_for()
+        self.page.get_by_text('课程设置与记录',exact=True).click()
+        review=self.page.get_by_role('button',name='检查记录 · 课程已暂停',exact=True);review.wait_for()
+        self.assertTrue(review.is_disabled())
         self.assertEqual(self.page.locator('iframe:visible').count(),0)
         self.assertGreater(self.page.locator('#native').bounding_box()['width'],600)
         self.assertGreater(editor.bounding_box()['width'],300)

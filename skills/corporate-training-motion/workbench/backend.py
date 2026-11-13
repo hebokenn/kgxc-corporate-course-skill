@@ -304,6 +304,14 @@ class Workspace:
         if name in self.jobs:return self.jobs[name]
         result=self.work/'exports'/name/'result.json'
         if result.exists():return read(result)
+        resume=self.work/'exports'/name/'started.json'
+        if resume.is_file():
+            initial=read(resume)
+            if initial.get('id')==name and initial.get('purpose') in ('pilot','final'):
+                from render_input_guard import active as active_renders
+                if any(lock.get('render_id')==name for lock in active_renders(self.project)):
+                    return dict(initial,status='rendering')
+                return dict(initial,status='cancelled',files_retained=True,error='上次制作中断；已保存的成果仍在。')
         return dict(id=name,status='missing',error='该任务未完成或服务曾中断，请重新导出')
 
     def save(self, doc, revision):
@@ -442,6 +450,7 @@ class Workspace:
             from render_input_guard import freeze_render
             frozen_inputs=freeze_render(self.project,job_id,directory/'document.json',extra_inputs={'prepared_audio':str(audio)})
             job=dict(id=job_id,status='queued',progress=0,firstFrame=first,lastFrame=last,revision=revision,purpose=key)
+            atomic(directory/'started.json',job)
             self.jobs[job_id]=job
         def worker():
             try:
@@ -627,6 +636,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             url=urllib.parse.urlparse(self.path);path=urllib.parse.unquote(url.path);q=urllib.parse.parse_qs(url.query)
             if path=='/api/document':return self.json(read(self.space.file))
+            if path=='/api/studio/live-media':
+                from live_media import index
+                return self.json(index(self.space))
             if path=='/api/studio':
                 from studio import Studio
                 return self.json(Studio(self.space).view())
@@ -714,6 +726,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     dest.unlink();raise ValueError('无法解码该图片')
                 return self.json(dict(path=str(dest.relative_to(self.space.project)),name=name,sha256=digest(dest)))
             data=json.loads(raw)
+            if ((path=='/api/studio/source-coverage-confirm') or
+                    (path in ['/api/studio/confirm','/api/studio/review-approve','/api/workflow/confirm']
+                     and data.get('stage',data.get('gate')) in ['script','content','pilot','final'])):
+                state_path=self.space.project/'course-state.json'
+                state=read(state_path) if state_path.is_file() else {}
+                if state.get('preferred_workbench')=='dsh':
+                    raise ValueError('请在 DSH 右侧原生问答确认当前版本；工作台不接受另一个确认入口。')
             if path.startswith('/api/studio/'):
                 from studio import Studio
                 return self.json(Studio(self.space).action(path.rsplit('/',1)[1],data))

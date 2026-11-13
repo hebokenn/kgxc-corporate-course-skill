@@ -1,7 +1,0 @@
-{
-  "schema": "source-coverage/1",
-  "source_inventory": [],
-  "points": [],
-  "additions": [],
-  "notes": "制作端模板：先完整读取当前原件，按独立业务要点填写；存在来源时空清单不能保存。不在此模板填写人工确认、覆盖率或通过结论。"
-}

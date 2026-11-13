@@ -4,15 +4,15 @@ export function sourceCoverageDeclaration(coverage,checked){
   if(!checked||!coverage.current||!coverage.report_sha256)throw Error('请先查看当前原件对照，明确确认取舍与新增内容。');
   return {report_sha256:coverage.report_sha256,evidence:'用户明确勾选：已对照当前原件与逐字稿，确认报告中的保留、合并、舍弃及新增内容和理由',source:'workbench-explicit-click'};
 }
-export function createSourceCoveragePanel({getData,action,host,onError,isBusy=()=>false,document=globalThis.document}){
+export function createSourceCoveragePanel({getData,action,host,onError,isBusy=()=>false,readOnly=false,document=globalThis.document}){
   const el=(tag,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
   let dialog,sending=false;
-  const launch=el('button','原件对照');launch.type='button';launch.id='source-coverage-open';document.querySelector('header').insertBefore(launch,document.getElementById('primary'));
+  const launch=el('button','原件对照');launch.type='button';launch.id='source-coverage-open';(document.getElementById('studio-tools-content')||document.querySelector('header')).append(launch);
   launch.onclick=()=>open();
   function button(text,callback){const node=el('button',text);node.type='button';node.disabled=sending;node.onclick=()=>void Promise.resolve().then(callback).catch(onError);return node;}
   function paint(){
     const coverage=getData()?.source_coverage||{},report=coverage.report||{},stats=coverage.statistics||{};
-    dialog.replaceChildren();const head=el('div',undefined,'row');head.append(el('h2','原始资料与当前逐字稿对照'),button('关闭，稍后确认',()=>dialog.close()));dialog.append(head);
+    dialog.replaceChildren();const head=el('div',undefined,'row');head.append(el('h2','原始资料与当前逐字稿对照'),button('关闭',()=>dialog.close()));dialog.append(head);
     dialog.append(el('p','按独立业务要点核对，不按字数或关键词。舍弃项保留在分母；新增内容单独说明理由与依据。原件可在资料页查看。'));
     if(!coverage.required)dialog.append(el('p','当前没有登记原始资料，覆盖率不适用；不显示100%。','meta'));
     else dialog.append(el('p',coverage.confirmed?'当前原件、讲稿与报告的人工确认已记录':coverage.current?'当前对照待人工确认':'请先生成或更新与当前原件、讲稿一致的对照报告',coverage.confirmed?'meta':'review-blocked'));
@@ -29,7 +29,8 @@ export function createSourceCoveragePanel({getData,action,host,onError,isBusy=()
       for(const item of report.additions||[]){const row=el('section',undefined,'source-coverage-row');row.append(el('h4',item.id+' · '+({example:'教学示例',explanation:'教学解释',external:'外部资料事实'}[item.basis_kind]||item.basis_kind)),el('p',item.location),el('blockquote',item.script_quote),el('p','新增理由：'+item.reason),el('p','依据：'+item.basis));dialog.append(row);}
     }
     for(const reason of coverage.reasons||[])dialog.append(el('p',reason,'meta'));
-    dialog.append(el('p','本表由制作端对照原件，独立学员盲审仍只看当前成品。关闭、预选或制作委托均不构成人工确认。可在原逐字稿确认时勾选对照声明，一次提交。','meta'));
+    dialog.append(el('p','本表由制作端对照原件，独立学员盲审仍只看当前成品。关闭、预选或制作委托均不构成人工确认。逐字稿及原件对照可在右侧问答一起确认。','meta'));
+    if(readOnly)return;
     const controls=el('div',undefined,'review-actions');const generate=button('请AI生成／更新当前对照',async()=>{if(sending||isBusy())throw Error('请等待当前保存或制作结束。');sending=true;try{await host('source-coverage',{});dialog.close();}finally{sending=false;}});generate.disabled=sending||isBusy();controls.append(generate);
     const confirm=button('我已对照原件，确认以上取舍与新增',async()=>{if(sending||isBusy())throw Error('请等待当前保存或制作结束。');const declaration=sourceCoverageDeclaration(coverage,true);if(!declaration)return; sending=true;try{await action('source-coverage-confirm',declaration);paint();}finally{sending=false;}});confirm.disabled=sending||isBusy()||!coverage.required||!coverage.current||coverage.confirmed;controls.append(confirm);dialog.append(controls);
   }

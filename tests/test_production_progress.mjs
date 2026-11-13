@@ -71,3 +71,14 @@ test('a technically complete held candidate is not an old delivered course or a 
  const state=productionProgress({stage:'final',jobs:[{id:'candidate',purpose:'final',status:'complete',registration_status:'held',stage_registered:false,completed_at:20}],data:{gates:[{id:'final',status:'delivered',receipt:{at:new Date().toISOString()}}]}});
  assert.equal(state.value,null);assert.equal(state.tone,'waiting');assert.match(state.label,/验收受阻/);assert.match(state.detail,/尚未正式交付/);
 });
+
+test('recovery offers only the failed current phase, not history or a running export',async()=>{
+  const {exportRecovery}=await import('../skills/corporate-training-motion/workbench/production-progress.js');
+  const old={id:'a',purpose:'pilot',status:'failed'};
+  const final={id:'b',purpose:'final',status:'cancelled'};
+  assert.equal(exportRecovery([old,final],'final').job_id,'b');
+  assert.equal(exportRecovery([old,final],'pilot').label,'继续制作小样');
+  assert.equal(exportRecovery([old,{...old,id:'c',status:'complete'}],'pilot'),null);
+  assert.equal(exportRecovery([old,{...final,status:'rendering'}],'pilot'),null);
+  assert.equal(exportRecovery([old],'pilot',true),null);
+});

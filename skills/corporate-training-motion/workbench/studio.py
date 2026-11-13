@@ -141,8 +141,12 @@ class Studio:
             progress_jobs.append(item)
         from production_preferences import load as production_preferences,storyboard_current
         preferences=production_preferences(self.project);preferences['storyboard_current']=storyboard_current(self.project)
+        from material_library import library as material_library
+        materials=material_library(self.course,sources,artifacts,status.get('source_coverage') or {})
+        from stage_confirmation import StageConfirmation
+        confirmation_state=StageConfirmation(self).view(status)
         return dict(ok=True,course_path=str(self.course.root),course_id=status['course_id'],title=plan['title'],review_context=self.review_context(),
-                    revision=status['revision'],stage=status['stage'],gates=status['gates'],plan=plan,sources=sources,
+                    revision=status['revision'],stage=status['stage'],gates=status['gates'],plan=plan,sources=sources,material_library=materials,
                     sections=content['sections'],content_revision=content['revision'],mapped=mapped,
                     editor={k:editor[k] for k in ['revision','text','changed','base_changed','has_scenes']},
                     storyboard=status.get('storyboard',{}),storyboard_report=status.get('storyboard_report',{}),
@@ -153,7 +157,7 @@ class Studio:
                     rendering=status.get('rendering',{}),audio_settings=settings,narration_status=status.get('narration_status'),
                     production_preferences=preferences,
                     ai_review=status.get('ai_review'),source_coverage=status.get('source_coverage'),
-                    undo_available=any((self.project/'studio-history').glob('*.json')))
+                    undo_available=any((self.project/'studio-history').glob('*.json')),**confirmation_state)
 
     def save_production_choice(self,args):
         from production_preferences import update
@@ -275,19 +279,19 @@ class Studio:
             return self.save_outline(units,args['baseRevision'],merge)
         raise ValueError('未知章节操作')
 
-    def confirm(self, stage, expected, audio_declaration=None, source_coverage_declaration=None):
+    def confirm(self, stage, expected, audio_declaration=None, source_coverage_declaration=None, *, native_question_id=None):
         simulated=self.review_context()=='qa-simulation';actor='qa-operator' if simulated else 'dsh-course-workbench'
         if source_coverage_declaration is not None:
             self.course._revision(expected,read(self.course.state_file))
             if simulated or stage!='script' or not isinstance(source_coverage_declaration,dict):raise ValueError('原件对照确认只能来自当前逐字稿阶段的真实用户操作')
             fields={'report_sha256','evidence','source'}
-            if set(source_coverage_declaration)!=fields or source_coverage_declaration.get('source')!='workbench-explicit-click':raise ValueError('原件对照声明须来自用户明确勾选，并绑定当前报告')
+            if set(source_coverage_declaration)!=fields or source_coverage_declaration.get('source')!=('dsh-native-question:'+native_question_id if native_question_id else 'workbench-explicit-click'):raise ValueError('原件对照声明须来自用户明确勾选，并绑定当前报告')
             from source_coverage import SourceCoverage
             SourceCoverage(self.course).confirm(**source_coverage_declaration,actor='dsh-user-click')
         if stage=='script':
             from source_coverage import SourceCoverage
             SourceCoverage(self.course).require_confirmed()
-        evidence=('授权模拟操作，仅用于独立验证课，不代表正式课程内容验收：' if simulated else '用户在 DSH 课程工作台点击确认当前')+dict(STAGES).get(stage,stage)
+        evidence=('授权模拟操作，仅用于独立验证课，不代表正式课程内容验收：' if simulated else '用户在 DSH 右侧问答确认当前' if native_question_id else '用户在 DSH 课程工作台点击确认当前')+dict(STAGES).get(stage,stage)
         from ai_review import Review,enabled
         review=Review(self.course) if enabled(self.course) and stage in ['script','storyboard','pilot','final'] else None
         reviewed=review.require_pass(stage) if review else None
@@ -336,7 +340,7 @@ class Studio:
 
     def feedback(self,args):
         text=str(args.get('text','')).strip()
-        if not text:raise ValueError('请填写具体修改要求')
+        if not text or len(text)>8000:raise ValueError('请填写具体修改要求（不超过8000字）')
         stamp=float(args.get('time',0))
         if not math.isfinite(stamp) or stamp<0:raise ValueError('反馈时间点无效')
         artifact=None
@@ -345,8 +349,9 @@ class Studio:
             if not artifact:raise ValueError('视频版本已变化，请刷新后重新定位反馈')
             if artifact.get('duration_seconds') is not None and stamp>artifact['duration_seconds']:raise ValueError('反馈时间点超过视频时长')
         with self.transaction(args['baseRevision'],'studio_feedback_saved'):
-            values=read(self.feedback_file,[]);values.append({'id':uuid.uuid4().hex[:12],'at':now(),'stage':args['stage'],'segment_id':args.get('segment_id'),'time':stamp,'text':text,
-                'artifact_path':artifact['path'] if artifact else None,'artifact_sha256':artifact['sha256'] if artifact else None})
+            values=read(self.feedback_file,[]);values.append({'id':args.get('feedback_id') or uuid.uuid4().hex[:12],'at':now(),'stage':args['stage'],'segment_id':args.get('segment_id'),'time':stamp,'text':text,
+                'artifact_path':artifact['path'] if artifact else None,'artifact_sha256':artifact['sha256'] if artifact else None,
+                **({'question_id':args.get('question_id'),'version_binding':args['version_binding'],'location_label':args.get('location_label','')} if args.get('version_binding') else {})})
             from ai_review import Review,enabled
             import blind_review as blind
             if args['stage'] in ['pilot','final'] and enabled(self.course) and Review(self.course).arrangement()==blind.USER_AUDIO_ARRANGEMENT:

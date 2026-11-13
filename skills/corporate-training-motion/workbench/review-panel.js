@@ -13,19 +13,19 @@ function audioBinding(node){
   return {artifact_sha256s:[...hashes],artifacts:artifacts.map(({sha256,start_seconds,end_seconds})=>({sha256,start_seconds,end_seconds})),coverage:'all_stage_videos'};
 }
 function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
-export function createReviewPanel({getData,getStage,host,action,save,refresh,onApproved,onError,isBusy,mediaURL,openSourceCoverage,document=globalThis.document,window=globalThis.window}){
+export function createReviewPanel({getData,getStage,host,action,save,refresh,onApproved,onState,readOnly=false,onError,isBusy,mediaURL,openSourceCoverage,document=globalThis.document,window=globalThis.window}){
   let state,timer,reading=false,closed=false,dialog,selected,input,draftTimer,lastFocus,sending=false,audioCheck,audioChoice,arrangementDialog,coverageCheck,coverageChoice;
   const shown=new Set();
   const refreshed=new Set();
   const draftKey=node=>'kgxc-review-input:'+String(state?.course_id||getData().course_path||getData().title)+':'+node.stage+':'+node.run.id;
   function localDraft(node){try{return localStorage.getItem(draftKey(node));}catch{return null;}}
-  const launch=el('button','AI 审阅');launch.id='ai-review-open';launch.type='button';
-  document.querySelector('header').insertBefore(launch,document.getElementById('primary'));
+  const launch=el('button','检查记录与问题清单');launch.id='ai-review-open';launch.type='button';launch.disabled=true;
+  (document.getElementById('studio-tools-content')||document.querySelector('header')).append(launch);
   const arrangementLaunch=el('button','审阅分工');arrangementLaunch.id='review-arrangement-open';arrangementLaunch.type='button';arrangementLaunch.onclick=openArrangement;
-  document.querySelector('header').insertBefore(arrangementLaunch,launch);
+  if(!readOnly)launch.before(arrangementLaunch);
   const progress=el('section',undefined,'ai-review-progress');progress.hidden=true;
   document.getElementById('production-progress').after(progress);
-  launch.onclick=()=>{const candidate=choose();if(candidate?.run?.id)open(candidate);else void startInitial(candidate).catch(onError);};
+  launch.onclick=()=>{const candidate=choose();if(candidate?.run?.id)open(candidate);else if(!readOnly)void startInitial(candidate).catch(onError);};
   function choose(){return state?.nodes[getStage()]||stages.map(s=>state?.nodes[s]).find(n=>n?.run?.id&&pendingDecision(n))||state?.nodes.script;}
   function audioKey(node){return JSON.stringify([node.stage,node.run.id,node.run.fingerprint,node.fingerprint,state?.policy?.review_arrangement?.mode,audioBinding(node)]);}
   function openArrangement(){
@@ -45,38 +45,40 @@ export function createReviewPanel({getData,getStage,host,action,save,refresh,onA
   function render(){
     const node=choose(),active=stages.map(s=>state?.nodes[s]).find(n=>RUNNING.has(n?.status));
     const pending=stages.filter(s=>state?.nodes[s]?.run?.id&&pendingDecision(state.nodes[s]));
-    launch.textContent=state?.hold?.held?'AI 审阅 · 课程已暂停':active?'AI 正在审阅…':pending.length?'AI 审阅 · 待你确认':'AI 审阅';
+    launch.textContent=state?.hold?.held?'检查记录 · 课程已暂停':active?'查看检查进度':'检查记录与问题清单';
+    launch.disabled=!node?.run?.id; // Internal review creation belongs to the workflow, not a user toolbar.
     progress.hidden=!active;progress.replaceChildren();
     if(active){progress.append(el('strong',labels[active.stage]+' · '+(active.run.events?.at(-1)?.text||'检查中')),el('p','累计 '+Math.floor(active.elapsed_ms/1000)+' 秒；当前未返回的项目保持检查中。'));
       const details=el('details');details.append(el('summary','查看检查、返修与耗时'),el('p','当前整体验收范围：'+(active.run.checklist||[]).map(c=>c.label).join('、')+'。逐项新结论尚未返回时不标记完成。'),el('pre',(active.run.events||[]).map(e=>e.at+' '+e.text).join('\n')));
       if(active.run.repaired?.length)details.append(el('p','已完成局部修改，正在复核：'+active.run.repaired.map(c=>c.path+' · '+c.reason).join('；')));progress.append(details);}
     if(dialog?.open&&selected){const latest=state.nodes[selected.stage];
-      if(latest.run?.id===selected.run?.id){selected=latest;paintDialog(false);}
+      if(latest?.run?.id===selected.run?.id){selected=latest;paintDialog(false);}
       else{
         // A newer automatic round may start while an old summary is open.
         // Retain the old input without overwriting the newer round's draft.
         clearTimeout(draftTimer);const old=selected,text=input?.value||'';
-        void host('review',{review_action:'draft',stage:old.stage,run_id:old.run.id,text}).catch(onError);
+        if(!readOnly)void host('review',{review_action:'draft',stage:old.stage,run_id:old.run.id,text}).catch(onError);
         dialog.close();selected=latest;input=null;
       }
     }
-    for(const stage of stages){const n=state?.nodes[stage];if(!n?.run?.id||RUNNING.has(n.status)||n.user_confirmed||n.run.dismissed_at||shown.has(n.run.id))continue;
-      shown.add(n.run.id);if(!dialog?.open)open(n);break;}
+    if(readOnly){onState?.();return;}
+    for(const stage of stages){const n=state?.nodes[stage];if(stage==='storyboard'||!n?.run?.id||RUNNING.has(n.status)||n.user_confirmed||n.run.dismissed_at||shown.has(n.run.id))continue;
+      if(!dialog?.open){shown.add(n.run.id);open(n);}break;}
   }
   function open(node){
-    if(!node?.run?.id){void startInitial(node).catch(onError);return;}
+    if(!node?.run?.id){if(!readOnly)void startInitial(node).catch(onError);return;}
     if(!dialog){dialog=el('dialog',undefined,'ai-review-dialog');dialog.setAttribute('aria-labelledby','ai-review-title');document.body.append(dialog);
       dialog.addEventListener('cancel',event=>{event.preventDefault();void dismiss();});}
     selected=node;audioChoice=null;coverageChoice=null;lastFocus=document.activeElement;paintDialog(true);if(!dialog.open)dialog.showModal();
   }
   async function persistDraft(){if(!selected||!input)return;clearTimeout(draftTimer);await host('review',{review_action:'draft',stage:selected.stage,run_id:selected.run.id,text:input.value});}
-  async function dismiss(){if(sending)return;try{await persistDraft();await host('review',{review_action:'dismiss',stage:selected.stage,run_id:selected.run.id});audioChoice=null;dialog.close();lastFocus?.focus?.();}catch(error){onError(error);}}
+  async function dismiss(){if(readOnly){dialog.close();lastFocus?.focus?.();return;}if(sending)return;try{await persistDraft();await host('review',{review_action:'dismiss',stage:selected.stage,run_id:selected.run.id});audioChoice=null;dialog.close();lastFocus?.focus?.();}catch(error){onError(error);}}
   function makeButton(label,handler,primary=false){const b=el('button',label,primary?'primary':undefined);b.type='button';b.disabled=sending;b.onclick=()=>void Promise.resolve(handler()).catch(onError);return b;}
   function paintDialog(reset){
     const node=selected,run=node.run,report=run.report||{},draft=reset?(localDraft(node)??node.draft):input?.value??node.draft,userAudio=requiresUserAudio(state,node.stage),producerAudio=usesProducerAudio(state,node.stage),binding=userAudio?audioBinding(node):null;
     const key=userAudio?audioKey(node):null;if(reset||audioChoice?.key!==key)audioChoice={key,checked:false};
     const focused=document.activeElement===input,start=input?.selectionStart,end=input?.selectionEnd;
-    dialog.replaceChildren();const head=el('div',undefined,'row');head.append(el('h2',getData().title+' · '+labels[node.stage]));head.firstChild.id='ai-review-title';head.append(makeButton('关闭，稍后处理',dismiss));dialog.append(head);
+    dialog.replaceChildren();const head=el('div',undefined,'row');head.append(el('h2',getData().title+' · '+labels[node.stage]));head.firstChild.id='ai-review-title';head.append(makeButton(readOnly?'关闭记录':'关闭，稍后处理',dismiss));dialog.append(head);
     dialog.append(el('p','每阶段当前选定方案仅一次盲审；问题一次汇总，后续集中修复并按固定清单验收。未解决项保持待处理。','meta'));
     dialog.append(el('p','审阅版本 '+run.id.slice(0,8)+' · 本轮输入 '+run.fingerprint.slice(0,12)+(run.fingerprint!==node.fingerprint?' · 当前输入 '+node.fingerprint.slice(0,12):''),'meta'));
     if(state?.hold?.held)dialog.append(el('p','课程审阅已暂停：'+state.hold.reason,'review-blocked'));
@@ -112,9 +114,10 @@ export function createReviewPanel({getData,getStage,host,action,save,refresh,onA
     if(reset||coverageChoice?.key!==coverageKey)coverageChoice={key:coverageKey,checked:false};coverageCheck=null;
     if(coverageRequired){const section=el('section',undefined,'review-audio-scope');section.append(el('h3','原件取舍与新增内容需要人工确认'),el('p','覆盖率按原始业务要点统计，关键规则单列。请查看原件对照后，在本次逐字稿确认中一并提交；不增加盲审。'));
       if(openSourceCoverage)section.append(makeButton('查看原件与逐字稿对照',openSourceCoverage));
+      if(readOnly){section.append(el('p','只读对照。请在右侧问答确认当前范围。','meta'));dialog.append(section);}else{
       const label=el('label',undefined,'review-audio-declaration');coverageCheck=el('input');coverageCheck.type='checkbox';coverageCheck.checked=!!coverageChoice.checked;coverageCheck.disabled=!coverage.current||sending||RUNNING.has(node.status)||!!state?.hold?.held;
       const text='已对照当前原件与讲稿，确认保留、合并、舍弃及新增内容和理由';coverageCheck.setAttribute('aria-label',text);label.append(coverageCheck,el('span',text));section.append(label);
-      if(!coverage.current)section.append(el('p','尚无与当前原件和稿件一致的完整对照报告，暂不能确认。','review-blocked'));dialog.append(section);}
+      if(!coverage.current)section.append(el('p','尚无与当前原件和稿件一致的完整对照报告，暂不能确认。','review-blocked'));dialog.append(section);}}
     const usage=node.usage||{},tokens=Number.isFinite(usage.totalTokens)?usage.totalTokens:null;
     const unlimited=(state?.policy?.unlimited_counts??node.policy?.unlimited_counts)===true;
     const counts=unlimited?'本轮调用/返修次数暂不限，累计'+node.calls+'调用/'+node.repairs+'返修':'自动返修 '+node.repairs+'/'+node.policy.max_repairs+' 轮 · 调用预算 '+node.calls+'/'+node.policy.max_calls+' 次';
@@ -129,6 +132,7 @@ export function createReviewPanel({getData,getStage,host,action,save,refresh,onA
     if(run.events?.length)evidence.append(el('pre',run.events.map(e=>e.at+' '+e.text).join('\n')));
     if(run.error_history?.length)evidence.append(el('pre',run.error_history.map(e=>e.at+' · '+e.reason+' · '+(e.resolved_by?'执行已由更新成果恢复（'+e.resolution_scope+' / '+e.resolved_by.slice(0,12)+'）':'尚未恢复')).join('\n')));
     if(node.history.length){const history=el('details');history.append(el('summary','历史审阅与失败记录'),el('pre',node.history.map(h=>h.id.slice(0,8)+' · '+h.status+(h.reason?' · '+h.reason:'')+(h.superseded_by?' · 已由 '+h.superseded_by.slice(0,8)+' 成功版本替代':' · 未标记为已解决')).join('\n')));evidence.append(history);}dialog.append(evidence);
+    if(readOnly){if(pendingDecision(node)&&node.passed)dialog.append(el('p','需要你确认时，AI 会在右侧对话发起问答。','meta'));return;}
     const label=el('label','审阅重点或修改意见（自动保存）');input=el('textarea');input.value=draft||'';input.rows=3;input.setAttribute('aria-label','审阅重点或修改意见');input.oninput=()=>{try{localStorage.setItem(draftKey(node),input.value);}catch{}clearTimeout(draftTimer);draftTimer=setTimeout(()=>persistDraft().catch(onError),500);};label.append(input);dialog.append(label);
     audioCheck=null;if(userAudio&&!node.user_confirmed){const declaration=el('label',undefined,'review-audio-declaration');audioCheck=el('input');audioCheck.type='checkbox';audioCheck.checked=!!audioChoice.checked;audioCheck.disabled=!binding||sending||RUNNING.has(node.status)||node.status==='stale'||!!state?.hold?.held;
       const text='已完整播放当前全部'+(node.stage==='pilot'?'小样':'成片')+'，声音与音画配合无问题';audioCheck.setAttribute('aria-label',text);declaration.append(audioCheck,el('span',text));dialog.append(declaration,el('p','仅勾选后主动点击本次确认才记录声明；关闭、刷新、超时和选择分工均不代表听审通过。','meta'));}
@@ -169,8 +173,11 @@ export function createReviewPanel({getData,getStage,host,action,save,refresh,onA
   async function sync(){
     if(closed||reading||document.hidden)return;reading=true;
     try{const result=await host('review',{review_action:'sync',busy:isBusy()});state=result.review;
-      const completed=stages.map(s=>state.nodes[s]).filter(n=>n?.run?.completed_at&&!refreshed.has(n.run.id));
-      if(completed.length){await refresh();for(const n of completed)refreshed.add(n.run.id);}render();}
+      const completed=stages.map(s=>state?.nodes?.[s]).filter(n=>n?.run?.completed_at);
+      const completionKey=n=>JSON.stringify([n.run.id,n.run.completed_at,n.fingerprint,n.status,n.passed,n.user_confirmed]);
+      if(completed.some(n=>!refreshed.has(completionKey(n)))){
+        const didRefresh=await refresh();if(didRefresh!==false)for(const n of completed)refreshed.add(completionKey(n));
+      }render();}
     finally{reading=false;clearTimeout(timer);if(!closed)timer=setTimeout(()=>sync().catch(onError),3000);}
   }
   window.addEventListener('pagehide',()=>{closed=true;clearTimeout(timer);clearTimeout(draftTimer);});

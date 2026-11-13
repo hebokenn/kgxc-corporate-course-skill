@@ -24,7 +24,7 @@ async function client(fetcher,{pending,chatOpen,updateDismissed}={}){
   const scoped=entries.find(x=>x.options.name==='kgxc.workspace');
   const props={ctx,sessionId:'new-session',useSession:()=>({openState:'ready'}),useSessionStatus:selector=>selector(new Map([['new-session',{pendingInteraction:pending}]])),renderSlot:()=>null};
   const panel=scoped.component(props).type;
-  return {ctx,selection,entries,storage,states,click:event=>clickListener(event),message:async event=>{for(const fn of [...listeners.get('message')||[]])await fn(event);},animate:()=>{for(const fn of animation.splice(0))fn();},render:()=>{index=0;return panel(props);},renderChild:node=>{index=100;return node.type(node.props);},flush:()=>{for(const effect of effects.splice(0))effect();},unmount:()=>{for(const cleanup of cleanups.splice(0))cleanup?.();}};
+  return {ctx,selection,entries,storage,states,setPending:value=>{pending=value;},click:event=>clickListener(event),message:async event=>{for(const fn of [...listeners.get('message')||[]])await fn(event);},animate:()=>{for(const fn of animation.splice(0))fn();},render:()=>{index=0;return panel(props);},renderChild:node=>{index=100;return node.type(node.props);},flush:()=>{for(const effect of effects.splice(0))effect();},unmount:()=>{for(const cleanup of cleanups.splice(0))cleanup?.();}};
 }
 const response=value=>({ok:true,json:async()=>value});
 const settle=async()=>{for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));};
@@ -155,6 +155,36 @@ test('opening a saved folder is available in the delivery view and retention dia
   assert.equal(calls.some(c=>c.data?.action==='cleanup_preview'||c.data?.action==='retention'),false);app.unmount();
 });
 
+test('top navigation splits body and post-production without opening a new workflow gate',async()=>{
+  const {app,calls}=await loadedClient({expired:true});
+  const tab=label=>nodes(app.render()).find(n=>n.props?.role==='tab'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes(label)));
+  assert.equal(tab('整课交付'),undefined);
+  for(const [label,phase] of [['画面与配音','body'],['后期与成片','post']]){
+    await tab(label).props.onClick();await settle();
+    const frame=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
+    assert.match(frame.props.src,new RegExp('stage=final&phase='+phase));
+    assert.equal(tab(label).props['aria-selected'],true);
+    assert.equal(app.storage.get('kgxc-final-phase:/tmp/current-course'),phase);
+  }
+  assert.equal(calls.some(c=>c.data?.action==='stage'||c.data?.action==='stage-confirmation-request'),false);
+  app.unmount();
+});
+
+test('studio marks confirmation visible only for the matching live right-side question',async()=>{
+  const {app,sender,event}=await loadedClient();
+  const messages=[];sender.postMessage=data=>{if(data.type==='kgxc-editor-confirmation')messages.push(data);};
+  const q={id:'kgxc-confirm-'+'a'.repeat(36),stage:'final',label:'成片'};
+  await app.message(event({type:'kgxc-studio-state',stage:'final',revision:2,pending_confirmations:[q]}));
+  const change=p=>{app.setPending(p);app.render();app.flush();return messages.at(-1)?.status;};
+  const native={kind:'question',sessionId:'new-session',questions:[{id:q.id}]};
+  assert.notEqual(change({...native,questions:[{id:'other'}]}),'visible');
+  assert.notEqual(change({...native,sessionId:'other-session'}),'visible');
+  assert.notEqual(change({...native,review:[]}),'visible');
+  assert.equal(change(native),'visible');
+  assert.notEqual(change(undefined),'visible');
+  app.unmount();
+});
+
 test('a cleanup inventory warning appears once and does not block retaining the saved course',async()=>{
   const {app,calls,event}=await loadedClient({cleanupError:'工程顶层还有未识别文件'});
   await app.message(event({type:'kgxc-editor-request',id:'save',action:'deliver'}));await settle();
@@ -202,4 +232,35 @@ test('dismissed version stays hidden across reopening but a later release is sho
   const app=await client(async url=>response(url.endsWith('/updates')?{update:{version,release_url:'https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v6.9.1'}}:url.endsWith('/meta')?{token:'test'}:url.endsWith('/context')?{ready:true,course_path:null}:{courses:[]}),{updateDismissed:'0.9.0'});
   app.render();app.flush();await settle();assert.equal(nodes(app.render()).some(n=>n.props.className==='kgxc-update-notice'),version==='0.9.1');app.unmount();
  }
+});
+
+test('first-use course actions reopen the composer even when chat was collapsed',async()=>{
+  const app=await client(async(url)=>response(url.endsWith('/meta')?{ok:true,token:'test'}:url.endsWith('/context')?{ok:true,ready:true,course_path:null}:{ok:true,courses:[]}),{chatOpen:false});
+  app.render();app.flush();await settle();
+  let tree=app.render();
+  assert.ok(button(tree,'上传资料，开始做课'));
+  assert.ok(button(tree,'描述课程，开始做课'));
+  assert.equal(nodes(tree).some(node=>node.props.id==='kgxc-ai-chat'),false);
+  button(tree,'上传资料，开始做课').props.onClick();
+  tree=app.render();
+  assert.equal(app.storage.get('kgxc-chat-open'),'true');
+  assert.ok(nodes(tree).some(node=>node.props.id==='kgxc-ai-chat'));
+  assert.equal(app.states[1],null,'opening an intake does not fabricate a course');
+  app.unmount();
+});
+
+test('first-use native intake only inserts into an empty draft, then opens the owning session file picker',async()=>{
+  const app=await client(async()=>response({ok:true}));
+  const chat=app.entries.find(x=>x.options.name==='kgxc.chat').component;
+  let draft='keep what I wrote',picks=[],insertions=[],handled=0;
+  const scope={ctx:{conversation:{input:{canPickFiles:id=>id==='new-session',pickFiles:id=>picks.push(id)}}},sessionId:'new-session',
+    useSession:()=>({blank:true}),useConversation:()=>({}),useSessions:()=>true,useInput:select=>select({draft}),
+    inputActions:{captureInsertion:()=>({revision:1}),insertText:(text,span)=>{insertions.push([text,span]);return true;},submit:()=>assert.fail('must not submit')},
+    renderFactorySlot:()=>null,onboarding:{sessionId:'new-session',mode:'upload'},onboardingHandled:()=>{handled++;}};
+  app.renderChild({type:chat,props:scope});app.flush();await new Promise(resolve=>setTimeout(resolve,15));
+  assert.deepEqual(picks,['new-session']);assert.deepEqual(insertions,[]);assert.equal(handled,1);
+  draft='';scope.onboarding={sessionId:'new-session',mode:'describe'};
+  app.renderChild({type:chat,props:scope});app.flush();await new Promise(resolve=>setTimeout(resolve,15));
+  assert.match(insertions[0][0],/可编辑的大纲/);assert.equal(insertions[0][1].revision,1);assert.equal(handled,2);
+  app.unmount();
 });

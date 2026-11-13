@@ -94,7 +94,7 @@ def main():
             if f in fingerprints and fingerprints[f]!=fingerprint:raise ValueError('正反向定位画面不一致')
             fingerprints[f]=fingerprint
         encoder=subprocess.Popen(args,stdin=subprocess.PIPE,stderr=log)
-        last_key=None;buffer=None
+        last_key=None;buffer=None;preview_warning=False
         try:
             for f in range(a.first,a.last):
                 data=page.evaluate('''async ({frame,old})=>{const r=window.courseRenderer,key=r.key(frame);if(key===old)return {key};const result=await r.drawFrame(frame);return {...result,jpeg:r.canvas.toDataURL('image/jpeg',.96).split(',')[1]}}''',dict(frame=f,old=last_key))
@@ -122,6 +122,13 @@ def main():
                         item['lastFrame']=source_f;item['sampledFrames']+=1
                 last_key=data['key'];encoder.stdin.write(buffer)
                 if (f-a.first)%15==0:
+                    from live_media import publish_render_preview
+                    try:publish_render_preview(a.directory,buffer)
+                    except OSError as error:
+                        # The optional observer must not interrupt the original render.
+                        if not preview_warning:
+                            print('Live preview unavailable; render continues: '+str(error),flush=True)
+                            preview_warning=True
                     path=a.directory/'progress.json';tmp=path.with_suffix('.pending');tmp.write_text(json.dumps(dict(progress=(f-a.first+1)/count)));tmp.replace(path)
             encoder.stdin.close()
             if encoder.wait()!=0:raise ValueError('视频编码失败：'+(a.directory/'encoder.log').read_text()[-1200:])
