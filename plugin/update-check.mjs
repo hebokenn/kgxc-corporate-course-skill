@@ -5,7 +5,8 @@ import {randomUUID} from 'node:crypto';
 
 const REPOSITORY='hebokenn/kgxc-corporate-course-skill';
 export const RELEASE_API=`https://api.github.com/repos/${REPOSITORY}/releases/latest`;
-export const CACHE_MS=24*60*60*1000;
+export const CACHE_MS=15*60*1000;
+export const RETRY_MS=2*60*1000;
 const SEMVER=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 export function parseVersion(value){
  if(typeof value!=='string'||value.length>100)return null;
@@ -50,12 +51,12 @@ export function updateChecker({version,fetcher=globalThis.fetch,now=Date.now,cac
   return {ok:true,current_version:version,channel:'stable',status:cache?.status||'unavailable',checked_at:cache?.checked_at||null,
    update:available?{version:release.version,release_url:`https://github.com/${REPOSITORY}/releases/tag/${encodeURIComponent(release.tag)}`} :null};
  };
- return async()=>{
+ return async({force=false}={})=>{
   if(pending)return pending;
   pending=(async()=>{
    if(!loaded){loaded=true;try{cache=JSON.parse(await readFile(cachePath,'utf8'));}catch{}}
    const age=now()-cache?.checked_at;
-   if(cache?.schema===1&&['checked','unavailable'].includes(cache.status)&&Number.isFinite(age)&&age>=0&&age<CACHE_MS)return result();
+   if(!force&&cache?.schema===1&&['checked','unavailable'].includes(cache.status)&&Number.isFinite(age)&&age>=0&&age<(cache.status==='checked'?CACHE_MS:RETRY_MS))return result();
    let release=null,status='unavailable';
    try{
     // Public metadata only. No tokens, course data, model selection or user IDs.

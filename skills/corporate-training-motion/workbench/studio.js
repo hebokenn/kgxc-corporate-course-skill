@@ -383,6 +383,15 @@ function render(){
   const root=$('content');root.replaceChildren();overview.mount(root);({sources:sourcesView,outline:outlineView,script:scriptView,storyboard:storyboardView,pilot:samplesView,final:finalView}[stage]||outlineView)(root);pendingPanel(root);overview.mountHistory(root);
   primaryState();paintProgress();sourceCoverage.sync();
 }
+$('check-updates').onclick=async()=>{
+  const button=$('check-updates'),status=$('update-result');
+  button.disabled=true;status.hidden=false;status.textContent='正在检查更新…';
+  try{
+    const result=await host('check-updates');
+    status.textContent=result.update?'发现新版 '+result.update.version+'，请查看顶部提醒。':result.status==='checked'?'已是最新版。':'暂时无法从 GitHub 确认最新版本，请稍后重试。';
+  }catch{status.textContent='暂时无法检查更新，请稍后重试。';}
+  finally{button.disabled=false;}
+};
 $('undo').onclick=()=>action('undo').catch(e=>notice(e.message,true));
 $('production-preferences').onclick=()=>productionPreferences.open();
 async function runPrimary(){try{

@@ -1,0 +1,51 @@
+name: Publish KGXC 6.9.1 update check fix
+on:
+  push:
+    branches: [release/6.9.1-update-check]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.repository == 'hebokenn/kgxc-corporate-course-skill' && github.ref == 'refs/heads/release/6.9.1-update-check'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Build frozen source and validate every payload entry
+        run: |
+          python3 -B scripts/build_release.py
+          python3 -B scripts/build_plugin.py
+          python3 - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          expected = {
+            'kgxc-course-plugin-v0.9.1.zip': (1610, '05a4f817ce9b8156ceff4337999f2875c111b911dba3eea614bf177036a08075'),
+            'kgxc-course-suite-v6.9.1.zip': (1496, '587643c20ce0d6ab33f1e9c4587c79a7871c81bf26096d5f95e53b9dbfe3270d'),
+          }
+          for name, (count, digest) in expected.items():
+            with zipfile.ZipFile(Path('dist') / name) as z:
+              names = z.namelist()
+              assert z.testzip() is None and len(names) == len(set(names)) == count
+              entries = {}
+              for member in sorted(names):
+                data = z.read(member)
+                if member.endswith('bundle-manifest.json'):
+                  data = json.dumps(json.loads(data), sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+                entries[member] = hashlib.sha256(data).hexdigest()
+              actual = hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+              assert actual == digest, (name, actual)
+          PY
+          (cd dist && sha256sum -c SHA256SUMS && sha256sum -c PLUGIN-SHA256SUMS)
+      - name: Upload to a draft and publish only after verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v6.9.1 --target "$GITHUB_SHA" --draft --title 'KGXC 6.9.1 / DSH 0.9.1' --notes 'Check for stable updates every 15 minutes, retry sooner on failure, and check immediately from Course settings. No automatic installation.'
+          gh release upload v6.9.1 dist/kgxc-course-suite-v6.9.1.zip dist/kgxc-course-plugin-v0.9.1.zip dist/SHA256SUMS dist/PLUGIN-SHA256SUMS
+          gh release view v6.9.1 --json assets --jq '.assets | map(select(.size > 0)) | length' | grep -Fx 4
+          gh release edit v6.9.1 --draft=false --latest

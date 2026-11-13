@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "6.9.0",
+  "version": "6.9.1",
   "usage": "KGXC course production suite",
   "files": {
     "INSTALL.md": "0e17f6dd8f7ec133ad47ec904535e6346a5010619a246a7bea6fbe4bed4f4076",
-    "SKILL.md": "347646df6592fe7f8f99dff21bcfd98d830a829f2bc66ef017c3fb00d351bdf3",
+    "SKILL.md": "84563366d982db711e7dd1306998f71fdd7cca7a975dd6283c2afcdda1dda093",
     "agents/openai.yaml": "242d3df86fbb3e74231f81e6740a54f3d4bc4a6f16b6308cce4216542aef655d",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",
@@ -1285,8 +1285,8 @@
     "workbench/starter/scene-engine.js": "50dcb91ddf169ffdcf59149dbe054460a78fe96a6bb9c1709dcd911598a79901",
     "workbench/storyboard.py": "af9841600c870cb00ec04cbe57921a7ab7cf64627eec34b4334d05fe67b3c46b",
     "workbench/studio.css": "d3d8a62ec3b1b0efbe84e7e71ee41d5fb4ea91f3c9fdc1f1f9b922c789d729da",
-    "workbench/studio.html": "d3b1e713979a2fb0b3130b6d4618cbe762961b7714a6a9104f43612551e63165",
-    "workbench/studio.js": "09eeaff2d3207ca2a7f18044fb6b142f84659dd05bc955a9f13ac3ab20990b76",
+    "workbench/studio.html": "75cd29833a2289b3f1d386c24d918b2818318e76a827bdb4890bdc541bd2323a",
+    "workbench/studio.js": "a77f64c6657150bffd2f2102d62102fe6df38a52d06aa645e2df3979308c0237",
     "workbench/studio.py": "82ab71728c864507b89f6072d14914a0e05743c7d61bf1bb078bbdc3b1e8982a",
     "workbench/style.css": "7c4eef4f689f68fab791d0a9abe97d8e63d23392a8c4efdb74affffae833c831",
     "workbench/teaching_modules.py": "1cedc7b3c5bafce17758ad9b1365b66337d42a5a3e0229db0c512807603fcc0d",
@@ -1299,6 +1299,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "ddc8bec0b32972ac32006ff8c61e1ab027f87718a2f55a3296a36cfed0b5798a",
-    "workbench/workflow.py": "1edb13c4e7ab9072664ab574e8dce3a8eb61f468aa42d8a88ab2d2e9296051a7"
+    "workbench/workflow.py": "81dd563f102c5a37c0299372ca06bf9dfe55df07725be674e0249ce496563f5f"
   }
 }

@@ -169,13 +169,29 @@ window.__ModuleLoader__.load({
         return()=>clearTimeout(timer);
       },[active?.course_path,pendingConfirmation?.id,pendingConfirmation?.decision_status,stageMeta?.unsaved_edits,running,sessionStatus?.pendingInteraction,confirmation?.status]);
       const [availableUpdate,setAvailableUpdate]=useState(null);
+      const updateGeneration=useRef(0);
+      function showUpdate(value,manual=false){
+        if(value.status==='unavailable')return;
+        const update=value.update;
+        setAvailableUpdate(update&&(manual||localStorage.getItem('kgxc-update-dismissed')!==update.version)?update:null);
+      }
       useEffect(()=>{
-        let live=true;
-        request('/updates').then(value=>{
-          const update=value.update;
-          if(live&&update&&localStorage.getItem('kgxc-update-dismissed')!==update.version)setAvailableUpdate(update);
-        }).catch(()=>{});
-        return()=>{live=false;};
+        let live=true,timer;
+        const check=async()=>{
+          if(!live)return;
+          const generation=updateGeneration.current;
+          let delay=2*60*1000;
+          try{
+            const value=await request('/updates');
+            if(!live)return;
+            if(generation===updateGeneration.current)showUpdate(value);
+            if(value.status==='checked')delay=15*60*1000;
+            if(Number.isFinite(value.checked_at))delay=Math.max(1000,delay-Math.max(0,Date.now()-value.checked_at));
+          }catch{/* Checking for updates must not interrupt course production. */}
+          if(live)timer=setTimeout(check,delay);
+        };
+        void check();
+        return()=>{live=false;clearTimeout(timer);};
       },[]);
       function dismissUpdate(){try{localStorage.setItem('kgxc-update-dismissed',availableUpdate.version);}catch{}setAvailableUpdate(null);}
       function toggleChat(){setChatOpen(value=>{localStorage.setItem('kgxc-chat-open',String(!value));return !value;});}
@@ -313,6 +329,15 @@ window.__ModuleLoader__.load({
           if(event.data?.type==='kgxc-editor-leave-result'){const item=leaving.current.get(event.data.id);if(item){clearTimeout(item.timer);leaving.current.delete(event.data.id);event.data.error?item.reject(Error(event.data.error)):item.resolve();}return;}
           if(event.data?.type!=='kgxc-editor-request'||event.data.course_path!==active.course_path)return;
           const {id,action,...args}=event.data;
+          if(action==='check-updates'){
+            const generation=++updateGeneration.current;
+            try{
+              const result=await request('/updates',{});
+              if(current()&&generation===updateGeneration.current)showUpdate(result,true);
+              event.source.postMessage({type:'kgxc-editor-result',id,result},origin);
+            }catch(error){event.source.postMessage({type:'kgxc-editor-result',id,error:error.message},origin);}
+            return;
+          }
           if(action==='review'){
             try{const result=await request('/review',{...args,action:args.review_action,session_id:sessionId,course_path:active.course_path});event.source.postMessage({type:'kgxc-editor-result',id,result},origin);}
             catch(error){event.source.postMessage({type:'kgxc-editor-result',id,error:error.message},origin);}return;

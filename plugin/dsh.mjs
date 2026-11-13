@@ -83,13 +83,14 @@ export function apply(ctx) {
         }
         if (req.method === 'GET' && route === '/api/kgxc-course/updates') return json(res,200,await checkUpdate());
         if (req.method === 'GET' && route === '/api/kgxc-course/courses') return json(res, 200, await callTool('kgxc_course_list'));
-        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
+        if (req.method !== 'POST' || !['/api/kgxc-course/call','/api/kgxc-course/editor','/api/kgxc-course/context','/api/kgxc-course/workspace','/api/kgxc-course/progress','/api/kgxc-course/review','/api/kgxc-course/view','/api/kgxc-course/updates'].includes(route)) return json(res, 404, {ok: false, error: '未知操作'});
         const supplied = req.headers['x-kgxc-token'];
         if (typeof supplied !== 'string' || supplied.length !== token.length || !timingSafeEqual(Buffer.from(supplied), Buffer.from(token))) return json(res, 403, {ok: false, error: '请重新打开制课工作台'});
         if (!String(req.headers['content-type'] || '').startsWith('application/json')) return json(res, 415, {ok: false, error: '需要 JSON 请求'});
         let body = '', bytes = 0;
         for await (const chunk of req) { bytes += chunk.length; if (bytes > 4 * 1024 * 1024) return json(res, 413, {ok: false, error: '请求过大'}); body += chunk; }
         const request = JSON.parse(body);
+        if(route.endsWith('/updates'))return json(res,200,await checkUpdate({force:true}));
         if(route.endsWith('/view'))return json(res,200,await views.open(request));
         if(route.endsWith('/review')){
           const agent=ctx.get?.('agents')?.get(request.session_id),session=agent?.session||ctx.get?.('sessions')?.get(request.session_id);
