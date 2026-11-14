@@ -18,6 +18,8 @@
 
 5.9.1新视频的每种备选还须按[阅读与信息节奏](45-reading-and-information-pacing.md)说明独立信息组、动作与稳定阅读时长、焦点顺序和结果保留方式；全课声明 `reading_contract=reading-pacing-v1`。动态样段同时验证读图与回看条件，动作数与空档不证明学员读懂。6.0中稳定阅读可与相关旁白重叠，分镜分别设计动作、信息和讲解节奏；动作结束不必换字，保留比较结果并只移动焦点。计划停顿写明学员任务与实际提示，不按阅读缺口批量加静音。
 
+把[扫读层级与教学动作](58-scan-and-teaching-motion.md)落实到已有 `opening/action/result/focus` 与 `reading_design` 字段：写清第一眼看哪里、旁白触发什么可见变化、停稳后还能查什么。仍用原有字段、确认和抽样，不为这项检查额外生成分镜表或抽样。
+
 ## 数据与命令
 
 `project/storyboard.json` 使用 `course-storyboard/1`：

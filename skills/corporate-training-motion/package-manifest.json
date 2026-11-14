@@ -1,10 +1,10 @@
 {
   "name": "corporate-training-motion",
-  "version": "6.9.6",
+  "version": "6.9.7",
   "usage": "KGXC course production suite",
   "files": {
     "INSTALL.md": "0e17f6dd8f7ec133ad47ec904535e6346a5010619a246a7bea6fbe4bed4f4076",
-    "SKILL.md": "f8798906e3ea1d13858a09a276fa85dcb9292db6c9af932539617649ff851d96",
+    "SKILL.md": "9b92b9586cb44cfcd1db13614c0c7842dccb75e64d6a97405ba79513ddd16423",
     "agents/openai.yaml": "242d3df86fbb3e74231f81e6740a54f3d4bc4a6f16b6308cce4216542aef655d",
     "assets/apple-product-policy.json": "bc0e6ee3557638f23607e5b844c4b9570181ef79abec2cdccf4fc76baf70b24b",
     "assets/bookends/CourseTitle.otf": "a94e558a2fe972bee4f46bce0843abff37063fd68c33f1e7d9058f6f09432b01",
@@ -1089,7 +1089,7 @@
     "references/41-direction-and-performance.md": "4e04ec5f9ac3c52092d8cadc5f701bf230c1753ab7fc67259180bd9c0d6035b4",
     "references/42-content-directed-production.md": "820cb226f82b425651a774c6b01a8c1d65eca22679233504c4453c51658da02d",
     "references/43-reference-teaching-and-voice.md": "5a75d688742087db1ccd2016fcabe347a0e13f11277c8557da7b333b9d6a7a23",
-    "references/44-storyboard-and-sampling.md": "6abd22dbbb252691647bd6cb45bf377b807e4bda55e8b12b31aa847836d6d1ca",
+    "references/44-storyboard-and-sampling.md": "d27d5b0d14f47531ebed1e8fc0ab23310ce77cc310f0b562f687b84006e68427",
     "references/45-reading-and-information-pacing.md": "9013458fb6f37249a630bab6703d7dae17ae24bcb247d6fc7170e6aa7518d644",
     "references/46-flower-text-and-native-sfx.md": "474ce928a78fc962f233a7c27c65b79e75639a3be4fa677ec36d63be5b6f41c8",
     "references/47-course-palette.md": "e9f5b7175ca2359d858d7f37fa913a9dfbbec08f9d5c1d75eb59d3cfd5828fde",
@@ -1101,6 +1101,7 @@
     "references/56-ordered-reveals-and-intro.md": "9085cfa1600231b56f986a291a8cc94238fb1fc55aed5363ce5d94260d4c27fa",
     "references/57-series-quality-baseline.md": "64ac0d6765878d6106f1f1594f09c03f8fc78af3a23c961999b2326ee0da5777",
     "references/58-fast-production.md": "d47a9d81bbd04b90f8aacde94b53787c2b23f8ef96cb8b09d17d242d3a2ca1f1",
+    "references/58-scan-and-teaching-motion.md": "b8596cd6ae1f5c412eec58e791deac450d9676823dd04ee8bb057f7abad4c6c0",
     "references/material-video-usage.md": "91c71e3e2ef6f1fc8c6a3c0e7970871595380dab106ea77ef0d950281087ce56",
     "references/script-quality.md": "af44c94277abf4af51a98460eaeb48a7bc1e928d2f1e91f7eadd64eb11bdc9ea",
     "scripts/asset_library.py": "7038a2f2809566e8f6964d1b9b408ebc07318ad392107c255ee51eb01a8a2250",
@@ -1252,7 +1253,7 @@
     "workbench/performance-profiles.json": "5cc8224514c430728db77fc86a516888275a6c86c264eed43d9221abe0bd45da",
     "workbench/performance_cache.py": "3723f45528401dfb6cb384909a6e9a1f2d24f4a10ede9d4b3047dd3ae142e4e8",
     "workbench/presentation_signatures.py": "e1886da49b09a40b3772d7638275d34b6f2835a26132b4bbc22aa314de26ea7b",
-    "workbench/production-overview.js": "c7091bc75bc1c35a99a1f6749857edf3532cf5b89f53e4db1bc89b887b518266",
+    "workbench/production-overview.js": "3ad5f58349bb36e0073c58d92c557cf79ab19bd023fb71680ee1c8c8a88adb5c",
     "workbench/production-preferences.js": "38c65bd7bbc37ec95be9280a86824c4ced702fec08fd75e6a6b599e22ad7f93d",
     "workbench/production-progress.js": "c5e3c9f3b172b9d7ed11a90d8d517bfa2a222c784d40774958b336ce09b858d3",
     "workbench/production.py": "d1049a0514423373a845be1e2e98118bb7269c0b24d0629d36745e3eb7058d08",
@@ -1287,9 +1288,9 @@
     "workbench/starter/index.html": "dac9600b425666f8e73c03cd5a6081a16051f22c3951887c12f153f8391c2e55",
     "workbench/starter/scene-engine.js": "50dcb91ddf169ffdcf59149dbe054460a78fe96a6bb9c1709dcd911598a79901",
     "workbench/storyboard.py": "af9841600c870cb00ec04cbe57921a7ab7cf64627eec34b4334d05fe67b3c46b",
-    "workbench/studio.css": "d3d8a62ec3b1b0efbe84e7e71ee41d5fb4ea91f3c9fdc1f1f9b922c789d729da",
+    "workbench/studio.css": "997dbaefa1e1c23882e193fd440cb097a385a4614f6feb124d441ffca1d6db42",
     "workbench/studio.html": "d3b1e713979a2fb0b3130b6d4618cbe762961b7714a6a9104f43612551e63165",
-    "workbench/studio.js": "09eeaff2d3207ca2a7f18044fb6b142f84659dd05bc955a9f13ac3ab20990b76",
+    "workbench/studio.js": "c8926d39b86b980f73bb2cc3afc5835871af13e154462e1d8c9eafd24135b37b",
     "workbench/studio.py": "82ab71728c864507b89f6072d14914a0e05743c7d61bf1bb078bbdc3b1e8982a",
     "workbench/style.css": "7c4eef4f689f68fab791d0a9abe97d8e63d23392a8c4efdb74affffae833c831",
     "workbench/teaching_modules.py": "1cedc7b3c5bafce17758ad9b1365b66337d42a5a3e0229db0c512807603fcc0d",
@@ -1302,6 +1303,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "ddc8bec0b32972ac32006ff8c61e1ab027f87718a2f55a3296a36cfed0b5798a",
-    "workbench/workflow.py": "0fdc940f6296aa42089bec1ccd0a159a27de705fb8c1c4aa85343dc59f78c615"
+    "workbench/workflow.py": "0b0677942ef778ea13414f541e4566065ddbe37743b076069796e8b1d1448d31"
   }
 }

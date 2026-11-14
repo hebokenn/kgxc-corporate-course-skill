@@ -1,5 +1,9 @@
 # 酷果星创 · AI 企业培训制课 Skill
 
+**规则扫读与关键动作演示。** 制课时，规则页优先让学员看见当前行动和关键限制；情境页以对象、预备、动作和结果组织讲解，在已有分镜与成片中检查，不增设审批。[扫读与教学动作](skills/corporate-training-motion/references/58-scan-and-teaching-motion.md)
+
+DSH 默认显示当前课程、正在查看的阶段和眼下可用的成果；切换阶段时打开「查看全部阶段」，核对过往决策时展开记录。重要卡点直接说明，讲稿、小样和成片的确认仍在右侧原生问答完成。
+
 本次更新面向 DSH 课程工作台：先展示当前作品和下一步，素材取舍与检查记录默认折叠。缺数据时明确标注，避免猜测进度或验收。小样页改为“制作现场”，已保存的实际合成画面、分段配音与样段在左侧查看/试听，每 3 秒更新一次；新产物不会自动播放或抢走当前选择。Qwen3/Azure 分段配音及现有渲染器已接入，其它制作路径需登记产物清单。保存不等于完成或验收。内部审阅与设置按需展开，必要确认保留。
 
 工作台的关键确认统一走右侧问答。讲稿、三段有声小样或成片准备好且满足检查条件时，AI 在右侧主动提问；你在左侧看当前版本和状态，在右侧作出选择。左侧的确认记录可悬停或聚焦查看，也可以点击固定，不提交或改变选择。关闭问答、暂不确认和版本更新不会冒充批准；原件对照和实际听审仍按当前课的分工与证据核对。分镜内部审阅、主体与后期制作检查不额外增加人工确认。
@@ -22,7 +26,7 @@
 
 **教学设计与完整逐字稿 · 独立课件 / 有声视频 · 100 种可调用动作 · 24 种视觉方案 · 新课随机配色并持续沿用 · 花字与默认原库音效 · 本地配音 · 可恢复编辑工作台**
 
-[下载 DSH 插件 v0.9.7](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/kgxc-course-plugin-v0.9.7.zip) · [独立 Skill v6.9.6](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/kgxc-course-suite-v6.9.6.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
+[下载 DSH 插件 v0.9.8](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/kgxc-course-plugin-v0.9.8.zip) · [独立 Skill v6.9.7](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/kgxc-course-suite-v6.9.7.zip) · [开始做第一门课](#开始做第一门课) · [查看实际演示](#实际演示) · [完整使用指南](docs/USAGE.md)
 
 [能交付什么](#它能帮你做什么) · [适用场景](#适合哪些培训场景) · [能力与价值](#核心能力与实际价值) · [制作流程](#一门课怎样完成) · [安装或更新](#安装或更新) · [版本更新](#版本更新)
 
@@ -46,9 +50,9 @@
 
 **DSH 插件详情页也能检查 GitHub 更新。** 在「插件 → kgxc-course-plugin」点击「检查 GitHub 更新」，不需要打开课程。这个按钮只读版本信息，不会安装。通过 npm 安装的版本由 DSH 原生包管理检查 npm 更新；首次部署课程制作环境仍需配置 Python、浏览器和渲染依赖。
 
-**DSH 对话可收起，也能随时重新打开。** 源码新增顶部常驻的“收起 AI 对话 / 打开 AI 对话”按钮，不再放在容易被课程画面覆盖的区域；折叠后、刷新后仍可恢复。制作与独立审阅沿用当前会话已选的原生模型，不要求同事切换到 Codex，也不会替换个人模型或计费配置。JavaScript 状态与原生模型路由回归已通过；重复折叠、刷新及窄窗的浏览器测试已编写，但当前环境阻止 Chromium 启动，尚未完成浏览器或同事原生 DSH 桌面的实装验证。此说明对应 rc.3 候选包，旧 rc.2 安装不会自动获得修复。
+**DSH 对话可收起，也能随时重新打开。** 源码新增顶部常驻的“收起 AI 对话 / 打开 AI 对话”按钮，不再放在容易被课程画面覆盖的区域；折叠后、刷新后仍可恢复。制作与独立审阅沿用当前会话已选的原生模型，不要求同事切换到 Codex，也不会替换个人模型或计费配置。JavaScript 状态与原生模型路由回归已通过；浏览器覆盖对话开关、阶段展开与窄窗，原生 macOS 验证单独记录。
 
-**DSH 课程工作台。** 顶栏左上显示酷果星创原版 Logo，侧栏收起时为系统窗口控件留出空间。下载更新后可选择立即或稍后重启，稍后会保留下载。 在当前会话工作区内完成资料、大纲、逐字稿、分镜、有声小样和整课交付，顶部固定阶段导航，右侧保留原生 AI 对话、模型选择和附件。大纲卡片可编辑、拖动、增删、拆并，稳定章节关联带动讲稿移动，并标出后续影响；AI 修改先给建议，由用户采用。分镜独立选择，小样使用实际视频和时间点反馈，整课显示真实任务与文件。制作进度栏显示实际步骤、耗时、等待模型回复和最近执行结果；合成时读取实际任务百分比，同一步连续失败会累计提示，报错不会被后续读取掩盖。画面、配音和绑定就绪后由程序直接合成，避免重复模型等待，仍保留原有确认与校验。保存与确认分开，未生成内容不会冒充成品。时长、受众等选择主动弹出，最后一道单选题点选后发送整组答案，预选不发送。本版插件 0.9.7，核心 6.9.6；当前插件只开发和验证 DSH，Codex 宿主插件暂缓。此前版本已用独立微课走通完整151.2秒视频、字幕、封面和桌面交付；本版验证范围单独记录，不据旧片声称新版课程已验收。保存后核对Finder可见性，显示实际位置，并可一键打开成品文件夹。交付默认保留逐字稿、小样、配音和工程；保留无需清理检查，如需清理，先弹出本课范围供选择，明确确认后才执行。历史会话保留成品回看及继续编辑入口。实际编码与技术观察不代替业务用户验收。[使用与验证范围](docs/PLUGIN.md)
+**DSH 课程工作台。** 顶栏左上显示酷果星创原版 Logo，侧栏收起时为系统窗口控件留出空间。下载更新后可选择立即或稍后重启，稍后会保留下载。 在当前会话工作区内完成资料、大纲、逐字稿、分镜、有声小样和整课交付，默认显示当前阶段，点击「查看全部阶段」展开导航，右侧保留原生 AI 对话、模型选择和附件。大纲卡片可编辑、拖动、增删、拆并，稳定章节关联带动讲稿移动，并标出后续影响；AI 修改先给建议，由用户采用。分镜独立选择，小样使用实际视频和时间点反馈，整课显示真实任务与文件。制作进度栏显示实际步骤、耗时、等待模型回复和最近执行结果；合成时读取实际任务百分比，同一步连续失败会累计提示，报错不会被后续读取掩盖。画面、配音和绑定就绪后由程序直接合成，避免重复模型等待，仍保留原有确认与校验。保存与确认分开，未生成内容不会冒充成品。时长、受众等选择主动弹出，最后一道单选题点选后发送整组答案，预选不发送。本版插件 0.9.8，核心 6.9.7；当前插件只开发和验证 DSH，Codex 宿主插件暂缓。此前版本已用独立微课走通完整151.2秒视频、字幕、封面和桌面交付；本版验证范围单独记录，不据旧片声称新版课程已验收。保存后核对Finder可见性，显示实际位置，并可一键打开成品文件夹。交付默认保留逐字稿、小样、配音和工程；保留无需清理检查，如需清理，先弹出本课范围供选择，明确确认后才执行。历史会话保留成品回看及继续编辑入口。实际编码与技术观察不代替业务用户验收。[使用与验证范围](docs/PLUGIN.md)
 
 从“这里有一份业务资料”开始，先明确学员在什么场景下、需要作出什么判断或完成什么操作，再组织讲解、示范、案例和练习。随后编写可直接讲授或配音的完整逐字稿，按你的需求制作课件或视频。
 
@@ -323,13 +327,13 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 ## 安装或更新
 
-**DSH：[下载插件 v0.9.7](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/kgxc-course-plugin-v0.9.7.zip) → 解压 → 双击“安装制课插件.command” → 重新打开 DSH。**
+**DSH：[下载插件 v0.9.8](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/kgxc-course-plugin-v0.9.8.zip) → 解压 → 双击“安装制课插件.command” → 重新打开 DSH。**
 
 完整插件包包含工作台、制课核心和两个课程模块；独立 Skill 联合包不含 DSH 宿主界面。已有媒体环境会继续使用，安装器保留 DSH 账号、模型路由和其他插件配置。[DSH 安装与验证范围](docs/PLUGIN.md)
 
-**独立 Skill：[下载 v6.9.6 联合包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/kgxc-course-suite-v6.9.6.zip) → 解压 → 双击“安装或更新.command”。**
+**独立 Skill：[下载 v6.9.7 联合包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/kgxc-course-suite-v6.9.7.zip) → 解压 → 双击“安装或更新.command”。**
 
-默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 6.9.6` 与 `elearning-course-design 2.1.0`；升级保留个人配置，已有课程和录音按原记录继续使用。
+默认安装或更新 Codex 和 WorkBuddy 的两个课程模块，日常只需调用统一入口 `$corporate-training-motion`。当前联合包包含 `corporate-training-motion 6.9.7` 与 `elearning-course-design 2.1.0`；升级保留个人配置，已有课程和录音按原记录继续使用。
 
 完整媒体环境目前的验证范围为 **macOS Apple 芯片**。首次完整安装需要联网准备媒体依赖及数 GB 的本地 Base 配音模型，建议预留至少 10GB 空间；使用已登录的 Codex 或 WorkBuddy。默认录音、编辑、渲染和导出在本地运行，无需额外 TTS API Key；AI 账号与其他另选服务按你的实际配置使用。
 
@@ -358,7 +362,7 @@ https://github.com/user-attachments/assets/10078738-05f7-4fcd-84fb-c60ce0863921
 
 需要修改三维源工程时，按依赖说明准备 Blender。换课名使用包内标题合成器，一般无需重渲三维。
 
-[Skill 包校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/SHA256SUMS) · [DSH 插件包校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.6/PLUGIN-SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
+[Skill 包校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/SHA256SUMS) · [DSH 插件包校验文件](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.7/PLUGIN-SHA256SUMS) · [依赖与安装范围](docs/DEPENDENCIES.md)
 
 </details>
 
@@ -413,6 +417,11 @@ WorkBuddy 的原生验证覆盖过文件恢复、工作台打开、课件交付�
 | 维护主页与发布新版本 | [Skill 发布流程与主页检查清单](docs/RELEASING.md) |
 
 ## 版本更新
+
+### 教学画面与渐进式工作台：插件 0.9.8 / 核心 6.9.7
+
+- 制课规范增加扫读层级与教学动作复核，保留现有分镜、审阅与品牌流程。
+- DSH 工作台将当前任务与可用成果放在前面，其余信息按需展开。预览和阻碍直接可见，确认仍在原生对话中完成。
 
 ### 更新与重启提示：插件 0.9.7 / 核心 6.9.6
 

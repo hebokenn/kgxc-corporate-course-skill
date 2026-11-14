@@ -49,7 +49,7 @@ export function nextAction(data={},stage,state={}){
   if(text[visible]&&confirmationStageStatus(data,visible).id==='waiting'){
     const tab={script:'逐字稿',pilot:'有声小样',final:'后期与成片'}[visible];
     const onPreview=visible===stage&&(visible!=='final'||state.phase!=='body');
-    return {title:onPreview?'看完后确认':text[visible],detail:onPreview?'看完当前内容后，在右侧确认或提出修改。':'先到顶部「'+tab+'」查看，看完后在右侧确认。',tone:'action'};
+    return {title:onPreview?'看完后确认':text[visible],detail:onPreview?'看完当前内容后，在右侧确认或提出修改。':'先在「查看全部阶段」打开「'+tab+'」，看完后在右侧确认。',tone:'action'};
   }
   const target=(data.pending_confirmations||[]).some(item=>item.stage===visible&&item.id===data.confirmation_display?.question_id)?visible:stage,status=confirmationStageStatus(data,target);
   if(['retry','paused','changes'].includes(status.id))return {title:status.text,detail:'已有成果会保留，不会自动确认。',tone:'waiting'};
@@ -64,7 +64,10 @@ export function nextAction(data={},stage,state={}){
 export function createProductionOverview({document,onCoverage}) {
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   const root=el('section',null,'production-overview');root.setAttribute('aria-label','制作提示');
-  const head=el('div',null,'overview-now'),title=el('h2'),detail=el('p',null,'overview-next-detail'),kicker=el('span','状态','overview-next-kicker');head.append(kicker,title,detail);root.append(head);
+  const head=el('div',null,'overview-now'),title=el('h2'),detail=el('p',null,'overview-next-detail'),kicker=el('span','状态','overview-next-kicker');
+  head.append(kicker,title,detail);root.append(head);
+  const progress=el('progress',null,'overview-current-progress');
+  progress.setAttribute('max','1');progress.setAttribute('aria-label','当前任务制作进度');progress.hidden=true;root.append(progress);
   const archive=el('details',null,'overview-history');
   archive.append(el('summary','确认历史与检查记录'));
   const confirmations=el('section',null,'confirmation-strip');confirmations.setAttribute('aria-label','人工确认状态');
@@ -112,6 +115,9 @@ export function createProductionOverview({document,onCoverage}) {
   }
   function update(data,stage,state){const m=overviewModel(data,stage,state),next=nextAction(data,stage,state);
     root.dataset.tone=next.tone;kicker.textContent=next.kicker||(next.tone==='action'?'下一步':'状态');title.textContent=next.title;detail.textContent=next.detail;
+    const determinate=next.tone==='working'&&Number.isFinite(state.value)&&state.value>=0&&state.value<=1;
+    progress.hidden=!determinate;if(determinate)progress.value=state.value;
+
     updateConfirmations(data);
     records.replaceChildren();if(m.issue)records.append(el('p','待处理：'+m.issue,'overview-issue'));
     if(!m.materials.length)records.append(el('p','原件取舍尚未登记。'));

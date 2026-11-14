@@ -9,7 +9,7 @@ test('the pilot page names an action, and active feedback takes priority over co
  const pending={stage:'pilot',id:'p1'};
  const data={pending_confirmations:[pending],confirmation_display:{stage:'pilot',question_id:'p1',status:'visible'}};
  assert.equal(nextAction(data,'pilot').title,'看完后确认');
- assert.match(nextAction(data,'sources').detail,/顶部「有声小样」/);
+ assert.match(nextAction(data,'sources').detail,/「查看全部阶段」打开「有声小样」/);
  const editing={...data,confirmation_display:{...data.confirmation_display,editing_feedback:true}};
  assert.deepEqual(nextAction(editing,'pilot'),{title:'正在填写修改意见',detail:'在右侧写清楚要改什么，再提交给 AI。',tone:'action',kicker:'当前'});
 });
@@ -65,6 +65,18 @@ test('hover and focus preview history, click pins across refresh, Escape unpins'
  view.update(data,'script',{label:'更新'});
  assert.equal(panel.hidden,false);
  wrap.events.keydown({key:'Escape',stopPropagation(){}});assert.equal(panel.hidden,true);
+});
+
+test('only a running task with measured progress shows a progress bar',()=>{
+ const document={createElement:tag=>new FakeNode(tag)},container=new FakeNode('main');
+ const view=createProductionOverview({document});view.mount(container);
+ const progress=container.children[0].children[1];
+ view.update({},'pilot',{tone:'working',label:'AI 正在制作',value:.42});
+ assert.equal(progress.hidden,false);assert.equal(progress.value,.42);
+ view.update({},'pilot',{tone:'working',label:'AI 正在制作',value:null});
+ assert.equal(progress.hidden,true);
+ view.update({},'pilot',{tone:'waiting',value:1});
+ assert.equal(progress.hidden,true);
 });
 
 import {materialRows} from '../skills/corporate-training-motion/workbench/production-overview.js';

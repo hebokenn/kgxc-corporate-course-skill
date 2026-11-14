@@ -1,0 +1,69 @@
+name: Verify KGXC 6.9.7 and DSH 0.9.8
+on:
+  push:
+    branches: [release/6.9.7-design]
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'hebokenn/kgxc-corporate-course-skill' && github.ref == 'refs/heads/release/6.9.7-design'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up the test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python3 -m venv /tmp/kgxc-qa
+          /tmp/kgxc-qa/bin/python -m pip install -r requirements.lock
+          /tmp/kgxc-qa/bin/python -m playwright install --with-deps chromium
+          npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          npm install --prefix /tmp/kgxc-browser-deps --ignore-scripts --no-audit --no-fund --package-lock=false react@18.3.1 react-dom@18.3.1
+      - name: Verify course exports and update safeguards
+        env:
+          COURSE_BROWSER_CHANNEL: chromium
+        run: |
+          export PATH="/tmp/kgxc-qa/bin:$PATH"
+          export KGXC_CHROMIUM_EXECUTABLE="$(find "$HOME/.cache/ms-playwright" -type f -name chrome-headless-shell -print -quit)"
+          test -x "$KGXC_CHROMIUM_EXECUTABLE"
+          export KGXC_REACT_TEST_ROOT=/tmp/kgxc-browser-deps
+          python -B scripts/check_readme.py
+          node --test tests/test_course_client.mjs tests/test_update_check.mjs tests/test_update_install.mjs tests/test_stage_confirmation_host.mjs tests/test_editor_host.mjs tests/test_production_progress.mjs tests/test_production_monitor.mjs tests/test_session_courses.mjs tests/test_production_overview.mjs tests/test_dsh_plugin.mjs
+          for pattern in test_chat_visibility_browser.py test_review_reading_windows.py test_review_storyboard_evidence.py test_execution_default_export.py test_workbench_seams.py test_export_preflight.py test_incremental_production.py test_production_audio_reuse.py test_stage_confirmation.py test_update_install_helper.py; do
+            python -B -m unittest discover -s tests -p "$pattern" -v
+          done
+          python -B scripts/build_release.py
+          python -B scripts/build_plugin.py
+          (cd dist && sha256sum -c SHA256SUMS && sha256sum -c PLUGIN-SHA256SUMS)
+          python - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          expected = {
+            'kgxc-course-plugin-v0.9.8.zip': (1625, 'ab19346032a5847fba1905b4e29b8fa54f91f3cf65b8a83ef426a84e732a6056'),
+            'kgxc-course-suite-v6.9.7.zip': (1501, '0767cf1a6740eaedcc02f1181a407ff587ca4fbe323e2ce5b5f22d90bbba8b33'),
+          }
+          for name, (count, digest) in expected.items():
+              with zipfile.ZipFile(Path('dist') / name) as z:
+                  names = z.namelist()
+                  assert z.testzip() is None and len(names) == len(set(names)) == count
+                  entries = {}
+                  for member in sorted(names):
+                      data = z.read(member)
+                      if member.endswith('bundle-manifest.json'):
+                          data = json.dumps(json.loads(data), sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+                      entries[member] = hashlib.sha256(data).hexdigest()
+                  assert hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(',', ':')).encode()).hexdigest() == digest, name
+          PY
+      - name: Publish verified Skill and plugin together
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v6.9.7 --target "$GITHUB_SHA" --draft --title 'KGXC 6.9.7 / DSH 0.9.8' --notes '制课 Skill 增加规则扫读与关键动作演示指引，保留现有分镜和确认流程。DSH 先显示当前任务、可用小样与阻碍，其他阶段和历史按需展开，关键确认仍在原生对话。修正工作台核心版本显示。已验证 Chromium 和安装包；原生 macOS 安装单独验证。'
+          gh release upload v6.9.7 dist/kgxc-course-suite-v6.9.7.zip dist/kgxc-course-plugin-v0.9.8.zip dist/SHA256SUMS dist/PLUGIN-SHA256SUMS
+          gh release view v6.9.7 --json assets --jq '.assets | map(select(.size > 0)) | length' | grep -Fx 4
+          gh release edit v6.9.7 --draft=false --latest

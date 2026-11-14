@@ -135,9 +135,11 @@ test('saved unanswered decisions request one native question and reject another 
 
 test('stage navigation wakes an expired workbench without waiting for a dead iframe or starting a model',async()=>{
  const {app,calls,sender}=await loadedClient({expired:true});const before=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
- const tab=nodes(app.render()).find(n=>n.props?.role==='tab'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes('分镜')));
- assert.ok(tab,'全课分镜阶段必须可以独立打开');
- await tab.props.onClick();await settle();const after=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
+ const picker=nodes(app.render()).find(n=>n.props?.className==='kgxc-stage-picker');
+ const tab=nodes(picker).find(n=>n.type==='button'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes('分镜')));
+ assert.ok(tab,'全课分镜阶段必须可以独立打开');assert.equal(picker.props.open,undefined);
+ let focused=false;const disclosure={open:true,querySelector:()=>({focus:()=>{focused=true;}})};
+ await tab.props.onClick({currentTarget:{closest:()=>disclosure}});assert.equal(disclosure.open,false);assert.equal(focused,true);await settle();const after=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
  assert.match(after.props.src,/stage=storyboard/);assert.notEqual(before.props.key,after.props.key);
  assert.equal(calls.filter(c=>c.data?.name==='kgxc_course_resume').length,2);
  assert.equal(calls.some(c=>c.data?.action==='stage'),false);app.unmount();
@@ -157,13 +159,13 @@ test('opening a saved folder is available in the delivery view and retention dia
 
 test('top navigation splits body and post-production without opening a new workflow gate',async()=>{
   const {app,calls}=await loadedClient({expired:true});
-  const tab=label=>nodes(app.render()).find(n=>n.props?.role==='tab'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes(label)));
+  const tab=label=>nodes(nodes(app.render()).find(n=>n.props?.className==='kgxc-stage-picker')).find(n=>n.type==='button'&&nodes(n).some(c=>c.type==='strong'&&c.props.children.includes(label)));
   assert.equal(tab('整课交付'),undefined);
   for(const [label,phase] of [['画面与配音','body'],['后期与成片','post']]){
-    await tab(label).props.onClick();await settle();
+    await tab(label).props.onClick({currentTarget:{closest:()=>({open:true,querySelector:()=>null})}});await settle();
     const frame=nodes(app.render()).find(n=>n.type==='kgxc-studio-view');
     assert.match(frame.props.src,new RegExp('stage=final&phase='+phase));
-    assert.equal(tab(label).props['aria-selected'],true);
+    assert.equal(tab(label).props['aria-current'],'step');
     assert.equal(app.storage.get('kgxc-final-phase:/tmp/current-course'),phase);
   }
   assert.equal(calls.some(c=>c.data?.action==='stage'||c.data?.action==='stage-confirmation-request'),false);

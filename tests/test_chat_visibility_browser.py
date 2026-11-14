@@ -11,6 +11,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
 REACT=Path(os.environ.get('KGXC_REACT_TEST_ROOT','/tmp/dsh-ui'))/'node_modules'
+CHROMIUM=os.environ.get('KGXC_CHROMIUM_EXECUTABLE','/usr/bin/chromium')
 HTML='''<!doctype html><meta charset="utf-8"><style>html,body,#app{height:100%;margin:0}</style>
 <div id="app"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script>
 window.__ModuleLoader__={load:spec=>{
@@ -45,7 +46,7 @@ class ChatVisibilityBrowserTests(unittest.TestCase):
   server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
   try:
    with sync_playwright() as p:
-    browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
+    browser=p.chromium.launch(executable_path=CHROMIUM,headless=True,args=['--no-sandbox'])
     page=browser.new_page(viewport={'width':1300,'height':820})
     page.goto(f'http://127.0.0.1:{server.server_port}');toggle=page.locator('.kgxc-chat-toggle')
     page.locator('kgxc-studio-view').wait_for()
@@ -62,5 +63,33 @@ class ChatVisibilityBrowserTests(unittest.TestCase):
       toggle.click();self.assertTrue(page.locator('[data-testid=native-chat]').is_visible())
     toggle.click();page.reload();toggle.wait_for();self.assertEqual(toggle.inner_text(),'打开 AI 对话');toggle.click()
     self.assertTrue(page.locator('[data-testid=native-chat]').is_visible());browser.close()
+  finally:server.shutdown();server.server_close()
+ def test_disclosed_stage_navigation_keeps_chat_and_update_reachable(self):
+  server=ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
+  try:
+   with sync_playwright() as p:
+    browser=p.chromium.launch(executable_path=CHROMIUM,headless=True,args=['--no-sandbox'])
+    page=browser.new_page(viewport={'width':1200,'height':820})
+    page.goto(f'http://127.0.0.1:{server.server_port}')
+    page.locator('kgxc-studio-view').wait_for()
+    picker=page.locator('.kgxc-stage-picker');summary=picker.locator('summary');nav=picker.get_by_role('navigation',name='制课阶段')
+    self.assertIn('逐字稿',summary.inner_text());self.assertFalse(nav.is_visible())
+    menu=page.locator('.kgxc-course-menu');self.assertFalse(menu.get_by_role('button',name='新建课程').is_visible())
+    menu.locator('summary').focus();page.keyboard.press('Enter')
+    self.assertTrue(menu.get_by_role('button',name='新建课程').is_visible())
+    page.keyboard.press('Escape');self.assertFalse(menu.get_by_role('button',name='新建课程').is_visible())
+    for width in [1200,680,400]:
+     page.set_viewport_size({'width':width,'height':820})
+     summary.focus();page.keyboard.press('Enter')
+     self.assertTrue(nav.is_visible());self.assertEqual(nav.get_by_role('button').count(),7)
+     self.assertEqual(nav.locator('[aria-current=step]').count(),1)
+     self.assertEqual(nav.evaluate('(node)=>getComputedStyle(node).display'),'grid')
+     box=nav.get_by_role('button',name='后期与成片').bounding_box()
+     self.assertGreaterEqual(box['x'],0);self.assertLessEqual(box['x']+box['width'],width)
+     nav.get_by_role('button',name='后期与成片').focus();page.keyboard.press('Escape')
+     self.assertFalse(nav.is_visible());self.assertTrue(summary.evaluate('(node)=>node===document.activeElement'))
+     self.assertTrue(page.get_by_role('button',name='检查更新',exact=True).is_visible())
+     self.assertTrue(page.locator('.kgxc-chat-toggle').is_visible())
+    browser.close()
   finally:server.shutdown();server.server_close()
 if __name__=='__main__':unittest.main()

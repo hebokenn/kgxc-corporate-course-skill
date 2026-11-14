@@ -97,3 +97,22 @@ button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #86
 .overview-history .confirmation-strip{margin-top:8px;padding:8px 0;border:0}
 .overview-history .overview-details{padding-top:8px}
 .material-library-row[data-status="reference"] .material-library-badge{background:#e8efff;color:#314d8e}
+
+/* Normal work first. Expand rationale, raw inputs and advanced tools only when needed. */
+#stage-kicker{display:block;color:#536885;font-size:11px;letter-spacing:.025em;margin:0 0 2px}
+.workbench-source-actions{display:flex;gap:8px;align-items:center;margin:8px 0 14px}.workbench-source-actions button{font-weight:650;color:#254899;border-color:#c6d5fa}
+.progressive-detail{min-width:0;margin:12px 0;border:1px solid #e0e6f1;border-radius:10px;background:#fff;color:#354b70;padding:0 12px;font-size:13px}
+.progressive-detail>summary{cursor:pointer;padding:9px 0;line-height:1.5;font-weight:650}
+.progressive-detail[open]>summary{border-bottom:1px solid #edf0f6;margin-bottom:12px}
+.progressive-detail[open]{padding-bottom:12px}.progressive-detail>.ledger{margin-top:0}.progressive-detail .source-preview{min-width:0}
+.progressive-detail>.live-workspace{margin:0}.progressive-detail .alternative{margin:0}.progressive-detail .alternatives{gap:7px}.progressive-detail .feedback{margin-top:8px}
+.production-overview[data-tone="working"]{border-color:#c9d8f7;background:#f4f8ff}
+.overview-current-progress{width:100%;height:5px;display:block;margin:9px 0 1px;accent-color:#315cff;border:none;border-radius:4px;overflow:hidden}
+.overview-current-progress[hidden]{display:none}.overview-current-progress::-webkit-progress-bar{background:#e3ebfb}.overview-current-progress::-webkit-progress-value{background:#4268dc}
+#primary[hidden]{display:none}.production-overview .overview-next-detail:empty{display:none}
+
+/* The native shell already supplies the current stage, standalone still needs it. */
+:host #stage-kicker{display:none}
+
+.pilot-preview-note{font-size:12px;color:#52647c;margin:0 0 14px}
+@media(min-width:701px){.live-visual{height:clamp(240px,43vh,390px)}}

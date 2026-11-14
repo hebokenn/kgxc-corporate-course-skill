@@ -32,6 +32,14 @@ const productionPreferences=createProductionPreferences({document,window,
 function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined&&text!==null)node.textContent=text;if(className)node.className=className;return node;}
 function notice(text='',bad=false){$('notice').hidden=!text;$('notice').textContent=text;$('notice').setAttribute('role',bad?'alert':'status');}
 function button(label,action,className){const b=el('button',label,className);b.onclick=()=>Promise.resolve(action()).catch(e=>notice(e.message,true));return b;}
+const disclosed=new Set();
+function disclosure(key,label,...children){
+  const box=el('details',null,'progressive-detail');
+  box.append(el('summary',label),...children);
+  box.open=disclosed.has(key);
+  box.addEventListener('toggle',()=>{if(box.open)disclosed.add(key);else disclosed.delete(key);});
+  return box;
+}
 function link(path,label){const a=el('a',label);a.href=fileURL(path);a.target='_blank';a.rel='noopener';return a;}
 function resourceURL(path){return resourceBase+path;}
 function fileURL(path){return resourceURL('/course-file?path=')+encodeURIComponent(path);}
@@ -108,7 +116,24 @@ function paintProductionSteps(native,historical=false){
 async function pollProgress(){if(closed||document.hidden||progressReading)return;progressReading=true;const wasActive=activeJobs(progressJobs);try{progressJobs=await api('/api/jobs');progressError='';paintProgress();primaryState();if(wasActive&&!activeJobs(progressJobs)){if(serial===savedSerial&&!playing)await refresh();else{notice('新制作结果已返回。');$('notice').append(button('查看新结果',async()=>{await save();pause();await refresh();}));}announce();}}catch(e){progressError='制作进度连接暂时中断';paintProgress();}finally{progressReading=false;schedulePoll();}}
 function schedulePoll(){clearTimeout(pollTimer);if(!closed&&!document.hidden&&(aiBusy||activeJobs(progressJobs)||activeJobs(data?.jobs)))pollTimer=setTimeout(pollProgress,3000);}
 new ResizeObserver(()=>document.documentElement.style.setProperty('--studio-header-height',document.querySelector('header').getBoundingClientRect().height+'px')).observe(document.querySelector('header'));
-function pendingPanel(root){const relevant=(data.plan.decisions||[]).filter(d=>(d.gate||'outline')===(stage==='sources'?'outline':stage));const waiting=relevant.filter(d=>!['confirmed','delegated'].includes(d.status));const accepted=relevant.filter(d=>['confirmed','delegated'].includes(d.status));if(accepted.length){const summary=el('section',null,'card pending');summary.append(el('h3','已记录的选择'));for(const item of accepted)summary.append(el('p',item.question+'：'+(item.options.find(o=>o.id===item.selected)?.label||item.options.find(o=>o.id===item.selected)?.title||item.selected)));if(stage==='outline')summary.append(button('按已选方案更新大纲建议',()=>host('stage',{target_stage:'outline',instruction:'按已经记录的真实选择复核并更新大纲。保留人工修改，变更先展示建议，不自动确认。'})));root.append(summary);}if(!waiting.length)return;const card=el('section',null,'card pending');card.append(el('h3','本阶段还有待选择事项'));const list=el('ul');for(const item of waiting)list.append(el('li',item.question));card.append(list,el('p','AI 会在右侧对话主动发起问答。','meta'));root.append(card);}
+function pendingPanel(root){
+  const relevant=(data.plan.decisions||[]).filter(d=>(d.gate||'outline')===(stage==='sources'?'outline':stage));
+  const waiting=relevant.filter(d=>!['confirmed','delegated'].includes(d.status));
+  const accepted=relevant.filter(d=>['confirmed','delegated'].includes(d.status));
+  if(waiting.length){
+    const card=el('section',null,'card pending');
+    card.append(el('h3','待你选择 · '+waiting.length+' 项'),el('p','AI 会在右侧对话发起问答。','meta'));
+    const list=el('ul');for(const item of waiting)list.append(el('li',item.question));
+    card.append(disclosure(stage+'-pending','查看待选事项',list));root.append(card);
+  }
+  if(accepted.length){
+    const list=el('ul');
+    for(const item of accepted)list.append(el('li',item.question+'：'+(item.options.find(o=>o.id===item.selected)?.label||item.options.find(o=>o.id===item.selected)?.title||item.selected)));
+    const history=disclosure(stage+'-decisions','已记录的选择 · '+accepted.length+' 项',list);
+    if(stage==='outline')history.append(button('按已选方案更新大纲建议',()=>host('stage',{target_stage:'outline',instruction:'按已经记录的真实选择复核并更新大纲。保留人工修改，变更先展示建议，不自动确认。'})));
+    root.append(history);
+  }
+}
 function impactPanel(root){if(!data.impact?.reason)return;const gate=data.gates.find(g=>g.id===stage);if(gate?.status!=='stale'&&!data.editor.changed&&(gate?.ready||['confirmed','delivered'].includes(gate?.status)))return;const box=el('p',data.impact.reason+(data.impact.segment_ids?.length?'；关联 '+data.impact.segment_ids.length+' 个教学片段。':''),'impact');root.append(box);}
 function inputField(label,value,onChange,multi=false){const wrap=el('label',label),control=el(multi?'textarea':'input');control.value=value||'';control.oninput=()=>{onChange(control.value);changed();};wrap.append(control);return wrap;}
 
@@ -157,27 +182,43 @@ function materialLibrary(root){
 }
 
 function sourcesView(root){
-  root.append(el('p','加入原始资料，核对原件摘要、缺口与每项内容的课程去处。','intro'));
   const upload=el('input');upload.type='file';upload.multiple=true;upload.accept='.pdf,.docx,.pptx,.xlsx,.txt,.md,.csv,.png,.jpg,.jpeg,.webp';upload.hidden=true;
   upload.onchange=async()=>{try{for(const file of upload.files){if(file.size>25*1024*1024)throw Error('单个资料文件最大 25 MB。');const response=await fetch('/api/studio/source',{method:'POST',headers:{'X-Filename':encodeURIComponent(file.name),'X-Base-Revision':String(data.revision)},body:file});const result=await response.json();if(!response.ok||result.error)throw Error(result.error);data=result;}render();announce();}catch(e){notice(e.message,true);}finally{upload.value='';}};
-  root.append(button('上传原始资料',()=>upload.click()),upload);
+  const sourceActions=el('div',null,'workbench-source-actions');
+  sourceActions.append(button('上传原始资料',()=>upload.click()),upload);root.append(sourceActions);
+  const unavailable=data.sources.filter(item=>item.available===false).length;
+  const unresolved=(data.plan.issues||[]).filter(issue=>!['resolved','closed'].includes(issue.status));
+  if(unavailable||unresolved.length){
+    const reminder=el('p',[
+      unavailable?unavailable+' 份原件无法打开，重新上传或补充文件。':'',
+      unresolved.length?'还有 '+unresolved.length+' 项资料缺口。'+(data.sources.length?'可展开「查看原件去向与缺口」。':'请先补充资料。'):''
+    ].filter(Boolean).join(' '),'impact');
+    reminder.setAttribute('role','status');root.append(reminder);
+  }
   materialLibrary(root);
   if(!data.sources.length){root.append(empty('尚未加入原件','也可以在右侧对话中描述主题，或选择资料文件夹，让 AI 建立课程。'));return;}
   const grid=el('div',null,'source-grid'),list=el('div',null,'source-list'),preview=el('section',null,'source-preview');
-  selectedSource=data.sources.find(s=>s.id===selectedSource)?.id||data.sources[0].id;
-  for(const source of data.sources){const b=button(source.title,()=>{selectedSource=source.id;sourcePage=1;render();});b.setAttribute('aria-pressed',String(source.id===selectedSource));list.append(b);}
-  const source=data.sources.find(s=>s.id===selectedSource);
-  if(!source.available)preview.append(el('p','原件已不在工程中；请补充资料。','card'));
-  else if(/\.(txt|md|csv)$/i.test(source.location)){const pre=el('pre','正在读取原件…');preview.append(pre);fetch(fileURL(source.location)).then(r=>r.text()).then(text=>pre.textContent=text).catch(e=>pre.textContent=e.message);}
-  else if(/\.(png|jpe?g|webp)$/i.test(source.location)){const image=el('img');image.src=fileURL(source.location);image.alt=source.title;preview.append(image);}
-  else if(/\.pdf$/i.test(source.location)){if(source.pdf_preview_available){const controls=el('div',null,'pdf-controls'),prev=button('上一页',()=>{sourcePage--;render();}),next=button('下一页',()=>{sourcePage++;render();});prev.disabled=sourcePage<=1;next.disabled=sourcePage>=source.pages;controls.append(prev,el('span','第 '+sourcePage+' / '+source.pages+' 页'),next);const image=el('img');image.src=resourceURL('/api/studio/source-preview?id=')+encodeURIComponent(source.id)+'&page='+sourcePage;image.alt=source.title+' 第'+sourcePage+'页原件';image.onerror=()=>notice('此页预览未能显示，请使用“查看原件文件”打开原件。',true);preview.append(controls,image);}else preview.append(el('p','本机暂未提供 PDF 页预览，可直接打开完整原件。','card'),link(source.location,'打开 PDF 原件'));}
-  else preview.append(el('p','此格式保留完整原件，可下载后查看。','card'),link(source.location,'打开 '+source.title));
-  list.append(link(source.location,'查看原件文件'));grid.append(list,preview);root.append(grid);
+  const sourceInspect=disclosure('sources-preview','预览原件 · '+data.sources.length+' 份',grid);
+  root.append(sourceInspect);
+  function loadSourcePreview(){
+    if(grid.childElementCount)return;
+    selectedSource=data.sources.find(s=>s.id===selectedSource)?.id||data.sources[0].id;
+    for(const source of data.sources){const b=button(source.title,()=>{selectedSource=source.id;sourcePage=1;render();});b.setAttribute('aria-pressed',String(source.id===selectedSource));list.append(b);}
+    const source=data.sources.find(s=>s.id===selectedSource);
+    if(!source.available)preview.append(el('p','原件已不在工程中；请补充资料。','card'));
+    else if(/\.(txt|md|csv)$/i.test(source.location)){const pre=el('pre','正在读取原件…');preview.append(pre);fetch(fileURL(source.location)).then(r=>r.text()).then(text=>pre.textContent=text).catch(e=>pre.textContent=e.message);}
+    else if(/\.(png|jpe?g|webp)$/i.test(source.location)){const image=el('img');image.src=fileURL(source.location);image.alt=source.title;preview.append(image);}
+    else if(/\.pdf$/i.test(source.location)){if(source.pdf_preview_available){const controls=el('div',null,'pdf-controls'),prev=button('上一页',()=>{sourcePage--;render();}),next=button('下一页',()=>{sourcePage++;render();});prev.disabled=sourcePage<=1;next.disabled=sourcePage>=source.pages;controls.append(prev,el('span','第 '+sourcePage+' / '+source.pages+' 页'),next);const image=el('img');image.src=resourceURL('/api/studio/source-preview?id=')+encodeURIComponent(source.id)+'&page='+sourcePage;image.alt=source.title+' 第'+sourcePage+'页原件';image.onerror=()=>notice('此页预览未能显示，请使用“查看原件文件”打开原件。',true);preview.append(controls,image);}else preview.append(el('p','本机暂未提供 PDF 页预览，可直接打开完整原件。','card'),link(source.location,'打开 PDF 原件'));}
+    else preview.append(el('p','此格式保留完整原件，可下载后查看。','card'),link(source.location,'打开 '+source.title));
+    list.append(link(source.location,'查看原件文件'));grid.append(list,preview);
+  }
+  if(sourceInspect.open)loadSourcePreview();
+  sourceInspect.addEventListener('toggle',()=>{if(sourceInspect.open)loadSourcePreview();});
   const ledger=el('section',null,'ledger');ledger.append(el('h2','原件内容怎样进入课程'));
   for(const item of data.plan.source_items||[]){const row=el('div',null,'ledger-item');const refs=(item.source_refs||[]).map(ref=>(data.sources.find(s=>s.id===ref.source_id)?.title||ref.source_id)+(ref.locator?' · '+ref.locator:''));const destinations=(item.unit_ids||[]).map(id=>{const index=data.plan.units.findIndex(u=>u.id===id);return index<0?id:'第'+(index+1)+'章 '+data.plan.units[index].title;});row.append(el('h3',item.title||item.summary||item.id),el('p',item.summary||item.content||(item.key_points||[]).join('\n')),el('p','处理：'+(({core:'纳入主课',reference:'作为参考',appendix:'附录',omit:'本课不采用',omitted:'本课不采用',excluded:'本课不采用',merge:'合并讲解',partial:'采用相关内容',merged:'合并讲解',deferred:'移至后续课程'})[item.disposition]||item.disposition||item.treatment||'待分析'),'meta'));if(refs.length)row.append(el('p','原件位置：'+refs.join('；'),'meta'));if(destinations.length)row.append(el('p','课程去处：'+destinations.join('；'),'meta'));if(item.reason||item.rationale)row.append(el('p','理由：'+(item.reason||item.rationale),'meta'));ledger.append(row);}
   if(!(data.plan.source_items||[]).length)ledger.append(el('p','AI 完成素材诊断后，这里显示采用、删减或移至其他章节的内容与理由。','muted'));
   for(const issue of data.plan.issues||[])ledger.append(el('p','待补充：'+(issue.detail||issue.title||issue.id),'impact'));
-  root.append(ledger,el('p','工程位置：'+data.course_path,'file-path'));
+  root.append(disclosure('source-ledger','查看原件去向与缺口',ledger,el('p','工程位置：'+data.course_path,'file-path')));
 }
 
 function outlineView(root){
@@ -213,7 +254,7 @@ function scriptView(root){
   const count=()=>{const n=[...area.value.replace(/\s/g,'')].length;words.textContent=n+' 字';estimate.textContent='估时约 '+Math.ceil(n/230)+' 分钟（配音后校准）';};count();
   area.oninput=()=>{section().body=area.value;changed();count();pause();clearTimeout(previewTimer);previewTimer=setTimeout(updatePreview,160);};area.onclick=()=>updatePreview();
   const tools=el('div',null,'row');tools.append(button('选择当前段落',()=>{const p=paragraphAt(area.value,area.selectionStart);if(p){area.focus();area.setSelectionRange(p.start,p.end);}}),button('让 AI 修改选中文字',()=>openRewrite(area)));
-  form.append(choose,tools,area,counts);const screen=el('div',null,'screen'),waiting=el('div',null,'placeholder');waiting.id='waiting';waiting.append(el('span','逐字稿预览','meta'),el('h2',section().title),el('p',section().body||'开始输入这一章的讲稿。'),el('small','课程动态画面尚未制作'));
+  form.append(choose,area,counts,disclosure('script-editing','逐字稿编辑工具',tools));const screen=el('div',null,'screen'),waiting=el('div',null,'placeholder');waiting.id='waiting';waiting.append(el('span','逐字稿预览','meta'),el('h2',section().title),el('p',section().body||'开始输入这一章的讲稿。'),el('small','课程动态画面尚未制作'));
   const frame=el('iframe');frame.id='real-preview';frame.title='当前章节实际画面';frame.hidden=true;screen.append(frame,waiting);preview.append(screen,el('p',native?'修改后的实际画面与声音在有声小样阶段检查。':'文字改动即时预览；配音和视频在对应制作阶段更新。','preview-meta'));
   const controls=el('div',null,'playback'),play=button('播放预览',()=>togglePlay());play.id='play';play.disabled=true;const seek=el('input');seek.type='range';seek.min=0;seek.max=1;seek.value=0;seek.id='seek';seek.setAttribute('aria-label','课程预览进度');seek.oninput=()=>{pause();previewFrame=Number(seek.value);paint();};const clock=el('span','00:00');clock.id='preview-time';controls.append(play,seek,clock);preview.append(controls);grid.append(form,preview);root.append(grid);loadPreview().catch(e=>notice(e.message,true));
 }
@@ -232,14 +273,19 @@ function storyboardView(root){
   root.append(el('p','每个教学片段比较不同画面表现；静态关键帧只作示意，实际动态画面以小样为准。','intro'));impactPanel(root);
   const segments=data.storyboard?.segments||[];if(!segments.length){root.append(empty('全课分镜尚未生成','确认逐字稿后，AI 将覆盖整课内容，为每段提出至少三种表现方案。'));return;}
   selectedSegment=segments.find(s=>s.id===selectedSegment)?.id||segments[0].id;
-  root.append(button('采用全部推荐方案',()=>action('choice',{id:'all',option:'recommended'})));
   const grid=el('div',null,'board-grid'),list=el('nav',null,'segment-list'),detail=el('section');list.setAttribute('aria-label','章节与教学片段');
   segments.forEach((s,i)=>{const unit=data.plan.units.find(u=>u.id===s.unit_id);const b=button((i+1)+'. '+(unit?.title||'')+' · '+s.teaching_goal,()=>{selectedSegment=s.id;render();});b.setAttribute('aria-current',String(s.id===selectedSegment));list.append(b);});
   const current=segments.find(s=>s.id===selectedSegment);detail.append(el('h2',current.teaching_goal),el('blockquote',current.script_excerpt,'segment-copy'));
-  const alternatives=el('div',null,'alternatives');for(const option of current.options){const card=el('article',null,'card alternative');card.setAttribute('aria-selected',String(current.selected===option.id));card.append(el('h3',option.method+(current.recommended===option.id?' · 推荐':'')));
-    for(const [key,label] of [['opening','开始画面'],['action','画面动作'],['result','最终结果'],['focus','观看焦点'],['feasibility','实现条件'],['cost','制作量'],['risk_note','需检查']])if(option[key])card.append(el('p',label+'：'+option[key],'detail'));
-    const keyframe=el('div',null,'keyframe');keyframe.append(el('p','静态画面示意','meta'));if(option.preview_file){if(/\.(png|jpe?g|webp|svg)$/i.test(option.preview_file)){const img=el('img');img.src=fileURL(option.preview_file);img.alt=option.method+'关键帧示意';keyframe.append(img);}else keyframe.append(link(option.preview_file,'查看画面示意'));}else keyframe.append(el('p','尚未生成关键帧；上方为已写入分镜的画面方案。','muted'));card.append(keyframe,button(current.selected===option.id?'已采用这一方案':'采用这一方案',()=>action('choice',{id:current.id,option:option.id}),current.selected===option.id?'primary':undefined));alternatives.append(card);}
-  detail.append(alternatives);const refine=el('section',null,'card feedback'),instruction=el('textarea');instruction.placeholder='例如：改成顾客与私教对话，保留本段教学目的';refine.append(el('h3','调整本段画面或视觉风格'),instruction,button('让 AI 给出本段修改建议',()=>host('stage',{target_stage:'storyboard',segment_id:current.id,instruction:instruction.value,user_instruction:instruction.value})));detail.append(refine);grid.append(list,detail);root.append(grid);
+  const chosen=current.options.find(option=>option.id===current.selected),alternatives=el('div',null,'alternatives');
+  const compare=disclosure('storyboard-alternatives','比较备选方案 · '+(current.options.length-(chosen?1:0))+' 个',alternatives);
+  for(const option of current.options){const card=el('article',null,'card alternative');card.setAttribute('aria-selected',String(current.selected===option.id));card.append(el('h3',option.method+(current.selected===option.id?' · 已采用':current.recommended===option.id?' · 推荐':'')));
+    for(const [key,label] of [['opening','开始画面'],['action','画面动作'],['result','最终结果'],['focus','观看焦点']])if(option[key])card.append(el('p',label+'：'+option[key],'detail'));
+    const conditions=[['feasibility','实现条件'],['cost','制作量'],['risk_note','需检查']].filter(([key])=>option[key]).map(([key,label])=>el('p',label+'：'+option[key],'detail'));
+    if(conditions.length)card.append(disclosure('storyboard-conditions-'+current.id+'-'+option.id,'制作条件',...conditions));
+    const keyframe=el('div',null,'keyframe');keyframe.append(el('p','静态画面示意','meta'));if(option.preview_file){if(/\.(png|jpe?g|webp|svg)$/i.test(option.preview_file)){const img=el('img');img.src=fileURL(option.preview_file);img.alt=option.method+'关键帧示意';keyframe.append(img);}else keyframe.append(link(option.preview_file,'查看画面示意'));}else keyframe.append(el('p','尚未生成关键帧；上方为已写入分镜的画面方案。','muted'));card.append(keyframe);if(chosen===option)detail.append(card);else{card.append(button('采用这一方案',()=>action('choice',{id:current.id,option:option.id})));alternatives.append(card);}}
+  if(current.options.length>(chosen?1:0)){if(!chosen)detail.append(el('p','这个片段还没有选定方案，比较区可查看已有方案。','meta'));detail.append(compare);}
+  const refinements=disclosure('storyboard-refinement','分镜编辑工具',button('采用全部推荐方案',()=>action('choice',{id:'all',option:'recommended'})));
+  const refine=el('section',null,'card feedback'),instruction=el('textarea');instruction.placeholder='例如：改成顾客与私教对话，保留本段教学目的';refine.append(el('h3','调整本段画面或视觉风格'),instruction,button('让 AI 给出本段修改建议',()=>host('stage',{target_stage:'storyboard',segment_id:current.id,instruction:instruction.value,user_instruction:instruction.value})));refinements.append(refine);detail.append(refinements);grid.append(list,detail);root.append(grid);
 }
 function timestampFeedback(stageName,segmentId,video,file,interval){
   if(!video||!file?.sha256||!parentOrigin||parent===window)return null;
@@ -276,13 +322,17 @@ let liveProduction;
 const overview=createProductionOverview({document,onCoverage:()=>sourceCoverage.open()});
 function liveWorkspace(root){if(!liveProduction)liveProduction=createLiveProduction({document,window,fetch,mediaURL:fileURL});liveProduction.mount(root);}
 function samplesView(root){
-  const previewRoot=root,inspection=el('details',null,'sample-inspection');inspection.append(el('summary','查看抽样依据、听审范围和制作记录'));root=inspection;
+  const previewRoot=root,inspection=disclosure('pilot-inspection','抽样依据、完整听审范围与制作记录');root=inspection;
   impactPanel(root);mediaReviewScope(root,'pilot');
   if(data.artifacts.pilot?.some(file=>file.available&&file.current_storyboard)){
     const retry=button('重新合成当前小样',async()=>{retry.disabled=true;try{await host('stage',{target_stage:'pilot'});notice('已提交当前小样制作请求。');}finally{retry.disabled=aiBusy||activeJobs(progressJobs)||activeJobs(data.jobs);}});retry.disabled=aiBusy||activeJobs(progressJobs)||activeJobs(data.jobs);root.append(retry);
   }
   const sampling=data.sampling||{},selections=sampling.selections||[];
-  if(!selections.length){previewRoot.append(empty('有声小样还没生成','完成分镜后，会在这里看到三段小样。'));liveWorkspace(previewRoot);previewRoot.append(inspection);return;}
+  if(!selections.length){
+    liveWorkspace(previewRoot);
+    previewRoot.append(el('p','完整小样保存后，这里会显示三段可播放的视频。','pilot-preview-note'));
+    previewRoot.append(inspection);return;
+  }
   const overview=el('section',null,'card');overview.append(el('h2','本轮抽样范围'),el('p',sampling.scope||''));if(sampling.uncovered_kinds?.length)overview.append(el('p','尚未覆盖的表现类型：'+sampling.uncovered_kinds.map(k=>({concept:'概念讲解',scenario:'人物情境',operation:'操作演示',practice:'练习与反馈'})[k]||k).join('、'),'impact'));if(sampling.unsampled_high_risk_ids?.length)overview.append(el('p','仍需另行检查 '+sampling.unsampled_high_risk_ids.length+' 个高风险片段。','meta'));root.append(overview);
   const grid=el('div',null,'sample-grid');selections.forEach((selected,index)=>{const segment=data.storyboard.segments.find(s=>s.id===selected.segment_id),card=el('article',null,'card');card.append(el('h2','样段 '+(index+1)+' · '+(segment?.teaching_goal||selected.segment_id)));
     const segmentDetails=el('details',null,'sample-inspection');segmentDetails.append(el('summary','查看本段讲稿与定位反馈'),el('p','抽样原因：'+selected.reason,'meta'));if(segment)segmentDetails.append(el('p',segment.script_excerpt),el('p','画面方案：'+(segment.options.find(o=>o.id===selected.option_id)?.method||selected.option_id),'meta'));
@@ -290,7 +340,10 @@ function samplesView(root){
     if(file){video=samplePlayer(file,binding,index);card.append(video);const note=timestampFeedback('pilot',selected.segment_id,video,file,binding);if(note)card.append(note);card.append(el('p','本段位置 '+stamp(binding.playback_start)+'—'+stamp(binding.playback_end)+'；完整片段 '+(binding.playback_end-binding.playback_start).toFixed(1)+' 秒。','meta'));}else card.append(el('p','本段有声视频尚未生成，或尚未核对与当前分镜的完整对应关系。','impact'));
     segmentDetails.append(el('p','音色与语速：'+(file?.audio_settings?.summary||'暂无单独记录'),'meta'),feedbackForm('pilot',selected.segment_id,video,file,binding));card.append(segmentDetails);grid.append(card);});previewRoot.append(grid);
   if((data.artifacts.pilot||[]).some(file=>file.available&&/\.mp4$/i.test(file.path)&&!file.bindings?.length)){const extra=el('section',null,'card');extra.append(el('h3','已生成、尚待核对对应关系的视频'));for(const file of data.artifacts.pilot.filter(f=>f.available&&/\.mp4$/i.test(f.path)&&!f.bindings?.length)){const video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';extra.append(video);}previewRoot.append(extra);}
-  liveWorkspace(previewRoot);previewRoot.append(inspection);
+  const hasPlayable=(data.artifacts.pilot||[]).some(f=>f.available&&f.current_storyboard&&f.bindings?.some(b=>b.playback_complete&&selections.some(s=>s.segment_id===b.segment_id&&s.option_id===b.option_id)));
+  const building=aiBusy||activeJobs(progressJobs)||activeJobs(data.jobs);
+  if(hasPlayable&&!building){const live=disclosure('pilot-live','查看制作中的画面和配音');liveWorkspace(live);previewRoot.append(live);}else liveWorkspace(previewRoot);
+  previewRoot.append(inspection);
 }
 function finalBodyState(model){
   const pilot=model.gates?.find(g=>g.id==='pilot');
@@ -318,7 +371,7 @@ function finalView(root){
   if(!files.length)root.append(empty('成片还没生成','完成后可在这里播放。'));
   for(const file of files){const card=el('section',null,'card');let video;if(/\.mp4$/i.test(file.path)){video=el('video');video.controls=true;video.src=fileURL(file.path);video.className='delivery-video';card.append(video);const note=timestampFeedback('final',undefined,video,file);if(note)card.append(note);if(file.chapters?.length){const jumps=el('div',null,'unit-actions');for(const chapter of file.chapters)jumps.append(button(chapter.title,()=>{video.currentTime=Math.min(chapter.start,Math.max(0,(video.duration||Infinity)-.1));}));card.append(jumps);}else card.append(el('p','此文件没有经过核对的章节定位，仍可直接播放。','meta'));}card.append(link(file.path,'下载当前文件'));if(video){const feedback=el('details',null,'sample-inspection');feedback.append(el('summary','定位反馈'),feedbackForm('final',undefined,video,file));card.append(feedback);}root.append(card);}
   for(const delivery of data.deliveries||[])if(delivery.path||delivery.paths)root.append(el('p','已登记交付：'+(delivery.path||delivery.paths.join('、')),'file-path'));
-  const diagnostics=el('details',null,'sample-inspection');diagnostics.append(el('summary','查看成片检查与制作记录'));
+  const diagnostics=disclosure('final-inspection','成片检查与制作记录');
   mediaReviewScope(diagnostics,'final');
   const {current,history}=productionJobHistory(progressJobs.length?progressJobs:data.jobs,'final');
   if(current)diagnostics.append(exportJobCard(current,false));
@@ -376,6 +429,7 @@ function primaryState(){
   if(['storyboard','pilot','final'].includes(stage)&&data.production_preferences?.required&&(!data.production_preferences.ready||!data.production_preferences.storyboard_current)){primary.textContent='按制作偏好更新分镜';primary.disabled=primary.hidden||aiBusy||rendering||!data.gates.some(g=>g.id==='script'&&g.status==='confirmed');}
   if(['storyboard','pilot','final'].includes(stage)&&data.production_preferences?.choices?.customer==='new'&&!data.production_preferences.new_customer_ready){primary.textContent='设计新增顾客并更新分镜';primary.disabled=primary.hidden||aiBusy||rendering||!data.gates.some(g=>g.id==='script'&&g.status==='confirmed');}
   if(data.ai_review?.enabled&&stage==='storyboard'&&!needsGeneration()&&!review?.passed){primary.textContent='分镜检查由 AI 推进';primary.disabled=true;}
+  if(primary.disabled)primary.hidden=true;
 }
 function render(){
   if(data.review_context==='qa-simulation')notice('独立验证课程：当前操作记录为技术模拟，不代表正式业务课内容验收。');
