@@ -1,0 +1,63 @@
+name: Publish KGXC kinetic showcase
+on:
+  push:
+    branches: [showcase/kinetic-64-v698]
+permissions:
+  contents: read
+jobs:
+  verify-and-append:
+    if: github.repository == 'hebokenn/kgxc-corporate-course-skill' && github.ref == 'refs/heads/showcase/kinetic-64-v698'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install media and browser runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-cjk python3-pil python3-numpy
+          python3 -m venv /tmp/kgxc-kinetic
+          /tmp/kgxc-kinetic/bin/python -m pip install -r requirements.lock
+          /tmp/kgxc-kinetic/bin/python -m playwright install --with-deps chromium
+      - name: Render 100 native actions and the beat-cut showcase
+        run: |
+          set -eu
+          test "$(cat VERSION)" = 6.9.8
+          src=docs/media/source/kinetic-showcase
+          py=/tmp/kgxc-kinetic/bin/python
+          chrome="$(find "$HOME/.cache/ms-playwright" -type f -name chrome-headless-shell -print -quit)"
+          test -x "$chrome"
+          "$py" -B scripts/check_readme.py
+          "$py" -B "$src/export_action_atlases.py" --repo . --chrome "$chrome" --out dist/promo-atlases --version v6.9.8 --source-commit 7bfd2f9b3e3e0fec33b454c7f95de6b41135fa18
+          /usr/bin/python3 "$src/kgxc-kinetic-score.py" --output dist/kinetic-score-64.wav
+          /usr/bin/python3 "$src/kgxc-kinetic-showreel.py" --repo-root . --actions-root dist/promo-atlases --audio-file dist/kinetic-score-64.wav --output-dir dist
+          "$py" -B "$src/build_action_catalog.py" --atlas-root dist/promo-atlases --output dist/kgxc-motion-actions-100.zip
+          ffmpeg -v error -xerror -i dist/kgxc-kinetic-showreel.mp4 -f null -
+          ffprobe -v error -count_frames -show_entries stream=codec_name,width,height,channels,nb_read_frames -show_entries format=duration -of json dist/kgxc-kinetic-showreel.mp4 | python3 -c 'import json,sys;d=json.load(sys.stdin);v=next(s for s in d["streams"] if s["codec_name"]=="h264");assert (v["width"],v["height"],v["nb_read_frames"])==(1920,1080,"1920");assert 63.99<=float(d["format"]["duration"])<=64.05;assert any(s["codec_name"]=="aac" and s["channels"]==2 for s in d["streams"])'
+          /usr/bin/python3 -c 'from PIL import Image; p=Image.open("dist/kgxc-kinetic-showreel-poster.jpg"); assert p.size==(1920,1080); p.verify()'
+          (cd dist && sha256sum kgxc-kinetic-showreel.mp4 kgxc-kinetic-showreel-poster.jpg kgxc-motion-actions-100.zip > KINETIC-SHOWCASE-SHA256SUMS && sha256sum -c KINETIC-SHOWCASE-SHA256SUMS)
+      - name: Append verified media without replacing old release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          target=v6.9.8
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$target" --jq .object.sha)" = 7bfd2f9b3e3e0fec33b454c7f95de6b41135fa18
+          gh release view "$target" --json body,assets,isDraft,isPrerelease > /tmp/kgxc-before-release.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('/tmp/kgxc-before-release.json').read_text())
+          assert not r['isDraft'] and not r['isPrerelease']
+          wanted={'kgxc-course-suite-v6.9.8.zip','kgxc-course-plugin-v0.9.9.zip','SHA256SUMS','PLUGIN-SHA256SUMS','kgxc-motion-promo.mp4','kgxc-motion-promo-poster.jpg','SHOWCASE-SHA256SUMS'}
+          assert {a['name'] for a in r['assets'] if a['size']>0}==wanted
+          addition=Path('docs/media/source/kinetic-showcase/release-addendum.md').read_text().strip()
+          assert '64 秒鼓点版' not in r['body']
+          Path('/tmp/kgxc-release-combined.md').write_text(addition+'\n\n'+r['body'])
+          PY
+          gh release upload "$target" dist/kgxc-kinetic-showreel.mp4 dist/kgxc-kinetic-showreel-poster.jpg dist/kgxc-motion-actions-100.zip dist/KINETIC-SHOWCASE-SHA256SUMS
+          gh release view "$target" --json assets --jq '.assets | map(select(.size > 0)) | length' | grep -Fx 11
+          gh release edit "$target" --notes-file /tmp/kgxc-release-combined.md

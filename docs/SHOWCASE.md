@@ -2,7 +2,7 @@
 
 [回到仓库首页](../README.md) · [下载全部视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip)
 
-**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4) · [新版动效使用说明](MOTION.md)
+**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip) · [新版动效使用说明](MOTION.md)
 
 ## 历史展示 · 17 支独立样片
 

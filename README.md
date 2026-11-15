@@ -250,11 +250,13 @@ DSH内直接使用共用课程编辑与审阅界面，原件、讲稿、实际�
 
 保留这段既有画面、旁白与字幕，音效采用已确定的两款原库文件，不叠加旧音效。样片已按用户要求公开；它展示具体制作方法，业务条件仍需在使用时按实际情况核实。安装包已内置同一音源，供后续课程默认调用。
 
-### 新版宣传片：先看得懂，再看它动
+### 新版宣传片：先看懂、再看会、当场判断
 
-同一条虚构的门店数据迁移规则，先对照一整段字与“动作＋就近条件”的版式，再看对象按预备、移动和停稳呈现结果。用于演示制作方法，不是正式售后政策。
+64 秒鼓点版，把真实动效按“读懂规则、看会操作、判断结果”分组呈现。18 段公开样片负责讲具体例子，六组动态画面快速展示动效库的 100 种动作。完整图谱可以按名称、编号或用途查找，点开看起态、过程和落定。
 
-**[在线播放新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4) · [查看动效库方法](docs/MOTION.md)
+**[在线播放新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [下载 100 种动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip)（解压打开 index.html）· [动效库与复现方法](docs/MOTION.md)
+
+[36 秒规则扫读与数据迁移设计短片](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4)继续保留。影片中的规则和操作为展示示例，不是正式公司制度。
 
 ### 历史展示：80 秒教学效果混剪
 

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>酷果星创 · 100 种真实制课动效</title>
+<style>
+:root{color-scheme:light;--ink:#172e2b;--muted:#526560;--line:#ccded6;--spot:#065447;--paper:#f8f9f5;--cloud:#eaf2ea}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.58 system-ui,"PingFang SC","Noto Sans CJK SC",sans-serif}.frame{width:min(1100px,100% - 36px);margin:auto}header{padding:36px 0 22px;border-bottom:1px solid var(--line)}.kicker{margin:0;color:var(--spot);font-size:.84rem;letter-spacing:.18em;font-weight:800}h1{font-size:clamp(1.95rem,4.5vw,3.65rem);margin:.13em 0 .2em;line-height:1.15;letter-spacing:-.035em}p{margin:.42em 0;color:var(--muted)}main{display:grid;grid-template-columns:1.32fr 1fr;gap:24px;padding:26px 0 36px}.work,.listbox{min-width:0;padding:19px;border:1px solid var(--line);border-radius:18px;background:#fff}.work{position:sticky;top:16px;height:max-content}.anim{margin-top:10px;display:block;width:100%;aspect-ratio:16/9;border-radius:12px;border:1px solid var(--line);background:var(--cloud)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default}a{color:var(--spot)}[hidden]{display:none!important}:focus-visible{outline:3px solid #9c4328;outline-offset:3px}.filter{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0}.filter input,.filter select,.controls button{min-width:0;width:100%;padding:.55em .65em;border:1px solid #9cb6aa;border-radius:8px;background:white;color:var(--ink)}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.controls button{width:auto;background:#edf4ed}.choices{list-style:none;margin:8px 0 0;padding:0;height:400px;overflow:auto;scroll-margin:8px;overscroll-behavior:contain}.choices button{width:100%;text-align:left;border:0;border-bottom:1px solid #e5ece8;padding:10px 7px;background:white;color:var(--ink);border-radius:6px}.choices button:hover,.choices button[aria-current="true"]{background:#e0f0e5}.choices button[aria-current="true"]{font-weight:750}.id{font:12px/1.5 system-ui;color:var(--muted);overflow-wrap:anywhere}.count{font-size:.9rem;min-height:1.45em}.tags{display:flex;align-items:baseline;gap:9px;color:var(--spot);font-size:.86rem;font-weight:720}.work h2,.listbox h2{margin:.2em 0 .22em;line-height:1.25}.en{color:var(--muted);font-size:.83rem;overflow-wrap:anywhere}.tip{margin-top:10px;font-size:.85rem}.screen-reader{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}@media(max-width:750px){main{grid-template-columns:1fr;gap:17px}.work{position:static}.choices{height:280px}.filter{grid-template-columns:1fr}.frame{width:calc(100% - 28px)}header{padding-top:26px}}</style>
+</head><body><div class="frame">
+<header><p class="kicker">酷果星创 / 动效索引</p><h1>100 种真实制课动效</h1><p>选一项，看动作开始、过程和落定。可按动作名、编号、任务或类别找，也可以暂停逐帧看。</p></header>
+<main>
+<article class="work" aria-label="所选动效">
+  <div class="tags"><span id="ordinal"></span><span id="category"></span></div>
+  <h2 id="title">准备演示</h2><p class="en" id="actionid"></p>
+  <canvas width="320" height="180" id="preview" class="anim" aria-label="所选动效逐帧预览"></canvas>
+  <div class="controls">
+    <button type="button" id="play" aria-pressed="false">播放</button>
+    <button type="button" id="step">下一帧</button>
+    <button type="button" id="rewind">回到起态</button>
+  </div>
+  <p><strong>用在哪：</strong><span id="task"></span></p><p><strong>看什么：</strong><span id="observe"></span></p>
+  <p class="tip" id="phase" aria-live="off"></p><p class="tip">这是正式版本工作台绘制的 12 相位示例，不是完整课程，也不要求每门课使用所有动效。</p>
+</article>
+<section class="listbox" aria-labelledby="list-title">
+  <h2 id="list-title">选择动效</h2>
+  <div class="filter">
+    <label><span class="screen-reader">搜索动作名、编号或用途</span><input id="query" placeholder="搜索：交接、对照、16…" type="search"></label>
+    <label><span class="screen-reader">分类筛选</span><select id="filter"><option value="">全部分类</option><option value="teaching-action">教学对象动作</option><option value="text-or-emphasis">文字和强调</option><option value="symbol">符号描绘</option></select></label>
+  </div>
+  <p id="count" class="count" aria-live="polite"></p><ol id="choices" class="choices"></ol>
+</section>
+</main>
+</div>
+<script src="catalog-data.js" defer></script><script>
+document.addEventListener('DOMContentLoaded',()=>{
+const list=window.kgxcCatalog, by=n=>document.getElementById(n);
+const set=(n,v)=>by(n).textContent=v||'';
+if(!Array.isArray(list)||list.length!==100){set('title','动效数据没加载');set('count','请先完整解压，再打开 index.html。');return}
+const names={'teaching-action':'教学对象动作','text-or-emphasis':'文字和强调',symbol:'符号描绘'}, canvas=by('preview'), ctx=canvas.getContext('2d'), slots=12;
+const timers=[270,112,104,102,102,102,102,102,102,104,120,580];
+let selected=null, atlas=null, frame=0, playing=false, timer=0, generation=0;
+function sync(){
+ by('play').textContent=playing?'暂停':'播放';
+ by('play').setAttribute('aria-pressed',String(playing));
+ by('play').disabled=by('step').disabled=by('rewind').disabled=!atlas;
+}
+function stop(){clearTimeout(timer);playing=false;sync()}
+function draw(){
+ if(!atlas)return;
+ const x=frame%4*320,y=Math.floor(frame/4)*180;
+ ctx.drawImage(atlas,x,y,320,180,0,0,320,180);
+ set('phase','相位 '+(frame+1)+' / '+slots+(frame===0?' · 起态':frame===11?' · 落定':' · 动作中'));
+}
+function loop(){if(playing){draw();timer=setTimeout(()=>{frame=(frame+1)%slots;loop()},timers[frame]);}}
+function pick(a){
+ selected=a; generation++; const own=generation;
+ stop();atlas=null;sync();frame=0;
+ ctx.fillStyle='#edf3ec';ctx.fillRect(0,0,320,180);
+ set('ordinal',String(a.ordinal).padStart(2,'0')+' / 100');set('category',names[a.category]||a.category);
+ set('title',a.title);set('actionid',a.id);set('task',a.task);set('observe',a.observe);set('phase','加载画面…');
+ canvas.setAttribute('aria-label',a.title+'：'+a.observe);
+ for(const b of by('choices').querySelectorAll('button'))b.setAttribute('aria-current',String(b.dataset.id===a.id));
+ const img=new Image();
+ img.onload=()=>{if(own!==generation)return;atlas=img;draw();sync();};
+ img.onerror=()=>{if(own===generation)set('phase','读取失败，请确认 actions 文件夹与 index.html 在一起。');};
+ img.src=a.path;
+}
+function filter(){
+ const q=by('query').value.trim().toLowerCase(),category=by('filter').value;
+ const found=list.filter(a=>(!category||a.category===category)&&(!q||[a.id,a.title,a.task,a.observe,a.ordinal,String(a.ordinal).padStart(2,'0')].some(x=>String(x).toLowerCase().includes(q))));
+ set('count',found.length+' / '+list.length+' 种');by('choices').replaceChildren();
+ for(const a of found){
+  const li=document.createElement('li'), b=document.createElement('button'), id=document.createElement('div');
+  b.type='button';b.dataset.id=a.id;b.textContent=String(a.ordinal).padStart(2,'0')+' · '+a.title;
+  b.setAttribute('aria-current',String(selected?.id===a.id));id.className='id';id.textContent=a.id;
+  b.append(id);li.append(b);by('choices').append(li);b.addEventListener('click',()=>pick(a));
+ }
+ by('choices').scrollTop=0;
+}
+for(const n of ['query','filter'])by(n).addEventListener(n==='query'?'input':'change',filter);
+by('play').onclick=()=>{if(playing){stop();return}playing=true;sync();loop();};
+by('step').onclick=()=>{stop();frame=(frame+1)%slots;draw();};
+by('rewind').onclick=()=>{stop();frame=0;draw();};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
+filter();pick(list.find(a=>a.id==='handoff')||list[0]);
+});
+</script>
+</body></html>
