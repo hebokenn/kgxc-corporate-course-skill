@@ -1,0 +1,57 @@
+{
+  "kgxc-course-plugin-v0.9.9.zip": [
+    749237448,
+    222522909,
+    "sha256:95436c6a9f288fed3053c84646a269179de9e33d22c0387a9967c07c69f5d10b"
+  ],
+  "kgxc-course-suite-v6.9.8.zip": [
+    749237447,
+    222009396,
+    "sha256:8e7883089a0729f483a4bc02f1c231f0e051e2cf337f573f6964bd00124063a7"
+  ],
+  "kgxc-kinetic-showreel-poster.jpg": [
+    749292944,
+    184512,
+    "sha256:53c6da2258d306139d22a7f78a4c98a9471cf9f420795b3336ad94c245b0fbf8"
+  ],
+  "kgxc-kinetic-showreel.mp4": [
+    749292943,
+    4883907,
+    "sha256:ef025b83828f49559ac21405046e16d2691d1cf0f424922467acc3d95c50a33d"
+  ],
+  "kgxc-motion-actions-100.zip": [
+    749292947,
+    3585497,
+    "sha256:89ca4b1de1f363ad099fa981d571f3255282363185fa62a6ba8bf163fc230771"
+  ],
+  "kgxc-motion-promo-poster.jpg": [
+    749237466,
+    188587,
+    "sha256:20e22260bd053e311039d9e91fcd5d903c246975cb76ec6078da3bd4bb23172d"
+  ],
+  "kgxc-motion-promo.mp4": [
+    749237449,
+    1557502,
+    "sha256:c08a79586f0e2a9d764aab9520d245efeea2cd7f3b18ea1906d197d93a37cdf5"
+  ],
+  "KINETIC-SHOWCASE-SHA256SUMS": [
+    749292942,
+    285,
+    "sha256:d9159830059ac7345213310678fbfd34cca41e2ee9f1ff4945a8b89a6b3ccbad"
+  ],
+  "PLUGIN-SHA256SUMS": [
+    749237450,
+    96,
+    "sha256:746e9798ca6f633719f01d3185dc6747f2492832a93dd95cf6575b519ebe0ccf"
+  ],
+  "SHA256SUMS": [
+    749237446,
+    95,
+    "sha256:ac72ecf3f38c0156aad9bcade8db49339759f2bfbd2c8b1677f3968c3705119e"
+  ],
+  "SHOWCASE-SHA256SUMS": [
+    749237467,
+    183,
+    "sha256:020c6da761a76e9dc4441b78ea7de5044f965d3140b06febb14a974f0b07d129"
+  ]
+}
