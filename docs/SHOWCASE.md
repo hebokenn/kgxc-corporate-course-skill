@@ -1,8 +1,14 @@
-# 17种课程动效 · 独立播放
+# 课程动效展示
 
 [回到仓库首页](../README.md) · [下载全部视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip)
 
-新样片由huashu-motion基于既有教学内容、原公司角色与动效库制作。每支8–10秒，1080p/30fps，无旁白；11–17是新增的7种视觉风格。
+**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4) · [新版动效使用说明](MOTION.md)
+
+## 历史展示 · 17 支独立样片
+
+下列视频保留原版，便于和新版方法对照。
+
+这些样片由huashu-motion基于既有教学内容、原公司角色与动效库制作。每支8–10秒，1080p/30fps，无旁白；11–17是新增的7种视觉风格。
 
 ## 01 · 工程蓝图 / 扫描连线
 

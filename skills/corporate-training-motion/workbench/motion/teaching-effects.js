@@ -19,6 +19,10 @@
  C.shape=(c,n,f)=>{for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='shape'){a.fn(c,n,e,pof(e,f),raw(e,f),f);return true}}return false};
  C.image=(c,n,f,images)=>{for(const e of n.effects||[]){const a=registry[e.type];if(a?.stage==='image'){a.fn(c,n,e,pof(e,f),raw(e,f),f,images);return true}}return false};
  C.children=(n,f)=>{let children=n.children||[];for(const e of n.effects||[]){if(e.type==='rotate-inspect'&&e.faceIndices){const face=raw(e,f)<.5?e.faceIndices[0]:e.faceIndices[1];children=children.map((o,i)=>({...o,opacity:i===face?(o.opacity??1):0}))}const a=registry[e.type];if(a?.stage==='children')children=a.fn(children,n,e,pof(e,f),raw(e,f),f)}return children};
+ // Opt-in phase curves use absolute source-frame progress, never prior-frame state.
+ // Reusing legacy parameters keeps recorded endpoints/placements and avoids retiming old projects.
+ const teaching=e=>e.motionProfile==='teaching',step=(q,a,b)=>MO.smooth(clamp((q-a)/(b-a)));
+ const rigid=(c,n,x,y,angle)=>{const w=n.width||100,h=n.height||100;c.translate(x,y);c.translate(w/2,h/2);c.rotate(angle);c.translate(-w/2,-h/2)};
  const partial=(c,n,p,pts=n.points)=>{if(!pts||pts.length<2)throw Error('动效缺少路径 '+n.id);DG.drawPartial(c,pts,length(pts),length(pts).at(-1)*p)};
  const reveal=(child,q)=>({...child,opacity:(child.opacity??1)*clamp(q)});
  const ordered=(items,e,p,fn)=>items.map((n,i)=>fn(n,MO.smooth(clamp((p*(1+(items.length-1)*(e.stagger??.16))-i*(e.stagger??.16)))) ,i));
@@ -30,7 +34,17 @@
  register('spotlight','shape',(c,n,e,p)=>{const w=n.width||1920,h=n.height||1080,x=mix(e.fromX??e.cx??w/2,e.cx??w/2,p),y=mix(e.fromY??e.cy??h/2,e.cy??h/2,p),r=mix(e.fromRadius??Math.max(w,h),e.radius??150,p);c.save();c.beginPath();c.rect(0,0,w,h);c.clip();c.fillStyle=e.color||'rgba(17,35,34,.54)';c.beginPath();c.rect(0,0,w,h);c.arc(x,y,r,0,Math.PI*2,true);c.fill('evenodd');c.restore()});
  register('magnify','image',(c,n,e,p,q,f,images)=>{const im=images[n.assetId];if(!im)throw Error('放大镜素材未绑定');const w=n.width,h=n.height,z=mix(1,e.zoom??2.2,p),cx=(e.cx??.5)*im.width,cy=(e.cy??.5)*im.height,sw=im.width/z,sh=im.height/z;c.save();c.beginPath();c.roundRect(0,0,w,h,e.radius??20);c.clip();c.drawImage(im,cx-sw/2,cy-sh/2,sw,sh,0,0,w,h);c.restore()});
  register('path-follow','before',(c,n,e,p)=>{const a=point(e.points,p);c.translate(a[0]-e.points[0][0],a[1]-e.points[0][1]);if(e.orient&&p<1){const b=point(e.points,Math.min(1,p+.002));c.rotate(Math.atan2(b[1]-a[1],b[0]-a[0]))}});
- register('handoff','before',(c,n,e,p)=>{const w=n.width||100,h=n.height||100;c.translate((e.dx??500)*p,(e.dy??0)*p-Math.sin(p*Math.PI)*(e.lift??55));c.translate(w/2,h/2);c.rotate(Math.sin(p*Math.PI)*(e.tilt??.1));c.translate(-w/2,-h/2)});
+ register('handoff','before',(c,n,e,p,q)=>{
+  const dx=e.dx??500,dy=e.dy??0,lift=e.lift??55,tilt=e.tilt??.1;
+  if(!teaching(e)){rigid(c,n,dx*p,dy*p-Math.sin(p*Math.PI)*lift,Math.sin(p*Math.PI)*tilt);return}
+  // Anticipate without shifting to another holder; then arc the rigid object and
+  // settle its angle in place on contact. No stretch, and no positional overshoot.
+  const distance=Math.hypot(dx,dy),pull=distance ? Math.min(14,distance*.04)/distance : 0;
+  if(q<.14){const prep=step(q,0,.14);rigid(c,n,-dx*pull*prep,-dy*pull*prep,-tilt*.24*prep);return}
+  if(q>=.82){rigid(c,n,dx,dy,tilt*.22*(1-step(q,.82,.96)));return}
+  const travel=step(q,.14,.82),arc=Math.sin(Math.PI*travel)**2,along=mix(-pull,1,travel);
+  rigid(c,n,dx*along,dy*along-lift*arc,mix(-tilt*.24,tilt*.22,travel)+tilt*.55*arc);
+ });
  const targets=(items,e,p)=>ordered(items,e,p,(o,q,i)=>{const a=e.from?.[i]||[o.x||0,(o.y||0)+180],b=e.to?.[i]||[o.x||0,o.y||0];return {...o,x:mix(a[0],b[0],q),y:mix(a[1],b[1],q)}});
  register('sort','children',(items,n,e,p)=>targets(items,e,p));
  register('group-collect','children',(items,n,e,p)=>items.map((o,i)=>{const q=MO.smooth(clamp(p*(1+items.length*.09)-i*.09)),a=e.from[i],b=e.to[i];return {...o,x:mix(a[0],b[0],q),y:mix(a[1],b[1],q),scaleX:mix(1,e.scale??1,q),scaleY:mix(1,e.scale??1,q)}}));
@@ -51,7 +65,12 @@
  register('dialogue','before',(c,n,e,p)=>{c.globalAlpha*=p;c.translate(0,(1-p)*32);const w=n.width||500,h=n.height||160;c.fillStyle=n.fill||'#fff';c.beginPath();if(e.side==='right'){c.moveTo(w-65,h-3);c.lineTo(w-20,h+28);c.lineTo(w-30,h-3)}else{c.moveTo(25,h-3);c.lineTo(14,h+28);c.lineTo(70,h-3)}c.closePath();c.fill()});
  register('quiz-feedback','children',(items,n,e,p)=>items.map((o,i)=>({...o,opacity:(o.opacity??1)*(i===e.selected?1:.3+.7*(1-p)),fill:i===e.selected&&p>.5?(e.correct?'#d8ecdd':'#f2dace'):o.fill,editDy:(o.editDy||0)+(i===e.selected?-8*Math.sin(p*Math.PI):0)})));
  for(const kind of ['check-draw','cross-draw','brace-draw'])register(kind,'path',(c,n,e,p)=>partial(c,n,p));
- register('callout','children',(items,n,e,p)=>items.map((o,i)=>reveal(o,items[0]?.type==='path'&&i?clamp((p-.5)*2):p)));
+ register('callout','children',(items,n,e,p,q)=>items.map((o,i)=>{
+  if(!teaching(e))return reveal(o,items[0]?.type==='path'&&i?clamp((p-.5)*2):p);
+  // Reach the anchor by real arc length first. Only then reveal the explanation.
+  // Fade at the authored position/size so the label and its numerals do not bounce.
+  return i ? reveal(o,step(q,.70,.94)) : {...o,drawProgress:step(q,.06,.68)};
+ }));
  register('flow-token','path',(c,n,e,p)=>{c.save();c.globalAlpha*=.35;partial(c,n,1);c.restore();if(e.marker!==false&&p>0&&(p<1||e.retainMarker===true)){const a=point(n.points,p);c.fillStyle=e.color||n.stroke;c.beginPath();c.arc(...a,e.radius??13,0,Math.PI*2);c.fill()}});
  register('presenter-gesture','image',(c,n,e,p,q,f,images)=>{const key=[n.assetId,e.kgAsset,e.openAsset,e.blinkAsset].join('|');let mesh=meshes.get(key);if(!mesh){if(typeof createM1Mesh!=='function')throw Error('品牌人物网格未接入');mesh=createM1Mesh(()=>({lift:0,upper:0,tilt:0,nod:0,breath:0,aperture:0,rounding:0,blink:0}));for(const id of [n.assetId,e.kgAsset,e.openAsset,e.blinkAsset])if(!images[id])throw Error('品牌人物缺少真实素材 '+id);mesh.init(images[n.assetId],images[e.kgAsset],images[e.openAsset],images[e.blinkAsset]);meshes.set(key,mesh)}mesh.poseAt=()=>({lift:Math.sin(p*Math.PI),upper:Math.sin(p*Math.PI),tilt:0,nod:0,breath:0,aperture:0,rounding:0,blink:Math.max(0,1-Math.abs(q-.65)/.035)});const im=mesh.draw(q*6);c.drawImage(im,0,0,n.width,n.height)});
  register('pixel-walk','before',(c,n,e,p)=>{const steps=e.steps??18;c.translate(Math.round(p*steps)/steps*(e.dx??650),Math.round(Math.sin(p*Math.PI*steps)*2)*(e.pixelSize??4))});
@@ -61,7 +80,13 @@
  register('gauge-sweep','before',(c,n,e,p)=>{c.rotate(mix(e.fromAngle??-1.2,e.toAngle??1.1,p))});
  register('threshold-cross','shape',(c,n,e,p)=>{const w=n.width||500,h=n.height||60,v=p*(e.value??1),threshold=e.threshold??.65;c.save();c.fillStyle=v>=threshold?(e.afterColor||'#b84e43'):(n.fill||'#327967');c.fillRect(0,0,w*v,h);c.strokeStyle=e.color||'#ab773e';c.lineWidth=4;c.beginPath();c.moveTo(w*threshold,-15);c.lineTo(w*threshold,h+15);c.stroke();c.restore()});
  register('venn-intersect','children',(items,n,e,p)=>items.map((o,i)=>({...o,x:(o.x||0)+(i===0?1:-1)*p*(e.distance??120),opacity:i>1?p:(o.opacity??1)})));
- register('swimlane-transfer','before',(c,n,e,p)=>{const split=e.split??.5;if(p<split)c.translate(0,(e.dy??180)*p/split);else c.translate((e.dx??600)*(p-split)/(1-split),e.dy??180)});
+ register('swimlane-transfer','before',(c,n,e,p,q)=>{
+  const split=e.split??.5,dx=e.dx??600,dy=e.dy??180;
+  if(!teaching(e)){if(p<split)c.translate(0,dy*p/split);else c.translate(dx*(p-split)/(1-split),dy);return}
+  // Planned lanes are orthogonal: readable pause at the boundary, not a curve
+  // across ownership. Two separately eased legs stop exactly on each anchor.
+  c.translate(dx*step(q,split+.07,.94),dy*step(q,.06,split-.07));
+ });
  register('parallel-sync','children',(items,n,e,p)=>items.map((o,i)=>{const q=clamp((p-(e.delays?.[i]??i*.12))/(1-(e.delays?.[i]??i*.12)));return {...o,x:mix(o.x||0,e.to?.[i]?.[0]??500,q),y:mix(o.y||0,e.to?.[i]?.[1]??200,q)}}));
  register('evidence-attach','children',(items,n,e,p)=>ordered(items,e,p,(o,q,i)=>({...o,x:(o.x||0)+(1-q)*(e.dx??-160),opacity:(o.opacity??1)*q})));
  C.registerAction=register;

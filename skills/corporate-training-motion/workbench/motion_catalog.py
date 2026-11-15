@@ -62,6 +62,11 @@ CATALOG['dialogue']['nodes'].append('rect')
 CATALOG['orbit-revolve']['nodes'].append('ellipse')
 
 
+TEACHING_PROFILE_ACTIONS=frozenset({'handoff','swimlane-transfer','callout'})
+for name in TEACHING_PROFILE_ACTIONS:
+    CATALOG[name]['motionProfiles']=['teaching']
+
+
 def inventory():
     from motion_demos import CASES
     return dict(schema='course-motion-catalog/1', count=len(CATALOG),

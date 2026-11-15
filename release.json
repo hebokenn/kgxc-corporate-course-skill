@@ -1,5 +1,5 @@
 {
-  "version": "6.9.7",
+  "version": "6.9.8",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -10,10 +10,10 @@
     "elearning-course-design"
   ],
   "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.9.8",
+  "plugin_version": "0.9.9",
   "skill_versions": {
-    "corporate-training-motion": "6.9.7",
+    "corporate-training-motion": "6.9.8",
     "elearning-course-design": "2.1.0"
   },
-  "release_status": "Teaching visual guidance and progressive DSH workspace; Mac acceptance tracked separately"
+  "release_status": "Teaching-motion primitives and public showcase; desktop update verification tracked separately"
 }

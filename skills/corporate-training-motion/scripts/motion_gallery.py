@@ -66,6 +66,10 @@ def build(destination,modules=False):
             a=i*span;b=a+span;scene='T'+str(i+1).zfill(2)
             scenes.append(dict(id=scene,chapter='真实教学构图验证',title=meta[0],sourceStartFrame=a,sourceEndFrame=b))
             data=dict(title=meta[0].split(' / ')[-1],context='同一编排器 · 同一画布 · 实际可编辑模块',purpose='技术演示：观察对象、过程和结果',labels=['准备工作','准备迎宾','建立联系'],left=['订单记录','商品信息','编码对应'],right=['对应实物','对应标签','核对结果'],lead='先明确计算对象',scope='分子与分母对应同一范围',root='顾客需要',before='A1B2-C3D4-E5F9',after='A1B2-C3D4-E5F6',selected=1,count=40,records=['线下 · 当前范围 · 40','线上 · 当前范围 · 30','线下 · 当前范围 · 60'],keep=[0,2],result=100,assetId='detail',phases=[dict(title='接待前',labels=['准备工作','准备迎宾']),dict(title='接待中',labels=['建立联系','发掘线索','展示体验','达成交易']),dict(title='接待后',labels=['建立长远关系'])],actorAssets=dict(body='m1',kg='kg',open='m1-open',blink='m1-blink'),frames=[dict(text='先了解使用场景',assetId='m1'),dict(text='确认最在意什么',assetId='m1'),dict(text='邀请顾客亲手体验',assetId='m1')])
+            # The comic image slot is not a rigged actor: use the supplied
+            # already-marked Coach reference instead of an unmarked staff master.
+            if kind=='comic':
+                for frame in data['frames']:frame['assetId']=roles['COACH']['headAsset']
             if kind=='whiteboard':data['labels']=['状态准备','待客之道','建立联系','发掘线索','展示体验','达成交易','长远关系']
             if kind=='data':data['selected']=8
             if kind=='editorial':data['labels']=['线下主机销量','对应真实客流','× 100%']
@@ -90,6 +94,10 @@ def build(destination,modules=False):
         total=len(scenes)*span;graph=dict(background='#f4f3eb',nodes=nodes)
     with wave.open(str(p/'audio/diagnostic-silence.wav'),'wb') as w:w.setnchannels(1);w.setsampwidth(2);w.setframerate(24000);w.writeframes(b'\0\0'*(total//fps*24000))
     spec=dict(title=str(len(CATALOG))+'种真实动效技术验证',sourceDurationFrames=total,bodyEndFrame=total,scenes=scenes,captions=captions,media=dict(audio='audio/diagnostic-silence.wav',intro=None,outro=None),assets=assets,sceneGraph=graph,rendering=dict(route='auto'),voice='无配音 技术验证',motionPlan=dict(schema='course-motion-plan/1',language='motion-gallery-v1',beats=beats))
+    # This silent diagnostic has no spoken track or inserted holds, but must
+    # still satisfy the current structural continuity contract.
+    from continuity_pacing import SCHEMA as CONTINUITY_SCHEMA
+    spec['continuityPlan']=dict(schema=CONTINUITY_SCHEMA,pauses=[])
     atomic(p/'source/gallery.json',spec);doc=configure(root,p/'source/gallery.json')
     editor=p/'editor';shutil.copytree(ROOT/'workbench',editor/'workbench',ignore=shutil.ignore_patterns('__pycache__','*.pyc'));stage_libraries(ROOT,editor/'workbench/motion/lib')
     (editor/'scripts').mkdir()

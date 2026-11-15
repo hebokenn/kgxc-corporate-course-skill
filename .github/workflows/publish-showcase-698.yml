@@ -1,0 +1,76 @@
+name: Verify KGXC 6.9.8 and DSH 0.9.9
+on:
+  push:
+    branches: [release/6.9.8-showcase]
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.repository == 'hebokenn/kgxc-corporate-course-skill' && github.ref == 'refs/heads/release/6.9.8-showcase'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up the test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-cjk python3-pil
+          python3 -m venv /tmp/kgxc-qa
+          /tmp/kgxc-qa/bin/python -m pip install -r requirements.lock
+          /tmp/kgxc-qa/bin/python -m playwright install --with-deps chromium
+          npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          npm install --prefix /tmp/kgxc-browser-deps --ignore-scripts --no-audit --no-fund --package-lock=false react@18.3.1 react-dom@18.3.1
+      - name: Verify course exports and update safeguards
+        env:
+          COURSE_BROWSER_CHANNEL: chromium
+        run: |
+          export PATH="/tmp/kgxc-qa/bin:$PATH"
+          export KGXC_CHROMIUM_EXECUTABLE="$(find "$HOME/.cache/ms-playwright" -type f -name chrome-headless-shell -print -quit)"
+          test -x "$KGXC_CHROMIUM_EXECUTABLE"
+          export KGXC_REACT_TEST_ROOT=/tmp/kgxc-browser-deps
+          python -B scripts/check_readme.py
+          node --test tests/test_course_client.mjs tests/test_update_check.mjs tests/test_update_install.mjs tests/test_stage_confirmation_host.mjs tests/test_editor_host.mjs tests/test_production_progress.mjs tests/test_production_monitor.mjs tests/test_session_courses.mjs tests/test_production_overview.mjs tests/test_dsh_plugin.mjs
+          for pattern in test_teaching_motion_profiles.py test_chat_visibility_browser.py test_review_reading_windows.py test_review_storyboard_evidence.py test_execution_default_export.py test_workbench_seams.py test_export_preflight.py test_incremental_production.py test_production_audio_reuse.py test_stage_confirmation.py test_update_install_helper.py; do
+            python -B -m unittest discover -s tests -p "$pattern" -v
+          done
+          python -B scripts/build_release.py
+          python -B scripts/build_plugin.py
+          (cd dist && sha256sum -c SHA256SUMS && sha256sum -c PLUGIN-SHA256SUMS)
+          python - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          expected = {
+            'kgxc-course-plugin-v0.9.9.zip': (1629, 'd19006f8c515811cd25ecdbc66fe0c4dbbb014731f844142708c312261b19093'),
+            'kgxc-course-suite-v6.9.8.zip': (1504, '378a355084060fd29d561c95db7f340dae63f3fa1737f44edad9842dee220a4f'),
+          }
+          for name, (count, digest) in expected.items():
+              with zipfile.ZipFile(Path('dist') / name) as z:
+                  names = z.namelist()
+                  assert z.testzip() is None and len(names) == len(set(names)) == count
+                  entries = {}
+                  for member in sorted(names):
+                      data = z.read(member)
+                      if member.endswith('bundle-manifest.json'):
+                          data = json.dumps(json.loads(data), sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+                      entries[member] = hashlib.sha256(data).hexdigest()
+                  assert hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(',', ':')).encode()).hexdigest() == digest, name
+          PY
+      - name: Render and decode the showcase
+        run: |
+          /usr/bin/python3 docs/media/source/kgxc-motion-promo.py --repo-root . --output-dir dist
+          ffmpeg -v error -xerror -i dist/kgxc-motion-promo.mp4 -f null -
+          ffprobe -v error -count_frames -show_entries stream=codec_name,width,height,nb_read_frames -show_entries format=duration -of json dist/kgxc-motion-promo.mp4 | python3 -c 'import json,sys;d=json.load(sys.stdin);v=next(s for s in d["streams"] if s["codec_name"]=="h264");assert (v["width"],v["height"],v["nb_read_frames"])==(1920,1080,"1080");assert 35.99<=float(d["format"]["duration"])<=36.05;assert any(s["codec_name"]=="aac" for s in d["streams"])'
+          /usr/bin/python3 -c 'from PIL import Image; p=Image.open("dist/kgxc-motion-promo-poster.jpg"); assert p.size==(1920,1080); p.verify()'
+          (cd dist && sha256sum kgxc-motion-promo.mp4 kgxc-motion-promo-poster.jpg > SHOWCASE-SHA256SUMS && sha256sum -c SHOWCASE-SHA256SUMS)
+      - name: Publish verified Skill, plugin and showcase
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v6.9.8 --target "$GITHUB_SHA" --draft --title 'KGXC 6.9.8 / DSH 0.9.9：把关键动作讲明白' --notes-file docs/release-v6.9.8.md
+          gh release upload v6.9.8 dist/kgxc-course-suite-v6.9.8.zip dist/kgxc-course-plugin-v0.9.9.zip dist/SHA256SUMS dist/PLUGIN-SHA256SUMS dist/kgxc-motion-promo.mp4 dist/kgxc-motion-promo-poster.jpg dist/SHOWCASE-SHA256SUMS
+          gh release view v6.9.8 --json assets --jq '.assets | map(select(.size > 0)) | length' | grep -Fx 7
+          gh release edit v6.9.8 --draft=false --latest

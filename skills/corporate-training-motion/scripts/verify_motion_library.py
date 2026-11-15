@@ -2,7 +2,6 @@
 """Observe every action in the same renderer used by real course exports."""
 import argparse
 import base64
-import hashlib
 import http.server
 import io
 import json
@@ -16,18 +15,44 @@ from runtime import activate,browser_options
 activate()
 from backend import Handler,Workspace,read
 from motion_catalog import CATALOG
-from motion_quality import preflight
+from motion_quality import walk
+from render_routes import effect_errors
 
 
-def verify(course,out):
+def gallery_issues(project, doc):
+    """Validate the silent diagnostic fixture, never as a real course receipt."""
+    contract=Path(project)/'motion-contract.json'
+    if ((Path(project) / 'course-state.json').is_file()
+            or not contract.is_file() or read(contract).get('purpose') != 'silent technical gallery'
+            or doc.get('motionPlan', {}).get('language') != 'motion-gallery-v1'):
+        return ['只接受 motion_gallery.py 新建的无旁白动作图库；不能用来验收真实课程']
+    nodes={n['id']:n for n in walk(doc['sceneGraph']['nodes'])}
+    issues=effect_errors(doc)
+    if len(doc.get('scenes', []))!=len(CATALOG):
+        issues.append('动作目录与图库场景数量不一致')
+        return issues
+    for i, kind in enumerate(CATALOG):
+        sid=doc['scenes'][i]['id']
+        node=nodes.get('object-'+kind,{})
+        start=i*150+30
+        if node.get('sceneId')!=sid or not any(
+                e.get('type')==kind and (e.get('startFrame'),e.get('endFrame'))==(start,start+90)
+                for e in node.get('effects',[])):
+            issues.append('图库缺少当前动作的真实实现和采样帧：'+kind)
+    return issues
+
+
+def verify(course,out,actions=None):
     import numpy as np
     from PIL import Image,ImageDraw,ImageFont
     from playwright.sync_api import sync_playwright
     p=Path(course).resolve()/'project';doc=read(p/'workbench.json');out=Path(out).resolve();out.mkdir(parents=True,exist_ok=True)
-    assert preflight(doc)['status']=='pass',preflight(doc)
+    validation=gallery_issues(p,doc)
+    if validation:raise ValueError(' / '.join(validation[:8]))
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);server.workspace=Workspace(p)
     threading.Thread(target=server.serve_forever,daemon=True).start();url=f'http://127.0.0.1:{server.server_address[1]}'
-    report=[];issues=[];posters=[]
+    report=[];issues=[];posters=[];selected=set(actions or CATALOG)
+    if not selected.issubset(CATALOG):raise ValueError('图库未实现指定动作')
     try:
         with sync_playwright() as pw:
             browser=pw.chromium.launch(headless=True,**browser_options());page=browser.new_page(viewport=dict(width=1920,height=1080));errors=[]
@@ -37,6 +62,7 @@ def verify(course,out):
             actual=page.evaluate('window.courseRenderer.native.CourseMotion.runtimeCatalog()')
             assert set(actual)==set(CATALOG),(set(CATALOG)-set(actual),set(actual)-set(CATALOG))
             for i,(kind,info) in enumerate(CATALOG.items()):
+                if kind not in selected:continue
                 a=i*150+30;stamps=[a-30,a-1,*range(a,a+90,6),a+89,a+90,a+119];pictures={};calls=[]
                 for frame in stamps:
                     result=page.evaluate('async f=>{const r=window.courseRenderer;const v=await r.drawFrame(f);return {png:r.canvas.toDataURL(),calls:v.motionReceipt}}',frame)
@@ -78,21 +104,20 @@ def verify(course,out):
     finally:server.shutdown();server.server_close()
     # A source-only label cannot pass: remove all claimed motion implementations.
     negative=json.loads(json.dumps(doc))
-    from motion_quality import walk
     for n in walk(negative['sceneGraph']['nodes']):n.pop('effects',None);n.pop('motion',None)
-    negative_result=preflight(negative);assert negative_result['status']=='fail'
+    negative_issues=gallery_issues(p,negative);assert len(negative_issues)>=len(CATALOG)
     fontfile=ROOT/'assets/bookends/CourseTitle.otf';font=ImageFont.truetype(str(fontfile),24)
     sheet=Image.new('RGB',(1500,((len(CATALOG)+5)//6)*181+90),'#f4f3eb');draw=ImageDraw.Draw(sheet)
     draw.text((25,16),str(len(CATALOG))+' 种实际动作 · 整课同一渲染入口',font=ImageFont.truetype(str(fontfile),33),fill='#183f3c')
     for i,(kind,title,im) in enumerate(posters):
         im=im.copy();im.thumbnail((245,138));x=4+i%6*250;y=80+i//6*181;sheet.paste(im,(x,y));draw.text((x+4,y+141),f'{i+1:02} {title}',font=font,fill='#183f3c')
     sheet.save(out/(str(len(CATALOG))+'种真实动作.png'))
-    result=dict(status='fail' if issues else 'pass',count=len(report),actions=report,issues=issues,realEdits=dict(position=True,image=True,text=True),negativeControlRejected=negative_result['status']=='fail',scope='real canvas pixels, API calls and deterministic seeks; not whole-course aesthetic approval')
+    result=dict(status='fail' if issues else 'pass',count=len(report),inventoryCount=len(CATALOG),actions=report,issues=issues,realEdits=dict(position=True,image=True,text=True),negativeControlRejected=bool(negative_issues),scope='real canvas pixels, API calls and deterministic seeks; not whole-course aesthetic approval')
     (out/'verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(dict(status=result['status'],count=len(report),issues=issues),ensure_ascii=False))
     return not issues
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('course',type=Path);parser.add_argument('--out',type=Path,required=True);a=parser.parse_args()
-    raise SystemExit(0 if verify(a.course,a.out) else 1)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('course',type=Path);parser.add_argument('--out',type=Path,required=True);parser.add_argument('--actions',nargs='+',choices=tuple(CATALOG),help='仅抽验指定动作，默认全部');a=parser.parse_args()
+    raise SystemExit(0 if verify(a.course,a.out,a.actions) else 1)

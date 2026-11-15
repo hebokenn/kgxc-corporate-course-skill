@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 import shutil
 import uuid
-from motion_catalog import CATALOG
+from motion_catalog import CATALOG, TEACHING_PROFILE_ACTIONS
 
 LIBRARIES = ('util.js', 'paint.js', 'motion.js', 'typo.js', 'diagram.js', 'ui.js', 'camera.js')
 TEXT_EFFECTS = {'chars-in', 'text-rise', 'blur-in', 'typewriter'}
@@ -145,6 +145,24 @@ def effect_errors(spec):
             if kind in EXTENSIONS:errors.extend(extension_errors(e,node))
             allowed=CATALOG.get(kind,{}).get('nodes',['*'])
             if '*' not in allowed and node['type'] not in allowed:errors.append(kind+' 不适用于 '+node['type'])
+            if 'motionProfile' in e:
+                if e['motionProfile']!='teaching' or kind not in TEACHING_PROFILE_ACTIONS:
+                    errors.append('未知或不适用的动效节奏 motionProfile '+node['id'])
+                elif kind in {'handoff','swimlane-transfer'}:
+                    keys=('dx','dy','lift','tilt') if kind=='handoff' else ('dx','dy','split')
+                    if any(k in e and not _number(e[k]) for k in keys):
+                        errors.append('教学节奏参数须为有限数字 '+node['id'])
+                    elif kind=='swimlane-transfer' and not .2<=e.get('split',.5)<=.8:
+                        errors.append('教学节奏的职责边界须在 .2 至 .8 之间 '+node['id'])
+                else:
+                    children=node.get('children',[])
+                    path=children[0] if children else {}
+                    points=path.get('points')
+                    good_points=(isinstance(points,list) and len(points)>=2
+                                 and all(isinstance(pt,list) and len(pt)==2 and all(_number(a) for a in pt) for pt in points)
+                                 and any(x!=y for x,y in zip(points,points[1:])))
+                    if len(children)<2 or path.get('type') not in {'path','line'} or not good_points or path.get('effects'):
+                        errors.append('教学引线须先提供有明确折线路径的子对象，再提供标注 '+node['id'])
             if kind in ['path-follow','route-progress','flow-token','check-draw','cross-draw','brace-draw']:
                 points=e.get('points',node.get('points',[]))
                 if len(points)<2 or any(not isinstance(p,list) or len(p)!=2 or not all(_number(v) for v in p) for p in points):errors.append(kind+' 缺少真实路径坐标')

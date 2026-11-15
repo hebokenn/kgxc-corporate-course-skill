@@ -4,7 +4,7 @@ No anonymous colour-block fallback is allowed in this user-facing gallery.
 import copy
 from content_assets import Drawing,phone,document,actor
 from retail_assets import prop
-from motion_catalog import CATALOG
+from motion_catalog import CATALOG, TEACHING_PROFILE_ACTIONS
 # Domain describes the object that actually moves or changes, not a style alias.
 CASES={
  'chars-in':('说清本次体验目标','用 iPhone 拍清孩子运动瞬间','text'),
@@ -140,9 +140,18 @@ class Demo:
 def create(kind,scene,start,end,roles):
  info=CATALOG[kind];domain=CASES[kind][2];b=Demo(kind,scene,start,end,roles);typ=info['nodes'][0];typ='group' if typ=='*' else typ
  e=dict(type=kind,startFrame=start,endFrame=end,**copy.deepcopy(info.get('sample',{})))
+ if kind in TEACHING_PROFILE_ACTIONS:e['motionProfile']='teaching'
  labels=['顾客需要','体验观察','后续核对'];children=[];context=b.support();x,y=380,390;w,h=1110,420
  # Put real owners and destinations behind moving handoffs.
- if domain in ['swimlane','handoff','parallel']:
+ if domain=='swimlane':
+  for yy,name,fill in [(355,'店员接待职责','#e6ebde'),(573,'店长复核职责','#ece3d0')]:
+   context += [b.rect(150,yy,1550,206,fill,stroke='#b9c6b6',lineWidth=2),b.text(name,185,yy+35,32)]
+  # The visible checkpoint is exactly where the card enters the receiving lane.
+  x,y=540,375;w,h=270,180;e.update(dx=650,dy=198)
+  context += [b.rect(530,573,290,200,None,stroke='#b1854e',lineWidth=3),
+              b.rect(1180,573,290,200,None,stroke='#69897a',lineWidth=3),
+              b.text('交接点',420,639,26),b.text('复核位置',1480,639,26)]
+ elif domain in ['handoff','parallel']:
   for i,(name,role) in enumerate([('店员接待职责','S01'),('店长复核职责','M1')]):
    xx=150+i*840;context += [b.rect(xx,360,790,455,'#e6ebde' if i==0 else '#ece3d0',stroke='#b9c6b6',lineWidth=2),b.text(name,xx+25,380,32),b.person(role,xx+35 if i==0 else xx+510,444,.39)]
   x,y=540,455;w,h=280,210;e.update(dx=600,dy=145,lift=50)
@@ -176,7 +185,11 @@ def create(kind,scene,start,end,roles):
   for i,t in enumerate(['拍摄对象','常见场景','体验结果']):children += [b.n('path',x=0,y=0,points=[[0,175],[320,175],[530,i*150+35]],path=f'M 0 175 L320 175 L530 {i*150+35}',fill=None,stroke='#6c9481',lineWidth=5),b.text(t,560,i*150,38)]
   x,y=450,390
  elif domain=='callout':
-  context.append(b.iphone(260,350,.64,view='back'));children=[b.n('path',x=0,y=0,points=[[0,0],[260,0],[420,110]],path='M0 0 L260 0 L420 110',fill=None,stroke='#b1854e',lineWidth=5),b.sheet('检查目标',['摄像头区域','保持同一台设备'],460,80,330,200)];x,y=500,440
+  # The connector ends on the upper camera plate, not in a blank gap.
+  context.append(b.iphone(260,350,.64,view='back'))
+  children=[b.n('path',x=0,y=0,points=[[465,143],[210,143],[115,0],[0,0]],path='M465 143 L210 143 L115 0 L0 0',fill=None,stroke='#a2743c',lineWidth=5),
+            b.sheet('检查目标',['摄像头区域','保持同一台设备'],470,95,330,200)]
+  x,y=427,410
  elif domain=='venn':
   children=[b.n('ellipse',x=350,y=220,width=420,height=340,fill='#87ab9b88'),b.n('ellipse',x=750,y=220,width=420,height=340,fill='#d8b77c88'),b.text('可验证的体验',440,205,34)];x,y=250,375
  elif domain=='device-faces':children=[b.iphone(0,0,.46,'front'),b.iphone(0,0,.46,'back')];e['faceIndices']=[0,1];x,y=730,365;w,h=250,430
@@ -260,7 +273,7 @@ def create(kind,scene,start,end,roles):
  if kind=='pixel-walk':node.update(x=350,y=500,width=230,height=250);node['children']=[b.iphone(0,0,.3)];e.update(dx=780,dy=0,pixelSize=2)
  if kind=='swimlane-transfer':node['children']=[b.sheet('同一份交接记录',['需求已说明','结果已核对'],0,0,270,180)]
  if kind=='lane-distribute':node.update(x=400,y=430,width=1050,height=350);node['children']=[b.sheet('接待记录',['店员继续接待'],0,0,260,180),b.sheet('复核记录',['店长核对条件'],0,0,260,180)];e.update(columns=2)
- if kind=='handoff':node['children']=[b.sheet('交接记录',['同一顾客','同一需求','同一结果'],0,0,270,210)]
+ if kind=='handoff':node['children']=[b.sheet('交接记录',['同一顾客','同一需求','同一结果'],0,0,270,210)];e['dy']=95
  if kind=='card-flip' or kind=='page-turn' or kind=='tab-switch':
   node['children']=[b.sheet('顾客提出的问题',['主要用来拍家人','目前担心操作复杂'],0,0,1000,300),b.sheet('核对与体验提示',['先看实际使用场景','邀请完成一次试拍'],0,0,1000,300)];node.update(x=450,y=420,width=1000,height=320);e['selected']=1
  if kind=='dialogue':

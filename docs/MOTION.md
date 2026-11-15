@@ -1,8 +1,8 @@
 # 整课动效：实际调用和质量检查
 
-5.1.1保留48种可执行动作，其中37种教学对象动作、8种文字/强调和3种符号描绘。17类教学构图可直接带入本课内容，通过同一工作台预览、改字、移动、换图和导出。速度、颜色、缓动、构图或样式不重复计数。
+当前可执行目录包含 100 种动作，其中 89 种教学对象动作、8 种文字／强调和 3 种符号描绘。17 类教学构图可直接带入本课内容，通过同一工作台预览、改字、移动、换图和导出。速度、颜色、缓动、构图或节奏档不重复计数。完整名单以 `motion-catalog` 输出为准。
 
-![48种动作在实际工作台中的画面](media/motion-actions-48.png)
+![历史 v5.1 图库：48 种动作在工作台中的画面](media/motion-actions-48.png)
 
 ## 调用方法
 
@@ -21,17 +21,29 @@ python3 SKILL_DIR/scripts/course_tools.py motion-check --spec COURSE/project/wor
   "id":"phone-transfer", "type":"group", "sceneId":"S01",
   "x":350, "y":400, "width":180, "height":300, "role":"subject",
   "children":[{"id":"phone-body","type":"rect","width":180,"height":300,"fill":"#397a69"}],
-  "effects":[{"type":"handoff","startFrame":60,"endFrame":84,"dx":750,"dy":0}]
+  "effects":[{"type":"handoff","motionProfile":"teaching","startFrame":60,"endFrame":84,"dx":750,"dy":0}]
 }
 ```
 
 这表示物件交接图解，不会自动变成人物自然接物。图片、文字与目标位置继续通过稳定ID在工作台编辑。外部成片登记同样检查实际动作计划。自定义原生路线必须实现真实函数和运行回执；仅写效果名不会通过检查。
 
+## 教学节奏档：三种动作先看清，而不是更花哨
+
+在新课或主动修订的分镜上，可给以下三种现有动作加 `"motionProfile":"teaching"`。它采用迪士尼动画原则中的调度、预备、弧线、缓入缓出和收势；在工具界面或流程图上保留其真实运动，不硬套弹跳。它不是新动作、不是动画审阅，也不会改动未启用这个字段的旧工程。
+
+| 适用动作 | 让学员看清什么 | 用法 |
+| --- | --- | --- |
+| `handoff` 物件交接 | 对象先略向出发侧预备，按小弧线抵达目的位置，再在原位收稳角度 | 保留 `dx`、`dy`、`lift`、`tilt`；不伸缩手机、票据或随附文字，不越过目的位置。空间不足时用较小的 `lift`，若业务实际是贴桌平移可设为 0。 |
+| `swimlane-transfer` 岗位交接 | 先垂直抵达职责边界，停一下让学员辨认，再横向进入下一岗位 | 两段分别缓入缓出，不斜切职责边界；可用 `split`（0.2～0.8，默认 0.5）调整停顿所在相位，不改 `dx`、`dy` 终点。 |
+| `callout` 引线标注 | 焦点先沿真实引线移到目标，标注才在固定位置显露 | 组内第一项放带 `points` 折线的 path／line，后面放标签或文字组。用 `points` 写真实锚点路径，不和第一条线的其他动效叠用；文字不移动、不变形。 |
+
+沿用实际口播确定开始帧；在有含义的接触或转折上停留，不为凑时长放慢简单动作。这个档只控制本次效果窗口：如果还要读条件或比较结果，在已完成画面另留静止时间，不把短暂落定视为已读完。具体方法见[扫读层级与教学动作](../skills/corporate-training-motion/references/58-scan-and-teaching-motion.md)。
+
 ## 按词句安排操作、结果与反馈
 
 不要把整句旁白长度直接传入`effects.endFrame`。例如口播“邀请顾客自己操作”时开始一次约0.8秒的物件交接；接着在“拍照体验”出现时打开相机，在“自己操作”处按快门，在“是否符合期待”处显示照片结果旁的反馈问题。原对象身份延续，动作完成后可以停稳解释结果。准备、演示、交接、试拍和确认是不同事件，不能由一条长位移代替。
 
-5.1.1新工程默认要求`narrationLinks`，逐句说明用途和实际可见对象；动作计划另绑定真实词句锚点。例如以下为对应字段片段，需放入本课实际scene、caption及节点中：
+新工程默认要求`narrationLinks`，逐句说明用途和实际可见对象；动作计划另绑定真实词句锚点。例如以下为对应字段片段，需放入本课实际scene、caption及节点中：
 
 ```json
 {
@@ -74,7 +86,7 @@ python3 SKILL_DIR/scripts/course_tools.py motion-check --spec COURSE/project/wor
 | ink | 从问题生长知识分枝 |
 | pixel | 任务站点与完成反馈 |
 
-通过 `sceneGraph.modules` 指定 `module`、本课 `data`、`sceneId` 与实际 `beats`；编译后成为普通可编辑节点。完整JSON和约束见[整课制作规范](../skills/corporate-training-motion/references/32-full-course-motion.md)。不将短展示片慢放填满旁白，也不要求每课机械使用全部48种。长课需在导演方案中安排合适的动作变化，连续样段仍需真实听看。
+通过 `sceneGraph.modules` 指定 `module`、本课 `data`、`sceneId` 与实际 `beats`；编译后成为普通可编辑节点。完整JSON和约束见[整课制作规范](../skills/corporate-training-motion/references/32-full-course-motion.md)。不将短展示片慢放填满旁白，也不要求每课机械堆叠全目录动作。长课需在导演方案中安排合适的动作变化，连续样段仍需真实听看。
 
 ## 从小样扩到整课的检查
 
@@ -89,15 +101,17 @@ python3 SKILL_DIR/scripts/course_tools.py motion-check --spec COURSE/project/wor
 ```sh
 python3 SKILL_DIR/scripts/motion_gallery.py NEW_GALLERY
 python3 SKILL_DIR/scripts/verify_motion_library.py NEW_GALLERY --out QA_DIR
+# 仅快速抽验教学节奏档的三个动作：
+python3 SKILL_DIR/scripts/verify_motion_library.py NEW_GALLERY --out QA_TEACHING --actions handoff swimlane-transfer callout
 python3 SKILL_DIR/scripts/motion_gallery.py NEW_MODULE_GALLERY --modules
 python3 -m unittest discover -s SKILL_DIR/scripts -p test_motion_quality.py
 ```
 
 图库明确标注无旁白技术演示。验证每种动作的真实像素变化、运行调用、正反向定位、实际改字/移动/换图，并以移除全部动作作为负例；连续有声教学段与图库分别验收。
 
-[观看48种动作的实际导出视频（4分钟，无旁白技术演示）](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-motion-actions-48-v5.1.mp4)
+[观看 v5.1 的 48 种基础动作历史导出（4 分钟，无旁白）](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.1.0/kgxc-motion-actions-48-v5.1.mp4)
 
-## 48种动作清单
+## 48 种基础动作索引（全量以命令输出为准）
 
 | 实际API | 动作 | 用途 |
 |---|---|---|
