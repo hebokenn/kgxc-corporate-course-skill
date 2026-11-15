@@ -250,13 +250,13 @@ DSH内直接使用共用课程编辑与审阅界面，原件、讲稿、实际�
 
 保留这段既有画面、旁白与字幕，音效采用已确定的两款原库文件，不叠加旧音效。样片已按用户要求公开；它展示具体制作方法，业务条件仍需在使用时按实际情况核实。安装包已内置同一音源，供后续课程默认调用。
 
-### 新版宣传片：先看懂、再看会、当场判断
+### 42 秒宣传片：耳机一边没声音，怎么接？
 
-64 秒鼓点版，把真实动效按“读懂规则、看会操作、判断结果”分组呈现。18 段公开样片负责讲具体例子，六组动态画面快速展示动效库的 100 种动作。完整图谱可以按名称、编号或用途查找，点开看起态、过程和落定。
+同一个虚构售后场景，展示自定义人物变化、didi 与 pipi 两种拟真人 AI 音色、全屏教学动效、花字及 DSH 工作台。用前后对照演示 F 型扫读容易漏掉的条件，再用一段利落的交接动画展示动作从预备到落定。随后沿真实 DSH 工作台的七个制作阶段扫一遍，画面中的课程和素材是虚构演示。
 
-**[在线播放新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [下载 100 种动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip)（解压打开 index.html）· [动效库与复现方法](docs/MOTION.md)
+**[在线播放新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 42 秒 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-story-trailer-42.mp4) · [下载 100 种动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip) · [动效库](docs/MOTION.md)
 
-[36 秒规则扫读与数据迁移设计短片](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4)继续保留。影片中的规则和操作为展示示例，不是正式公司制度。
+历史演示：[64 秒动效鼓点版](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [36 秒规则扫读与数据迁移设计短片](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-promo.mp4)。影片中的规则与操作为示例，不代表门店正式政策。
 
 ### 历史展示：80 秒教学效果混剪
 

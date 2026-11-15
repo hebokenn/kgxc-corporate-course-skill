@@ -2,7 +2,9 @@
 
 [回到仓库首页](../README.md) · [下载全部视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip)
 
-**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip) · [新版动效使用说明](MOTION.md)
+**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 42 秒新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-story-trailer-42.mp4) · [64 秒动效鼓点版](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip) · [新版动效使用说明](MOTION.md)
+
+42 秒新版用虚构耳机售后贯穿场景，演示 F 型扫读、交接动作的预备与落定，并沿真实 DSH 界面展示从资料到成片的七个制作阶段。
 
 ## 历史展示 · 17 支独立样片
 
