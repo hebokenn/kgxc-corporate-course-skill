@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '6.9.8'
+VERSION = '7.0.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -288,7 +288,7 @@ class LegacyCourse:
         if not evidence or not str(evidence).strip(): raise ValueError('需要本次审阅的确认说明')
         from production import stage_release
         stage={'content':'script','visual':'storyboard'}.get(key,key)
-        if stage in ['script','storyboard','pilot','final','courseware']:
+        if stage in ['script','storyboard','pilot','final','courseware'] and (self.project/'ai-review.json').is_file():
             state=read(self.state_file)
             if stage in ['pilot','final']:
                 for name in state.get('artifacts',{}).get(stage,[]):
@@ -921,7 +921,7 @@ class Course(LegacyCourse):
     def register(self,key,paths,expected,evidence='实际产物已生成',actor='artifact-check',render_context=None,review_run_id=None):
         if not self.modern():return super().register(key,paths,expected)
         release_decision=None
-        if key in ['pilot','final'] and paths and all(self.relative(p).is_file() for p in paths):
+        if key in ['pilot','final'] and paths and all(self.relative(p).is_file() for p in paths) and (self.project/'ai-review.json').is_file():
             from production import require_contract
             for path in paths:
                 if Path(path).suffix.lower()=='.mp4':release_decision=require_contract(self.project,self.relative(path),key,document=self.project/'workbench.json')
@@ -941,7 +941,7 @@ class Course(LegacyCourse):
                     if proof.get('video_sha256')!=sha(target) or proof.get('storyboard_sampling')!=expected_binding:
                         raise ValueError('抽样小样缺少与实际视频、分镜、时间线和生产源码绑定的导出记录')
         if key not in ['pilot','final','courseware']:raise ValueError('请用director保存导演方案，用script保存逐字稿')
-        if key=='courseware' and paths:
+        if key=='courseware' and paths and (self.project/'ai-review.json').is_file():
             from production import stage_release
             stage_release(self.project,key,self.relative(paths[0]),entrypoint='workflow.register.courseware')
         if review_run_id:

@@ -88,6 +88,36 @@ def check(board, script_text, script_sha, design,reading_required=False):
     if not isinstance(segments, list) or not segments:
         return dict(ok=False, errors=errors + ['缺少全课教学片段'], pending=[])
     seen, covered_units, covered_assessments, ids, pending = [], set(), set(), set(), []
+    masters = board.get('template_masters')
+    master_ids = set()
+    if masters is not None:
+        if not isinstance(masters, list) or not masters:
+            errors.append('template_masters 须为非空数组')
+        else:
+            for master in masters:
+                mid = master.get('id') if isinstance(master, dict) else None
+                if not isinstance(mid, str) or not mid or mid in master_ids:
+                    errors.append('母版ID缺失或重复')
+                    continue
+                master_ids.add(mid)
+                if not isinstance(master.get('title'), str) or not master['title'].strip():
+                    errors.append(mid + ' 母版缺少 title')
+                mopts = master.get('options', [])
+                if not isinstance(mopts, list) or len(mopts) < 3:
+                    errors.append(mid + ' 母版至少需要三种实质不同的画面表现方案')
+                    continue
+                mopt_ids, mfps = set(), set()
+                for opt in mopts:
+                    oid = opt.get('id') if isinstance(opt, dict) else None
+                    if not isinstance(oid, str) or not oid or oid in mopt_ids:
+                        errors.append(mid + ' 母版方案ID缺失或重复')
+                        continue
+                    mopt_ids.add(oid)
+                    mfps.add(digest({k: opt.get(k, '') for k in ['method', 'opening', 'action', 'result']}))
+                if len(mfps) < 3:
+                    errors.append(mid + ' 母版方案重复；差异须实质不同')
+                if master.get('recommended') not in mopt_ids:
+                    errors.append(mid + ' 母版推荐方案不存在')
     for segment in segments:
         sid = segment.get('id') if isinstance(segment, dict) else None
         if not isinstance(sid, str) or not sid or sid in ids:
@@ -117,9 +147,14 @@ def check(board, script_text, script_sha, design,reading_required=False):
             excerpt = '\n\n'.join(lookup[p]['text'] for p in refs)
             if segment.get('script_excerpt') != excerpt:
                 errors.append(sid + ' 原文须完整对应所引段落，不能摘要或漏句')
+        tid = segment.get('template_id')
+        uses_master = bool(master_ids and isinstance(tid, str) and tid in master_ids)
+        if tid is not None and not uses_master:
+            errors.append(sid + ' 引用的母版 template_id 无效')
+        min_options = 1 if uses_master else 3
         options = segment.get('options', [])
-        if not isinstance(options, list) or len(options) < 3:
-            errors.append(sid + ' 至少需要三种画面表现方案')
+        if not isinstance(options, list) or len(options) < min_options:
+            errors.append(sid + (' 至少需要一种完整镜头方案' if uses_master else ' 至少需要三种画面表现方案'))
             continue
         option_ids, fingerprints = set(), set()
         for option in options:
@@ -155,7 +190,7 @@ def check(board, script_text, script_sha, design,reading_required=False):
             if segment.get('kind') == 'scenario' and policy.get('scenario_characters') is True and not option.get('characters'):
                 errors.append(sid + '/' + oid + ' 情境段按本课约定需要人物演绎')
             fingerprints.add(digest({k: option.get(k) for k in ['method', 'opening', 'action', 'result']}))
-        if len(fingerprints) < 3:
+        if len(fingerprints) < min_options:
             errors.append(sid + ' 方案重复；差异还须人工核对，不能只换配色')
         if segment.get('recommended') not in option_ids:
             errors.append(sid + ' 推荐方案不存在')

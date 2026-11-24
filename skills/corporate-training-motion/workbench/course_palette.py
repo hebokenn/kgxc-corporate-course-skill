@@ -111,7 +111,7 @@ def select(course, exclude=None, specified=None, redraw=False, evidence='', seed
                 raise ValueError('指定色板须记录用户要求或品牌依据')
             pool = [validate(copy.deepcopy(specified))]
         else:
-            pool = catalog()['palettes']
+            pool = [p for p in catalog()['palettes'] if p.get('random_eligible', True)]
         pool = [p for p in pool if not any(family(p[k]) & set(excluded) for k in ROLES)]
         if not pool:
             raise ValueError('禁用色筛选后没有合格色板；请提供符合条件的色板，不能忽略禁用色')

@@ -1,19 +1,19 @@
 {
-  "version": "6.9.8",
+  "version": "7.0.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
-  "default_tool": "DSH plugin / standalone Codex or WorkBuddy Skill",
-  "verified_platform": "macOS arm64 (target; this release desktop E2E pending)",
+  "default_tool": "Standard Agent Skill (Antigravity / Claude Code / Codex / WorkBuddy / Cursor / Trae / Windsurf) or DSH plugin",
+  "verified_platform": "macOS arm64 (target; desktop DSH E2E tracked separately)",
   "skills": [
     "corporate-training-motion",
     "elearning-course-design"
   ],
   "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.9.9",
+  "plugin_version": "0.10.0",
   "skill_versions": {
-    "corporate-training-motion": "6.9.8",
+    "corporate-training-motion": "7.0.0",
     "elearning-course-design": "2.1.0"
   },
-  "release_status": "Teaching-motion primitives and public showcase; desktop update verification tracked separately"
+  "release_status": "7.0.0 streamlined multi-episode workflow, template-master storyboard, 16 bright light palettes, and self-check gate; desktop DSH E2E tracked separately"
 }
