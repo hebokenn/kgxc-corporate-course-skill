@@ -1,4 +1,6 @@
-# 第三方与素材说明
+# 开源协议与第三方/品牌素材说明
+
+本仓库自研代码、脚本与通用规范文档采用根目录 [LICENSE](LICENSE) 中的 **Apache License 2.0** 开源（协议第 6 条不授予商标、商号或品牌标识使用权）。以下第三方开源组件、字体、音效与酷果星创企业品牌素材沿用各自原许可或权利条款，不由 Apache-2.0 覆盖：
 
 - `skills/corporate-training-motion/libraries/web/`：原 code-video-director 实现，保留原 MIT 许可证及版权声明。
 - `skills/corporate-training-motion/libraries/illustration/`：原 huashu-art-motion 实现，保留原 MIT 许可证及版权声明。

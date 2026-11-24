@@ -195,7 +195,8 @@
 
 - **AI 宿主范围**：核心 Skill 为标准 `SKILL.md` + 本地 Python/Node/Playwright/FFmpeg 脚本架构，可在 **Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf、DeepSeek Harness（DSH）** 等支持自定义 Skill 或本地命令执行的 AI 宿主中运行；AI 模型与计费沿用各宿主自身配置。
 - **本地运行环境**：完整本地渲染与 Qwen3-TTS 配音环境当前在 **macOS Apple Silicon（arm64）** 验证通过，录制、渲染、字幕与导出均在本机完成，无需额外 TTS API Key。
-- **隐私与素材边界**：公共安装包仅包含可复用源码、说明及已获授权的 didi/pipi 推荐参考与通用试听；私人课程资料、门店实拍、个人录音与凭据不随包分发，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+- **开源协议与品牌边界**：本仓库自研代码、脚本与通用规范文档采用 **[Apache License 2.0](LICENSE)** 开源（协议天然排除商标授权）；酷果星创 Logo、角色、R5/R8 片头片尾包装及第三方字体/音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 原权利条款，不包含品牌或第三方素材的商业再授权。
+- **隐私与素材边界**：公共安装包仅包含可复用源码、说明及已获授权的 didi/pipi 推荐参考与通用试听；私人课程资料、门店实拍、个人录音与凭据不随包分发。
 
 | 想进一步了解 | 文档 |
 | --- | --- |
