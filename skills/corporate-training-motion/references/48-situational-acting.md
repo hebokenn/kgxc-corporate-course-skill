@@ -15,16 +15,19 @@
 | 提问与倾听 | 说话者启用 `speaking: true` 与短手势（`wave`/`welcome`/`point`/`push_away`）；听者保持注视与情绪表情（`happy`/`neutral`/`tense`/`cold`） | 自己的对白驱动自己的嘴 |
 | 转身离场 | 先切换 `facing` 朝向出口，再启动下一段 `computeGroundedWalk` 迈步离开 | 转身完成再起步，不倒退滑步 |
 
-## 2. 唯一可复用实现：`CourseActorsCute`（`workbench/motion/actors_v3_cute.js`）
+## 2. 唯一可复用实现：`CourseActorsCute`（`workbench/motion/actors_v3_cute.js`，8.0.0 强契约）
 
-- **不滑步落地步态 `computeGroundedWalk(fromX, toX, t, startT, endT, scale, stepLenWorld)`**：
-  - 自动收敛 Q 版 3.3 头身小碎步步幅（`<= 31 * scale`）与低抬脚高度（`5.2 * scale`）。
+- **不滑步落地步态 `computeGroundedWalk` / `computeMoodWalk`（必须传入 `walkState`）**：
+  - 调用 `computeMoodWalk(fromX, toX, sceneT, startT, mode, scale)`（`mode`: `'stroll' | 'brisk' | 'rush' | 'cold_exit'`），把返回的 `ws` 原样作为 `walkState: ws` 传给 `paint()` / `paintExpressive()`。
+  - **严禁传 `walkPhase` 或 `strideAmp`**，也严禁在无 `walkState` 时平移 `x`（8.0.0 运行期直接抛错，且 `DirectorStage` 遥测会以 `floating_walk` 阻断交付）。
   - 世界坐标支撑脚绝对锁地（ZERO foot-sliding），并按 `dir` 对称分配前后脚，彻底杜绝左行 X 形交叉腿。
   - 输出非对称 4 拍重踩曲线 `bobOffset`（着地 → Down 下沉缓冲挤压 → Passing/Up 推起 → 着地）。
-- **方案 B 转身绘制 `paint(ctx, cfg, st, images)`**：
-  - 行走期间随 `walkWeight` 平滑收窄躯干至侧身、五官/眼镜/衣领转正看向行进方向、双臂自然弯曲摆动。
-  - 双腿全程走软性 2-Bone IK（消除 Knee Pop 弹膝），停步自动回正 3/4 正面。
-  - 躯干内部细节严格裁剪并重描外轮廓，且服装配色须与画布背景保持高对比，不顺色、不融底。
+- **强枚举表情与手势（非法值直接抛错）**：
+  - `mood`：`happy` / `neutral` / `tense` / `confused` / `cold` / `anxious` / `sad` / `shy` / `sweat` / `worried`
+  - `gesture`：`idle` / `welcome` / `point` / `wave` / `push_away` / `explain` / `present` / `worry` / `reject`（所有手势避让胸前原版 KG 标）
+- **方案 B 转身绘制 + 实时包围盒 `getActorBounds(st)`**：
+  - 行走期间随 `walkWeight` 平滑收窄躯干至侧身、五官/眼镜/衣领转正看向行进方向、双臂自然弯曲摆动；双腿全程走软性 2-Bone IK，停步自动回正 3/4 正面。
+  - `paint()` / `paintExpressive()` 直接返回 `bounds`（含 `headX / headY / headRect / bodyRect / exclusionRect`），供 `VisualMetaphors.drawSmartSpeakerBubble`、`placeAvoidingActors` 与 `DirectorStage` 碰撞审计使用，彻底消除文字压人脸。
 - **扩展新人物**：
   - 在 `actors_v3_cute.js` 的 `drawCuteHead` / `paint` 中直接扩展 `hairStyle`、服装 `role` 与配饰即可；顾客固定 `showKG: false`，员工（`staff` / `manager`）绑定原版 `kg-original.png`。
 

@@ -268,6 +268,11 @@
   }
 
   function drawSpeedLines(ctx, progress, dir = -1, color = '#D9303E', count = 9) {
+    if (typeof progress !== 'number' || !Number.isFinite(progress) || progress > 2 || progress < -1) {
+      throw new Error(
+        `VisualMetaphors.drawSpeedLines: progress must be a normalized number in [0, 1] (got ${progress}). Signature: drawSpeedLines(ctx, progress, dir, color, count)`
+      );
+    }
     const p = clamp(progress);
     if (p <= 0 || p >= 1) return;
     const alpha = Math.sin(p * Math.PI) * 0.55;
@@ -919,11 +924,130 @@
     }
   }
 
+  function rectOverlapArea(a, b) {
+    if (!a || !b) return 0;
+    const x1 = Math.max(a.x, b.x);
+    const y1 = Math.max(a.y, b.y);
+    const x2 = Math.min(a.x + a.w, b.x + b.w);
+    const y2 = Math.min(a.y + a.h, b.y + b.h);
+    return (x2 > x1 && y2 > y1) ? (x2 - x1) * (y2 - y1) : 0;
+  }
+
+  /**
+   * Shift a candidate box (bubble, danmaku pill, badge) out of all exclusion rects
+   * (e.g., actor headRect/bodyRect, lightbox logo) while staying within safeBounds.
+   */
+  function placeAvoidingActors(rect, exclusionRects = [], safeBounds = null) {
+    const safe = safeBounds || { minX: 56, maxX: 1864, minY: 102, maxY: 928 };
+    const pad = 12;
+    const clampRect = r => ({
+      x: clamp(r.x, safe.minX, Math.max(safe.minX, safe.maxX - r.w)),
+      y: clamp(r.y, safe.minY, Math.max(safe.minY, safe.maxY - r.h)),
+      w: r.w,
+      h: r.h,
+    });
+    const base = clampRect(rect);
+    const obs = (exclusionRects || []).filter(Boolean);
+    const totalOverlap = r => obs.reduce((acc, o) => acc + rectOverlapArea(r, o), 0);
+    if (totalOverlap(base) <= 0) return base;
+
+    const candidates = [base];
+    for (const o of obs) {
+      candidates.push(
+        clampRect({ ...base, y: o.y - base.h - pad }),
+        clampRect({ ...base, x: o.x - base.w - pad }),
+        clampRect({ ...base, x: o.x + o.w + pad }),
+        clampRect({ ...base, y: o.y + o.h + pad }),
+      );
+    }
+    let best = base;
+    let bestScore = Infinity;
+    for (const c of candidates) {
+      const ov = totalOverlap(c);
+      const dist = Math.hypot(c.x - base.x, c.y - base.y);
+      const score = ov * 1000 + dist;
+      if (score < bestScore) {
+        bestScore = score;
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  function _wrapBubbleLines(ctx, text, maxW, fontSize, fontFamily) {
+    ctx.font = `700 ${fontSize}px ${fontFamily}`;
+    const tokens = String(text || '').match(/[A-Za-z0-9.+%×−]+|[\u4e00-\u9fa5][，。！？；：、]?|./g) || [''];
+    const lines = [];
+    let cur = '';
+    for (const tok of tokens) {
+      if (ctx.measureText(cur + tok).width > maxW && cur) { lines.push(cur.trim()); cur = tok; }
+      else cur += tok;
+    }
+    if (cur) lines.push(cur.trim());
+    return lines;
+  }
+
+  /**
+   * Collision-safe speaker bubble anchored to CourseActorsCute.getActorBounds() output.
+   * Returns final rendered rect { x, y, w, h } for DirectorStage frame auditing.
+   */
+  function drawSmartSpeakerBubble(ctx, actorBounds, text, opts = {}) {
+    if (!text || !actorBounds) return null;
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.01) return null;
+    const fontFamily = opts.font || '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+    const fontSize = opts.fontSize || 25;
+    const maxW = opts.maxW || 500;
+    const bg = opts.bg || '#FFFFFF';
+    const border = opts.border || '#254C99';
+    const fg = opts.fg || '#1E232E';
+    const s = lerp(0.86, 1, easeOutBack(p, 1.4));
+
+    ctx.save();
+    const lines = _wrapBubbleLines(ctx, text, maxW - 48, fontSize, fontFamily);
+    ctx.font = `700 ${fontSize}px ${fontFamily}`;
+    const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const bw = Math.max(180, textW + 48);
+    const lh = fontSize * 1.38;
+    const bh = lines.length * lh + 26;
+    const speakerX = actorBounds.headX ?? actorBounds.rootX ?? 960;
+    const headY = actorBounds.headY ?? (actorBounds.footY - 400);
+    const safe = opts.safeBounds || { minX: opts.minX ?? 56, maxX: opts.maxX ?? 1864, minY: 102, maxY: 928 };
+    const ideal = { x: speakerX - bw / 2, y: headY - bh - 26, w: bw, h: bh };
+    const exclusions = (opts.exclusionRects || []).slice();
+    if (actorBounds.headRect) exclusions.push(actorBounds.headRect);
+    const placed = placeAvoidingActors(ideal, exclusions, safe);
+    const tailX = clamp(speakerX, placed.x + 26, placed.x + placed.w - 26);
+
+    ctx.translate(tailX, placed.y + placed.h + 12);
+    ctx.scale(s, s);
+    ctx.translate(-tailX, -(placed.y + placed.h + 12));
+    ctx.globalAlpha = clamp(p * 3);
+    roundRect(ctx, placed.x, placed.y, placed.w, placed.h, 20, bg, border, 3, true);
+    ctx.beginPath();
+    ctx.moveTo(tailX - 12, placed.y + placed.h - 2);
+    ctx.lineTo(tailX, placed.y + placed.h + 14);
+    ctx.lineTo(tailX + 12, placed.y + placed.h - 2);
+    ctx.closePath();
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.strokeStyle = border; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(tailX - 12, placed.y + placed.h);
+    ctx.lineTo(tailX, placed.y + placed.h + 14);
+    ctx.lineTo(tailX + 12, placed.y + placed.h);
+    ctx.stroke();
+    ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    lines.forEach((ln, i) => ctx.fillText(ln, placed.x + placed.w / 2, placed.y + 13 + lh * (i + 0.5)));
+    ctx.restore();
+    return placed;
+  }
+
   global.VisualMetaphors = {
     clamp, easeOut, easeInOut, easeOutExpo, easeOutQuint, easeInOutQuart, easeOutBack, spring, win, lerp,
     roundRect, drawDocumentSheet, drawStrikeThrough,
     draw3DWireCube, draw3DPhoneProp, drawAudioEnvelopeBars, drawCleanCaption,
     withCamera, drawStudioBackdrop, drawAmbientBackdrop, drawFocusBrackets, drawSpeedLines, drawRipple, drawStampBadge,
     drawRetailStoreBackdrop, drawCinematicAppleStore, drawFScanOverlay,
+    rectOverlapArea, placeAvoidingActors, drawSmartSpeakerBubble,
   };
 })(window);

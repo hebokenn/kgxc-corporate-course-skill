@@ -4,6 +4,14 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 电影级导演引擎、强契约避让、自然口语发音分离与双验收硬门禁：核心 8.0.0 · 2026-11-26
+
+- **新增共享电影级导演引擎（`workbench/motion/director_stage.js`）**：小样与完整系列正片统一共用 `DirectorStage` + `CourseActorsCute` + `VisualMetaphors` 三库架构，彻底消除“小样电影级、正片退化成白框模板分发器”的问题。提供 `resolveTimeline(lines, t)`（`sceneT` 跨 Beat 连续推进、`beatT` 驱动本句新变化，杜绝动画归零重播）、`evalCamera(keyframes, sceneT, t)`（多关键帧推拉摇移与微震运镜）及 `createFrameAuditor()`（逐帧采集人物接地步态、文字与人物/字幕区碰撞、PPT 框体占比和场景机位轨迹并输出 `render_audit.json`）；新增唯一权威规范 [`60-v8-cinematic-director-and-gates.md`](../skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) 并同步更新 `SKILL.md`、`agents/openai.yaml`、`48-situational-acting.md` 与 `59-streamlined-series-and-selfcheck.md`。
+- **人物引擎强契约与智能避让原语（`actors_v3_cute.js` / `visual_metaphors.js`）**：`CourseActorsCute` 新增 `validatePaintState`（传入 `walkPhase/strideAmp` 或非法 `mood/gesture` 直接抛错阻断无接地滑行）与 `getActorBounds`（`paint()` / `paintExpressive()` 直接返回 `headRect/bodyRect/exclusionRect`），补齐 `anxious/sad/shy/sweat/worried` 与 `explain/present/worry/reject` 规范枚举；`VisualMetaphors` 新增 `drawSmartSpeakerBubble` 与 `placeAvoidingActors`，并对 `drawSpeedLines` 校验归一化 `progress ∈ [0, 1]` 拦截像素坐标误传。
+- **配音严苛校验、口语发音分离与实战沉淀（`scripts/tts_sync.py`）**：`--strict-beats` 拦截机械拆句克隆相同场景/参数、旁白误挂对话气泡以及气泡文案与当前口播错位；新增 `normalize_spoken_text()` 与逐句 `tts_text` 覆写（默认将口播中的 `WOW` 读作“哇哦”、将章节 `第 01–09 节` 读作“第一–九节”不读前导 0，同时字幕与画面保持规范写法，修改发音自动刷新缓存）；沉淀同场景子幕非重叠交接、左边缘气泡 `safeBounds.minX ≥ 100`、曲线轴标净底衬、星芒避字、品牌片尾末段 `0.35s` 软淡出及发音回改 `-c:v copy` 无损热替换音轨实践。
+- **双验收硬门禁（`scripts/verify_delivery.py`）**：新增 `--render-audit` 硬门禁，配合 16×16 宏块结构差防微抖作弊与相邻 Beat 画面像素回弹重播检测，零容忍拦截走路飘移、文字压人物/压字幕安全区、同场景 `sceneT` 回退重播、PPT 框体 > 25% 或连续 > 2 句及动态场景静态机位；同时强制门禁 B 对最终编码 MP4 抽取迈步、气泡/弹幕、数据页与首尾帧进行实际目视核验。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、新增 `scripts/test_v8_tools.py`（含 JS 引擎强契约/避让/审计、`tts_sync` 克隆拦截/口语发音规整/`tts_text` 覆写、`verify_delivery` 重播与 `render_audit` 硬拦截）、`scripts/test_v7_tools.py`、仓库全量回归单测、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验；并在真实课程《门店服务体验提升》第 01 节（116 条短句 / 9,231 帧 / 394.9 秒）完成全量 8.0 实渲、门禁 A（0 错误 0 警告：`floating_walk=0`、`text_actor_overlap=0`、`scene_replay=0`、`card_box_ratio=0.0%`、`tail_150ms=-23.86 dB`）、门禁 B 多关键帧目检以及“哇哦”与“第一节/第二节”局部无损音频热替换实测。
+
 ## 纯净 Skill 化、移除 DSH 插件并打通纯对话原件覆盖确认：核心 7.3.0 · 2026-11-26
 
 - **移除仓库中的 DSH 桌面插件与构建分发链**：删除 `plugin/`、`plugin.json`、`.codex-plugin/`、`.agents/`、`.mcp.json`、`mcp.json`、`cordis.patch.yml`、`package.json`、`安装制课插件.command`、`scripts/build_plugin.py`、`scripts/install_plugin.py`、`scripts/check_codex_plugin.py`、`scripts/build_native_client.py`、`docs/PLUGIN.md` 及仅依赖 DSH 插件的测试；主分支及后续发布仅提供纯正跨平台 Agent Skill（`corporate-training-motion 7.3.0` + `elearning-course-design 2.1.1`），并在 [`ARCHIVE.md`](ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 保留唯一的 `v7.2.0` 历史插件安装包备份入口。

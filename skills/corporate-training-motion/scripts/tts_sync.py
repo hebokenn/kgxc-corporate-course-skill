@@ -66,6 +66,21 @@ def _strip_all_punctuation(text: str) -> str:
     return re.sub(r'\s+', ' ', ''.join(out)).strip()
 
 
+_ZH_CHAPTER_DIGITS = {'1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六', '7': '七', '8': '八', '9': '九'}
+
+
+def normalize_spoken_text(text: str) -> str:
+    """Normalize display text into natural Chinese spoken text for TTS without altering captions.
+
+    - Pronounce 'WOW' as '哇哦' instead of awkward English spelling.
+    - Drop leading zeros in chapter labels ('第 01 节' -> '第一节', '第 02 节' -> '第二节').
+    """
+    spoken = str(text or '').strip()
+    spoken = re.sub(r'\s*\bWOW\b\s*', '哇哦', spoken, flags=re.IGNORECASE)
+    spoken = re.sub(r'第\s*0([1-9])\s*节', lambda m: f'第{_ZH_CHAPTER_DIGITS[m.group(1)]}节', spoken)
+    return spoken
+
+
 def split_single_line_captions(text: str, start: float, duration: float, max_chars: int = 24) -> list:
     parts = [s.strip() for s in re.split(r'(?<=[，。！？；：——])', text.strip()) if s.strip()]
     chunks, cur = [], ''
@@ -104,7 +119,8 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
                      lead_seconds: float = 0.18, tail_pad_seconds: float = 0.30,
                      mix_out: Path = None, srt_out: Path = None, no_punctuation: bool = True,
                      max_beat_chars: int = 28, max_beat_seconds: float = 5.8,
-                     max_screen_chars: int = 35, strict_beats: bool = False) -> dict:
+                     max_screen_chars: int = 35, strict_beats: bool = False,
+                     normalize_spoken: bool = True) -> dict:
     """Synthesize 1-beat-1-visual Qwen3-TTS clips, check tail safety and beat granularity, and emit manifest + SRT."""
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / 'audio_manifest.json'
@@ -129,7 +145,8 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
         text = str(item['text']).strip()
         if not text:
             raise ValueError(f'分镜配音文本为空: {lid}')
-        clean_len = len(_strip_all_punctuation(text).replace(' ', ''))
+        clean_text = _strip_all_punctuation(text).replace(' ', '')
+        clean_len = len(clean_text)
         if clean_len > max_beat_chars:
             msg = f'{lid}: 口播过长 ({clean_len} 字 > {max_beat_chars})，建议拆分为多个独立视觉意象 Beat 以防退化为 PPT'
             warnings.append(msg)
@@ -141,7 +158,43 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
                 msg = f'{lid}: 同屏正文过密 ({screen_len} 字 > {max_screen_chars})，请精简为锚点词交由口播展开'
                 warnings.append(msg)
                 beat_errors.append(msg)
-        digest = sha_text(voice, text)
+
+        # v8.0.0: Block mechanical sub-beat splitting that clones identical scene & params without distinct visual_cue
+        if beat_idx > 0:
+            prev_item = lines[beat_idx - 1]
+            cur_scene = item.get('scene_id') or item.get('scene')
+            prev_scene = prev_item.get('scene_id') or prev_item.get('scene')
+            if cur_scene and cur_scene == prev_scene:
+                p_cur = {k: v for k, v in (item.get('params') or {}).items() if k not in ('sub_idx', 'sub_total')}
+                p_prev = {k: v for k, v in (prev_item.get('params') or {}).items() if k not in ('sub_idx', 'sub_total')}
+                cur_cue = str(item.get('visual_cue', '')).strip()
+                prev_cue = str(prev_item.get('visual_cue', '')).strip()
+                if p_cur == p_prev and (not cur_cue or cur_cue == prev_cue):
+                    msg = f'{lid}: 与上一条 {prev_item.get("id")} 场景及参数完全雷同且无独立 visual_cue，禁止机械拆句后重播同一画面'
+                    warnings.append(msg)
+                    beat_errors.append(msg)
+
+        # v8.0.0: Check dialogue bubble alignment with spoken audio
+        params_dict = item.get('params') or {}
+        bubble_txt = str(item.get('speaker_bubble') or params_dict.get('bubble') or '').strip()
+        if bubble_txt:
+            if role == '旁白' and not params_dict.get('narrator_quote'):
+                msg = f'{lid}: 旁白口播却挂载了角色对话气泡（{bubble_txt[:16]}），请核对说话人与音频角色是否匹配'
+                warnings.append(msg)
+                beat_errors.append(msg)
+            clean_bubble = _strip_all_punctuation(bubble_txt).replace(' ', '')
+            if clean_bubble and clean_text:
+                overlap = sum(1 for ch in set(clean_bubble) if ch in clean_text) / max(1, len(set(clean_bubble)))
+                if overlap < 0.25:
+                    msg = f'{lid}: 对话气泡文案与本条口播内容不匹配（重合度 {overlap:.0%}），禁止跨句沿用旧气泡'
+                    warnings.append(msg)
+                    beat_errors.append(msg)
+        raw_override = item.get('tts_text')
+        if raw_override is not None and str(raw_override).strip():
+            spoken = str(raw_override).strip()
+        else:
+            spoken = normalize_spoken_text(text) if normalize_spoken else text
+        digest = sha_text(voice, spoken)
         txt_file = out_dir / f'{lid}.txt'
         wav_file = out_dir / f'{lid}.wav'
         prev = previous.get(lid, {})
@@ -150,7 +203,7 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
             for old_artifact in [wav_file, wav_file.with_suffix('.wav.json'), wav_file.with_name(f'{lid}.raw.wav')]:
                 if old_artifact.exists():
                     old_artifact.unlink()
-            tts_text = text if text[-1] in '。！？.!?…' else text + '。'
+            tts_text = spoken if spoken[-1] in '。！？.!?…' else spoken + '。'
             txt_file.write_text(tts_text, encoding='utf-8')
             cmd = [sys.executable, str(TTS_SCRIPT), '--voice', voice, '--text-file', str(txt_file), '--out', str(wav_file)]
             if item.get('delivery_rate') is not None:
@@ -205,7 +258,12 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
             'duration': round(info['duration'], 3),
             'tail_check': tail,
         }
-        for optional_key in ('visual_metaphor', 'screen_text', 'scene_tag'):
+        if spoken != text:
+            entry['tts_text'] = spoken
+        for optional_key in (
+            'scene_id', 'scene', 'layout_kind', 'visual_cue', 'visual_metaphor',
+            'screen_text', 'scene_tag', 'speaker_bubble', 'params', 'sfx', 'flower_text',
+        ):
             if item.get(optional_key) is not None:
                 entry[optional_key] = item[optional_key]
         entries.append(entry)
@@ -266,6 +324,7 @@ def main():
     p.add_argument('--max-beat-seconds', type=float, default=5.8)
     p.add_argument('--max-screen-chars', type=int, default=35)
     p.add_argument('--strict-beats', action='store_true')
+    p.add_argument('--no-spoken-normalize', action='store_true', help='Disable default spoken pronunciation normalization (e.g. WOW->哇哦, 第02节->第二节)')
     args = p.parse_args()
     raw = json.loads(args.lines.read_text(encoding='utf-8'))
     lines = raw['lines'] if isinstance(raw, dict) else raw
@@ -273,6 +332,7 @@ def main():
         lines, args.out_dir, args.gap, args.lead, args.tail_pad, args.mix, args.srt,
         max_beat_chars=args.max_beat_chars, max_beat_seconds=args.max_beat_seconds,
         max_screen_chars=args.max_screen_chars, strict_beats=args.strict_beats,
+        normalize_spoken=not args.no_spoken_normalize,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

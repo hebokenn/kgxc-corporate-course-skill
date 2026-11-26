@@ -1,5 +1,5 @@
 {
-  "version": "7.3.0",
+  "version": "8.0.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "7.3.0",
+    "corporate-training-motion": "8.0.0",
     "elearning-course-design": "2.1.1"
   },
-  "release_status": "7.3.0 removed the DSH desktop plugin from the active repository and decoupled pure-Skill source-coverage confirmation from DSH-only click locks, enabling full dialogue + CLI workflows across all Agent Skill hosts"
+  "release_status": "8.0.0 introduces the shared DirectorStage cinematic engine (sceneT/beatT dual-layer timeline, multi-keyframe camera, runtime frame auditor), strict CourseActorsCute contracts, collision-avoiding smart bubbles/danmaku, spoken-vs-caption pronunciation separation (WOW->哇哦, leading-zero chapter normalization & tts_text override), and mandatory Gate A + Gate B delivery verification"
 }

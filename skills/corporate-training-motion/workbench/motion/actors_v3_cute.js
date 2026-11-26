@@ -280,9 +280,12 @@ window.CourseActorsCute = (() => {
     // 5. Simple Expressive Tiny Brows
     ctx.strokeStyle = hairColor; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
     ctx.beginPath();
-    if (mood === 'tense' || mood === 'confused') {
+    if (mood === 'tense' || mood === 'confused' || mood === 'anxious' || mood === 'worried' || mood === 'sweat') {
       ctx.moveTo(e1x - 6, -14); ctx.lineTo(e1x + 5, -17);
       ctx.moveTo(e2x - 5, -17); ctx.lineTo(e2x + 6, -13);
+    } else if (mood === 'sad') {
+      ctx.moveTo(e1x - 6, -13); ctx.lineTo(e1x + 5, -18);
+      ctx.moveTo(e2x - 5, -18); ctx.lineTo(e2x + 6, -13);
     } else if (mood === 'cold') {
       ctx.moveTo(e1x - 6, -15); ctx.lineTo(e1x + 6, -15);
       ctx.moveTo(e2x - 6, -15); ctx.lineTo(e2x + 6, -15);
@@ -291,6 +294,28 @@ window.CourseActorsCute = (() => {
       ctx.moveTo(e2x - 6, -15); ctx.quadraticCurveTo(e2x, -18, e2x + 6, -15);
     }
     ctx.stroke();
+
+    // Extra rosy blush for shy mood
+    if (mood === 'shy') {
+      ctx.fillStyle = 'rgba(244, 108, 114, 0.42)';
+      ctx.beginPath(); ctx.ellipse(-10 + shift * 0.8, 13, 12.5, 7.2, 0, 0, Math.PI * 2); ctx.fill();
+      if (turn < 0.85) {
+        ctx.beginPath(); ctx.ellipse(28 + shift * 0.45, 13, 10.5 * farEyeScale, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // Sweat drop micro-cue for sweat / anxious mood
+    if (mood === 'sweat' || mood === 'anxious') {
+      const sy = -18 + ((t * 18) % 10);
+      ctx.save();
+      ctx.fillStyle = '#5CA4F6'; ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-28 + shift * 0.4, sy - 9);
+      ctx.quadraticCurveTo(-20 + shift * 0.4, sy + 4, -28 + shift * 0.4, sy + 8);
+      ctx.quadraticCurveTo(-36 + shift * 0.4, sy + 4, -28 + shift * 0.4, sy - 9);
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
 
     // 6. Cute Minimalist Mouth
     const mx = 10 + shift * 0.95, my = 16;
@@ -302,9 +327,12 @@ window.CourseActorsCute = (() => {
     } else if (mood === 'happy') {
       ctx.strokeStyle = ink; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.arc(mx, my - 3, 7, 0.2, Math.PI - 0.2); ctx.stroke();
-    } else if (mood === 'tense' || mood === 'confused') {
+    } else if (mood === 'tense' || mood === 'confused' || mood === 'anxious' || mood === 'worried' || mood === 'sweat' || mood === 'sad') {
       ctx.strokeStyle = ink; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.arc(mx, my + 5, 5.5, Math.PI + 0.3, -0.3); ctx.stroke();
+    } else if (mood === 'shy') {
+      ctx.strokeStyle = ink; ctx.lineWidth = 2.3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(mx - 4, my + 1); ctx.quadraticCurveTo(mx, my + 4, mx + 4, my + 1); ctx.stroke();
     } else {
       ctx.strokeStyle = ink; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(mx - 5, my); ctx.quadraticCurveTo(mx, my + 2.5, mx + 5, my); ctx.stroke();
@@ -411,10 +439,63 @@ window.CourseActorsCute = (() => {
     ctx.restore();
   }
 
+  const VALID_MOODS = Object.freeze([
+    'happy', 'neutral', 'tense', 'confused', 'cold',
+    'anxious', 'sad', 'shy', 'sweat', 'worried',
+  ]);
+  const VALID_GESTURES = Object.freeze([
+    'idle', 'welcome', 'point', 'wave', 'push_away',
+    'explain', 'present', 'worry', 'reject',
+  ]);
+
+  function validatePaintState(st = {}) {
+    if (!st || typeof st !== 'object') {
+      throw new Error('CourseActorsCute: state object is required.');
+    }
+    if ('walkPhase' in st || 'strideAmp' in st) {
+      throw new Error(
+        'CourseActorsCute: invalid walk params (walkPhase/strideAmp). Pass walkState from computeGroundedWalk() or computeMoodWalk() to prevent floating walk.'
+      );
+    }
+    if (st.walkState != null) {
+      const ws = st.walkState;
+      if (typeof ws !== 'object' || typeof ws.x !== 'number' || typeof ws.walkWeight !== 'number' || !Array.isArray(ws.feet) || ws.feet.length !== 2) {
+        throw new Error('CourseActorsCute: malformed walkState; expected return value of computeGroundedWalk() or computeMoodWalk().');
+      }
+    }
+    if (st.mood !== undefined && !VALID_MOODS.includes(st.mood)) {
+      throw new Error(`CourseActorsCute: unsupported mood "${st.mood}". Valid moods: ${VALID_MOODS.join(', ')}`);
+    }
+    if (st.gesture !== undefined && !VALID_GESTURES.includes(st.gesture)) {
+      throw new Error(`CourseActorsCute: unsupported gesture "${st.gesture}". Valid gestures: ${VALID_GESTURES.join(', ')}`);
+    }
+  }
+
+  function getActorBounds(st = {}) {
+    const scale = st.scale ?? 1.35;
+    const rootX = st.walkState ? st.walkState.x : (st.x || 0);
+    const footY = st.footY ?? 820;
+    const headTopY = footY - 242 * scale;
+    const headRect = { x: rootX - 54 * scale, y: headTopY, w: 108 * scale, h: 102 * scale };
+    const bodyRect = { x: rootX - 52 * scale, y: footY - 148 * scale, w: 104 * scale, h: 152 * scale };
+    const exclusionRect = { x: rootX - 62 * scale, y: footY - 252 * scale, w: 124 * scale, h: 256 * scale };
+    return {
+      rootX, footY, scale,
+      headX: rootX,
+      headY: headTopY,
+      mouthY: footY - 170 * scale,
+      topY: headTopY,
+      leftX: exclusionRect.x,
+      rightX: exclusionRect.x + exclusionRect.w,
+      headRect, bodyRect, exclusionRect,
+    };
+  }
+
   function paint(ctx, cfg, st, images = {}) {
+    if (st?.strict !== false) validatePaintState(st);
     const {
       x = 0, footY = 820, scale = 1.35, facing = 1,
-      walkState = null, // from computeGroundedWalk (ZERO foot-sliding!)
+      walkState = null, // from computeGroundedWalk / computeMoodWalk (ZERO foot-sliding!)
       speaking = false, t = 0, mood = 'happy', gesture = 'idle', blink = 0
     } = st;
     const {
@@ -641,7 +722,10 @@ window.CourseActorsCute = (() => {
       if (gesture === 'welcome') { fx = 66; fy = shY + 18 + Math.sin(t * 5) * 5; }
       else if (gesture === 'point') { fx = 72; fy = shY + 12; }
       else if (gesture === 'wave') { fx = 62; fy = shY - 8 + Math.sin(t * 7) * 7; }
-      else if (gesture === 'push_away') { fx = 56; fy = shY + 16; }
+      else if (gesture === 'push_away' || gesture === 'reject') { fx = 58; fy = shY + 14; }
+      else if (gesture === 'explain') { fx = 58; fy = shY + 20 + Math.sin(t * 6) * 5; }
+      else if (gesture === 'present') { fx = 74; fy = shY + 16; }
+      else if (gesture === 'worry') { fx = 38; fy = shY - 2 + Math.sin(t * 4) * 2; }
 
       const gSx = lerp(22, 6, turn);
       pillLimb(ctx, gSx, shY + 10, fx, fy, 8.0, armFill, ink);
@@ -654,6 +738,7 @@ window.CourseActorsCute = (() => {
 
     ctx.restore();
     ctx.restore();
+    return getActorBounds(st);
   }
 
   // Ready-to-call cast library (7 staff/manager + 7 casual customers, zero background-color clash)
@@ -774,15 +859,18 @@ window.CourseActorsCute = (() => {
   }
 
   function paintExpressive(ctx, cfg, st, images = {}, extraLeanRad = 0) {
+    if (st?.strict !== false) validatePaintState(st);
     const totalLean = extraLeanRad || (st.walkState && st.walkState.leanRad) || 0;
+    const pivotX = st.walkState ? st.walkState.x : (st.x || 0);
     ctx.save();
     if (Math.abs(totalLean) > 0.001) {
-      ctx.translate(st.x, st.footY);
+      ctx.translate(pivotX, st.footY);
       ctx.rotate(totalLean);
-      ctx.translate(-st.x, -st.footY);
+      ctx.translate(-pivotX, -st.footY);
     }
-    paint(ctx, cfg, st, images);
+    const bounds = paint(ctx, cfg, st, images);
     ctx.restore();
+    return bounds;
   }
 
   function paintPreset(ctx, id, st, images = {}, overrides = {}) {
@@ -792,6 +880,7 @@ window.CourseActorsCute = (() => {
   return {
     paint, paintExpressive, drawCuteHead, computeGroundedWalk,
     GAIT_PRESETS, computeMoodWalk, PRESETS, getPreset, listPresets, paintPreset,
+    VALID_MOODS, VALID_GESTURES, validatePaintState, getActorBounds,
   };
 })();
 
