@@ -756,11 +756,174 @@
     ctx.restore();
   }
 
+  function drawAmbientBackdrop(ctx, pal, cam = {}, tint = 'warm') {
+    const g = ctx.createLinearGradient(0, 0, 1920, 1080);
+    if (tint === 'warm') {
+      g.addColorStop(0, '#FDFBF7'); g.addColorStop(0.5, '#F6F3EC'); g.addColorStop(1, '#EEF2F9');
+    } else if (tint === 'contrast') {
+      g.addColorStop(0, '#F3F5FA'); g.addColorStop(0.5, '#FBF8F4'); g.addColorStop(1, '#FDF2F2');
+    } else {
+      g.addColorStop(0, '#FBF9F5'); g.addColorStop(1, '#EBF0FA');
+    }
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 1920, 1080);
+    const px = -(cam?.x || 0) * 0.3;
+    ctx.save();
+    [[340, 260, 320, 'rgba(37,76,153,0.06)'], [1560, 760, 380, 'rgba(217,138,43,0.08)'], [1420, 220, 240, 'rgba(74,127,224,0.06)']].forEach(([ox, oy, r, col]) => {
+      const rg = ctx.createRadialGradient(ox + px, oy, 20, ox + px, oy, r);
+      rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(ox + px, oy, r, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawCinematicAppleStore(ctx, pal, cam = {}, opts = {}) {
+    const px = -(cam?.x || 0);
+    const floorY = opts.floorY ?? 850;
+    const coolMood = opts.coolMood || 0;
+    const logoImg = opts.logoImg || null;
+
+    const wallGrad = ctx.createLinearGradient(0, 0, 0, floorY + 10);
+    wallGrad.addColorStop(0, '#FBF9F4');
+    wallGrad.addColorStop(0.65, '#F4EEE4');
+    wallGrad.addColorStop(1, '#EBE2D4');
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(-240, -120, 2400, floorY + 180);
+
+    // Far Layer (0.22x parallax): Mall Glass Curtain Wall + Accessory Wall + Lightbox + Planter
+    ctx.save();
+    ctx.translate(px * 0.22, 0);
+    const glassX = 1480, glassW = 540, glassY = 70, glassH = floorY - 70;
+    const skyG = ctx.createLinearGradient(glassX, glassY, glassX + glassW, glassY + glassH);
+    skyG.addColorStop(0, '#EAF2FB'); skyG.addColorStop(0.55, '#F5F8FC'); skyG.addColorStop(1, '#E5ECF5');
+    ctx.fillStyle = skyG; ctx.fillRect(glassX, glassY, glassW, glassH);
+    ctx.fillStyle = 'rgba(170, 186, 208, 0.22)';
+    ctx.fillRect(glassX + 70, glassY + 40, 56, glassH - 40);
+    ctx.fillRect(glassX + 270, glassY + 20, 72, glassH - 20);
+    ctx.strokeStyle = '#C9D3DF'; ctx.lineWidth = 4;
+    ctx.strokeRect(glassX, glassY, glassW, glassH);
+    ctx.beginPath();
+    ctx.moveTo(glassX + 210, glassY); ctx.lineTo(glassX + 210, glassY + glassH);
+    ctx.moveTo(glassX + 420, glassY); ctx.lineTo(glassX + 420, glassY + glassH);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.beginPath();
+    ctx.moveTo(glassX + 20, glassY); ctx.lineTo(glassX + 140, glassY);
+    ctx.lineTo(glassX - 180, glassY + glassH); ctx.lineTo(glassX - 300, glassY + glassH);
+    ctx.closePath(); ctx.fill();
+
+    ctx.strokeStyle = 'rgba(176, 156, 128, 0.22)'; ctx.lineWidth = 2;
+    for (let x = -120; x < 1470; x += 92) {
+      ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, floorY); ctx.stroke();
+    }
+
+    // Left MagSafe / AirPods Accessory Wall
+    roundRect(ctx, 70, 175, 360, 490, 16, '#F7F3EC', '#DED5C6', 2, false);
+    for (let row = 0; row < 3; row++) {
+      const sy = 285 + row * 124;
+      ctx.fillStyle = '#D5BC99'; ctx.fillRect(96, sy, 308, 12);
+      const colors = [['#3B6FD4', '#944A18', '#526074', '#C45B4D'], ['#E5E9F0', '#2E62BC', '#D9A76A', '#3B4252'], ['#FFFFFF', '#FFFFFF', '#E9EEF6', '#F4ECE1']][row];
+      colors.forEach((col, i) => {
+        const ix = 114 + i * 72;
+        if (row < 2) {
+          roundRect(ctx, ix, sy - 64, 44, 62, 10, col, 'rgba(34,38,48,0.18)', 1.5);
+          ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(ix + 22, sy - 33, 10, 0, Math.PI * 2); ctx.stroke();
+        } else {
+          roundRect(ctx, ix - 4, sy - 54, 52, 52, 8, col, '#CFD6E0', 1.5);
+        }
+      });
+    }
+
+    // Center Flagship Illuminated Lightbox
+    roundRect(ctx, 520, 155, 860, 310, 18, '#FFFFFF', '#DFD6C7', 2, true);
+    const lbGrad = ctx.createLinearGradient(536, 171, 1364, 449);
+    lbGrad.addColorStop(0, '#EEF4FC'); lbGrad.addColorStop(0.5, '#FBF9F5'); lbGrad.addColorStop(1, '#F5EFE6');
+    ctx.fillStyle = lbGrad; ctx.fillRect(536, 171, 828, 278);
+    ctx.strokeStyle = 'rgba(37, 76, 153, 0.14)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(950, 310, 180, -0.4, 2.8); ctx.stroke();
+    ctx.beginPath(); ctx.arc(950, 310, 120, 0.6, 3.8); ctx.stroke();
+    if (logoImg && logoImg.complete && logoImg.naturalWidth) {
+      const h = 54, w = h * (logoImg.naturalWidth / logoImg.naturalHeight);
+      ctx.drawImage(logoImg, 950 - w / 2, 310 - h / 2, w, h);
+    }
+
+    // Ceramic Planter
+    const potX = 1410, potY = floorY - 8;
+    ctx.fillStyle = '#E6DFD3'; ctx.strokeStyle = '#C7BDAE'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(potX - 38, potY - 96); ctx.lineTo(potX + 38, potY - 96);
+    ctx.lineTo(potX + 28, potY); ctx.lineTo(potX - 28, potY); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#736555'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(potX, potY - 96); ctx.lineTo(potX - 6, potY - 210); ctx.stroke();
+    [[-26, -155, -0.5], [22, -165, 0.45], [-18, -205, -0.35], [16, -218, 0.3], [0, -238, 0]].forEach(([dx, dy, r]) => {
+      ctx.save(); ctx.translate(potX + dx, potY + dy); ctx.rotate(r);
+      ctx.fillStyle = '#7E8E85';
+      ctx.beginPath(); ctx.ellipse(0, 0, 26, 14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
+    ctx.restore();
+
+    // Ceiling Linear LED Cones (0.4x parallax)
+    ctx.save();
+    ctx.translate(px * 0.4, 0);
+    [260, 860, 1460].forEach(lx => {
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(lx, 86, 360, 10);
+      const cone = ctx.createLinearGradient(lx, 96, lx, 440);
+      cone.addColorStop(0, 'rgba(255,255,255,0.48)'); cone.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = cone;
+      ctx.beginPath();
+      ctx.moveTo(lx, 96); ctx.lineTo(lx + 360, 96); ctx.lineTo(lx + 460, 440); ctx.lineTo(lx - 100, 440);
+      ctx.closePath(); ctx.fill();
+    });
+    ctx.restore();
+
+    // Terrazzo Floor
+    const fg = ctx.createLinearGradient(0, floorY, 0, 1080);
+    fg.addColorStop(0, '#E7DFD2'); fg.addColorStop(0.5, '#DED4C4'); fg.addColorStop(1, '#D3C7B4');
+    ctx.fillStyle = fg; ctx.fillRect(-240, floorY, 2400, 300);
+    ctx.fillStyle = '#C9BDA9'; ctx.fillRect(-240, floorY, 2400, 4);
+
+    // Mid Layer (0.62x parallax): Perspective Oak Experience Table
+    if (opts.showTable !== false) {
+      ctx.save();
+      ctx.translate(px * 0.62, 0);
+      const tx = opts.tableX ?? 650, tw = opts.tableW ?? 620, ty = floorY - 154;
+      ctx.fillStyle = 'rgba(84, 70, 52, 0.13)';
+      ctx.beginPath(); ctx.ellipse(tx + tw / 2, floorY + 2, tw * 0.54, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#C7AE8B';
+      ctx.fillRect(tx + 28, ty + 30, 18, floorY - (ty + 30));
+      ctx.fillRect(tx + tw - 46, ty + 30, 18, floorY - (ty + 30));
+      ctx.fillStyle = '#EEDCC0';
+      ctx.beginPath();
+      ctx.moveTo(tx + 22, ty - 16); ctx.lineTo(tx + tw - 22, ty - 16);
+      ctx.lineTo(tx + tw, ty + 4); ctx.lineTo(tx, ty + 4); ctx.closePath(); ctx.fill();
+      roundRect(ctx, tx, ty, tw, 32, 6, '#DFC6A1', '#BFA37B', 2, false);
+      const count = Math.max(2, Math.floor((tw - 100) / 140));
+      for (let i = 0; i < count; i++) {
+        const dx = tx + 80 + i * ((tw - 180) / Math.max(1, count - 1));
+        ctx.fillStyle = '#CBD5E1'; ctx.fillRect(dx - 8, ty - 6, 36, 6);
+        ctx.fillStyle = '#1E293B'; ctx.beginPath(); ctx.roundRect(dx, ty - 42, 24, 36, 4); ctx.fill();
+        const scr = ctx.createLinearGradient(dx, ty - 40, dx + 20, ty - 10);
+        scr.addColorStop(0, '#3B82F6'); scr.addColorStop(1, '#93C5FD');
+        ctx.fillStyle = scr; ctx.fillRect(dx + 3, ty - 38, 18, 28);
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(dx + 30, ty - 14, 18, 10);
+      }
+      ctx.restore();
+    }
+
+    if (coolMood > 0.01) {
+      ctx.fillStyle = `rgba(186, 206, 236, ${0.22 * coolMood})`;
+      ctx.fillRect(-240, -120, 2400, 1320);
+    }
+  }
+
   global.VisualMetaphors = {
     clamp, easeOut, easeInOut, easeOutExpo, easeOutQuint, easeInOutQuart, easeOutBack, spring, win, lerp,
     roundRect, drawDocumentSheet, drawStrikeThrough,
     draw3DWireCube, draw3DPhoneProp, drawAudioEnvelopeBars, drawCleanCaption,
-    withCamera, drawStudioBackdrop, drawFocusBrackets, drawSpeedLines, drawRipple, drawStampBadge,
-    drawRetailStoreBackdrop, drawFScanOverlay,
+    withCamera, drawStudioBackdrop, drawAmbientBackdrop, drawFocusBrackets, drawSpeedLines, drawRipple, drawStampBadge,
+    drawRetailStoreBackdrop, drawCinematicAppleStore, drawFScanOverlay,
   };
 })(window);

@@ -4,6 +4,13 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 情绪化多档步速物理、全屏 3 层视差门店与无白框电影级动效：插件 0.12.0 / 核心 7.2.0 · 2026-11-26
+
+- **情绪化多档步速物理与微表演（`workbench/motion/actors_v3_cute.js`）**：在 `CourseActorsCute` 中新增 `GAIT_PRESETS`、`computeMoodWalk(fromX, toX, t, startT, mode, scale)` 与 `paintExpressive(ctx, cfg, st, images, extraLeanRad)`，支持 `stroll`（闲逛 `145px/s`）、`brisk`（轻快迎宾 `265px/s`）、`rush`（急匆匆冲入 `470px/s` + `+9.5°` 前倾与急停刹车回摆）和 `cold_exit`（冷脸转身快撤 `310px/s`），所有档位均基于世界坐标零滑步落地步态计算，自动按距离与情绪速度推算步行时长与身体前倾。
+- **全屏 3 层视差 Apple 授权门店与开放画布动效（`workbench/motion/visual_metaphors.js`）**：新增 `drawCinematicAppleStore`（0.22× 远景玻璃幕墙/MagSafe 与 AirPods 配件墙/旗舰灯箱/陶瓷绿植、0.4× 顶棚线性 LED 柔光锥、0.62× 透视暖橡木体验桌与斜立样机）与 `drawAmbientBackdrop`（柔和景深光晕无框底景），同步更新 `SKILL.md` 明确非门店认知/数据段优先使用光轨、曲线、数据雕塑与星环，杜绝“大白框装字”PPT 感。
+- **合入 7.1.1 既有升级并正式打包发布**：本版正式打包发布 7.1.1 以来全部更新（含 `draw3DPhoneProp` 真 3D iPhone 18 Pro、`web_asset_search.py` 开放许可素材检索 CLI、5 幕连续运镜宣传片 v4）与 7.2.0 新增的门店纵深及情绪步速物理；统一 `VERSION`、`release.json`、`install.sh`、`workbench/workflow.py`、`README.md` 与 `docs/index.html` 至 `7.2.0` / 插件 `0.12.0`。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v7_tools.py`、`scripts/build_release.py`、`scripts/build_plugin.py` 打包及完整字节 SHA-256 核对；在真实《门店服务体验提升》课程的 3 支 v7.2 样片中完成 `verify_delivery.py --strict-ppt-guard --require-attached-pic` 零报错零滞留验收与关键帧视觉复核（DSH 原生桌面实机点击继续单独跟踪）。
+
 ## 5 幕连续运镜动效引擎、真 3D iPhone 18 Pro 与联网素材检索：插件 0.11.1 / 核心 7.1.1 · 2026-11-26
 
 - **底层动效与运镜基元升级（`workbench/motion/visual_metaphors.js`）**：补入绝对时间快节奏缓动曲线（`easeOutExpo`、`easeOutQuint`、`easeInOutQuart`、`easeOutBack`、`spring`、`win`）、虚拟相机变换层 `withCamera`、视差工作室底景 `drawStudioBackdrop`、多层扁平门店景深 `drawRetailStoreBackdrop`、**F 型视觉扫读热区追踪 `drawFScanOverlay`**，以及基于 `workbench/device_models.py` 官方尺寸比例（`71.9 × 150.0 × 8.75 mm`）与冰川蓝配色构建的**真 3D 多边形透视投影 `iPhone 18 Pro`（`draw3DPhoneProp`）**，消除大侧角 2D 镜头畸变。

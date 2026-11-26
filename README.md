@@ -7,7 +7,7 @@
 - **跨主流 AI 平台通用**：基于标准 `SKILL.md`，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用。
 - **DSH 桌面插件（可选）**：DeepSeek Harness（DSH）用户亦可安装图形插件包，在同一窗口上传资料与试看小样。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-suite-v7.1.1.zip) · [下载 DSH 插件 v0.11.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-plugin-v0.11.1.zip)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-suite-v7.2.0.zip) · [下载 DSH 插件 v0.12.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-plugin-v0.12.0.zip)
 
 ---
 
@@ -23,13 +23,13 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ DSH 插件 / 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.1.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-suite-v7.1.1.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.2.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-suite-v7.2.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.11.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-plugin-v0.11.1.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
-4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.12.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-plugin-v0.12.0.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
+4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 
 **装好后，直接把资料发给 AI 并输入：**
 
@@ -60,9 +60,9 @@
 
 | 核心能力 | 实际能力细节 |
 | --- | --- |
-| **100 种教学代码动效 + 17 类构图母版** | 遵循动画学原则（绝对时间快节奏缓动、虚拟相机推拉摇移、同元素匹配转场）与 **F 型视觉扫读热区引导**（结论前置、动作行首、例外标红），内置 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 动效与运镜基元，**任何正文画面绝不静止超过 3.5 秒**。 |
+| **100 种教学代码动效 + 全屏无白框视觉隐喻** | 遵循动画学原则（绝对时间快节奏缓动、虚拟相机推拉摇移、同元素匹配转场）与 **F 型视觉扫读热区引导**（结论前置、动作行首、例外标红）；内置 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 提供**全屏 3 层视差 Apple 授权门店（`drawCinematicAppleStore`：玻璃幕墙、MagSafe/AirPods 配件墙、旗舰灯箱、顶棚柔光锥与透视暖橡木桌）**与**无白框开放画布（`drawAmbientBackdrop`）**，用光轨、曲线、数据雕塑与星环替代“大白框装字”PPT 壳，**任何正文画面绝不静止超过 3.5 秒**。 |
 | **代码化三维道具 + 联网检索合规素材** | 遇到复杂硬件拆解或立体商品演示时，支持真 3D 透视投影模型（如 `iPhone 18 Pro` 冰川蓝全宽三摄平台与机身比例）与 Blender 联动；当纯几何绘图不足以表达具体实景道具或图标时，可通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 联网检索 Openverse / Wikimedia Commons 开放许可无水印素材并本地缓存至 `project/assets/web/`（自动记录来源、许可与 SHA-256 溯源清单）。 |
-| **`CourseActorsCute` 3.3 头身可动矢量角色** | 全程代码骨骼驱动，自带**零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与停步稳态回正、口型手势同步**；严谨区分黑衣店长、蓝衣店员（统一佩戴原版胸标）与便装无标顾客（禁与背景顺色），对话开口始终面向受话人、前景柜台与桌面物件前后遮挡零穿模。 |
+| **`CourseActorsCute` 3.3 头身可动角色 + 情绪化多档步速** | 全程代码骨骼驱动，自带**零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与停步稳态回正、口型手势同步**，并内置**情绪化步速物理（`computeMoodWalk` / `paintExpressive`）**：在门店情景演练中可按剧情区分 `stroll`（闲逛慢步）、`brisk`（轻快迎宾）、`rush`（急匆匆前倾快步冲入 + 刹车回摆急停）与 `cold_exit`（冷脸转身快撤），解决人物千篇一律慢走呆板的问题；严谨区分黑衣店长、蓝衣店员（统一佩戴原版胸标）与便装无标顾客（禁与背景顺色），对话开口始终面向受话人。 |
 | **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
 
 > 内置人物预设与品牌片头片尾默认服务酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并按需替换为自有品牌视觉。
@@ -129,6 +129,12 @@
 ---
 
 ## 版本更新
+
+### 情绪化多档步速物理、全屏 3 层视差门店与无白框电影级动效：插件 0.12.0 / 核心 7.2.0 · 2026-11-26
+
+- **情绪化多档步速物理与微表演（`workbench/motion/actors_v3_cute.js`）**：新增 `GAIT_PRESETS`、`computeMoodWalk` 与 `paintExpressive`，支持按剧情区分 `stroll`（闲逛 `145px/s`）、`brisk`（轻快迎宾 `265px/s`）、`rush`（急匆匆冲入 `470px/s` + `+9.5°` 前倾与刹车急停回摆）与 `cold_exit`（冷脸快撤 `310px/s`），让着急进店、受压后退与热情迎候形成鲜明表演反差。
+- **全屏 3 层视差 Apple 授权门店与无白框开放画布（`workbench/motion/visual_metaphors.js`）**：新增 `drawCinematicAppleStore`（商场玻璃幕墙与阳光斜射、MagSafe/AirPods 配件墙、旗舰灯箱、室内陶瓷绿植、顶棚线性 LED 柔光锥、透视暖橡木体验桌与斜立样机）及 `drawAmbientBackdrop` 开放画布基元，并在 `SKILL.md` 固化“去大白框 PPT 壳”规范。
+- **同步纳入 7.1.1 动效库与素材能力**：完整包含真 3D 透视投影 `iPhone 18 Pro`（`draw3DPhoneProp`）、F 型扫读热区追踪、`scripts/web_asset_search.py` 开放许可素材联网检索入库与 5 幕连续运镜宣传片 v4；已完成真实课程 3 支 v7.2 样片（`verify_delivery.py --strict-ppt-guard` 零报错零滞留）与打包发布全检。
 
 ### 5 幕连续运镜动效引擎、真 3D iPhone 18 Pro 与联网素材检索：插件 0.11.1 / 核心 7.1.1 · 2026-11-26
 

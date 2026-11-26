@@ -1,5 +1,5 @@
 {
-  "version": "7.1.1",
+  "version": "7.2.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -10,10 +10,10 @@
     "elearning-course-design"
   ],
   "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.11.1",
+  "plugin_version": "0.12.0",
   "skill_versions": {
-    "corporate-training-motion": "7.1.1",
+    "corporate-training-motion": "7.2.0",
     "elearning-course-design": "2.1.0"
   },
-  "release_status": "7.1.1 upgraded CameraRig & snappy motion library (visual_metaphors.js), true-3D perspective iPhone 18 Pro, open-license web_asset_search.py CLI, and 5-act continuous promo v4"
+  "release_status": "7.2.0 added emotion-driven 5-tier variable-speed gait physics (computeMoodWalk / paintExpressive), 3-layer parallax full-bleed Apple Authorized Store (drawCinematicAppleStore), borderless open-canvas motion standard (drawAmbientBackdrop), plus true-3D iPhone 18 Pro, web_asset_search.py, and 5-act promo v4"
 }

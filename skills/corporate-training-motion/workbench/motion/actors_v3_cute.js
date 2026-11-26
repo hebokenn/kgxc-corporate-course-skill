@@ -743,11 +743,56 @@ window.CourseActorsCute = (() => {
     return Object.values(PRESETS).filter(p => !category || p.category === category);
   }
 
+  /**
+   * Emotion-driven variable-speed grounded walk presets (stroll / brisk / rush / cold_exit).
+   * Automatically computes realistic duration from distance/speed, forward lean, and braking settle.
+   */
+  const GAIT_PRESETS = {
+    stroll:    { speedPx: 145, stepLen: 68, leanDeg: 1.5, brakeSec: 0.15 },
+    brisk:     { speedPx: 265, stepLen: 82, leanDeg: 4.5, brakeSec: 0.14 },
+    rush:      { speedPx: 470, stepLen: 96, leanDeg: 9.5, brakeSec: 0.24 },
+    cold_exit: { speedPx: 310, stepLen: 86, leanDeg: 5.5, brakeSec: 0.12 },
+  };
+
+  function computeMoodWalk(fromX, toX, t, startT, mode = 'stroll', scale = 1.72) {
+    const preset = GAIT_PRESETS[mode] || GAIT_PRESETS.stroll;
+    const dist = Math.abs(toX - fromX);
+    const dur = Math.max(0.45, dist / preset.speedPx);
+    const endT = startT + dur;
+    const ws = computeGroundedWalk(fromX, toX, t, startT, endT, scale, preset.stepLen);
+    const dir = Math.sign(toX - fromX) || 1;
+    let leanRad = 0;
+    if (t >= startT && t < endT) {
+      const u = clamp((t - startT) / dur);
+      const env = Math.min(u / 0.15, (1 - u) / 0.18, 1);
+      leanRad = dir * (preset.leanDeg * Math.PI / 180) * env;
+    } else if (t >= endT && t < endT + preset.brakeSec) {
+      const bu = (t - endT) / preset.brakeSec;
+      leanRad = -dir * (preset.leanDeg * 0.35 * Math.PI / 180) * Math.sin(bu * Math.PI);
+    }
+    return { ...ws, endT, dur, leanRad, speedMode: mode };
+  }
+
+  function paintExpressive(ctx, cfg, st, images = {}, extraLeanRad = 0) {
+    const totalLean = extraLeanRad || (st.walkState && st.walkState.leanRad) || 0;
+    ctx.save();
+    if (Math.abs(totalLean) > 0.001) {
+      ctx.translate(st.x, st.footY);
+      ctx.rotate(totalLean);
+      ctx.translate(-st.x, -st.footY);
+    }
+    paint(ctx, cfg, st, images);
+    ctx.restore();
+  }
+
   function paintPreset(ctx, id, st, images = {}, overrides = {}) {
     return paint(ctx, getPreset(id, overrides), st, images);
   }
 
-  return { paint, drawCuteHead, computeGroundedWalk, PRESETS, getPreset, listPresets, paintPreset };
+  return {
+    paint, paintExpressive, drawCuteHead, computeGroundedWalk,
+    GAIT_PRESETS, computeMoodWalk, PRESETS, getPreset, listPresets, paintPreset,
+  };
 })();
 
 /* Bridge legacy scene-engine.js window.CourseActors calls to CourseActorsCute. */

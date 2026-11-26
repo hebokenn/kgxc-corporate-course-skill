@@ -35,7 +35,8 @@ description: 酷果星创课程设计与制作统一入口（7.0.0 精简工作�
    - **支持联网搜索可用素材加入**：当课程需要真实场景纹理、产品参考、矢量图标或实景道具时，可用宿主联网检索或运行 `python3 SKILL_DIR/scripts/web_asset_search.py search "<关键词>"` 检索无水印、可商用/开放许可素材，并通过 `fetch` 缓存到 `COURSE/project/assets/web/`（自动写入含来源与许可信息的 `manifest.json`）后再接入画面；严禁直接热链外网或混入带水印图库/竞品标志。
    - **产品范围限定 Apple**（或明确适配 Apple 的无他牌配件）。
 2. **唯一人物引擎 `CourseActorsCute`（`workbench/motion/actors_v3_cute.js`）**：
-   - 全课人物统一使用 3.3 头身简洁可爱可动人物（含世界坐标不滑步步态 `computeGroundedWalk`、方案 B 转侧身/停步回正、软性 2-Bone IK）。
+   - 全课人物统一使用 3.3 头身简洁可爱可动人物（含世界坐标不滑步步态 `computeGroundedWalk`、**5 档情绪步速 `computeMoodWalk`（`stroll` 闲逛 / `brisk` 迎宾 / `rush` 急匆匆冲入急停 / `cold_exit` 冷脸快撤）与 `paintExpressive` 前倾/后仰微表演**、方案 B 转侧身/停步回正、软性 2-Bone IK）。
+   - 门店情景优先调用 `VisualMetaphors.drawCinematicAppleStore`（全屏 3 层视差玻璃幕墙、配件墙、旗舰灯箱与透视暖橡木桌）与 `draw3DPhoneProp`（真 3D iPhone 18 Pro）；非门店认知/数据段坚持**无白框开放画布动效**（`drawAmbientBackdrop` + 光轨/曲线/数据雕塑/星环），杜绝“大白框装字”PPT 感。
    - 黑衣 KG 店长与蓝衣 KG 店员必须绑定原版 `assets/profiles/kgxc/kg-original.png` 胸标；Coach 保留 MyCoach；顾客穿便装且 `showKG: false`。
    - 新课使用 `workbench/layered_customers.py` 的 `design_for_course()` 或在 `actors_v3_cute.js` 内扩展发型/穿搭，**严禁服装与画布顺色**；同场人物有清晰外貌区分，跨镜同一人保持连续。
    - 对白须同场可见、开口前完成朝向、听完再移步；柜台层级严格远景员工 → 柜台 → 近景角色；脚底与物件有真实支撑。
