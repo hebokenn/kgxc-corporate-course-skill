@@ -21,14 +21,9 @@
 
 ## 三类角色与必需胸标
 
-- 店长：黑衣、原版 KG，M1。
-- 店员：蓝衣、原版 KG，S01 女性 / S02 男性，各自使用自己的取景和胸口坐标。
-- Coach：黑衣、MyCoach，COACH，保持其自己的 MyCoach 原图，不能加 KG。
-
-```sh
-python3 SKILL_DIR/scripts/course_tools.py stage-company-character COURSE --identity S01 --out COURSE/project/source/staff-female.json
-```
-
-输出包含原角色与胸标 assets、角色 data、身份和标识。把 assets 合并到构图并使用 data 生成 actor，不直接拿不带标记的 blue-cast.png 裁切当交付。原图保留，胸标是可编辑的独立原始图层，与人物缩放/半身取景一同变化。M1、S01、S02 缺少胸标绑定会拒绝生成；COACH 使用自己的 MyCoach 字样，不能用通用 KG 入口覆盖。
+- 店长：黑衣（`role: 'manager'`）、原版 `kg-original.png`。
+- 店员：蓝衣（`role: 'staff'`）、原版 `kg-original.png`。
+- Coach：黑衣、`MyCoach` 标识。
+- 顾客：便装（`role: 'cust_jacket'` / `'cust_knit'` 等可扩展款式），禁止带 KG 标，且配色不得与画布背景顺色。
 
 检查实际全身、半身与动作，既检查“是否有 logo”，也检查放置位置、尺寸、标识是否对应角色。新衣服或新姿态须重新核对自己的胸口标定，不能照搬其他角色的坐标。

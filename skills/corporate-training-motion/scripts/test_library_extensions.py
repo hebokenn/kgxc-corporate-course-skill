@@ -65,7 +65,7 @@ class LibraryTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    root=Path(d);(root/'project').mkdir();out=root/'stage.json'
    subprocess.run([sys.executable,str(cli),'stage-style-assets',str(root),'--style','soft-volume','--out',str(out)],check=True,capture_output=True)
-   staged=json.loads(out.read_text());self.assertEqual(set(staged['data']['roleAssets']),{'M1','S01','S02','COACH','C01','C02','C03'});self.assertIn('heroAsset',staged['data'])
+   staged=json.loads(out.read_text());self.assertEqual(staged['data'].get('actorEngine'),'CourseActorsCute');self.assertEqual(staged['data'].get('actorRuntime'),'workbench/motion/actors_v3_cute.js');self.assertEqual(staged['data']['roleAssets'],{});self.assertIn('heroAsset',staged['data'])
    for asset in staged['assets']:self.assertTrue((root/'project'/asset['path']).is_file())
  def test_photo_annotation_uses_contained_image_coordinates_and_object_order(self):
   from visual_styles import build

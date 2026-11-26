@@ -269,7 +269,7 @@ def prepare(project, selection, skill_root):
         raise ValueError('已有自定义 native 源码，不能自动覆盖；请沿用 native-canvas')
     (p/'native/motion').mkdir(exist_ok=True)
     stage_libraries(skill_root, p/'native/motion/lib')
-    for name in ['effects.js','teaching-effects.js','retail-effects.js','surface-materials.js','m1-mesh.js','character-performance.js','acting.js']:
+    for name in ['effects.js','teaching-effects.js','retail-effects.js','surface-materials.js','actors_v3_cute.js']:
         shutil.copy2(base/'motion'/name,p/'native/motion'/name)
     shutil.copy2(base/'starter/scene-engine.js', p/'native/scene-engine.js')
     entry.write_bytes(managed)

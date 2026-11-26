@@ -2,7 +2,7 @@
 
 当前可执行目录包含 100 种动作，其中 89 种教学对象动作、8 种文字／强调和 3 种符号描绘。17 类教学构图可直接带入本课内容，通过同一工作台预览、改字、移动、换图和导出。速度、颜色、缓动、构图或节奏档不重复计数。完整名单以 `motion-catalog` 输出为准。
 
-**[下载 100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip)**（完整解压后打开 index.html）。每种动作可单独播放、暂停、进一帧；画面是正式版工作台绘制的 12 个相位。[新版 42 秒宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [64 秒动效鼓点版](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [素材与剪辑复现](media/source/kinetic-showcase/README.md)
+**[下载 100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip)**（完整解压后打开 index.html）。每种动作可单独播放、暂停、进一帧；画面是工作台渲染引擎绘制的 12 个相位。[7.1.0 在线展示页](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [历史版本与旧版宣传片归档](ARCHIVE.md) · [64 秒动效鼓点版（历史）](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [素材与剪辑复现](media/source/kinetic-showcase/README.md)
 
 ![历史 v5.1 图库：48 种动作在工作台中的画面](media/motion-actions-48.png)
 

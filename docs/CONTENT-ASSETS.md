@@ -13,7 +13,7 @@
 | 类型 | 可修改内容 | 当前边界 |
 | --- | --- | --- |
 | phone | 机型、正面/背面/侧面、配色、界面内容、屏幕状态和操作帧 | 通用直板/紧凑/折叠示意；具名 iPhone 18 Pro 另有独立几何与官方参考 |
-| actor | 原角色分层、肩/肘/腕姿态、接触关键姿态、局部表情、全身/半身取景 | C01/C02/C03 有各自标定；M1 原图必须带原版 KG 胸标，presenter-gesture 已使用同位置标记 |
+| actor | `CourseActorsCute` 角色身份、发型穿搭、行走转向、口型与手势 | 统一使用 `actors_v3_cute.js`；店长/店员绑定原版 `kg-original.png`，顾客穿便装无员工标 |
 | document | 文书或票据的标题、内容行、值、页脚及各行口播出现帧 | 课程自己的信息，不预填虚构价格、资格或承诺 |
 | parcel | 外箱结构、信息标签、示意编码 | 内置条码是视觉示例，真实扫码必须使用真实条码 |
 
@@ -53,29 +53,11 @@
 
 ### 人物动作与表情
 
-先看[角色创建和修改](../skills/corporate-training-motion/references/33-virtual-characters.md)，沿用已批准的具体原图。运行：
+先看[角色指南](CHARACTERS.md)与[33-virtual-characters.md](../skills/corporate-training-motion/references/33-virtual-characters.md)，统一使用 `workbench/motion/actors_v3_cute.js`（`CourseActorsCute`）多部件可爱可动人物与 `workbench/acting.py`（`stage-acting` / `acting-check`）：
 
-```sh
-python3 SKILL_DIR/scripts/course_tools.py stage-character-rig COURSE --identity C01 --out COURSE/project/source/C01-rig.json
-```
-
-把输出 `assets` 合并到构图 assets，把输出 `rig` 放进 actor 的 data.rig。原图不会被改写。C01/C02/C03 独立的肩、肘、腕、头部与五官坐标在 `workbench/character_rig.py`；每人从自己的原图分层。半身通过同一动作骨架的 clip 取景，不能另换一张不连续头像。
-
-普通纹理绑定的 pose 为 rest/welcome/listen/question；`poseKeys: [{frame, pose}, ...]` 控制时间。动作由关节层级与原有骨长计算，不能拉长手臂。`moodKeys` 可用 neutral/smile/concern/curious/relieved/blink；局部表情保留原轮廓与纹理，只修改口部、眉部或眼部。`nodFrames: [a,z]` 是一个短点头。全部关键帧在素材内，半身仍用同一原图与骨架取景。
-
-**原先把松开的手旋转成 phone-use/tap-phone 的做法在实际审阅中被指出错误，现已在素材入口禁止生成。** 数学上手腕到达位置，并不代表手指有握持接触，尤其不能用正对观众的摊开手掌夹着屏幕冒充顾客操作。
-
-持机要为当前角色制作自己的接触关键姿态：顾客看向自己的屏幕，手指握在设备边缘，手腕与前臂衔接正确。C01-phone-use-v2 是基于批准身份、通过内置 imagegen 修正的全身姿态；它不是纯代码生成的人物。手机机身由代码单独绘制，手部遮挡从该姿态自己的源图分离。屏幕朝向顾客时，观众看到机背，操作内容在同机屏幕特写中展示。
-
-```sh
-python3 SKILL_DIR/scripts/course_tools.py stage-contact-pose COURSE --identity C01 --out COURSE/project/source/C01-contact.json
-```
-
-将输出 assets 合并到构图，把输出 pose 放进 actor.data.contactPose。这一关键姿态不能套用旧 poseKeys/moodKeys/nodFrames，也不能宣传为自然连续手指按压。需要另一视角、另一手势或连贯动作时，继续制作属于该角色的姿态或手部素材，重新检查接触、遮挡、视线和设备角度；不改动已确认主图。修订姿态随实际课程小样审阅，生成成功不算用户认可。
-
-黑衣店长的左胸（观众右侧）必须使用 `kg-original.png` 原版 KG 图层。静态 actor.data.logoAsset 显式绑定，位置与原有 M1 网格一致：原图坐标 x559/y458、宽70、按原比例显示。不得只放无胸标的 M1 原图；也不把胸标贴到顾客便装。半身和动作应保持同一位置、比例及依附关系。
-
-换衣、改身份或换主图后先重新核对角色，再更新本角色标定。旧坐标不能套到新图。生成目录包含原图与生成器的版本哈希，检测到分层被人工修改会停止，不覆盖已有修改。不要用 regenerate 恢复默认值冲掉工作台编辑。
+- 店长（黑色 Polo + `kg-original.png`）、店员（蓝色工服 + `kg-original.png`）与便装顾客（无员工标，通过发型与服饰明确区分）全部在同一套骨架内驱动走路、转身、招手、指点与对白口型；
+- 原先的静态 PNG 人物（`C01..C03` / `M1-repaired` / `blue-cast`）与 `stage-character-rig` / `stage-contact-pose` 已全部归档下线，详见 [ARCHIVE.md](ARCHIVE.md)。
+- 每次添加人物演绎须检查支撑脚接地、同场受话人朝向、胸标绑定及实际编码渲染画面，不能以单帧静态参数通过代替连续动作审阅。
 
 ### 文书与层级
 

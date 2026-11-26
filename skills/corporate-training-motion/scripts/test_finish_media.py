@@ -37,7 +37,7 @@ class EncodedCoverTests(unittest.TestCase):
         Image.new('RGB',(1280,720),'#a85b39').save(p/'cover.png')
         Image.new('RGB',(320,180),'#a85b39').save(p/'thumbnail.png')
         (p/'source.srt').write_text('1\n00:00:00,500 --> 00:00:01,500\nTechnical fixture only\n\n')
-        plan=dict(video='source.mp4',srt='source.srt',speech='speech.wav',bed='bed.wav',cover='cover.png',output_video='output.mp4',output_srt='output.srt',rate=1.1,pitch_semitones=1,fps=10,cover_hold_seconds=.2,cover_fade_seconds=.1)
+        plan=dict(video='source.mp4',srt='source.srt',speech='speech.wav',bed='bed.wav',cover='cover.png',output_video='output.mp4',output_srt='output.srt',rate=1.1,tempo_authorization='QA fixture explicit tempo authorization',pitch_semitones=1,fps=10,cover_hold_seconds=.2,cover_fade_seconds=.1,cover_timing_authorization='QA fixture explicit cover timing authorization')
         (p/'plan.json').write_text(json.dumps(plan));cls.receipt=finish(p/'plan.json')
     @classmethod
     def tearDownClass(cls):cls.tmp.cleanup()

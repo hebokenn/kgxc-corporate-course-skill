@@ -44,7 +44,9 @@ def stage_company(identity,project,skill_root):
     if not (p/'workbench.json').is_file():raise ValueError('先建立实际课程工作台')
     base=Path(skill_root)/'assets/profiles/kgxc';role=ROLES[identity];assets=[];data=dict(identity=identity,characterRole=role['role'])
     for kind,name in [('headAsset',role['file'])]+([('logoAsset','kg-original.png')] if role['mark']=='KG' else []):
-        src=base/name;digest=hashlib.sha256(src.read_bytes()).hexdigest();dest=p/'assets/company-characters'/(digest[:10]+'-'+name);dest.parent.mkdir(parents=True,exist_ok=True)
+        src=base/name
+        if not src.is_file():raise ValueError('已移除旧版静态 PNG 人物；门店人物请通过 workbench/motion/actors_v3_cute.js (CourseActorsCute) 与 acting.stage() / kg-original.png 绑定')
+        digest=hashlib.sha256(src.read_bytes()).hexdigest();dest=p/'assets/company-characters'/(digest[:10]+'-'+name);dest.parent.mkdir(parents=True,exist_ok=True)
         if dest.exists() and hashlib.sha256(dest.read_bytes()).hexdigest()!=digest:raise ValueError('已有公司角色素材被编辑，保留并使用新版本')
         if not dest.exists():shutil.copy2(src,dest)
         aid='company-'+identity+'-'+kind;assets.append(dict(id=aid,path=str(dest.relative_to(p)),label=role['role']+' '+kind));data[kind]=aid

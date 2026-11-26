@@ -1,8 +1,22 @@
 # 实际效果示例文件
 
-[返回首页效果](../../README.md#实际效果) · [工作台使用指南](../USAGE.md) · [V5 验收记录](../V5-VERIFICATION.md)
+[返回首页效果](../../README.md#实际效果) · [工作台使用指南](../USAGE.md) · [历史版本归档](../ARCHIVE.md) · [V5 验收记录](../V5-VERIFICATION.md)
 
-本目录保留实际工作台、实际导出与原生 WorkBuddy 的技术样例。首页海报由真实截图与品牌片段画面排版，未用概念稿冒充产品界面。
+## v7.1.0 无界面新版展示素材（`docs/media/v71/`）
+
+当前主发布页与 GitHub Pages 首页已全面切换至 `docs/media/v71/` 下全新制作的一套展示素材（基于真实 `Qwen3-TTS` `didi`/`pipi`、`teaching-native-v1` 原库音效、`CourseActorsCute` 与 16 套明亮浅色板渲染并通过 `verify_delivery.py` 全项校验）：
+
+| 文件 | 说明 |
+| --- | --- |
+| `v71/kgxc-v71-promo.mp4` / `.srt` | 44.19 秒 1080p/24fps `v7.1.0` 全新宣传片及零标点单行中文外挂字幕，内嵌单帧 `attached_pic` 封面 |
+| `v71/kgxc-v71-promo-cover.png` / `-poster.jpg` | 首帧单帧封面与网页播放器预览海报 |
+| `v71/headless-workflow-card.png` | 无界面对话式制课工作流 + 公共质检引擎（`tts_sync.py` / `verify_delivery.py`）架构总览图 |
+| `v71/cute-actors-cast.png` | `CourseActorsCute` 3.3 头身可爱矢量角色群像（店长、店员与便装顾客）及双色系对比 |
+| `v71/bright-palettes-16.png` | 16 套高对比明亮通透浅色画布色板全览图 |
+
+## 过往版本示例（历史归档）
+
+下方保留自 `v6.9.8`、`v5` 与 `v3.4` 期间的工作台交互截图、6 页 HTML 课件及静态人物展示，均已统一归入 [ARCHIVE.md](../ARCHIVE.md) 供查阅历史演进。
 
 ## 花字与原库音效样片（2026-10-28）
 

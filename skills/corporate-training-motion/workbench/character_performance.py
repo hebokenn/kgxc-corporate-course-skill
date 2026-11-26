@@ -71,7 +71,9 @@ def stage(identity,project,skill_root):
  if not(p/'workbench.json').is_file():raise ValueError('先建立实际工作台')
  profile=known[identity];assets=[]
  if identity=='C01':
-  src=root/'assets/characters/kgxc-customers-v1/C01-full-v1.png';dst=p/'assets/character-performance'/(sha(src)[:12]+'-'+src.name);dst.parent.mkdir(parents=True,exist_ok=True)
+  src=root/'assets/characters/kgxc-customers-v1/C01-full-v1.png'
+  if not src.is_file():raise ValueError('已移除旧版静态 PNG 人物；请统一使用 workbench/motion/actors_v3_cute.js (CourseActorsCute)')
+  dst=p/'assets/character-performance'/(sha(src)[:12]+'-'+src.name);dst.parent.mkdir(parents=True,exist_ok=True)
   if dst.exists()and sha(dst)!=sha(src):raise ValueError('保留已编辑人物素材，使用新目录')
   if not dst.exists():shutil.copy2(src,dst)
   aid='performance-C01-master';assets=[dict(id=aid,path=str(dst.relative_to(p)),label='C01 registered original')];data=dict(identity=identity,headAsset=aid)

@@ -55,24 +55,32 @@ class LayoutTests(unittest.TestCase):
     def test_overlapping_current_row_windows_are_rejected(self):
         s=composition();s['sceneGraph']['materials'][0]['data']['rowFocus'][0]['endFrame']=20
         with self.assertRaisesRegex(ValueError,'窗口不能重叠'):expand(s)
-    def test_direct_crop_of_unbranded_blue_master_is_blocked(self):
-        staged=stage_company('S01',self.p,ROOT);s=composition();s['assets']=staged['assets'];s['sceneGraph']=dict(nodes=[dict(id='bare-staff',type='image',sceneId='X',assetId=staged['data']['headAsset'],x=100,y=200,width=500,height=650,crop=[0,0,.48,1])])
-        with self.assertRaisesRegex(ValueError,'不能直接裁切无标原图'):self.fixture.ready(s)
-    def test_uniform_mark_must_cover_the_whole_character_interval(self):
-        staged=stage_company('S01',self.p,ROOT);s=composition();s['assets']=staged['assets'];s['sceneGraph']['materials']=[dict(id='staff',kind='actor',sceneId='X',data=staged['data'])];s=expand(s)
-        next(n for n in s['sceneGraph']['nodes'][0]['children'] if n['id']=='staff-uniform-KG')['endFrame']=5
-        with self.assertRaisesRegex(ValueError,'随角色显示'):self.fixture.ready(s)
+    def test_legacy_static_company_png_staging_is_rejected(self):
+        with self.assertRaisesRegex(ValueError,'CourseActorsCute'):stage_company('S01',self.p,ROOT)
 
     def test_both_blue_staff_and_manager_require_KG_while_coach_keeps_MyCoach(self):
-        for identity in ['M1','S01','S02','COACH']:
-            staged=stage_company(identity,self.p,ROOT);s=composition();s['assets']=staged['assets'];s['sceneGraph']['materials']=[dict(id='role',kind='actor',sceneId='X',data=staged['data'])];out=expand(s)
-            self.assertEqual(out['contentAssets'][0]['description']['characterRole'],staged['role'])
-            if identity!='COACH':
-                s['sceneGraph']['materials'][0]['data'].pop('logoAsset')
-                with self.assertRaisesRegex(ValueError,'KG'):expand(s)
-            else:
-                s['sceneGraph']['materials'][0]['data']['logoAsset']='anything'
-                with self.assertRaisesRegex(ValueError,'不能加 KG'):expand(s)
+        import hashlib
+        from acting import stage as stage_cute_actor
+        from company_characters import validate_uniforms
+        mark_dir=self.p/'assets/custom';mark_dir.mkdir(parents=True,exist_ok=True)
+        mycoach=mark_dir/'mycoach-mark.png';mycoach.write_bytes(b'mycoach-official-mark-bytes')
+        mycoach_sha=hashlib.sha256(mycoach.read_bytes()).hexdigest()
+        s=composition();s['assets']=[];s['sceneGraph'].setdefault('nodes',[])
+        for idx,role in enumerate(['store_manager','store_staff','coach']):
+            design=dict(identity='role-'+role,sceneId='X',characterRole=role,hair='short',x=300+idx*280,floorY=760,height=500,endFrame=30)
+            if role=='coach':design.update(logoPath='assets/custom/mycoach-mark.png',logoSha256=mycoach_sha)
+            staged=stage_cute_actor(design,self.p,ROOT)
+            s['assets'].extend([a for a in staged['assets'] if a['id'] not in {x['id'] for x in s['assets']}])
+            s['sceneGraph']['nodes'].append(staged['node'])
+        doc=self.fixture.ready(s);validate_uniforms(doc,self.p)
+        for role in ['store_manager','store_staff']:
+            bad=copy.deepcopy(doc)
+            next(n for n in bad['sceneGraph']['nodes'] if n.get('id')=='role-'+role)['vectorActor'].pop('logoAsset')
+            with self.assertRaisesRegex(ValueError,'胸标'):validate_uniforms(bad,self.p)
+        bad_coach=copy.deepcopy(doc)
+        next(a for a in bad_coach['assets'] if 'mycoach-mark' in a['path'])['path']='assets/custom/fake-kg.png'
+        (self.p/'assets/custom/fake-kg.png').write_bytes(b'wrong')
+        with self.assertRaisesRegex(ValueError,'胸标'):validate_uniforms(bad_coach,self.p)
 
 
 if __name__=='__main__':unittest.main()

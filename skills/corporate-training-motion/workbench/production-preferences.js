@@ -1,5 +1,5 @@
 const OPTIONS={
-  customer:[['new','按本课设计新顾客（推荐）','共用可动方法，每课按情境换发型、服装与配色'],['V01','使用短侧分发顾客','眼镜、灰色便装外套；同风格可动人物'],['V02','使用齐肩短发顾客','棕红短发、浅紫圆领上衣；同风格可动人物'],['V03','使用成熟短发顾客','灰鬓短发、米色衬衫；同风格可动人物'],['none','不需要顾客出镜','本课用其他方式讲解']],
+  customer:[['new','按本课设计新顾客（推荐）','基于 3.3 头身 CourseActorsCute，按情境换发型、便装与防顺色配色'],['C_M01','使用便装男顾客起点','圆框眼镜、灰蓝外套与浅雾蓝内搭；3.3 头身可动人物'],['C_F01','使用便装女顾客起点','微卷短发、耳环、橘棕针织衫；3.3 头身可动人物'],['none','不需要顾客出镜','本课用其他方式讲解']],
   flower_text:[['key-points','适量重点花字（推荐）','突出行动、条件和边界，普通叙述保持简洁'],['minimal','只强调少量关键条件','减少视觉提示'],['off','不加花字','保留正常标题、正文与字幕']],
   sound_effects:[['native','适量提示音（推荐）','沿用已经确定的“叮”和“嘟咚”'],['off','不加提示音','保留正常配音与品牌片头片尾']],
 };
@@ -41,7 +41,6 @@ export function createProductionPreferences({getValue,saveChoice,uploadReference
     const choices=el('div',null,'preference-choices');choices.setAttribute('role','radiogroup');choices.setAttribute('aria-label',TITLES[key]);
     for(const [id,label,detail] of OPTIONS[key]){
       const option=button('',()=>id==='new'?showNewCustomer():choose(key,id));option.className='preference-choice';option.disabled=busy;option.setAttribute('role','radio');option.setAttribute('aria-checked',String(value.choices?.[key]===id));
-      if(key==='customer'&&/^V0[123]$/.test(id)){const image=el('img');image.src='/ui-customers/'+id+'.png';image.alt=label;option.append(image);}
       const copy=el('span');copy.append(el('strong',label),el('small',detail));option.append(copy);choices.append(option);
     }
     dialog.append(choices);if(busy)dialog.append(el('p','正在保存本课选择…','meta'));

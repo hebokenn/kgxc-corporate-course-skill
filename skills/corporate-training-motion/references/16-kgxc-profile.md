@@ -2,32 +2,24 @@
 
 本文件仅用于酷果课程，不是通用课件模板。可移植资源及SHA256见[profile.json](../assets/profiles/kgxc/profile.json)，固定品牌细节见[酷果头尾](16-kgxc-bookends.md)。品牌资产仅限用户内部使用，未确认对外再授权。
 
-角色对应以用户明确纠正和 [roles.json](../assets/profiles/kgxc/roles.json) 为准：
+角色对应以用户明确纠正和 [roles.json](../assets/profiles/kgxc/roles.json) 为准，统一使用 `workbench/motion/actors_v3_cute.js`（`window.CourseActorsCute`）多部件可爱可动人物（已移除旧版静态 PNG 人像及旧版 `acting.js` 细长站桩模型）：
 
-| 身份 | 衣服与标识 | 对应素材 |
+| 身份 | 衣服与标识 | 代码参数 / 叠加素材 |
 | --- | --- | --- |
-| 店长 | 黑色工服，左胸原版 KG | M1-repaired.png + kg-original.png |
-| 店员 | 蓝色工服，左胸原版 KG，沿用既有店员设计 | blue-cast.png 的男女店员分别取景 |
-| Coach | 黑色有领工服，MyCoach 胸字 | MyCoach-reference-2D.png |
-
-M1 默认讲解角色是店长；没有“店长”文字胸牌，身份由黑衣与 KG 标记区分。不能把黑色 KG 店长标成店员，也不能把旧蓝衣形象继续标为店长。Coach 的 MyCoach 胸字保持原图，不替换成 KG 或蓝衣。角色身份、头型、发型、服装确认后固定，口型与眨眼仅在局部变化。历史冻结工程保留原文件，新制作和本次授权修订使用当前角色定义；不通过覆盖历史素材修正新课标签。
+| 店长 | 黑色工服，左胸原版 KG | `role: 'manager'`, `hairStyle: 'manager_short'`, `showKG: true` + `kg-original.png` |
+| 店员 | 蓝色工服，左胸原版 KG | `role: 'staff'`, `hairStyle: 'bun_pony'`（或新扩展发型）, `showKG: true` + `kg-original.png` |
+| Coach | 黑色有领工服，MyCoach 胸字 | `role: 'manager'`（按 Coach 配色与标识扩展） |
+| 顾客 | 便装、无员工胸标（配色不与背景顺色） | `role: 'cust_jacket'` / `'cust_knit'` 等可扩展便装，禁带 KG 标 |
 
 酷果课程正文默认固定右上角并持续保留原版酷果星创Logo，新增场景、拆分导出、密集图解和补内容时也检查；只有本课用户明确选择才改变位置或显隐，不由制作端因拥挤自行隐藏。片头片尾沿用各自批准的品牌构图，独立封面单独核对原版Logo及指定位置。不能重绘字形、替换近似图或以模板存在代替实际画面检查。恢复及拆分沿用已确认配色和人物，不重新抽色；其他企业按其指定品牌处理。
-
-角色优先用已确认原图；半身/全身共用同一套资产与动作。包提供原图和局部表情资产，不冒称所有角色均已具备自然全身动作。M1已有有限正面讲解动作；其他角色新动作必须走设计确认、代表动态验证后再扩展。
 
 配音沿用本课有效选择、个人默认与既有原带，参数与切换方法见[本地配音](23-local-qwen3-voice.md)；不因更新角色定义修改原音轨。欢迎语/结束语优先使用本课已确认稿，profile中的历史固定句仅在尚无确认时作为新课候选，不能自动覆盖、重录或重复追加。新课不硬套历史课程的内容与章数。
 
 固定R5片头10.5秒、R8片尾7秒；包内是本课已批准的1080p30适配副本，原母版1280×720@24fps。已有标题烘焙，不是换字母版。实际片段与音轨哈希、画面及接缝须检查，不以出现Logo代替真正接入。换课标题依赖可编辑包装工程，缺失时明确报告，不分发大型帧缓存。
 
-M1运行器`assets/profiles/kgxc/m1-mesh.js`提供`createM1Mesh(poseAt)`，不依赖课程逐字稿或历史绝对路径。加载包内原图、原KG、开嘴和眨眼图后`rig.init(base,kg,open,blink)`，由当前项目已验证的`poseAt(t)`返回lift/upper/nod/tilt/breath/aperture/rounding/blink，再`rig.draw(t)`得到透明Canvas。参数沿用已验证的小幅正面讲解范围；新动作先做样片。通过同一个Canvas作全身与半身取景，不另造头手。运行需支持WebGL2的本机浏览器，缺失就报告，不用碎片旋转替代。
-
-导出前等待图像/字体ready，并对当前初始姿态先绘制两次再采帧。同姿态热启动对照10个时间点像素一致；首次冷态t=0对照曾有5273个通道差异，未将其列为冷启动等价通过。新宿主须从实际编码首帧再检查，不能只靠后续帧。
-
-
 ## 3.4可分发入口
 
-本发布包内置已批准R5/R8的无损背景、原配乐、字体和可替换标题合成器。运行 `python3 scripts/bookends.py --title 课程名称 --subtitle 可选副标题 --out 当前课程/project/assets/brand/bookends` 生成当课片段及1080p30适配副本，不再要求开发者工作区的course-bookends目录。背景、Logo、动作和配乐沿用批准版本；只有课名和可选副标题变化，生成后检查标题及声音衔接。历史母版工程只用作来源记录，不作为新安装的运行依赖。
+本发布包内置已批准R5/R8的无损背景、原配乐、字体和可替换标题合成器。运行 `python3 scripts/bookends.py --title 课程名称 --subtitle 可选副标题 --out 当前课程/project/assets/brand/bookends` 生成当课片段及1080p30适配副本，不再要求开发者工作区的course-bookends目录。背景、Logo、动作和配乐沿用批准版本；只有课名和可选副标题变化，生成后检查标题及声音衔接。
 
 请安装Blender：<https://www.blender.org/download/>，用于打开和修改 `assets/bookends/blender/` 内的R5/R8三维源工程。例行更换课名不必重新渲染三维。随包Blender工程已打包外部图片，包含几何与灯光，不冒称每个原始后期工序都可在Blender单独复刻。
 

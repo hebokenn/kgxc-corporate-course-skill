@@ -4,6 +4,14 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 无界面对话工作流、CourseActorsCute 可爱人物与公共交付工具：插件 0.11.0 / 核心 7.1.0 · 2026-11-26
+
+- **全面切换无界面对话制课流**：移除冗余浏览器表单页 `workbench/static/design.html` 与网页时间轴编辑器 `workbench/static/index.html`，保留本地无头合成页 `/renderer.html` 与 Playwright 导出引擎。全流程（资料读取、结构确认、逐字稿定稿、母版三选一、成片交付与局部返修）直接在 AI 对话中完成。
+- **公共质检与音画对齐脚本（`scripts/`）**：新增公共脚本 `tts_sync.py`（支持 16/24/32-bit WAV，兼容 `Qwen3-TTS` 24-bit 输出的精确时长探测与尾音能量检查，修复 `wave` 模块 24-bit 读取 `ValueError`）与 `verify_delivery.py`（自动校验分辨率、帧率、音频采样率、字幕零标点单行格式、帧 0 封面 MAE 与 `attached_pic` 嵌入、尾帧黑帧）；同步新增 `motion_gallery.py`（基于 PIL 合成演示图，不依赖已删除的静态 PNG 人物原图）。
+- **全面统一 `CourseActorsCute` 3.3 头身可爱矢量人物引擎**：`workbench/motion/actors_v3_cute.js`（`window.CourseActorsCute`）取代过往整张静态 PNG 人物及旧版 `acting.js`，按 `roles.json`（`kgxc-character-roles/2`）区分讲师、员工制服（`brandRed`/`mintTeal` 主题）与便装顾客，新增 `hairStyle` 与 `stage` 动态分层支持。
+- **GitHub 主页清理、全新 v7.1.0 宣传片与历史版本独立归档页**：主仓库 [README.md](../README.md) 与 [GitHub Pages 主页](index.html) 全面清理旧版编辑器界面截图、静态人物说明与历史样片；全新制作发布 44.19 秒 `v7.1.0` 宣传片（`Qwen3-TTS` `didi`/`pipi` 双人对话 + `teaching-native-v1` 原库音效 + `CourseActorsCute` + 16 套明亮浅色板）及 3 张架构/角色/色板展示图；全部历史版本演示、旧截图与 17 支老样片统一移入独立归档页 [ARCHIVE.md](ARCHIVE.md) 与 [archive.html](archive.html)。
+- **测试与验证范围**：完成发行仓全部 567 项 Python 自动化测试（567 ran, 3 skipped, 0 failures/0 errors），修复模型路由与测试基线以对齐 `codex-chatgpt / gpt-6.1-sol` 与 `CourseActorsCute`；完成 `verify_delivery.py` 对新宣传片全项校验与逐帧人工/脚本复核；DSH 插件桌面实机点击继续单独跟踪。
+
 ## 精简系列课工作流、16 套明亮浅色板与自查验收：插件 0.10.0 / 核心 7.0.0 · 2026-11-24
 
 - **多集系列课统一批次与母版三选一**：新增 [7.0.0 精简高效工作流规范](../skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md)。含多支视频及讲义精要、章节测验题库、A4 可打印手写作业的系列课按统一批次推进；`workbench/storyboard.py` 新增 `template_masters` 与 `segments[].template_id` 校验，每类内容母版提供 3 套实质不同方案供用户定调，定调后各段输出 1 套最优完整镜头方案。未启用母版的历史工程保持逐段三备选兼容。

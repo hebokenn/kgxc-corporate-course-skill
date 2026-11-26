@@ -1,10 +1,10 @@
-# 课程动效展示
+# 课程展示与历史样片归档
 
-[回到仓库首页](../README.md) · [下载全部视频](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-v1.zip) · [下载可编辑工程](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v5.0.0/kgxc-course-effects-17-editable-v1.zip)
+[回到仓库首页](../README.md) · [在线查看 v7.1.0 新版宣传页](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [历史版本与旧版宣传片归档](ARCHIVE.md) · [动效使用说明](MOTION.md)
 
-**[观看新版宣传片](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 42 秒新版 MP4](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-story-trailer-42.mp4) · [64 秒动效鼓点版](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [100 种逐项动效图谱](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip) · [新版动效使用说明](MOTION.md)
+> **版本说明**：本页下方保存自 `v5.0.0` / `v6.9.8` 的 17 支历史样片与旧版宣传片链接，仅供对照过往视觉风格；最新 `7.1.0` 无界面对话流、`CourseActorsCute` 与 16 套明亮浅色板展示见 [GitHub Pages 新版演示](https://hebokenn.github.io/kgxc-corporate-course-skill/) 与 [`docs/media/v71/kgxc-v71-promo.mp4`](media/v71/kgxc-v71-promo.mp4)。
 
-42 秒新版用虚构耳机售后贯穿场景，演示 F 型扫读、交接动作的预备与落定，并沿真实 DSH 界面展示从资料到成片的七个制作阶段。
+[历史 42 秒旧版 MP4 (v6.9.8)](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-story-trailer-42.mp4) · [64 秒动效鼓点版 (v6.9.8)](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-kinetic-showreel.mp4) · [100 种逐项动效图谱 (v6.9.8)](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v6.9.8/kgxc-motion-actions-100.zip)
 
 ## 历史展示 · 17 支独立样片
 

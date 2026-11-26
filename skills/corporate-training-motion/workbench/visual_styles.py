@@ -63,7 +63,14 @@ def build(recipe,scene,style):
   allowed={'customer':['C01','C02','C03'],'staff':['S01','S02'],'host':['M1','S01','S02','COACH']}
   if identity not in allowed[role]:raise ValueError('人物身份与当前岗位不匹配 '+role)
   aid=data.get('roleAssets',{}).get(identity)
-  if not aid:raise ValueError('人物风格必须先 stage-style-assets 绑定原版门店角色，不能退回通用人')
+  if not aid:
+   if data.get('actorEngine')=='CourseActorsCute':
+    char_role={'customer':'customer','staff':'store_staff','host':'store_manager'}[role]
+    preset={'customer':'cust_jacket','staff':'staff_bun','host':'manager_male'}[role]
+    height=590*scale;width=220*scale
+    n=b.group(k,x,y,[],width,height,groundContact=[width/2,height],textExclusion=True,contentColorReason='可动人物本色，区别于教学画布色板',vectorActor=dict(identity=identity,preset=preset,characterRole=char_role,gesture=pose,facing=[dict(frame=a,yaw=0)],walks=[]))
+    c.append(n);return n
+   raise ValueError('人物风格必须先 stage-style-assets 绑定原版门店角色，不能退回通用人')
   provenance=data.get('roleProvenance',{}).get(identity,{})
   if not provenance.get('visibleBox') or not provenance.get('imageSize'):raise ValueError('人物缺少可见轮廓与脚底锚点，重新 stage-style-assets')
   ix,iy,ex,ey=provenance['visibleBox'];iw,ih=provenance['imageSize'];height=590*scale;width=height*(ex-ix)/(ey-iy)
@@ -283,17 +290,18 @@ def stage_style_assets(course,style_id,skill_root):
     if not p.is_dir():raise ValueError('先建立当前课程project目录')
     styles=registry()
     if style_id not in styles:raise ValueError('未知风格 '+style_id)
-    surface=styles[style_id].get('surface','vector-clean');root=Path(skill_root);base=root/'assets/role-surfaces-v1';data=dict(roleAssets={},roleProvenance={});assets=[]
-    for identity in ['M1','S01','S02','COACH','C01','C02','C03']:
-        source=base/(identity+'-'+surface+'.png')
-        if not source.exists():source=base/(identity+'-original.png')
-        if not source.exists():raise ValueError('缺少已批准人物的实际材质衍生图 '+identity)
-        digest=hashlib.sha256(source.read_bytes()).hexdigest();dest=p/'assets/style-library'/(digest[:12]+'-'+source.name);dest.parent.mkdir(parents=True,exist_ok=True)
-        if dest.exists() and hashlib.sha256(dest.read_bytes()).hexdigest()!=digest:raise ValueError('课程素材已被编辑，保留原件并使用新版本')
-        if not dest.exists():shutil.copy2(source,dest)
-        from PIL import Image
-        im=Image.open(source);visible=im.getchannel('A').point(lambda x:255 if x>8 else 0).getbbox()
-        aid='role-'+identity+'-'+digest[:12];assets.append(dict(id=aid,path=str(dest.relative_to(p))));data['roleAssets'][identity]=aid;data['roleProvenance'][identity]=dict(masterIdentity=identity,sourceFile=source.name,sha256=digest,imageSize=list(im.size),visibleBox=list(visible),uniform='KG' if identity in ['M1','S01','S02'] else 'MyCoach' if identity=='COACH' else 'customer')
+    surface=styles[style_id].get('surface','vector-clean');root=Path(skill_root);base=root/'assets/role-surfaces-v1';data=dict(roleAssets={},roleProvenance={},actorEngine='CourseActorsCute',actorRuntime='workbench/motion/actors_v3_cute.js');assets=[]
+    if base.is_dir():
+        for identity in ['M1','S01','S02','COACH','C01','C02','C03']:
+            source=base/(identity+'-'+surface+'.png')
+            if not source.exists():source=base/(identity+'-original.png')
+            if not source.exists():raise ValueError('缺少已批准人物的实际材质衍生图 '+identity)
+            digest=hashlib.sha256(source.read_bytes()).hexdigest();dest=p/'assets/style-library'/(digest[:12]+'-'+source.name);dest.parent.mkdir(parents=True,exist_ok=True)
+            if dest.exists() and hashlib.sha256(dest.read_bytes()).hexdigest()!=digest:raise ValueError('课程素材已被编辑，保留原件并使用新版本')
+            if not dest.exists():shutil.copy2(source,dest)
+            from PIL import Image
+            im=Image.open(source);visible=im.getchannel('A').point(lambda x:255 if x>8 else 0).getbbox()
+            aid='role-'+identity+'-'+digest[:12];assets.append(dict(id=aid,path=str(dest.relative_to(p))));data['roleAssets'][identity]=aid;data['roleProvenance'][identity]=dict(masterIdentity=identity,sourceFile=source.name,sha256=digest,imageSize=list(im.size),visibleBox=list(visible),uniform='KG' if identity in ['M1','S01','S02'] else 'MyCoach' if identity=='COACH' else 'customer')
     if surface in ['brushed-metal','clay-matte','lowpoly-facets','clear-acrylic']:
         source=root/'assets/material-heroes-v1'/(surface+'.png')
         if not source.exists():raise ValueError('尚未完成真实本地3D材质渲染 '+surface)

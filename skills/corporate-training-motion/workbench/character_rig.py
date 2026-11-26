@@ -94,6 +94,7 @@ def prepare(identity,source,destination):
 def stage(identity,project,skill_root):
     p=Path(project);p=p if (p/'workbench.json').exists() else p/'project'
     source=Path(skill_root)/'assets/characters/kgxc-customers-v1'/(identity+'-full-v1.png')
+    if not source.is_file():raise ValueError('已移除旧版静态 PNG 人物；请统一使用 workbench/motion/actors_v3_cute.js (CourseActorsCute)')
     version=hashlib.sha256((sha(source)+sha(__file__)).encode()).hexdigest()[:10];folder=p/'assets/character-rigs'/(identity+'-'+version)
     rig=prepare(identity,source,folder);assets=[]
     for key,file in rig['files'].items():

@@ -1,6 +1,6 @@
-# DSH 课程工作台 0.10.0 · 核心 7.0.0
+# DSH 课程工作台 0.11.0 · 核心 7.1.0
 
-> 核心 7.0.0 精简工作流（多集系列课统一批次、内容母版三选一、16 套精选明亮浅色板、产出前实质自查验收与最小范围局部回改）支持在 **Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf** 等主流支持 Agent Skill 规范的宿主下直接运行，不依赖 DSH 专属插件；DSH 课程工作台继续沿用原有交互与兼容历史工程。详见 [7.0.0 精简高效工作流规范](../skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md)。
+> 自 7.1.0 起，主流交互已演进为**对话优先的无界面工作流**：主流 Agent Skill 宿主（**Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf**）全程通过自然对话完成立项、大纲/逐字稿、母版三选一与局部回改；冗余浏览器表单 `design.html` 与网页时间轴编辑器 `index.html` 已从正式工作流移除，仅保留无界面 `/renderer.html` 合成渲染与公共质检工具 `tts_sync.py` / `verify_delivery.py`。DSH 课程工作台与历史工作流说明保留如下以便升级对照，过往网页工作台截图归档于 [历史版本归档](ARCHIVE.md)。详见 [7.0.0 精简高效工作流规范](../skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md)。
 
 默认先看当前课程、阶段、实际进度与可用小样。「查看全部阶段」展开阶段导航；换课等操作在「课程管理」。确认与检查记录按需展开，讲稿、小样、成片仍由右侧原生 AI 问答确认。
 

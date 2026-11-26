@@ -30,7 +30,10 @@ class AudioArrangementTests(unittest.TestCase):
 
     def reviewer_result(self, stage, run, sequence=True):
         packet=self.review.packet(stage,run)['packet'];frames=packet['evidence']['frames']
-        refs=[dict(method='frames',sha256=f['sha256'],time=f['time']) for f in (frames if sequence else frames[:1])]
+        selected=[];seen_t=set()
+        for f in (frames if sequence else frames[:1]):
+            if f['time'] not in seen_t:selected.append(f);seen_t.add(f['time'])
+        refs=[dict(method='frames',sha256=f['sha256'],time=f['time']) for f in selected]
         refs.append(dict(method='media_probe',sha256=packet['artifact_sha256']))
         return dict(binding=packet['binding'],learner=dict(about='当前可见画面',what_it_said='只复述画面可见内容，不推断未听口播',learned=['可见核对关系'],confusions=[]),
                     findings=[],items=[dict(id=c['id'],verdict='通过',reason='仅为合成媒体契约测试',evidence=copy.deepcopy(refs)) for c in packet['checklist']],
@@ -47,7 +50,9 @@ class AudioArrangementTests(unittest.TestCase):
         self.blind_submit(stage,run,result)
         packet=self.review.producer_packet(stage,run)['packet']
         refs=[dict(quote=packet['input']['text'],source_id='S',source_quote=packet['evidence']['sources'][0]['text'],locator='正文')]
-        refs.extend(dict(sha256=f['sha256'],time=f['time']) for f in packet['evidence']['frames'])
+        seen_t=set()
+        for f in packet['evidence']['frames']:
+            if f['time'] not in seen_t:refs.append(dict(sha256=f['sha256'],time=f['time']));seen_t.add(f['time'])
         refs.extend(dict(sha256=m['sha256']) for m in packet['evidence']['media'])
         agent=self.audit('producer');frames=[f['sha256'] for f in packet['evidence']['frames']]
         self.recorded(stage,run,agent,frames)

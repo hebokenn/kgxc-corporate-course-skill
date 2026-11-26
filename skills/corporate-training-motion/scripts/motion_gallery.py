@@ -34,16 +34,18 @@ def build(destination,modules=False):
     diagnostic=json.loads((p/'workbench.json').read_text());diagnostic['motionPolicy']['semanticRequired']=False;atomic(p/'workbench.json',diagnostic)
     marker=json.loads((p/'motion-contract.json').read_text());marker.update(semanticRequired=False,purpose='silent technical gallery');atomic(p/'motion-contract.json',marker)
     (p/'assets/detail.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="900" height="450"><rect width="900" height="450" fill="#e5ebd9"/><rect x="70" y="70" width="310" height="300" rx="25" fill="#3c8170"/><circle cx="650" cy="220" r="130" fill="#d9ad60"/><path d="M70 70L380 370M380 70L70 370" stroke="#ffffff" stroke-width="15"/><text x="650" y="240" text-anchor="middle" font-size="72" fill="#183f3c">128</text></svg>')
-    assets=[dict(id='detail',path='assets/detail.svg')]
-    for ident,name in [('m1','M1-repaired.png'),('m1-open','M1-speaking-open.png'),('m1-blink','M1-blink.png'),('kg','kg-original.png')]:
-        shutil.copy2(ROOT/'assets/profiles/kgxc'/name,p/'assets'/name);assets.append(dict(id=ident,path='assets/'+name))
-    from company_characters import stage_company
-    roles={}
-    for identity in ['M1','S01','S02','COACH']:
-        staged=stage_company(identity,root,ROOT);roles[identity]=staged['data'];assets.extend(staged['assets'])
-    for identity in ['C01','C02','C03']:
-        name=identity+'-full-v1.png';shutil.copy2(ROOT/'assets/characters/kgxc-customers-v1'/name,p/'assets'/name);aid='customer-'+identity;assets.append(dict(id=aid,path='assets/'+name));from PIL import Image
-        size=Image.open(p/'assets'/name).size;roles[identity]=dict(identity=identity,headAsset=aid,sourceSize=list(size))
+    from PIL import Image, ImageDraw
+    shutil.copy2(ROOT/'assets/profiles/kgxc/kg-original.png',p/'assets/kg-original.png')
+    assets=[dict(id='detail',path='assets/detail.svg'),dict(id='kg',path='assets/kg-original.png')]
+    def synth_portrait(ident,color,label,size=(400,600)):
+        out=p/'assets'/(ident+'.png');im=Image.new('RGBA',size,(0,0,0,0));d=ImageDraw.Draw(im)
+        d.rounded_rectangle((40,40,size[0]-40,size[1]-40),radius=36,fill=color);d.text((80,100),label,fill='#ffffff')
+        im.save(out);assets.append(dict(id=ident,path='assets/'+out.name));return ident
+    for ident,col,lbl in [('m1','#2c313c','Manager'),('m1-open','#2c313c','Manager Open'),('m1-blink','#2c313c','Manager Blink'),('s01','#3b71c6','Staff 01'),('s02','#3b71c6','Staff 02'),('coach','#232833','Coach')]:
+        synth_portrait(ident,col,lbl,(1115,1411) if ident.startswith('m1') else (1024,1536))
+    roles=dict(M1=dict(identity='M1',headAsset='m1',logoAsset='kg'),S01=dict(identity='S01',headAsset='s01',logoAsset='kg'),S02=dict(identity='S02',headAsset='s02',logoAsset='kg'),COACH=dict(identity='COACH',headAsset='coach'))
+    for identity,col in [('C01','#7b8da6'),('C02','#c97a63'),('C03','#6b8f7a')]:
+        aid='customer-'+identity;synth_portrait(aid,col,identity,(400,600));roles[identity]=dict(identity=identity,headAsset=aid,sourceSize=[400,600])
     # The detail image is the same independently authored iPhone geometry as the course prop.
     from content_assets import phone
     import importlib.util

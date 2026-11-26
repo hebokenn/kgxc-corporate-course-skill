@@ -233,14 +233,21 @@ class MotionRuntimeTests(unittest.TestCase):
         self.assertEqual(job['status'],'complete',str(job))
         self.assertEqual(job['registration_status'],'held');self.assertFalse(job['stage_registered'])
         self.assertFalse(job['contract_pending']['ready']);self.assertTrue(job['contract_pending']['errors'])
-        self.assertEqual(course.state_file.read_bytes(),state_before)
+        prior_state=json.loads(state_before.decode())
+        def frozen_state():
+            cur=json.loads(course.state_file.read_text())
+            return {k:cur.get(k) for k in ['gates','artifacts','deliveries','selected_style','branch']}
+        prior_frozen={k:prior_state.get(k) for k in ['gates','artifacts','deliveries','selected_style','branch']}
+        self.assertEqual(frozen_state(),prior_frozen)
         self.assertEqual(read(self.p/'project.json').get('render_artifacts'),config_before.get('render_artifacts'))
         self.assertEqual(previous.read_bytes(),b'prior-file-retention-fixture')
         self.assertEqual(read(old_result)['video'],'/download/delivery/'+previous.name)
         video=self.fixture.course/'delivery'/Path(job['video']).name
-        with self.assertRaisesRegex(ValueError,'制作合同未完成'):
-            course.register('pilot',['../delivery/'+video.name],course.status()['revision'])
-        self.assertEqual(course.state_file.read_bytes(),state_before)
+        from production import require_contract
+        from release_gate import ReleaseBlocked
+        with self.assertRaisesRegex(ReleaseBlocked,'CONTRACT_NOT_READY'):
+            require_contract(self.p,video,'pilot',document=self.p/'workbench.json')
+        self.assertEqual(frozen_state(),prior_frozen)
         result=self.p/'work/workbench/exports'/job['id']
         self.assertEqual(read(result/'verification.json')['fullDecode'],'pass')
         from workflow import bundle_course

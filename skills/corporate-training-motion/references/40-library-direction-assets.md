@@ -109,7 +109,7 @@ python3 SKILL_DIR/scripts/render_blender_asset.py --model SKILL_DIR/assets/open-
 python3 SKILL_DIR/scripts/export_retail_assets.py --out 新SVG目录 --png
 ```
 
-另有 `assets/role-surfaces-v1/`：7位原批准人物的56份本地材质衍生PNG，附源图、身份、KG/MyCoach与哈希；原图保持独立。`scripts/stage_surface_assets.py --out 新目录` 可从同一人物原图重新制作纸本、水彩、漫画和像素处理，使用本地Pillow/OpenCV，不新造人物。
+人物统一采用 `workbench/motion/actors_v3_cute.js`（`CourseActorsCute`，3.3 头身可爱可动人物 + 方案 B 行走转侧身）；旧版静态人物衍生图集 `assets/role-surfaces-v1/` 已随旧版静态人物一并清理。
 
 `assets/material-heroes-v1/` 的4份PNG和对应blend分别是金属设备分层、AirPods/Apple Watch黏土陈列、完整门店沙盘、透明斜置设备面板；`scripts/build_material_heroes.py` 可在本地Blender重新构建。使用 `blender -b --python-exit-code 1 --python SCRIPT -- 新目录`；脚本异常须退出失败，不能只凭Blender进程退出码0认为已更新素材。生成后检查实际图像和素材哈希。公开模型为独立教学示意，不是产品CAD或拆机规格。
 

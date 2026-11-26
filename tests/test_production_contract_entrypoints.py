@@ -85,19 +85,23 @@ class ProductionContractEntrypointsTests(unittest.TestCase):
         self.assertFalse((self.project / 'production-contract-required.json').exists())
 
     def test_checkpoint_rejects_missing_contract_before_copy_or_registration(self):
+        from ai_review import Review
+        from release_gate import ReleaseBlocked
         video = self.video()
         ensure(self.project)
+        Review(self.course).ensure()
         (self.project / 'production-contract.json').unlink()
         before = self.course.state_file.read_bytes()
         for gate in ['pilot', 'final']:
             with self.subTest(gate=gate):
-                with self.assertRaisesRegex(ValueError, '制作合同未完成'):
+                with self.assertRaisesRegex(ReleaseBlocked, 'CONTRACT_NOT_READY'):
                     self.course.register(gate, ['../delivery/' + video.name], read(self.course.state_file)['revision'])
                 self.assertEqual(self.course.state_file.read_bytes(), before)
                 self.assertFalse((self.project / 'qa/reviews').exists())
         self.assertFalse((self.project / 'production-contract.json').exists())
 
     def test_registered_current_video_cannot_become_legacy_by_deleting_its_contract(self):
+        from release_gate import ReleaseBlocked
         video = self.video()
         ensure(self.project)
         state = read(self.course.state_file)
@@ -107,17 +111,19 @@ class ProductionContractEntrypointsTests(unittest.TestCase):
         atomic(self.course.state_file, state)
         (self.project / 'production-contract.json').unlink()
         from production import require_contract
-        with self.assertRaisesRegex(ValueError, '制作合同未完成'):
+        with self.assertRaisesRegex(ReleaseBlocked, 'CONTRACT_NOT_READY'):
             require_contract(self.project, video)
 
     def test_workflow_checkpoint_cli_uses_the_same_gate(self):
+        from ai_review import Review
         video = self.video()
+        Review(self.course).ensure()
         before = read(self.course.state_file)
         result = subprocess.run([sys.executable, '-B', str(SKILL / 'scripts/workflow.py'), 'checkpoint',
                                  str(self.root), '--gate', 'final', '--artifact', '../delivery/' + video.name],
                                 capture_output=True, text=True, check=False)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn('制作合同未完成', result.stderr)
+        self.assertIn('CONTRACT_NOT_READY', result.stderr)
         self.assertEqual(read(self.course.state_file), before)
         self.assertFalse((self.project / 'qa/reviews').exists())
 
@@ -134,7 +140,11 @@ class ProductionContractEntrypointsTests(unittest.TestCase):
         self.assertTrue(all({'id', 'requirement', 'message', 'evidence'} <= set(error) for error in report['errors']))
 
     def test_desktop_save_rejects_contract_before_copy_or_receipt(self):
+        from release_gate import ReleaseBlocked
         video = self.video()
+        video.with_suffix('.srt').write_text('1\n00:00:00,000 --> 00:00:01,000\n示例字幕\n')
+        cover = self.root / 'delivery/cover.png'; cover.write_bytes(b'png-fixture')
+        atomic(self.project / 'qa/cover-review.json', dict(coverPath='../delivery/cover.png', coverSha256=sha(cover)))
         ensure(self.project)
         status = dict(stage='complete', course_id='a' * 32, title='制作合同入口夹具', revision=9,
                       gates=[dict(id='final', status='delivered')], jobs=[],
@@ -147,7 +157,7 @@ class ProductionContractEntrypointsTests(unittest.TestCase):
             def status(self): return copy.deepcopy(status)
             def relative(self, name): return course.relative(name)
         destination = self.base / 'desktop'
-        with self.assertRaisesRegex(ValueError, '制作合同未完成'):
+        with self.assertRaisesRegex(ReleaseBlocked, 'CONTRACT_NOT_READY'):
             deliver(FinishedSurface(), self.workspace, destination)
         self.assertFalse(destination.exists())
         self.assertFalse(receipt_file(status['course_id']).exists())

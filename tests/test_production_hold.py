@@ -84,7 +84,7 @@ class ProductionHoldTests(unittest.TestCase):
                 self.assertTrue((directory/'ready').exists(),job)
                 (fixture.p/'ai-review.json').write_text(json.dumps(dict(hold=dict(held=True,reason='合成执行监督暂停'))))
                 deadline=time.monotonic()+5
-                while time.monotonic()<deadline and job['status'] not in ['cancelled','failed','complete']:time.sleep(.02)
+                while time.monotonic()<deadline and (job['status'] not in ['cancelled','failed','complete'] or not (directory/'result.json').exists()):time.sleep(.02)
                 self.assertEqual(job['status'],'cancelled',job)
                 self.assertEqual(json.loads((directory/'result.json').read_text())['status'],'cancelled')
                 self.assertEqual((directory/'video.mp4').read_bytes(),b'partial-owned-render')

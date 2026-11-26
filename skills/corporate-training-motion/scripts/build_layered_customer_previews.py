@@ -32,18 +32,18 @@ def build(out, preview_dir=None):
             blinks=[[48,51,54]]),project,ROOT)
         nodes.append(item['node'])
     (out/'designs.json').write_text(json.dumps(nodes,ensure_ascii=False,indent=2)+'\n')
-    runtime=ROOT/'workbench/motion/acting.js'
-    html='''<!doctype html><canvas id="c" width="1280" height="720"></canvas><script src="/acting.js"></script><script>
+    runtime=ROOT/'workbench/motion/actors_v3_cute.js'
+    html='''<!doctype html><canvas id="c" width="1280" height="720"></canvas><script src="/actors_v3_cute.js"></script><script>
 const nodes=NODES,c=document.querySelector('canvas'),ctx=c.getContext('2d');
 window.draw=(frame,selected=null)=>{ctx.clearRect(0,0,c.width,c.height);const active=selected?[nodes.find(n=>n.id===selected)]:nodes;
 CourseActors.prepare(active,frame);const states={};for(const original of active){const n=selected?{...original,x:225,y:580,scaleX:1.38,scaleY:1.38}:original;
-ctx.save();const g=CourseActors.motionState(n,frame);ctx.translate(g.x,g.y);ctx.scale(n.scaleX,n.scaleY);states[n.id]=CourseActors.paint(ctx,n,frame,{},new Set());ctx.restore();}
+ctx.save();const g=CourseActors.motionState(n,frame);ctx.translate(g.x??n.x,n.y);ctx.scale(n.scaleX,n.scaleY);states[n.id]=CourseActors.paint(ctx,n,frame,{},new Set());ctx.restore();}
 return {png:c.toDataURL(),states};};window.ready=true;
 </script>'''.replace('NODES',json.dumps(nodes))
     class Handler(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
-            data=runtime.read_bytes() if self.path=='/acting.js' else html.encode()
-            self.send_response(200);self.send_header('Content-Type','text/javascript' if self.path=='/acting.js' else 'text/html');self.end_headers();self.wfile.write(data)
+            data=runtime.read_bytes() if self.path=='/actors_v3_cute.js' else html.encode()
+            self.send_response(200);self.send_header('Content-Type','text/javascript' if self.path=='/actors_v3_cute.js' else 'text/html');self.end_headers();self.wfile.write(data)
         def log_message(self,*args):pass
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler)
     threading.Thread(target=server.serve_forever,daemon=True).start()

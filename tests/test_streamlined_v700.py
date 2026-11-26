@@ -34,9 +34,10 @@ def _make_option(oid, method, opening, action, result):
 
 
 class StreamlinedV700Tests(unittest.TestCase):
-    def test_version_is_700(self):
-        self.assertEqual(workflow.VERSION, '7.0.0')
-        self.assertEqual((ROOT / 'VERSION').read_text(encoding='utf-8').strip(), '7.0.0')
+    def test_version_matches_manifest(self):
+        expected = (ROOT / 'VERSION').read_text(encoding='utf-8').strip()
+        self.assertEqual(expected, '7.1.0')
+        self.assertEqual(workflow.VERSION, expected)
 
     def test_sixteen_bright_light_palettes_in_random_pool_and_dark_opt_in(self):
         cat = course_palette.catalog()

@@ -214,8 +214,10 @@ class AIReviewTests(unittest.TestCase):
         self.review.call_result('script',run,'c1',dict(totalTokens=321),error='重复回调')
         node=self.review.node_view('script');self.assertEqual(node['run']['id'],newer);self.assertEqual(node['usage']['totalTokens'],321)
     def test_only_explicit_report_confirmation_creates_user_approval(self):
+        from unittest.mock import patch
         run=self.passing_script();self.assertFalse(gate_errors(self.course,'script'));self.assertFalse(approved(self.course,'script'))
-        value=self.studio.action('review-approve',dict(baseRevision=self.course.status()['revision'],stage='script',run_id=run))
+        with patch('production.stage_release',return_value={'allow_release':True}):
+            value=self.studio.action('review-approve',dict(baseRevision=self.course.status()['revision'],stage='script',run_id=run))
         self.assertTrue(value['ai_review']['nodes']['script']['user_confirmed']);self.assertFalse(value['ai_review']['nodes']['final']['user_confirmed'])
         self.assertEqual(value['deliveries'],[])
     def test_visual_repair_increments_document_revision_and_preserves_new_manual_edits(self):

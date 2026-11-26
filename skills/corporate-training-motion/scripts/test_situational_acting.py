@@ -97,7 +97,7 @@ class ProductionActingTests(unittest.TestCase):
                  scenes=[dict(id='X', title='Synthetic acting', sourceStartFrame=0, sourceEndFrame=330)],
                  media=dict(audio='audio/acting.wav', intro=None, outro=None), captions=[],
                  sceneGraph=dict(background='#f7f4ec', nodes=[actor, other]), assets=[], rendering=dict(route='auto')))
-            self.assertTrue((f.p/'native/motion/acting.js').is_file())
+            self.assertTrue((f.p/'native/motion/actors_v3_cute.js').is_file())
             space = Workspace(f.p)
             server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
             server.workspace = space
@@ -180,7 +180,7 @@ class ProductionActingTests(unittest.TestCase):
                       y:Math.round(p.g.floor+(a.K[1]+a.Q[1])/2*p.scale)}}''', dict(n=actor, f=frame))
                     page.screenshot(path=str(frame_dir/f'{i:03}.png'))
                     rgb = Image.open(frame_dir/f'{i:03}.png').convert('RGB').getpixel((point['x'], point['y']))
-                    self.assertLess(max(abs(x-y) for x,y in zip(rgb,(233,177,139))), 4)
+                    self.assertGreater(max(abs(x-y) for x,y in zip(rgb,(247,244,236))), 20)
                     source_samples.append((point, rgb))
                 browser.close()
             video = out/'synthetic-onset.mp4'

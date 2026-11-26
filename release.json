@@ -1,5 +1,5 @@
 {
-  "version": "7.0.0",
+  "version": "7.1.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -10,10 +10,10 @@
     "elearning-course-design"
   ],
   "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.10.0",
+  "plugin_version": "0.11.0",
   "skill_versions": {
-    "corporate-training-motion": "7.0.0",
+    "corporate-training-motion": "7.1.0",
     "elearning-course-design": "2.1.0"
   },
-  "release_status": "7.0.0 streamlined multi-episode workflow, template-master storyboard, 16 bright light palettes, and self-check gate; desktop DSH E2E tracked separately"
+  "release_status": "7.1.0 headless dialogue workflow, CourseActorsCute vector cast, public tts_sync/verify_delivery CLIs, and refreshed showcase with isolated historical archive; desktop DSH E2E tracked separately"
 }

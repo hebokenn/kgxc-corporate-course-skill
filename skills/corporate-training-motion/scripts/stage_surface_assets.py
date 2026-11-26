@@ -10,6 +10,7 @@ def build(skill,out):
  skill=Path(skill);out=Path(out);out.mkdir(parents=True,exist_ok=True);base=skill/'assets/profiles/kgxc';kg=Image.open(base/'kg-original.png').convert('RGBA');rows=[]
  sources={'M1':base/'M1-repaired.png','S01':base/'blue-cast.png','S02':base/'blue-cast.png','COACH':base/'MyCoach-reference-2D.png','C01':skill/'assets/characters/kgxc-customers-v1/C01-full-v1.png','C02':skill/'assets/characters/kgxc-customers-v1/C02-full-v1.png','C03':skill/'assets/characters/kgxc-customers-v1/C03-full-v1.png'}
  for identity,file in sources.items():
+  if not file.is_file():raise ValueError('已移除旧版静态 PNG 人物；人物演绎请统一使用 workbench/motion/actors_v3_cute.js (CourseActorsCute)')
   im=Image.open(file).convert('RGBA')
   if identity=='M1':
    mark=kg.resize((70,round(70*251/321)),Image.Resampling.LANCZOS);im.alpha_composite(mark,(559,458))

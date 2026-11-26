@@ -7,7 +7,9 @@ def stage_pose(identity,project,skill_root):
     if identity!='C01':raise ValueError('该角色还没有已制作的接触姿态，不能复用另一人的手')
     p=Path(project);p=p if (p/'workbench.json').exists() else p/'project'
     if not (p/'workbench.json').is_file():raise ValueError('先建立实际课程工作台')
-    base=Path(skill_root)/'assets/characters/kgxc-customers-v1/poses';source=base/'C01-phone-use-v2.json';pose=json.loads(source.read_text())
+    base=Path(skill_root)/'assets/characters/kgxc-customers-v1/poses';source=base/'C01-phone-use-v2.json'
+    if not source.is_file():raise ValueError('已移除旧版静态 PNG 人物及接触姿态；请统一使用 workbench/motion/actors_v3_cute.js (CourseActorsCute)')
+    pose=json.loads(source.read_text())
     sha=lambda f:hashlib.sha256(f.read_bytes()).hexdigest()
     folder=p/'assets/contact-poses'/('C01-'+sha(source)[:10]);folder.mkdir(parents=True,exist_ok=True);assets=[]
     for key in ['master','foreground']:

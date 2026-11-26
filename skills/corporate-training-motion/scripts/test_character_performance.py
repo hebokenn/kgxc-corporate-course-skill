@@ -56,27 +56,29 @@ class StateEvidenceTests(unittest.TestCase):
    result=verify(video,[request],captures,p/'proof');self.assertEqual(result['status'],'fail');self.assertFalse(result['events'][0]['objectStateChanged'])
 
 class ActualWorkbenchPerformanceTests(unittest.TestCase):
- def test_two_own_profiles_gaze_reactions_editing_and_reverse_seek(self):
+ def test_legacy_static_performance_staging_rejects_and_cute_actors_seek_and_edit(self):
+  import math
   from playwright.sync_api import sync_playwright
+  from acting import stage as stage_cute_actor
+  from company_characters import validate_uniforms
   f=fixture.NewCourseTests();f.setUp()
   try:
-   all_assets=[];materials=[]
-   for i,who in enumerate(['C01','S01']):
-    item=stage(who,f.p,ROOT);data=item['data'];data['performance'].update(keys=[dict(frame=0,values=dict(concern=1,gazeX=1 if i==0 else-1)),dict(frame=14,values=dict(concern=0,relief=.7,gazeY=.65,leftFore=24)),dict(frame=29,values=dict(relief=.8,gazeY=0,leftFore=0))],blinks=[[17,20,23]],targets=[dict(frame=0,id='other-'+str(i))]);all_assets.extend(item['assets']);materials.append(dict(id='actor-'+str(i),kind='actor',sceneId='X',x=110+i*950,y=210,scale=.8,data=data))
-   # Targets are stable graph objects, not unbound descriptive strings.
-   graph=dict(nodes=[dict(id='other-'+str(i),type='rect',sceneId='X',x=650+i*600,y=470,width=100,height=80,fill='#dddddd')for i in range(2)],materials=materials)
-   doc=f.ready(dict(assets=all_assets,rendering=dict(route='auto'),sceneGraph=graph));space=Workspace(f.p);http.server.ThreadingHTTPServer.request_queue_size=128;server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);server.workspace=space;threading.Thread(target=server.serve_forever,daemon=True).start()
+   with self.assertRaisesRegex(ValueError,'CourseActorsCute'):stage('C01',f.p,ROOT)
+   all_assets=[];nodes=[]
+   staff=stage_cute_actor(dict(identity='staff-demo',sceneId='X',characterRole='store_staff',hair='pony',x=1050,floorY=760,height=520,endFrame=30,restYaw=-math.pi/2,speech=[dict(startFrame=10,envelope=[.8]*10)],targets=[dict(frame=0,id='cust-demo')]),f.p,ROOT)
+   cust=stage_cute_actor(dict(identity='cust-demo',sceneId='X',characterRole='customer',hair='short',x=320,floorY=760,height=520,endFrame=30,travel=[dict(startFrame=0,fromX=320,toX=400,restYaw=math.pi/2)]),f.p,ROOT)
+   all_assets.extend(staff['assets']+cust['assets']);nodes.extend([cust['node'],staff['node']])
+   doc=f.ready(dict(assets=all_assets,rendering=dict(route='motion-canvas'),sceneGraph=dict(background='#f7f4ec',nodes=nodes)))
+   validate_uniforms(doc,f.p)
+   space=Workspace(f.p);http.server.ThreadingHTTPServer.request_queue_size=128;server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);server.workspace=space;threading.Thread(target=server.serve_forever,daemon=True).start()
    try:
     with sync_playwright()as pw:
-     browser=pw.chromium.launch(headless=True,**browser_options());page=browser.new_page(viewport=dict(width=1920,height=1080));page.goto(f'http://127.0.0.1:{server.server_port}/renderer.html');page.wait_for_function('window.ready||window.renderError',timeout=60000);self.assertIsNone(page.evaluate('window.renderError||null'))
+     browser=pw.chromium.launch(headless=True,**browser_options());page=browser.new_page(viewport=dict(width=1920,height=1080));page.goto(f'http://127.0.0.1:{server.server_address[1]}/renderer.html');page.wait_for_function('window.ready||window.renderError',timeout=60000);self.assertIsNone(page.evaluate('window.renderError||null'))
      def draw(frame):return page.evaluate('async f=>{const r=window.courseRenderer;await r.drawFrame(f);return {png:r.canvas.toDataURL(),states:r.native.courseWorkbench.objectReceipt()}}',frame)
-     a=draw(0);b=draw(14);self.assertNotEqual(a['png'],b['png']);self.assertEqual(a['states']['actor-0-performance']['performance']['concern'],1);self.assertEqual(b['states']['actor-1-performance']['performance']['gazeY'],.65);self.assertEqual(draw(0)['png'],a['png'])
-     # Existing image-position bindings remain effective for the performed actor.
-     changed=copy.deepcopy(doc);field=next(v for v in changed['fields']if v['objectId']=='actor-0-performance');field['dx']+=80;page.evaluate('async d=>window.courseRenderer.load(d)',changed);self.assertNotEqual(draw(0)['png'],a['png'])
+     a=draw(0);b=draw(14);self.assertNotEqual(a['png'],b['png']);self.assertEqual(b['states']['staff-demo']['actor']['mouthOpen'],.8);self.assertTrue(b['states']['cust-demo']['actor']['walking']);self.assertEqual(draw(0)['png'],a['png'])
+     changed=copy.deepcopy(doc);field=next(v for v in changed['fields']if v['objectId']=='cust-demo');field['dx']+=80;page.evaluate('async d=>window.courseRenderer.load(d)',changed);moved=draw(0);self.assertNotEqual(moved['png'],a['png']);self.assertAlmostEqual(moved['states']['cust-demo']['actor']['hands']['left']['x']-a['states']['cust-demo']['actor']['hands']['left']['x'],80)
      browser.close()
    finally:server.shutdown();server.server_close()
-   changed=copy.deepcopy(doc);node=next(n for n in __import__('authoring').walk(changed['sceneGraph']['nodes'])if n.get('performance'));node['performance']['profile']['sourceSha256']='0'*64
-   with self.assertRaisesRegex(ValueError,'原图已换'):validate_assets(changed,f.p)
   finally:f.tearDown()
 
 if __name__=='__main__':unittest.main()

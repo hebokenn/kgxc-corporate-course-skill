@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '7.0.0'
+VERSION = '7.1.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -1091,10 +1091,11 @@ def service_build():
                    if path.is_file() and path.suffix in {'.py','.js','.html','.css'} and '__pycache__' not in path.parts})
 
 
-def open_course(root, open_browser=True):
+def open_course(root, open_browser=True, force_open=False):
     course = Course(root)
     if not course.state_file.is_file(): raise ValueError('该工程未接入新版流程，旧课请使用原工作台入口')
-    if read(course.state_file).get('preferred_workbench')=='dsh':open_browser=False
+    # Web workbench UI has been retired; keep headless server/API available without popping open browser tabs.
+    open_browser = False
     record = course.project / 'work/workbench-service.json'; server = read(record, {})
     url = server.get('url', '')
     resume_port=0
@@ -1128,18 +1129,18 @@ def open_course(root, open_browser=True):
             time.sleep(.15)
         if not url: raise ValueError('工作台尚未就绪，请查看 ' + str(log))
     opened = False
-    if open_browser: opened = bool(webbrowser.open(url))
     print(course.brief()); print('WORKBENCH_URL=' + url)
     print('WORKBENCH_IDENTITY=' + json.dumps(dict(course_id=identity['course_id'],course_root=str(course.root),version=identity['version'],verified=True),ensure_ascii=False))
     print('WORKFLOW_STATE_URL=' + url + '/api/workflow')
-    print('BROWSER_OPEN_REQUESTED=' + str(open_browser).lower() + '; accepted=' + str(opened).lower())
+    print('WORKBENCH_UI_MODE=headless-only')
+    print('BROWSER_OPEN_REQUESTED=false; accepted=false')
     return url
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__); sub = p.add_subparsers(dest='command', required=True)
     for name in ['start', 'resume', 'status']:
-        a = sub.add_parser(name); a.add_argument('course', type=Path); a.add_argument('--no-open', action='store_true')
+        a = sub.add_parser(name); a.add_argument('course', type=Path); a.add_argument('--no-open', action='store_true'); a.add_argument('--open', action='store_true')
         if name == 'start': a.add_argument('--title', default='新课程'); a.add_argument('--source', type=Path)
         if name == 'status': a.add_argument('--json', action='store_true')
     a = sub.add_parser('design'); a.add_argument('course', type=Path); a.add_argument('--file', type=Path, required=True)
@@ -1184,8 +1185,8 @@ def main():
                 plan['sources'].append(dict(id='SRC-' + sha(dest)[:10], title=source.name,
                     location='../inputs/' + source.name, kind='file', sha256=sha(dest)))
                 course.save_plan(plan, status['revision'])
-        open_course(args.course, not args.no_open)
-    elif args.command == 'resume': open_course(args.course, not args.no_open)
+        open_course(args.course, not args.no_open, force_open=args.open)
+    elif args.command == 'resume': open_course(args.course, not args.no_open, force_open=args.open)
     elif args.command == 'status': print(json.dumps(course.status(), ensure_ascii=False, indent=2) if args.json else course.brief())
     elif args.command == 'planning':print(json.dumps(course.enable_storyboard(course.status()['revision'],args.evidence),ensure_ascii=False,indent=2))
     elif args.command == 'storyboard':print(json.dumps(course.save_storyboard(read(args.file),course.status()['revision']),ensure_ascii=False,indent=2))

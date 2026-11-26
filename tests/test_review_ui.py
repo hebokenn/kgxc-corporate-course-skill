@@ -89,7 +89,7 @@ class ReviewUITests(unittest.TestCase):
         dialog=self.page.get_by_role('dialog',name='原件与逐字稿对照');text=dialog.inner_text()
         for value in ['50%','历史活动安排','已过期，不适用于本次任务','新增理由：帮助应用','虚构示例']:self.assertIn(value,text)
         self.assertTrue(dialog.evaluate('(d)=>d.scrollWidth<=d.clientWidth'))
-        self.page.get_by_role('button',name='关闭，稍后确认',exact=True).click();self.assertFalse(self.page.evaluate('fixtureCoverage.confirmed'))
+        self.page.get_by_role('button',name='关闭',exact=True).click();self.assertFalse(self.page.evaluate('fixtureCoverage.confirmed'))
         self.page.evaluate('coveragePanel.open()');self.page.get_by_role('button',name='请AI生成／更新当前对照',exact=True).click()
         self.page.wait_for_function('events.some(e=>e.host_action==="source-coverage")')
         self.assertFalse(self.page.evaluate('events.some(e=>e.action==="review-approve"||e.review_action==="continue")'))
@@ -199,7 +199,8 @@ class ReviewUITests(unittest.TestCase):
         mutations=[]
         self.page.route('**/api/studio',lambda route:route.fulfill(content_type='application/json',body=json.dumps(data)))
         def mutation(route):
-            mutations.append(route.request.url);route.fulfill(content_type='application/json',body=json.dumps(data))
+            if route.request.method!='GET':mutations.append(route.request.url)
+            route.fulfill(content_type='application/json',body=json.dumps(data))
         self.page.route('**/api/studio/*',mutation)
         self.page.route('**/api/activity',lambda route:route.fulfill(content_type='application/json',body='{}'))
         self.page.route('**/course-file?*',lambda route:route.abort())

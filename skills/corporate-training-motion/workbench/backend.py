@@ -541,6 +541,7 @@ class Workspace:
                     Course(self.root).stage_candidate(key,[str(video.relative_to(self.project.parent)).replace('delivery/','../delivery/',1),str(srt.relative_to(self.project.parent)).replace('delivery/','../delivery/',1)],directory/'document.json',render_context)
                 from release_gate import evaluate,build_context
                 contract=evaluate(self.project,build_context(self.project,key,directory/'document.json',video,entrypoint='backend.export'))
+                contract.setdefault('ready', contract.get('allow_release') is True)
                 atomic(self.project/'qa/release-gate'/(job_id+'.json'),contract)
                 if (self.project/'course-state.json').is_file():Course(self.root).record_release_check(key,contract)
                 contract_pending=contract.get('allow_release') is not True
@@ -726,8 +727,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if path in ['/','/index.html']:
                 if (self.space.project/'course-state.json').is_file() and read(self.space.project/'course-state.json').get('preferred_workbench')=='dsh':
                     return self.json(dict(service='DSH course workbench internal service',message='本课统一从DSH课程工作台插件进入；本地址不再展示独立制课界面。'))
-                return self.file(APP/('design.html' if (self.space.project/'course-state.json').is_file() else 'index.html'))
-            if path=='/edit.html':return self.file(APP/'index.html')
+                return self.json(dict(service='course workbench headless render service',message='工作台网页界面已移除；课程制作通过对话与独立审阅文件完成，本服务仅用于无头渲染与导出。'))
             return self.file(safe(APP,path.lstrip('/')))
         except (BrokenPipeError,ConnectionResetError):pass
         except Exception as exc:self.json(dict(error=str(exc)),404 if isinstance(exc,FileNotFoundError) else 400)

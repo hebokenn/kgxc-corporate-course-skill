@@ -44,7 +44,7 @@ class BlindReviewTests(unittest.TestCase):
 
     def movie(self,stage,color='blue'):
         target=self.project/'media'/f'{stage}.mp4';target.parent.mkdir(exist_ok=True)
-        subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',f'color=c={color}:s=96x64:r=10:d=0.4','-f','lavfi','-i','sine=frequency=440:duration=0.4','-c:v','libx264','-c:a','aac','-shortest','-y',str(target)],check=True)
+        subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',f'color=c={color}:s=96x64:r=30:d=2.0','-f','lavfi','-i','sine=frequency=440:duration=2.0','-c:v','libx264','-c:a','aac','-shortest','-y',str(target)],check=True)
         state=read(self.course.state_file);state.setdefault('artifacts',{})[stage]=[str(target.relative_to(self.project))];atomic(self.course.state_file,state)
         return target
 
@@ -352,8 +352,10 @@ class BlindReviewTests(unittest.TestCase):
         self.studio.save_sections([dict(unit_id='U',body=TEXT+'\n\n第二段：'+TEXT+'\n\n第三段：'+TEXT)],self.course.status()['revision'],self.studio.editor.read()['revision'],official=True)
         from source_coverage_fixture import confirm_fixture_coverage
         confirm_fixture_coverage(self.course)
+        from unittest.mock import patch
         script=self.begin();self.complete('script',script,self.result('script',script));self.review.finish('script',script);self.review.approve('script',script)
-        self.course.confirm('script',self.course.status()['revision'],'合成夹具明确内容确认',actor='qa-operator')
+        with patch('production.stage_release',return_value={'allow_release':True}):
+            self.course.confirm('script',self.course.status()['revision'],'合成夹具明确内容确认',actor='qa-operator')
         self.course.select_branch('video',self.course.status()['revision'],'合成夹具已有视频制作委托',actor='qa-operator')
         self.course.enable_storyboard(self.course.status()['revision'],'合成夹具启用分镜',actor='qa-operator')
         choose_fixture_preferences(self.course)
@@ -380,7 +382,9 @@ class BlindReviewTests(unittest.TestCase):
         self.assertEqual(read(self.course.state_file)['revision'],revision+1)
         self.assertEqual(read(self.course.state_file)['journal'][-1]['event'],'ai_review_storyboard_repaired')
         self.assertEqual((self.project/'qa/ai-review'/run/'repair-1/storyboard.json').read_text(),before)
-        self.complete('storyboard',run,self.result('storyboard',run));finished=self.review.finish('storyboard',run)
+        self.complete('storyboard',run,self.result('storyboard',run))
+        with patch('production.stage_release',return_value={'allow_release':True}):
+            finished=self.review.finish('storyboard',run)
         self.assertTrue(finished['continuation']['authorized']);self.assertFalse(finished['continuation']['requires_user_confirmation'])
         self.assertNotIn('approval',self.review.load()['nodes']['storyboard'])
         self.assertEqual(read(self.course.state_file)['gates']['storyboard']['actor'],'ai-production-preflight')

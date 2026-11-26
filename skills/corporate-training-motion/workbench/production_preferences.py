@@ -10,9 +10,9 @@ from workflow import atomic, read, now, sha
 
 FILENAME = 'production-preferences.json'
 OPTIONS = {
-    'customer': ['V01', 'V02', 'V03', 'new', 'none'],
-    'flower_text': ['key-points', 'minimal', 'off'],
-    'sound_effects': ['native', 'off'],
+    'customer': ['C_M01', 'C_F01', 'V01', 'V02', 'V03', 'new', 'none', 'vector_actor_layered'],
+    'flower_text': ['enabled', 'key-points', 'minimal', 'off'],
+    'sound_effects': ['enabled_teaching_native_v1', 'native', 'off'],
 }
 from layered_customers import catalog
 CUSTOMERS = catalog()
@@ -207,11 +207,11 @@ def review_errors(project, gate, video, document=None):
             errors.append(('花字' if key == 'flower_text' else '音效') + '已启用，但当前视频尚未接入')
         if not enabled and count:
             errors.append(('花字' if key == 'flower_text' else '音效') + '已选择关闭，但当前视频仍有启用事件')
-    if value['choices']['sound_effects'] == 'native' and implemented.get('sfx_count', 0) and implemented.get('sfx_palette') != 'teaching-native-v1':
+    if value['choices']['sound_effects'] in ('native', 'enabled_teaching_native_v1') and implemented.get('sfx_count', 0) and implemented.get('sfx_palette') != 'teaching-native-v1':
         errors.append('当前音效没有沿用已确定的原库音源')
     customers = implemented.get('customer_ids', [])
     choice = value['choices']['customer']
-    if gate == 'final' and choice in ['V01', 'V02', 'V03'] and choice not in customers:
+    if gate == 'final' and choice in ['V01', 'V02', 'V03', 'C_M01', 'C_F01'] and choice not in customers:
         errors.append('当前整课未展示所选顾客形象')
     if choice == 'none' and customers:
         errors.append('已选择无顾客出镜，当前视频仍展示顾客')
@@ -248,10 +248,10 @@ def material_errors(project,video,choices,implemented,document=None):
         ids=implemented.get('flower_nodes',[])
         if not isinstance(ids,list) or not ids or any(not isinstance(identifier,str) or identifier not in nodes or nodes[identifier].get('type')!='text' or not nodes[identifier].get('text') for identifier in ids):
             errors.append('花字未绑定当前导出文档中的真实文字对象')
-    if choices['customer'] in ['V01','V02','V03','new']:
+    if choices['customer'] in ['V01','V02','V03','C_M01','C_F01','new','vector_actor_layered']:
         ids=implemented.get('customer_nodes',[])
         if not isinstance(ids,list) or not ids or any(not isinstance(identifier,str) or identifier not in nodes or not nodes[identifier].get('vectorActor') or nodes[identifier]['vectorActor'].get('characterRole')!='customer' for identifier in ids):errors.append('顾客必须绑定同风格多部件可动人物，不能使用整张静态贴图')
-    if choices['sound_effects']=='native':
+    if choices['sound_effects'] in ('native','enabled_teaching_native_v1'):
         audio=(project/doc.get('media',{}).get('audio','')).resolve()
         receipt=read(audio.with_suffix('.json'),{}) if audio.is_file() and audio.is_relative_to(project) else {}
         stem=(project/str(receipt.get('sfxStem',''))).resolve()

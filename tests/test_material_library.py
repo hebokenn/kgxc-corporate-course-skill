@@ -13,7 +13,7 @@ from material_library import library
 class MaterialLibraryTest(unittest.TestCase):
     def setUp(self):
         self.tmp=TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
-        self.root=Path(self.tmp.name); self.project=self.root/'project'; self.project.mkdir()
+        self.root=Path(self.tmp.name).resolve(); self.project=self.root/'project'; self.project.mkdir()
         (self.root/'inputs').mkdir()
         self.path='../inputs/shop.jpg'
         self.photo=self.root/'inputs/shop.jpg';self.photo.write_bytes(b'original photo')

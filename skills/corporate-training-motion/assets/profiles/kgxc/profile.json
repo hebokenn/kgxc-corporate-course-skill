@@ -19,13 +19,13 @@
     "cloud_generation_authorized": false
   },
   "characters": {
-    "default_presenter": "M1-repaired.png",
-    "default_presenter_clothes": "black KG polo; original KG at character left chest / viewer right; no 店长 text",
-    "staff": "blue-cast.png: blue-uniform female and male store staff, required original KG chest mark",
-    "manager": "M1-repaired.png with original kg-original.png at left chest; black KG polo",
-    "mycoach": "MyCoach-reference-2D.png: chestnut-haired 2D woman; black collared shirt with MyCoach text; not KG",
+    "engine": "CourseActorsCute (workbench/motion/actors_v3_cute.js)",
+    "default_presenter": "manager",
+    "default_presenter_clothes": "black KG polo; original kg-original.png at chest; no 店长 text",
+    "staff": "role=staff, bun_pony, blue uniform (#3B71C6), required kg-original.png chest mark",
+    "manager": "role=manager, manager_short, black KG polo (#2C313C), required kg-original.png chest mark",
+    "customers": "extensible casual roles (e.g. cust_jacket / cust_knit), no KG mark, no background-matching colors",
     "default_presenter_role": "store_manager",
-    "coach": "MyCoach-reference-2D.png: black collared shirt with MyCoach text",
     "role_definitions": "roles.json"
   },
   "brand_version": "R5-intro-R8-outro",
@@ -38,22 +38,6 @@
       "path": "kg-original.png",
       "sha256": "fd088e5b6b5d8b35d4a73ed0ada69afbc6a56aecd9e483123add67a4257e73a9"
     },
-    "M1-blink.png": {
-      "path": "M1-blink.png",
-      "sha256": "fc80229302a5de57c9aeb394d56307163ce8374c74a7479d44db3e31bffd79fa"
-    },
-    "outro-1080p30.mp4": {
-      "path": "outro-1080p30.mp4",
-      "sha256": "4baddd1361ff7e4f994d496955377693e5a88aec7f238e5752aada9b0b6cbe8d"
-    },
-    "M1-repaired.png": {
-      "path": "M1-repaired.png",
-      "sha256": "3097490102ce597f146450018988c70f014804e69919cde874f9ae4a6dce8b0a"
-    },
-    "blue-cast.png": {
-      "path": "blue-cast.png",
-      "sha256": "26be92c31b94be2bfd8f37a4fb456f35c677895e244aa8a4cb04fbf1949827e5"
-    },
     "kgxc-logo.png": {
       "path": "kgxc-logo.png",
       "sha256": "e3af5f28d205ba05c96c72379430f7eef42885229301a7474436e8827dd12179"
@@ -62,17 +46,9 @@
       "path": "intro-1080p30.mp4",
       "sha256": "6d06d0bea91699c7e10c5e2194c19cf68795d0d8fd758c94c9f6ff1807d88533"
     },
-    "MyCoach-reference-2D.png": {
-      "path": "MyCoach-reference-2D.png",
-      "sha256": "d1cab1af60e20441e1cf9405556292e7b39abf970daf1b7300ff3afffcb91095"
-    },
-    "M1-speaking-open.png": {
-      "path": "M1-speaking-open.png",
-      "sha256": "ad2f1af34b4938f39f0609ff9f6341e08f4975285bc8c34e3ca9ec58867be3e3"
-    },
-    "m1-mesh.js": {
-      "path": "m1-mesh.js",
-      "sha256": "41b9deccdf0040f7f2d248f77fcbd285d16c725f4f4c49c15705b7bd5bd3a947"
+    "outro-1080p30.mp4": {
+      "path": "outro-1080p30.mp4",
+      "sha256": "4baddd1361ff7e4f994d496955377693e5a88aec7f238e5752aada9b0b6cbe8d"
     },
     "片头生成提示词.txt": {
       "path": "片头生成提示词.txt",
@@ -84,10 +60,10 @@
     },
     "roles.json": {
       "path": "roles.json",
-      "sha256": "3e2f93b05bb5f4bab67a58963f8ed4b53aea7c375a929d0d9797f51ad282d743"
+      "sha256": "063d6f99cda9242e39097979d7d6db11d4ef53fe8e209a374c933551ddebd67c"
     }
   },
-  "version": "kgxc-r5-r8-m1-v8-assets",
+  "version": "kgxc-r5-r8-cute-v3",
   "status": "approved",
   "asset_root": "."
 }
