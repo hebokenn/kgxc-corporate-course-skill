@@ -1,19 +1,18 @@
 {
-  "version": "7.2.0",
+  "version": "7.3.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
-  "default_tool": "Standard Agent Skill (Antigravity / Claude Code / Codex / WorkBuddy / Cursor / Trae / Windsurf) or DSH plugin",
-  "verified_platform": "macOS arm64 (target; desktop DSH E2E tracked separately)",
+  "default_tool": "Standard Agent Skill (Antigravity / Claude Code / Codex / WorkBuddy / Cursor / Trae / Windsurf)",
+  "verified_platform": "macOS arm64",
   "skills": [
     "corporate-training-motion",
     "elearning-course-design"
   ],
-  "distribution": "GitHub Release installable bundle and versioned source tag",
-  "plugin_version": "0.12.0",
+  "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "7.2.0",
-    "elearning-course-design": "2.1.0"
+    "corporate-training-motion": "7.3.0",
+    "elearning-course-design": "2.1.1"
   },
-  "release_status": "7.2.0 added emotion-driven 5-tier variable-speed gait physics (computeMoodWalk / paintExpressive), 3-layer parallax full-bleed Apple Authorized Store (drawCinematicAppleStore), borderless open-canvas motion standard (drawAmbientBackdrop), plus true-3D iPhone 18 Pro, web_asset_search.py, and 5-act promo v4"
+  "release_status": "7.3.0 removed the DSH desktop plugin from the active repository and decoupled pure-Skill source-coverage confirmation from DSH-only click locks, enabling full dialogue + CLI workflows across all Agent Skill hosts"
 }

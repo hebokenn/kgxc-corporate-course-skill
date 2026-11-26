@@ -161,7 +161,7 @@ class Studio:
 
     def save_production_choice(self,args):
         from production_preferences import update
-        actor='qa-operator' if self.review_context()=='qa-simulation' else 'dsh-course-workbench'
+        actor='qa-operator' if self.review_context()=='qa-simulation' else 'course-workbench'
         with self.transaction(args['baseRevision'],'studio_production_preference_saved'):
             update(self.project,args.get('key'),args.get('value'),actor,args.get('brief',''),args.get('reference_path',''))
             atomic(self.impact,dict(at=now(),unit_ids=[],paragraph_ids=[],segment_ids=[],
@@ -280,18 +280,19 @@ class Studio:
         raise ValueError('未知章节操作')
 
     def confirm(self, stage, expected, audio_declaration=None, source_coverage_declaration=None, *, native_question_id=None):
-        simulated=self.review_context()=='qa-simulation';actor='qa-operator' if simulated else 'dsh-course-workbench'
+        simulated=self.review_context()=='qa-simulation';actor='qa-operator' if simulated else 'course-workbench'
         if source_coverage_declaration is not None:
             self.course._revision(expected,read(self.course.state_file))
             if simulated or stage!='script' or not isinstance(source_coverage_declaration,dict):raise ValueError('原件对照确认只能来自当前逐字稿阶段的真实用户操作')
             fields={'report_sha256','evidence','source'}
-            if set(source_coverage_declaration)!=fields or source_coverage_declaration.get('source')!=('dsh-native-question:'+native_question_id if native_question_id else 'workbench-explicit-click'):raise ValueError('原件对照声明须来自用户明确勾选，并绑定当前报告')
+            allowed_sources={('structured-question:'+native_question_id), ('dsh-native-question:'+native_question_id)} if native_question_id else {'workbench-explicit-click', 'user-chat', 'structured-question'}
+            if set(source_coverage_declaration)!=fields or source_coverage_declaration.get('source') not in allowed_sources:raise ValueError('原件对照声明须来自用户明确确认，并绑定当前报告')
             from source_coverage import SourceCoverage
-            SourceCoverage(self.course).confirm(**source_coverage_declaration,actor='dsh-user-click')
+            SourceCoverage(self.course).confirm(**source_coverage_declaration,actor='structured-question-confirmation' if native_question_id else 'user-chat-confirmation')
         if stage=='script':
             from source_coverage import SourceCoverage
             SourceCoverage(self.course).require_confirmed()
-        evidence=('授权模拟操作，仅用于独立验证课，不代表正式课程内容验收：' if simulated else '用户在 DSH 右侧问答确认当前' if native_question_id else '用户在 DSH 课程工作台点击确认当前')+dict(STAGES).get(stage,stage)
+        evidence=('授权模拟操作，仅用于独立验证课，不代表正式课程内容验收：' if simulated else '用户在结构化问答确认当前' if native_question_id else '用户确认当前')+dict(STAGES).get(stage,stage)
         from ai_review import Review,enabled
         review=Review(self.course) if enabled(self.course) and stage in ['script','storyboard','pilot','final'] else None
         reviewed=review.require_pass(stage) if review else None
@@ -447,7 +448,7 @@ class Studio:
         if action=='confirm':return self.confirm(args['stage'],expected,args.get('audio_declaration'),args.get('source_coverage_declaration'))
         if action=='choice':
             simulated=self.review_context()=='qa-simulation'
-            self.course.choose_shot(args['id'],args['option'],expected,'独立验证课模拟选择' if simulated else '用户在课程工作台明确选择画面方案',actor='qa-operator' if simulated else 'dsh-course-workbench');return self.view()
+            self.course.choose_shot(args['id'],args['option'],expected,'独立验证课模拟选择' if simulated else '用户在课程工作台明确选择画面方案',actor='qa-operator' if simulated else 'course-workbench');return self.view()
         if action=='sample':self.course.sample_storyboard(expected);return self.view()
         if action=='feedback':return self.feedback(args)
         if action=='undo':return self.undo(expected)

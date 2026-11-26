@@ -447,11 +447,11 @@ class BlindReviewTests(unittest.TestCase):
             with self.assertRaises(ValueError):blind.route(invalid)
         self.assertEqual(STAGES,('script','storyboard','pilot','final'))
 
-    def test_minimal_course_interface_still_enforces_canonical_dsh_state(self):
+    def test_minimal_course_interface_requires_ai_review_file_not_dsh_flag(self):
         project=self.root/'standalone-project';project.mkdir();minimal=SimpleNamespace(project=project)
         self.assertFalse(enabled(minimal))
         atomic(project/'course-state.json',dict(preferred_workbench='dsh'))
-        self.assertTrue(enabled(minimal))
+        self.assertFalse(enabled(minimal))
         atomic(project/'course-state.json',dict(preferred_workbench='standalone'))
         self.assertFalse(enabled(minimal))
         atomic(project/'ai-review.json',dict(schema='course-ai-review/1'))

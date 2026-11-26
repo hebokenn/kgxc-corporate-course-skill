@@ -1,4 +1,4 @@
-"""Version-bound confirmations from the DSH host's native user question service."""
+"""Version-bound confirmations from the host's native user question service."""
 import copy
 from contextlib import contextmanager
 import fcntl
@@ -106,7 +106,7 @@ class StageConfirmation:
             q = self.request(stage,question_id)
             if selected not in (q['approve'],WAIT,REVISE):
                 raise ValueError('该答案不是当前确认题的有效选择。')
-            evidence = '用户在 DSH 右侧问答选择「'+selected+'」'
+            evidence = '用户在结构化问答选择「'+selected+'」'
             if selected == q['approve']:
                 binding = q['binding']
                 review = self._review()
@@ -115,7 +115,7 @@ class StageConfirmation:
                 if current_question['binding'] != binding:
                     raise ValueError('当前内容已变更，不接受旧版本确认。')
                 review.require_pass(stage,binding['run_id'])
-                source = dict(report_sha256=binding['source']['report_sha256'],evidence=evidence,source='dsh-native-question:'+question_id) if binding['source'] else None
+                source = dict(report_sha256=binding['source']['report_sha256'],evidence=evidence,source='structured-question:'+question_id) if binding['source'] else None
                 audio = dict(artifact_sha256s=binding['artifacts'],artifacts=binding['audio'],coverage='all_stage_videos',listened_completely=True,audio_and_sync_ok=True,
                              evidence=evidence,source=dict(kind='ui',id=question_id)) if binding['audio'] else None
                 self.studio.confirm(stage,current['revision'],audio,source,native_question_id=question_id)

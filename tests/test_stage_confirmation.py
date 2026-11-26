@@ -69,7 +69,7 @@ class TestStageConfirmation(unittest.TestCase):
         self.check.answer('script',script['id'],script['approve'])
         args,kwargs=self.studio.applied[-1]
         self.assertEqual(args[3]['report_sha256'],'9'*64)
-        self.assertEqual(args[3]['source'],'dsh-native-question:'+script['id'])
+        self.assertEqual(args[3]['source'],'structured-question:'+script['id'])
         self.assertEqual(kwargs['native_question_id'],script['id'])
         self.check.answer('pilot',pilot['id'],pilot['approve'])
         declaration=self.studio.applied[-1][0][2]

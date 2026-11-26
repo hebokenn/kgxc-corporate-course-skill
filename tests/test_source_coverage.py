@@ -136,13 +136,15 @@ class SourceCoverageTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.save(report)
         self.save()
-        for actor in ['producer', 'assistant', 'chat', 'user-chat-confirmation']:
+        for actor in ['producer', 'assistant', 'chat', 'ai', 'qa-operator']:
             with self.assertRaises(ValueError):
-                self.coverage.confirm(self.coverage.view()['report_sha256'], '默认通过', actor=actor, source='workbench-explicit-click')
-        for evidence, source in [('', 'workbench-explicit-click'), ('人工确认', None)]:
+                self.coverage.confirm(self.coverage.view()['report_sha256'], '默认通过', actor=actor, source='user-chat')
+        for evidence, source in [('', 'user-chat'), ('人工确认', None), ('人工确认', 'producer-auto')]:
             with self.assertRaises(ValueError):
                 self.coverage.confirm(self.coverage.view()['report_sha256'], evidence, source=source)
         self.assertFalse(self.coverage.view()['confirmed'])
+        confirmed = self.coverage.confirm(self.coverage.view()['report_sha256'], '我已逐项核对原件覆盖与舍弃说明，确认当前版本', actor='user-chat-confirmation', source='user-chat')
+        self.assertTrue(confirmed['confirmed'])
 
     def test_missing_inventory_and_duplicate_ids_do_not_inflate_or_shrink_denominator(self):
         for mutate in [lambda r: r.update(source_inventory=[]), lambda r: r['points'].append(copy.deepcopy(r['points'][0])), lambda r: r.update(points=[])]:

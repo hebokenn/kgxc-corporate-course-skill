@@ -48,3 +48,11 @@
 
 - 逐版本完整变更说明：[CHANGELOG.md](CHANGELOG.md)
 - 演示素材来源与历史检验范围：[media/README.md](media/README.md)
+
+---
+
+## 历史 DSH 桌面插件安装备份（已停用，仅作历史存档）
+
+自 `7.3.0` 起，本仓库已全面移除 DeepSeek Harness（DSH）桌面插件源码与后续维护，专注标准跨平台 Agent Skill（支持 Antigravity、Claude Code、Codex、WorkBuddy、Cursor 等纯对话与 CLI 流程）。如需回退使用过往版本的桌面插件，仅保留以下历史发布压缩包作为备份：
+
+- **末版历史插件备份（DSH 插件 v0.12.0 / 对应核心 v7.2.0 · 2026-11-26）**：[下载 `kgxc-course-plugin-v0.12.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-plugin-v0.12.0.zip) · [校验文件 `PLUGIN-SHA256SUMS`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/PLUGIN-SHA256SUMS)（解压后运行 `python3 scripts/install_plugin.py --host dsh` 或双击 `安装制课插件.command`；本入口不再随新版更新）。

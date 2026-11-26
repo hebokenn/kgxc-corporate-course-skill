@@ -64,6 +64,20 @@ class SourceCoverageGateTests(unittest.TestCase):
         self.assertEqual(read(self.course.state_file)['branch'],'video')
         self.course.require('script')
 
+    def test_cli_source_coverage_save_and_confirm_unlocks_script_gate(self):
+        import json, subprocess
+        report_file=self.root/'coverage-report.json'
+        report_file.write_text(json.dumps(self.report(),ensure_ascii=False),encoding='utf-8')
+        cli=ROOT/'skills/corporate-training-motion/scripts/workflow.py'
+        saved=subprocess.run([sys.executable,'-B',str(cli),'source-coverage',str(self.root),'--save',str(report_file)],capture_output=True,text=True)
+        self.assertEqual(saved.returncode,0,saved.stderr)
+        digest=json.loads(saved.stdout)['report_sha256']
+        confirmed=subprocess.run([sys.executable,'-B',str(cli),'source-coverage',str(self.root),'--confirm','--report-sha',digest,'--evidence','用户已在对话中核对覆盖报告并确认'],capture_output=True,text=True)
+        self.assertEqual(confirmed.returncode,0,confirmed.stderr)
+        self.assertTrue(json.loads(confirmed.stdout)['confirmed'])
+        self.course.confirm('script',self.course.status()['revision'],'逐字稿确认')
+        self.course.require('script')
+
     def test_source_script_or_report_changes_invalidate_old_confirmation(self):
         self.save();self.click();self.course.confirm('script',self.course.status()['revision'],'合成逐字稿确认')
         receipt=copy.deepcopy(read(self.course.state_file)['gates']['script'])
@@ -99,7 +113,7 @@ class SourceCoverageGateTests(unittest.TestCase):
         self.save();declaration=dict(report_sha256=self.coverage.view()['report_sha256'],evidence='合成明确动作',source='workbench-explicit-click')
         with self.assertRaises(FileExistsError):
             self.studio.confirm('script',self.course.status()['revision']-1,source_coverage_declaration=declaration)
-        with self.assertRaisesRegex(ValueError,'明确勾选'):
+        with self.assertRaisesRegex(ValueError,'明确确认'):
             self.studio.confirm('script',self.course.status()['revision'],source_coverage_declaration=dict(declaration,source='producer-auto'))
         with self.assertRaises(FileExistsError):
             self.studio.confirm('script',self.course.status()['revision'],source_coverage_declaration=dict(declaration,report_sha256='0'*64))

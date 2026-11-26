@@ -4,10 +4,9 @@
 
 > **它和普通 AI 生成 PPT/视频工具的本质区别**：市面工具只会“摘要念稿 + 贴静态网图”，遇到业务条款漏掉前提与例外、画面静止超过十秒、改一句话就要全片重做；本套件由 **ATD 教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核驱动，从“核对原件覆盖率与条件例外”开始，到“1-Beat-1-Audio 毫秒级音画咬合”“3.3 头身可动角色演练”“自动化技术全检 + 按句秒级重渲”全程闭环。
 
-- **跨主流 AI 平台通用**：基于标准 `SKILL.md`，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用。
-- **DSH 桌面插件（可选）**：DeepSeek Harness（DSH）用户亦可安装图形插件包，在同一窗口上传资料与试看小样。
+- **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-suite-v7.2.0.zip) · [下载 DSH 插件 v0.12.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-plugin-v0.12.0.zip)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.3.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.3.0/kgxc-course-suite-v7.3.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -21,15 +20,15 @@
 ```
 
 <details>
-<summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ DSH 插件 / 校验与开课示例</summary>
+<summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.2.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-suite-v7.2.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.3.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.3.0/kgxc-course-suite-v7.3.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.12.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/kgxc-course-plugin-v0.12.0.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
-4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.2.0/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.3.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
 
@@ -107,7 +106,7 @@
 | 阶段 | AI 为你自动完成 | 你只需要确认 |
 | --- | --- | --- |
 | **1. 资料拆解与设计** | 读取 PDF/Word/PPT/扫描件/录音，建立来源台账、学习目标与单课/系列课结构 | 教给谁、学什么、重点范围 |
-| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代并完成自查 | 确认讲法自然、规则条件无遗漏 |
+| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代并完成自查；通过 `workflow.py source-coverage` 绑定原件、逐字稿与覆盖报告哈希 | 在对话或结构化提问中核对取舍说明与讲法后明确确认 |
 | **3A. 课件与配套文档** | 交付可讲/可录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
 | **3B. 视觉母版定调与小样** | 按内容母版输出 3 套实质不同方案（`template_masters`），定调后导出 3 段跨章节有声 MP4 小样 | 选定画布配色、角色造型与声音节奏 |
 | **4. 全片交付与按句微改** | 全课批量渲染，经 `verify_delivery.py` 全检后归集至桌面目录；后续改稿只重配重渲受影响句 | 验收成片，或随时对话局部微调 |
@@ -121,7 +120,7 @@
 
 | 专题文档 | 链接 |
 | --- | --- |
-| 日常制作流程与操作手册 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) · [DSH 插件说明](docs/PLUGIN.md) |
+| 日常制作流程与操作手册 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) |
 | 系列课批量工作流与自查规范 | [59-streamlined-series-and-selfcheck.md](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md) |
 | 角色、配音、花字音效与动效 | [角色指南](docs/CHARACTERS.md) · [配音指南](docs/VOICE.md) · [音效库](docs/SOUND.md) · [动效指南](docs/MOTION.md) |
 | 历史版本展示与完整变更记录 | [历史版本归档 ARCHIVE.md](docs/ARCHIVE.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [RELEASING.md](docs/RELEASING.md) |
@@ -129,6 +128,12 @@
 ---
 
 ## 版本更新
+
+### 纯净 Skill 化、移除 DSH 插件并打通纯对话原件覆盖确认：核心 7.3.0 · 2026-11-26
+
+- **全面移除 DSH 桌面插件，聚焦纯正跨平台 Skill**：从主仓库删除 `plugin/`、`plugin.json`、`.codex-plugin/`、`.mcp.json`、`cordis.patch.yml`、`安装制课插件.command` 及插件打包/安装脚本，不再在主分支维护桌面宿主插件；在 [`docs/ARCHIVE.md`](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 保留唯一的 `v7.2.0` 历史插件备份入口。
+- **打通纯对话 / CLI 原件覆盖确认闭环（`source_coverage.py` / `workflow.py`）**：修复 7.0.0 移除网页工作台后 `SourceCoverage.confirm()` 仍卡死在 `dsh-user-click` / `preferred_workbench == 'dsh'` 的历史阻塞；新增 `workflow.py source-coverage COURSE --save / --confirm` 命令，在保留当前原件/逐字稿/报告 SHA-256 绑定与防 AI 擅自代确认校验的前提下，允许用户在对话或宿主结构化提问中直接确认原件覆盖报告并推进分镜与出片。
+- **统一纯对话操作口径（`elearning-course-design 2.1.1` / `corporate-training-motion 7.3.0`）**：清理 `SKILL.md`、`backend.py`、`ai_review.py`、`studio.py`、`stage_confirmation.py` 及参考文档中的 DSH 专属路径与提示，确保 Antigravity、Claude Code、Codex、WorkBuddy、Cursor 等宿主开箱即用。
 
 ### 情绪化多档步速物理、全屏 3 层视差门店与无白框电影级动效：插件 0.12.0 / 核心 7.2.0 · 2026-11-26
 

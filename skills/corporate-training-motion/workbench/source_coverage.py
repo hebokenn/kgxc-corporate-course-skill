@@ -85,7 +85,8 @@ def _cached_source_text(path, expected_sha256):
 
 class SourceCoverage:
     SCHEMA = 'source-coverage/1'
-    CLICK_ACTORS = {'dsh-user-click', 'codex-user-click'}
+    CONFIRM_ACTORS = {'user-chat-confirmation', 'structured-question-confirmation', 'codex-user-click', 'dsh-user-click'}
+    CLICK_ACTORS = CONFIRM_ACTORS
 
     def __init__(self, course):
         self.course = course
@@ -309,7 +310,7 @@ class SourceCoverage:
         elif required and not current:
             reasons.append('原件、逐字稿或覆盖报告已变更，须核对当前报告并重新人工确认')
         elif required and not confirmed:
-            reasons.append('当前覆盖报告待人工明确点击确认')
+            reasons.append('当前覆盖报告待人工明确确认')
         statistics = self._statistics(report, basis, text)
         if not current:
             statistics['rate'] = None
@@ -346,11 +347,13 @@ class SourceCoverage:
                                     confirmation=previous.get('confirmation') if same else None, history=history))
         return self.view()
 
-    def confirm(self, report_sha256, evidence, actor='dsh-user-click', source=None):
-        if actor not in self.CLICK_ACTORS:
-            raise ValueError('原件覆盖确认只能来自人工明确点击，不能由制作代理代确认')
+    def confirm(self, report_sha256, evidence, actor='user-chat-confirmation', source=None):
+        if actor not in self.CONFIRM_ACTORS:
+            raise ValueError('原件覆盖确认只能来自人工明确确认，不能由制作代理代确认')
         self._string(evidence, '人工确认原话')
-        self._string(source, '人工点击来源')
+        self._string(source, '人工确认来源')
+        if source.startswith(('producer', 'auto')):
+            raise ValueError('原件覆盖确认来源不能由制作代理自动生成')
         with self.locked():
             view = self.view()
             if not view['required'] or not view['current'] or view['report_sha256'] != report_sha256:

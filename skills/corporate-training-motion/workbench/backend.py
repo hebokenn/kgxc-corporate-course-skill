@@ -725,8 +725,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     if match:f=safe(self.space.work,'exports/'+match[1]+'/published/'+f.name)
                 return self.file(f)
             if path in ['/','/index.html']:
-                if (self.space.project/'course-state.json').is_file() and read(self.space.project/'course-state.json').get('preferred_workbench')=='dsh':
-                    return self.json(dict(service='DSH course workbench internal service',message='本课统一从DSH课程工作台插件进入；本地址不再展示独立制课界面。'))
                 return self.json(dict(service='course workbench headless render service',message='工作台网页界面已移除；课程制作通过对话与独立审阅文件完成，本服务仅用于无头渲染与导出。'))
             return self.file(safe(APP,path.lstrip('/')))
         except (BrokenPipeError,ConnectionResetError):pass
@@ -752,13 +750,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     dest.unlink();raise ValueError('无法解码该图片')
                 return self.json(dict(path=str(dest.relative_to(self.space.project)),name=name,sha256=digest(dest)))
             data=json.loads(raw)
-            if ((path=='/api/studio/source-coverage-confirm') or
-                    (path in ['/api/studio/confirm','/api/studio/review-approve','/api/workflow/confirm']
-                     and data.get('stage',data.get('gate')) in ['script','content','pilot','final'])):
-                state_path=self.space.project/'course-state.json'
-                state=read(state_path) if state_path.is_file() else {}
-                if state.get('preferred_workbench')=='dsh':
-                    raise ValueError('请在 DSH 右侧原生问答确认当前版本；工作台不接受另一个确认入口。')
             if path.startswith('/api/studio/'):
                 from studio import Studio
                 return self.json(Studio(self.space).action(path.rsplit('/',1)[1],data))

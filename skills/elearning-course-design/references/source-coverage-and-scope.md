@@ -32,11 +32,11 @@
 | 新增汇总 | 当前稿的实际原句和位置、为什么增加、属于虚构示例/教学解释/外部事实、依据说明或引用 |
 | 人工确认 | 当前原件、当前稿与当前报告的哈希；真实明确的确认动作和声明，与模型结论分开保存 |
 
-人工确认可以在原逐字稿确认时，勾选明确声明后一次提交；也可在独立原件对照窗口明确点击确认。不预选、不因关闭或超时确认，不由制作代理替点。报告更新不代表批准，原件对照确认也不代替逐字稿确认、盲审结论或正式交付。
+人工确认可以在原逐字稿确认时，通过宿主结构化提问或对话明确确认声明后记录；也可在原件对照审阅后确认。不预选、不因关闭或超时确认，不由制作代理代确认。报告更新不代表批准，原件对照确认也不代替逐字稿确认、盲审结论或正式交付。
 
 ## 制作端数据格式
 
-从 `assets/source-coverage.json` 建档，填入以下字段后通过插件保存到 `project/source-coverage.json`，不手写人工回执：
+从 `assets/source-coverage.json` 建档，填入以下字段后通过 `workflow.py source-coverage COURSE --save report.json` 保存到 `project/source-coverage.json`（收到用户明确确认后再执行 `--confirm`），不代用户确认：
 
 - `source_inventory[]`：`source_id,sha256,read_scope,fully_read,unreadable[]`；每个登记来源都要列出，未读也明确记录。
 - `points[]`：`id,source_id,locator,source_quote,critical,disposition,script_quotes[],reason`。`disposition` 为 `retained/merged/omitted`；保留/合并必须引用当前稿实际文字，舍弃的 `script_quotes` 为空，但理由不可空。

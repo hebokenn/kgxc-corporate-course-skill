@@ -18,7 +18,7 @@ import uuid
 import webbrowser
 from runtime import ensure_dir, tools
 
-VERSION = '7.2.0'
+VERSION = '7.3.0'
 GATES = [('source', '素材诊断'), ('outline', '课程结构'), ('content', '完整课件稿'),
          ('visual', '视觉与声音方案'), ('pilot', '代表样段'), ('final', '整课候选')]
 
@@ -1159,6 +1159,10 @@ def main():
     a.add_argument('--artifact', action='append', default=[])
     a = sub.add_parser('review');a.add_argument('course',type=Path);a.add_argument('--gate',choices=all_gates,required=True)
     a.add_argument('--evidence',required=True);a.add_argument('--actor',default='chat')
+    a = sub.add_parser('source-coverage');a.add_argument('course',type=Path)
+    a.add_argument('--save',type=Path);a.add_argument('--confirm',action='store_true')
+    a.add_argument('--report-sha');a.add_argument('--evidence');a.add_argument('--source',default='user-chat')
+    a.add_argument('--actor',default='user-chat-confirmation')
     a = sub.add_parser('package'); a.add_argument('course',type=Path);a.add_argument('--out',type=Path,required=True)
     args = p.parse_args(); course = Course(args.course)
     if args.command == 'start':
@@ -1200,6 +1204,19 @@ def main():
     elif args.command == 'decide': print(json.dumps(course.decide(args.id, args.option, course.status()['revision'], args.evidence, args.actor, args.delegated), ensure_ascii=False, indent=2))
     elif args.command == 'checkpoint': print(json.dumps(course.register(args.gate, args.artifact, course.status()['revision']), ensure_ascii=False, indent=2))
     elif args.command == 'review':print(json.dumps(course.confirm(args.gate,course.status()['revision'],args.evidence,args.actor),ensure_ascii=False,indent=2))
+    elif args.command == 'source-coverage':
+        from source_coverage import SourceCoverage
+        cov = SourceCoverage(course)
+        if args.save:
+            report = read(args.save)
+            result = cov.save(report, cov.view()['script_sha256'])
+        elif args.confirm:
+            report_sha = args.report_sha or cov.view().get('report_sha256')
+            if not report_sha: raise ValueError('请先保存当前版本的原件覆盖报告再确认')
+            result = cov.confirm(report_sha, args.evidence, actor=args.actor, source=args.source)
+        else:
+            result = cov.view()
+        print(json.dumps(result, ensure_ascii=False, indent=2))
     elif args.command == 'package':print(json.dumps(bundle_course(args.course,args.out),ensure_ascii=False,indent=2))
 
 

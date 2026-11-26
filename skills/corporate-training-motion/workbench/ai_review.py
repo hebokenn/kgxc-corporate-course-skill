@@ -225,7 +225,7 @@ def _execution_evidence(value, event_type, tool_name=None):
 
 
 def enabled(course):
-    return (course.project / 'ai-review.json').is_file() or read(getattr(course,'state_file',course.project/'course-state.json'),{}).get('preferred_workbench')=='dsh'
+    return (course.project / 'ai-review.json').is_file()
 
 
 def gate_errors(course, stage):

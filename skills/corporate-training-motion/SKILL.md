@@ -19,7 +19,7 @@ description: 酷果星创课程设计与制作统一入口（7.0.0 精简工作�
    - 先读透原件（含图表/密集页），结合 [原件覆盖与现场讲解](../elearning-course-design/references/source-coverage-and-scope.md) 明确核心工作任务、学习目标、内容取舍与推荐讲法；有重要影响的选择用宿主结构化提问（最多 3 题）集中展示，再生成可审阅的大纲 HTML。
    - **授课立场**：代表酷果**总部团队发展中心**直接面向门店团队讲解，不在口播、字幕或封面自报部门；保留酷果星创开场问候语与完整收尾。
 3. **统一逐字稿与自查**：
-   - 大纲确认后，按章节编号编写完整口播逐字稿（不含制作备注与避免词元说明），先按 [逐字稿输入与作者自检](../elearning-course-design/references/script-authoring-quality.md) 与 [学员上下文检查](../elearning-course-design/references/learner-context.md) 自查修精，确认口语自然、无依赖原件的悬空指代、无车轱辘话，再输出逐字稿审阅 HTML 请用户确认。
+   - 大纲确认后，按章节编号编写完整口播逐字稿（不含制作备注与避免词元说明），先按 [逐字稿输入与作者自检](../elearning-course-design/references/script-authoring-quality.md) 与 [学员上下文检查](../elearning-course-design/references/learner-context.md) 自查修精，确认口语自然、无依赖原件的悬空指代、无车轱辘话，保存逐字稿并用 `python3 SKILL_DIR/scripts/workflow.py source-coverage COURSE --save report.json` 生成原件覆盖对照报告，连同逐字稿审阅 HTML 一并呈交用户；待用户在对话或宿主结构化提问中明确确认后，执行 `workflow.py source-coverage COURSE --confirm --report-sha SHA --evidence "用户确认原话"` 与 `workflow.py review COURSE --gate script --evidence "..."`。
 4. **独立分支：课件 或 视频（系列课统一批次）**：
    - **课件分支**：按用户要求交付 PPTX / DOCX / PDF / HTML 课件与逐字稿即可完成；独立课件页面不作为视频制作输入。
    - **视频分支**：

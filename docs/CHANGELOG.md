@@ -4,6 +4,13 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 纯净 Skill 化、移除 DSH 插件并打通纯对话原件覆盖确认：核心 7.3.0 · 2026-11-26
+
+- **移除仓库中的 DSH 桌面插件与构建分发链**：删除 `plugin/`、`plugin.json`、`.codex-plugin/`、`.agents/`、`.mcp.json`、`mcp.json`、`cordis.patch.yml`、`package.json`、`安装制课插件.command`、`scripts/build_plugin.py`、`scripts/install_plugin.py`、`scripts/check_codex_plugin.py`、`scripts/build_native_client.py`、`docs/PLUGIN.md` 及仅依赖 DSH 插件的测试；主分支及后续发布仅提供纯正跨平台 Agent Skill（`corporate-training-motion 7.3.0` + `elearning-course-design 2.1.1`），并在 [`ARCHIVE.md`](ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 保留唯一的 `v7.2.0` 历史插件安装包备份入口。
+- **修复 7.0.0 遗留的原件覆盖确认阻塞（`source_coverage.py` / `workflow.py`）**：解除 `SourceCoverage.confirm()` 仅接受 `dsh-user-click` / `codex-user-click` 的旧锁，新增 `user-chat-confirmation` 与 `structured-question-confirmation` 确认角色及 `workflow.py source-coverage COURSE --save / --confirm` CLI 命令；保持当前原件、逐字稿与报告的 SHA-256 绑定以及拒绝 `producer/assistant/ai/qa-operator` 代确认的安全边界。
+- **清除 Skill 内部 DSH 专属路径**：移除 `backend.py` 与 `ai_review.py` 中基于 `preferred_workbench == 'dsh'` 的强制拦截和旧盲审自动开启开关，统一 `SKILL.md`、`studio.py`、`stage_confirmation.py` 及 `elearning-course-design` 规范中的宿主无关结构化提问与确认口径。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`（16 项）、`tests/test_source_coverage.py`、`tests/test_source_coverage_gate.py`、`tests/test_streamlined_v700.py`、`tests/test_blind_review.py`、`tests/test_stage_confirmation.py`、`tests/test_studio.py`（89 项）、`tests/test_install.py`（7 项）、`scripts/test_v7_tools.py`（3 项）、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及本机隔离安装同步。
+
 ## 情绪化多档步速物理、全屏 3 层视差门店与无白框电影级动效：插件 0.12.0 / 核心 7.2.0 · 2026-11-26
 
 - **情绪化多档步速物理与微表演（`workbench/motion/actors_v3_cute.js`）**：在 `CourseActorsCute` 中新增 `GAIT_PRESETS`、`computeMoodWalk(fromX, toX, t, startT, mode, scale)` 与 `paintExpressive(ctx, cfg, st, images, extraLeanRad)`，支持 `stroll`（闲逛 `145px/s`）、`brisk`（轻快迎宾 `265px/s`）、`rush`（急匆匆冲入 `470px/s` + `+9.5°` 前倾与急停刹车回摆）和 `cold_exit`（冷脸转身快撤 `310px/s`），所有档位均基于世界坐标零滑步落地步态计算，自动按距离与情绪速度推算步行时长与身体前倾。

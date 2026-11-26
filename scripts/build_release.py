@@ -57,7 +57,6 @@ def main():
         if not p.is_file() or rel.parts[0] not in ['skills','scripts','config','docs'] and len(rel.parts)!=1:continue
         if rel.parts[0] in ['dist','.git','tests'] or excluded(p):continue
         if rel.parts[0]=='config' and (len(rel.parts)!=2 or p.name not in PUBLIC_CONFIG):continue
-        if rel.as_posix() in ['scripts/build_plugin.py','scripts/install_plugin.py','scripts/check_codex_plugin.py','scripts/build_native_client.py']:continue
         if len(rel.parts)==1 and p.name not in ['install.sh','VERSION','release.json','README.md','THIRD_PARTY_NOTICES.md','requirements.in','requirements.lock','requirements-voice.in','requirements-voice.lock','安装或更新.command']:continue
         candidates.append(p)
     frozen={str(p.relative_to(ROOT)):(stage/p.relative_to(ROOT)).read_bytes() if p.relative_to(ROOT).parts[0]=='skills' else p.read_bytes() for p in candidates}
