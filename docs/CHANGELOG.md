@@ -4,6 +4,13 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 5 幕连续运镜动效引擎、真 3D iPhone 18 Pro 与联网素材检索：插件 0.11.1 / 核心 7.1.1 · 2026-11-26
+
+- **底层动效与运镜基元升级（`workbench/motion/visual_metaphors.js`）**：补入绝对时间快节奏缓动曲线（`easeOutExpo`、`easeOutQuint`、`easeInOutQuart`、`easeOutBack`、`spring`、`win`）、虚拟相机变换层 `withCamera`、视差工作室底景 `drawStudioBackdrop`、多层扁平门店景深 `drawRetailStoreBackdrop`、**F 型视觉扫读热区追踪 `drawFScanOverlay`**，以及基于 `workbench/device_models.py` 官方尺寸比例（`71.9 × 150.0 × 8.75 mm`）与冰川蓝配色构建的**真 3D 多边形透视投影 `iPhone 18 Pro`（`draw3DPhoneProp`）**，消除大侧角 2D 镜头畸变。
+- **新增联网检索开放许可素材 CLI（`scripts/web_asset_search.py`）**：零外部依赖聚合 Openverse 与 Wikimedia Commons 开放许可无水印图库，通过 `fetch` 缓存到课程 `project/assets/web/` 并自动维护含 `sha256`、来源页、许可与署名的 `manifest.json`；同步修订 `SKILL.md` 与 `references/34-content-driven-assets.md` 明确使用边界（人物仍统一用 `CourseActorsCute`，Apple 授权店课程禁入竞品标志）。
+- **全新 5 幕连续运镜宣传片（68.72 秒）**：彻底放弃旧 16 页标题条分镜，重构为全幅连续运动画面，含激光斜劈公文墙露出门店实景、X 光扫描线将实景实时转为代码坐标线框、左旋 `-7.5°` 5 列穿插高速轮播动效墙、全幅 F 型扫读激光热区、全屏上下高速画布轮播、对角分屏双声道声场、五端交付逐项踩点实演及 NLE 多轨单秒热替换；通过 `verify_delivery.py --strict-ppt-guard` 零错误零警告验收。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`（16 项）、`scripts/test_v7_tools.py`（3 项）及 `build_release.py` + `build_plugin.py` 打包校验。
+
 ## 无界面对话工作流、CourseActorsCute 可爱人物与公共交付工具：插件 0.11.0 / 核心 7.1.0 · 2026-11-26
 
 - **全面切换无界面对话制课流**：移除冗余浏览器表单页 `workbench/static/design.html` 与网页时间轴编辑器 `workbench/static/index.html`，保留本地无头合成页 `/renderer.html` 与 Playwright 导出引擎。全流程（资料读取、结构确认、逐字稿定稿、母版三选一、成片交付与局部返修）直接在 AI 对话中完成。

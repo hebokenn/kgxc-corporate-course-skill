@@ -7,7 +7,7 @@
 - **跨主流 AI 平台通用**：基于标准 `SKILL.md`，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用。
 - **DSH 桌面插件（可选）**：DeepSeek Harness（DSH）用户亦可安装图形插件包，在同一窗口上传资料与试看小样。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) · [下载 DSH 插件 v0.11.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-suite-v7.1.1.zip) · [下载 DSH 插件 v0.11.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-plugin-v0.11.1.zip)
 
 ---
 
@@ -23,13 +23,13 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ DSH 插件 / 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.1.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.1.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-suite-v7.1.1.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.11.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
-4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.11.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/kgxc-course-plugin-v0.11.1.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
+4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.1/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 
 **装好后，直接把资料发给 AI 并输入：**
 
@@ -129,6 +129,12 @@
 ---
 
 ## 版本更新
+
+### 5 幕连续运镜动效引擎、真 3D iPhone 18 Pro 与联网素材检索：插件 0.11.1 / 核心 7.1.1 · 2026-11-26
+
+- **底层动效与运镜基元升级（`workbench/motion/visual_metaphors.js`）**：新增绝对时间快节奏缓动（`easeOutExpo` / `easeOutQuint` / `easeOutBack` / `spring`）、虚拟相机层 `CameraRig`、多层门店景深背景、**F 型扫读激光热区组件**，以及严格按官方机身比例（`71.9 × 150.0 × 8.75 mm`）构建的**真 3D 透视投影 `iPhone 18 Pro`（冰川蓝全宽三摄平台）**。
+- **支持联网检索开放许可素材入库（`scripts/web_asset_search.py`）**：聚合 Openverse 与 Wikimedia Commons 开放许可无水印图库，下载至课程 `project/assets/web/` 并自动写入含来源、许可与 SHA-256 的 `manifest.json` 溯源清单；同步写入 `SKILL.md` 与 `references/34-content-driven-assets.md`。
+- **全新 5 幕连续运镜宣传片上线**：推翻旧版 16 页分镜，改用全幅连续运动构图、激光斜劈切场、X 光扫描切代码线框、左旋 5 列穿插高速动效墙、全屏上下画布轮播与五端逐项踩点微动效；全片通过 `verify_delivery.py --strict-ppt-guard` 零错误零警告校验。
 
 ### 全链路纯对话制课引擎、CourseActorsCute 可动角色与完整展示焕新：插件 0.11.0 / 核心 7.1.0 · 2026-11-26
 
