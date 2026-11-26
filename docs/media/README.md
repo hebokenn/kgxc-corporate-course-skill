@@ -8,7 +8,7 @@
 
 | 文件 | 说明 |
 | --- | --- |
-| `v71/kgxc-v71-promo.mp4` / `.srt` | 44.19 秒 1080p/24fps `v7.1.0` 全新宣传片及零标点单行中文外挂字幕，内嵌单帧 `attached_pic` 封面 |
+| `v71/kgxc-v71-promo.mp4` / `.srt` | 71.74 秒 1080p/24fps 全能力宣传片（由 Antigravity 调用本 Skill 实渲制作）及 19 条零标点单行外挂字幕，内嵌第 0 帧 `attached_pic` 封面 |
 | `v71/kgxc-v71-promo-cover.png` / `-poster.jpg` | 首帧单帧封面与网页播放器预览海报 |
 | `v71/headless-workflow-card.png` | 无界面对话式制课工作流 + 公共质检引擎（`tts_sync.py` / `verify_delivery.py`）架构总览图 |
 | `v71/cute-actors-cast.png` | `CourseActorsCute` 3.3 头身可爱矢量角色群像（店长、店员与便装顾客）及双色系对比 |

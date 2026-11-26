@@ -1,180 +1,150 @@
-# 酷果星创 · AI 企业培训制课 Skill
+# 酷果星创 · AI 企业培训课程全链路引擎
 
-把制度、手册和业务资料，在**纯对话交互**中做成**能直接讲的课件与配套文档**，或带拟真人配音、无标点字幕与代码化教学动画的**单支 / 多集系列课程视频**。去掉冗余网页表单与时间轴编辑器后，适合培训负责人、门店管理者和带教同事把“制度怎么写”直接讲成“遇到这件事，应该怎么做”。
+**只需把制度文档、SOP 手册、产品资料或访谈录音发给 AI，通过自然对话，就能一键打造真正懂教学、有动效、有角色演绎、离线配音不出本机的全套企业精品课**——既能生成**多集 1080p 有声动画系列视频**，也能同步交付**独立交互课件（PPTX / HTML / PDF）、《讲义精要》、章节测验题库与 A4 可打印手写作业**。
 
-- **适用范围更广（跨宿主标准 Skill）**：基于标准 `SKILL.md` 与无界面本地媒体引擎，支持 **Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf** 等主流支持 Agent Skill 规范的 AI 编程与桌面宿主。
-- **DSH 图形插件（可选）**：如使用 DeepSeek Harness（DSH），可另装图形插件，在同一窗口完成资料上传与对话确认。
+> **它和普通 AI 生成 PPT/视频工具的本质区别**：市面工具只会“摘要念稿 + 贴静态网图”，遇到业务条款漏掉前提与例外、画面静止超过十秒、改一句话就要全片重做；本套件由 **ATD 教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核驱动，从“核对原件覆盖率与条件例外”开始，到“1-Beat-1-Audio 毫秒级音画咬合”“3.3 头身可动角色演练”“自动化技术全检 + 按句秒级重渲”全程闭环。
 
-[下载独立 Skill v7.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) · [下载 DSH 插件 v0.11.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip) · [在线观看 7.1 新版宣传片与实渲画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [安装或更新](#安装或更新)
+- **跨主流 AI 平台通用**：基于标准 `SKILL.md`，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用。
+- **DSH 桌面插件（可选）**：DeepSeek Harness（DSH）用户亦可安装图形插件包，在同一窗口上传资料与试看小样。
 
-| 你的需求 | 主要交付 | 适用方式 |
-| --- | --- | --- |
-| **单支课程视频** | 1080p MP4、单行无标点 SRT、第 0 帧封面，过程工程保留 | 内部学习平台、集中培训或自主学习 |
-| **多集系列课 + 配套套件** | 分集 MP4/SRT/封面 + 《讲义精要》、测验题库、A4 可打印手写作业 | 专题训练营、门店系统化赋能，统一批次推进 |
-| **自己讲课或带教** | 独立 PPTX / PDF / HTML 课件 + 完整逐字稿 | 现场授课、线上分享、带教或自行录屏 |
-| **已有课程局部返修** | 仅重配/重渲受影响片段与字幕，复用未变更章节 | 业务规则或话术更新后的最小范围回改 |
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v7.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) · [下载 DSH 插件 v0.11.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip)
 
 ---
 
-## 适合哪些培训场景
+## 一句话让 AI 帮你安装
 
-| 场景 | 可提供的资料 | 课程怎样讲 |
-| --- | --- | --- |
-| **新人入职与岗位带教** | 岗位手册、工作清单、常见问题 | 按真实工作顺序拆任务，穿插示范、易错点与练习 |
-| **制度与 SOP 流程** | 制度正文、条件与例外说明 | 交代适用范围，用案例对照“何时这样做、何时例外处理” |
-| **收货、交接与信息核对** | 订单、票据、实物图、编码标签 | 同屏定位字段与实物，逐项核对、标出差异并演示处理 |
-| **销售服务与顾客沟通** | 服务流程、典型对话、正反案例 | 编排走近、倾听、提问、异议回应与示范，多角色分声演练 |
-| **店长经营与多集专题课** | 指标口径、辅导记录、多章节材料 | 统一批次规划多支视频与讲义/题库/手写作业，形成课后闭环 |
-| **系统操作与 Apple 产品体验** | 界面截图、字段说明、Apple 设备资料 | 放大关键入口与状态反馈，结合设备示意讲清观察重点 |
+不需要自己配置路径或学终端命令。**直接复制下面这句话和链接，发给你正在用的 AI 助手**（Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy 等），AI 会自动帮你拉取仓库、完成本地安装与依赖检查：
 
-> 当前内置角色、片头片尾和产品素材以酷果星创及 Apple 门店培训为主要场景；其他企业与团队可直接复用全套制课方法与渲染工具，按需替换为自有品牌与资料。
-
----
-
-## 核心能力与实际价值
-
-### 1. 无界面对话流：专注内容与局部回改，告别繁琐网页表单
-
-- **使用场景**：资料确认、大纲调整、逐字稿润色与成片后局部改稿，全程在 AI 对话内完成。
-- **具体做法**：全面移除冗余的浏览器表单页（`design.html`）与网页时间轴编辑器（`index.html`），后台渲染服务以无界面模式（`/renderer.html`）专责合成导出；含多支视频与讲义/题库/手写作业的系列课按**统一批次**推进（统一大纲 → 原件要点对照与逐字稿 → 母版三选一 `template_masters` + 全课分镜 → 3 段有声小样 → 共享母版分集导出）。
-- **实际价值**：减少在不同网页界面与弹窗之间反复切换和重复点击；修改某段逐字稿时只重配重渲受影响节次，其余章节零返工，过程文件默认保留在工程内不自动删除。[7.0+ 精简工作流规范](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md)
-
-![无界面对话驱动架构与公共交付闭环](docs/media/v71/headless-workflow-card.png)
-
-### 2. 统一 `CourseActorsCute` 可爱人物与 16 套明亮浅色画布
-
-- **使用场景**：顾客接待、门店交接、店长指导、制度对比与操作教学镜头。
-- **具体做法**：
-  - **唯一代码驱动人物引擎 [`actors_v3_cute.js`](skills/corporate-training-motion/workbench/motion/actors_v3_cute.js)**：采用 3.3 头身多部件可爱矢量人物，内置零滑步世界坐标步态、迈步转侧身与停步回正（方案 B）、防弹膝盖 IK 与口型手势，黑衣店长与蓝衣店员统一绑定原版 `kg-original.png` 胸标，便装顾客严禁顺色或佩戴员工标；旧版整张静态 PNG 人物与 `acting.js` 已彻底移除。
-  - **16 套高对比明亮浅色色板**：默认仅从 `workbench/course-palettes.json` 的 **16 套 `random_eligible: true`（WCAG ≥ 4.5、无绿色）** 浅色画布中随机抽取，使视频画布与配套讲义、题库和手写作业保持统一视觉基调；结合 **F 型扫读** 与 100 种教学动效讲清因果。[角色指南](docs/CHARACTERS.md) · [选色规则](skills/corporate-training-motion/references/47-course-palette.md)
-
-![CourseActorsCute 门店角色与便装顾客阵营](docs/media/v71/cute-actors-cast.png)
-
-![16 套精选明亮高对比浅色画布色板](docs/media/v71/bright-palettes-16.png)
-
-### 3. 本地 `didi / pipi` 配音、`tts_sync.py` 同步混音与 `verify_delivery.py` 一键质检
-
-- **使用场景**：分句配音生成、多角色分声混音、字幕时间轴对齐，以及正式交付桌面目录前的成品技术与包装验收。
-- **具体做法**：
-  - 本地 **Qwen3-TTS** 驱动随包已获授权的 **didi 男声、pipi 女声**，无需云端 TTS API Key；新增 [`scripts/tts_sync.py`](skills/corporate-training-motion/scripts/tts_sync.py) 按视觉 beat 做文本/音色 SHA 增量缓存、检测句尾 80ms 能量防吞字截断、用 48kHz `amix` 混入原库“叮/嘟咚”提示音效并直接生成单行无标点 SRT。
-  - 新增 [`scripts/verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py) 在导出交付前一次性实检 1080p/`yuv420p`、48kHz AAC 音轨、末尾电平安全、第 0 帧独立封面与第 1 帧正片切换、`attached_pic` 封装，以及无标点/无重叠字幕。
-- **适用范围**：完整本地渲染与 Qwen3-TTS 已在 macOS Apple Silicon 验证通过；代码自动校验不替代正式视频的完整人工视听审美确认。[配音指南](docs/VOICE.md) · [音效库与试听](docs/SOUND.md)
-
-| 推荐语音 | 常见用途 | 同文案试听 |
-| --- | --- | --- |
-| **didi · 男声** | 任务说明、步骤讲解与重点提醒，清晰轻亮 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/didi-audition.mp3) · [下载 WAV](docs/media/voices/didi-audition.wav) |
-| **pipi · 女声** | 课程导入、概念解释与服务情境，清楚亲切 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/pipi-audition.mp3) · [下载 WAV](docs/media/voices/pipi-audition.wav) |
-
----
-
-## 实际演示
-
-### 44 秒 7.1 新版宣传片：《对话驱动制课 · 酷果星创 7.1》
-
-全程采用当前 **无界面 Chromium Canvas + `CourseActorsCute` 角色引擎 + `course-palettes.json` 浅色板 + 本地 `didi / pipi` Qwen3-TTS（通过 `tts_sync.py`） + `teaching-native-v1` 原库“叮/嘟咚”音效** 实际制作，并经 `verify_delivery.py` 全项通过（1920×1080、24fps、48kHz 立体声、第 0 帧封面隔离 + `attached_pic`、13 条无标点单行 SRT）。
-
-[![酷果星创 7.1 新版宣传片封面](docs/media/v71/kgxc-v71-promo-poster.jpg)](https://hebokenn.github.io/kgxc-corporate-course-skill/)
-
-**[在线观看 7.1 宣传片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看独立封面原图](docs/media/v71/kgxc-v71-promo-cover.png)
-
-> 如需回看早期 5.x / 6.x 版本的旧宣传片、旧版网页编辑器截图与此前静态人物演示，请移步独立归档页（仅供查看过往历史版本）：[历史版本与过往素材归档](docs/ARCHIVE.md) · [历史在线播放页](https://hebokenn.github.io/kgxc-corporate-course-skill/archive.html)
-
----
-
-## 一门课怎样完成
-
-**原始资料 → 对话梳理大纲与讲法 → 完整逐字稿（含原件对照与自查） → 独立课件/配套文档 或 母版三选一与 3 段有声小样 → `tts_sync` + `verify_delivery` 质检交付桌面。**
-
-| 阶段 | AI 协助完成 | 你在对话中只需判断 |
-| --- | --- | --- |
-| **1. 资料与目标** | 诊断来源、梳理学习目标与大纲，规划单课或多集视频及配套讲义/题库/作业分工 | 教给谁、学什么、内容是否完整准确 |
-| **2. 完整逐字稿** | 编写自然口播稿与原件要点对照表，制作端先完成实质自查并修精 | 核对原件覆盖、取舍依据、关键条件与例外 |
-| **3A. 课件 / 配套文档** | 输出 PPTX / PDF / HTML 课件，或《讲义精要》、测验题库与 A4 手写作业 | 是否便于讲授、带教、自学或课后闭环 |
-| **3B. 母版与全课分镜** | 每类内容母版提供 3 套实质不同方案（`template_masters`），定调后全课逐段输出最优分镜 | 选定视觉母版与共用配色、风格及重点段落 |
-| **4. 3 段有声小样** | 抽取 3 段完整片段，用无界面引擎 + `tts_sync.py` 导出带头尾接缝与分声的有声 MP4 | 正常速度听看画面、动作、字幕、花字音效与声音 |
-| **5. 整课交付与回改** | `verify_delivery.py` 质检后归集 MP4/SRT/首帧封面至桌面 `ai 制课/<课程名称>/`，工程保留 | 审阅成片或提出哪一段需要局部修改 |
-
----
-
-## 安装或更新
-
-### 方式一：独立 Skill（推荐，通用主流 AI 宿主）
-
-**[下载 v7.1.0 联合包](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) → 解压 → 双击“安装或更新.command”**（或将 `skills/corporate-training-motion` 与 `skills/elearning-course-design` 放入宿主的全局/项目 `.agents/skills/` 目录）。
-
-- 适用于 **Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf** 等支持 Agent Skill 规范的宿主，日常统一调用 `corporate-training-motion`。
-- 包含 `corporate-training-motion 7.1.0` 与 `elearning-course-design 2.1.0`；升级自动保留个人配置、已有课程与声音库。
-
-### 方式二：DSH 插件（可选）
-
-**[下载插件 v0.11.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip) → 解压 → 双击“安装制课插件.command” → 重新打开 DSH。**
-
-<details>
-<summary>展开查看：命令行安装、环境检查（doctor）、校验文件与开始做课示例</summary>
-
-```sh
-# 已有媒体环境，仅更新 Skill（其他宿主可直接复制到 ~/.agents/skills/）
-./install.sh --skill-only --agent both
-
-# 新机器准备完整本地媒体与配音环境（macOS Apple Silicon，需预留约 10GB 空间）
-./install.sh --agent both
-
-# 安装后检查本地依赖与 Qwen3-TTS 配音状态
-"$HOME/.local/bin/kgxc-course" doctor
+```text
+请帮我安装这个企业培训制课 Skill：https://github.com/hebokenn/kgxc-corporate-course-skill
+（macOS Apple Silicon 请运行仓库安装脚本 ./install.sh --agent both；若只需加载 Skill 规范也可安装 skills/corporate-training-motion 与 skills/elearning-course-design，安装好后告诉我怎么开始做第一门课。）
 ```
 
-**安装包校验文件：** [Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+<details>
+<summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ DSH 插件 / 校验与开课示例</summary>
 
-**开始做第一门课（在任意已加载本 Skill 的 AI 宿主中输入）：**
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v7.1.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-suite-v7.1.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
+   ```sh
+   "$HOME/.local/bin/kgxc-course" doctor
+   ```
+3. **DSH 插件版**：[下载 `kgxc-course-plugin-v0.11.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/kgxc-course-plugin-v0.11.0.zip) → 解压 → 双击`安装制课插件.command` → 重启 DSH。
+4. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/SHA256SUMS) · [DSH 插件 PLUGIN-SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v7.1.0/PLUGIN-SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+
+**装好后，直接把资料发给 AI 并输入：**
 
 ```text
 请用 corporate-training-motion，把我提供的资料做成《收货核对流程》培训课。
 受众：新入职门店同事。
 目标：能找到并核对订单、商品 SN 和外包装信息，按原文要求完成交接。
-交付：完整视频（MP4 + SRT + 封面）；若只需课件请改为“只交付独立课件和逐字稿”。
-先诊断素材并给出大纲与讲法，等我确认后再推进逐字稿、母版分镜、三段有声小样与整课导出。
+交付：完整系列视频（或改为“只交付独立 HTML/PPTX 课件 + 逐字稿 + 题库”）。
+先做资料诊断与原件要点梳理，等我确认大纲后再推进后续制作。
 ```
 
 </details>
 
 ---
 
-## 适用范围与相关文档
+## 全景能力矩阵：从原始资料到整套培训交付
 
-- **AI 宿主范围**：标准 `SKILL.md` + 本地 Python/Node/Playwright/FFmpeg 脚本架构，可在 **Antigravity、Claude Code、Codex、WorkBuddy、Cursor、Trae、Windsurf、DeepSeek Harness（DSH）** 等宿主中运行；AI 模型与计费沿用各宿主自身配置。
-- **本地运行环境**：完整本地渲染与 Qwen3-TTS 配音环境当前在 **macOS Apple Silicon（arm64）** 验证通过，无需额外云端 TTS API Key。
-- **开源协议与品牌边界**：本仓库自研代码、脚本与通用规范文档采用 **[Apache License 2.0](LICENSE)** 开源；酷果星创 Logo、角色、R5/R8 片头片尾包装及第三方字体/音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 原权利条款。
-- **项目共创**：由 [@hebokenn](https://github.com/hebokenn)（酷果星创）主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
+### 一、前端教学设计引擎（`elearning-course-design`）：先读透原件，再讲人话
 
-| 想进一步了解 | 文档 |
+| 核心能力 | 实际解决问题 |
 | --- | --- |
-| 7.1 无界面对话流、系列课与自查清单 | [59-streamlined-series-and-selfcheck.md](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md) |
-| 安装、恢复与日常使用 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) · [DSH 插件说明](docs/PLUGIN.md) |
-| 配音同步、多角色分声与原库音效 | [配音指南](docs/VOICE.md) · [音效库](docs/SOUND.md) · [tts_sync.py](skills/corporate-training-motion/scripts/tts_sync.py) |
-| `CourseActorsCute` 角色与内容规范 | [角色指南](docs/CHARACTERS.md) · [内容素材](docs/CONTENT-ASSETS.md) · [动效指南](docs/MOTION.md) |
-| 过往版本宣传片与旧版界面截图 | [历史版本归档 ARCHIVE.md](docs/ARCHIVE.md) · [完整变更历史 CHANGELOG.md](docs/CHANGELOG.md) · [发布流程 RELEASING.md](docs/RELEASING.md) |
+| **多源资料精准解析** | 支持制度 PDF、Word、PPT、扫描件 OCR 及访谈音视频（按时间码定位），同时识读文档内的表格、截图与流程图表。 |
+| **来源台账与条件/例外单列** | 逐页构建可追溯台账，明确标注**事实规则、触发前提、适用条件、例外情况与待核实缺口**，严格禁止 AI 臆造审批流程、业绩数字或内部制度。 |
+| **“学员没有原件”上下文自检** | 培训成品只面向看不见原附件的学员。自动排查并改写“如图/原表/资料中”等悬空指代，首次提到表单与界面时先交代名称、用途与看哪里。 |
+| **场景化实战转化 & 智能提问** | 拒绝“重视/赋能/形成闭环”式空话，严格按 **“工作触发情境 → 第一反应与动作判断 → 规则依据 → 示范 → 练习与反馈”** 重构口播；并在影响课程范围的节点主动弹出 **1–3 个带推荐与取舍的简洁选择**。 |
+
+### 二、视觉、动效与角色引擎（`corporate-training-motion`）：纯粹代码生成，绝不静态拼图
+
+| 核心能力 | 实际能力细节 |
+| --- | --- |
+| **100 种教学代码动效 + 17 类构图母版** | 遵循动画学原则（预备动作、弧线运动、缓入缓出、稳态收势）与 **F 型视觉扫读引导**（动作写前、条件紧随），每条关键规则演绎清晰的“起态 → 过程演变 → 结果确认”，**任何正文画面绝不静止超过 3.5 秒**。 |
+| **可选 Blender 代码化三维道具与特效** | 遇到复杂硬件拆解、门店空间动线或立体商品演示时，支持程序化描边、路径形变、漫画情绪仪表、分屏带练以及 **代码驱动的三维道具建模渲染**。 |
+| **`CourseActorsCute` 3.3 头身可动矢量角色** | 全程代码骨骼驱动，自带**零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与停步稳态回正、口型手势同步**；严谨区分黑衣店长、蓝衣店员（统一佩戴原版胸标）与便装无标顾客（禁与背景顺色），对话开口始终面向受话人、前景柜台与桌面物件前后遮挡零穿模。 |
+| **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
+
+> 内置人物预设与品牌片头片尾默认服务酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并按需替换为自有品牌视觉。
+
+![AI 全链路企业培训制课工作流与交付闭环](docs/media/v71/headless-workflow-card.png)
+
+![16 套精选明亮高对比浅色画布色板](docs/media/v71/bright-palettes-16.png)
+
+![CourseActorsCute 3.3 头身可动矢量角色阵营](docs/media/v71/cute-actors-cast.png)
+
+### 三、离线安全配音、音画精确咬合与多态交付闭环
+
+- **本地 `Qwen3-TTS` 离线配音与音色克隆（企业机密不外传）**：全流程本地生成拟真多角色语音，内置获授权的 **didi 男声**、**pipi 女声**，并可配置克隆自有讲师声线；不向任何第三方语音云发送制度文件与音频。
+- **`1-Beat-1-Audio` 毫秒级音画咬合 + 原库提示音效**：告别长语音猜秒数导致的“字幕提前剧透”或声画错位！[`tts_sync.py`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句生成真实录音并校准镜头帧数、驱动**动态说话气泡指向**、自动监测句尾能量防吞字截断、混入 48 kHz **“叮 / 嘟咚”原库教学提示音**与重点花字弹出，并产出**单行零标点外挂 `.srt` 字幕**。
+- **一套资料，四种形态按需全套带走**：
+  - **多集系列课套件**：统一批次按**内容母版三选一** + **跨章节 3 段代表性有声小样**定调，分集导出 `1080p / 24fps` 视频、字幕与封面，同步交付同风格的**《讲义精要》、章节测验题库、A4 可打印手写作业**。
+  - **单支重点培训视频**：含完整品牌片头片尾、目录进度条、双声演练与重点花字。
+  - **独立授课课件**：不录视频也能直接交付可面授或自录的 **PPTX / DOCX / PDF / 交互式 HTML 课件** 与完整逐字稿。
+  - **按句分钟级局部返修 & 过程默认留档**：制度微调只需对话指出修改哪几句，自动只重配重渲变动片段与对应讲义，其余全部毫秒级复用；[`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py) 自动验收音画流、第 0 帧高清识别封面（`attached_pic` 嵌入，第 1 帧秒切正文不拖泥带水）与零重叠字幕后归档至桌面 `ai 制课/<课程名称>/`，原始过程工程默认完整保留。
+
+| 内置授权音色 | 典型适用位置 | 实声试听 |
+| --- | --- | --- |
+| **didi · 男声** | 步骤拆解、系统示范与要点提示，清晰利落 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/didi-audition.mp3) · [下载 WAV](docs/media/voices/didi-audition.wav) |
+| **pipi · 女声** | 课程导入、情景对话与概念阐述，自然亲切 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/pipi-audition.mp3) · [下载 WAV](docs/media/voices/pipi-audition.wav) |
+
+---
+
+## 宣传片即实证：本片直接由本 Skill 经 Antigravity 实渲产出
+
+下面这支 **全能力介绍宣传片** 本身就是本仓库产出的真实成品——由 **Antigravity 调用本 Skill** 完成文案分段、**`didi / pipi` 本地离线双声配音 + 原库提示音效、`CourseActorsCute` 动画演绎、16 套浅色画布渲染**，并通过 `verify_delivery.py` 全项技术校验（1920×1080、24fps、48 kHz 立体声、第 0 帧封面隔离与 `attached_pic`、单行无标点字幕）。
+
+[![酷果星创 AI 企业培训制课引擎宣传片封面](docs/media/v71/kgxc-v71-promo-poster.jpg)](https://hebokenn.github.io/kgxc-corporate-course-skill/)
+
+**[在线观看 72 秒全面展示宣传片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看第 0 帧独立封面](docs/media/v71/kgxc-v71-promo-cover.png)
+
+> 如需查阅更早期 5.x / 6.x 历史版本的旧宣传片、17 支风格样片与过往工作台界面，请移步独立归档页（仅供查阅过往历史版本）：[历史版本与过往素材归档](docs/ARCHIVE.md) · [在线历史画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/archive.html)
+
+---
+
+## 一门课是如何在对话里完整落地的
+
+| 阶段 | AI 为你自动完成 | 你只需要确认 |
+| --- | --- | --- |
+| **1. 资料拆解与设计** | 读取 PDF/Word/PPT/扫描件/录音，建立来源台账、学习目标与单课/系列课结构 | 教给谁、学什么、重点范围 |
+| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代并完成自查 | 确认讲法自然、规则条件无遗漏 |
+| **3A. 课件与配套文档** | 交付可讲/可录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
+| **3B. 视觉母版定调与小样** | 按内容母版输出 3 套实质不同方案（`template_masters`），定调后导出 3 段跨章节有声 MP4 小样 | 选定画布配色、角色造型与声音节奏 |
+| **4. 全片交付与按句微改** | 全课批量渲染，经 `verify_delivery.py` 全检后归集至桌面目录；后续改稿只重配重渲受影响句 | 验收成片，或随时对话局部微调 |
+
+---
+
+## 适用环境、开源边界与详细文档
+
+- **运行环境**：完整本地渲染与离线 `Qwen3-TTS` 配音环境已在 **macOS Apple Silicon（arm64）** 实测验证；标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae 运行，模型推理与额度沿用宿主原生配置。
+- **开源协议与共创**：自研引擎代码、工具链与通用规范以 **[Apache License 2.0](LICENSE)** 开源；酷果星创 Logo、专有工服角色、R5/R8 片头片尾及第三方字体音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。由 [@hebokenn](https://github.com/hebokenn) 主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
+
+| 专题文档 | 链接 |
+| --- | --- |
+| 日常制作流程与操作手册 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) · [DSH 插件说明](docs/PLUGIN.md) |
+| 系列课批量工作流与自查规范 | [59-streamlined-series-and-selfcheck.md](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md) |
+| 角色、配音、花字音效与动效 | [角色指南](docs/CHARACTERS.md) · [配音指南](docs/VOICE.md) · [音效库](docs/SOUND.md) · [动效指南](docs/MOTION.md) |
+| 历史版本展示与完整变更记录 | [历史版本归档 ARCHIVE.md](docs/ARCHIVE.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [RELEASING.md](docs/RELEASING.md) |
 
 ---
 
 ## 版本更新
 
-以下列出近期版本概览，完整逐版记录、原始说明与验证链接见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
+### 全链路纯对话制课引擎、CourseActorsCute 可动角色与完整展示焕新：插件 0.11.0 / 核心 7.1.0 · 2026-11-26
 
-### 无界面对话工作流、CourseActorsCute 可爱人物与公共交付工具：插件 0.11.0 / 核心 7.1.0 · 2026-11-26
+- **全链路纯对话交互与公共 CLI 工具**：日常制课全部通过自然对话推进，支持多集系列课统一批次规划与按句最小范围局部返修；新增公共工具 `scripts/tts_sync.py`（支持 16/24/32-bit WAV 尾音能量检测、增量缓存、48 kHz 音效混音与单行无标点 SRT）及 `scripts/verify_delivery.py`（全自动核验 1080p/`yuv420p`、48 kHz AAC、第 0 帧独立封面与 `attached_pic` 嵌入、字幕无标点/零重叠）。
+- **统一 `CourseActorsCute` 3.3 头身可动矢量角色**：内置世界坐标零滑步步态、防弹膝盖 IK、行进转向与停步稳态回正、口型同步说话及原版胸标绑定，支持按课程扩展新造型便装顾客。
+- **全面焕新展示主页与独立历史归档页**：主页与 GitHub Pages 全面呈现双引擎能力矩阵、由 Antigravity 调用本 Skill 实渲制作的最新版宣传片及极简“发给 AI 自动安装”引导；过往历史版本展示与老旧样片统一归档至 [`docs/ARCHIVE.md`](docs/ARCHIVE.md) 与 `docs/archive.html`。
 
-- **全面切换至无界面对话工作台**：移除旧版浏览器表单（`design.html`）与网页时间轴编辑器（`index.html` / `editor.js` / `style.css`），本地服务保留 `/renderer.html` 无界面渲染合成与状态接口；同步刷新主页、GitHub Pages（`docs/index.html`）、新版 44 秒宣传片与实渲画廊，将历史版本宣传片和旧界面截图单独归档至 [`docs/ARCHIVE.md`](docs/ARCHIVE.md) / `docs/archive.html`。
-- **统一角色引擎 `CourseActorsCute` 与兼容层清理**：在 `workbench/motion/actors_v3_cute.js` 补齐 `CourseActors` 适配层（`pose`、`editDx/editDy` 位移响应与零滑步左右脚对齐），同步清理 `motion_quality.py`、`visual_styles.py`、`production_preferences.py`、`motion_gallery.py` 等模块的旧静态 PNG 残留。
-- **新增配音同步与一键交付质检 CLI**：新增 `scripts/tts_sync.py`（支持 Qwen3-TTS 24-bit WAV 尾音能量检测、按 beat 增量缓存、48kHz `amix` 混音与无标点单行 SRT）与 `scripts/verify_delivery.py`（1080p/48kHz、第 0 帧封面/第 1 帧正片切换、`attached_pic` 与字幕规则全检），配合 `test_v7_tools.py` 与全仓测试验证通过。
+### 多集系列课母版三选一与 16 套明亮浅色板：插件 0.10.0 / 核心 7.0.0 · 2026-11-24
 
-### 精简系列课工作流、16 套明亮浅色板与自查验收：插件 0.10.0 / 核心 7.0.0 · 2026-11-24
-
-- **多集系列课统一批次与母版三选一**：`storyboard.py` 新增 `template_masters` 与 `segments[].template_id` 校验，每类内容母版提供 3 套实质不同方案供定调；未启用母版的旧工程继续兼容逐段三备选。
-- **16 套精选明亮通透浅色色板 & 产出前自查**：默认随机池从 16 套高对比明亮浅色（`random_eligible: true`、无绿色）抽取；整合为产出前实质自查清单，成片改稿支持最小范围局部重做。
+- **多集系列课统一批次与内容母版三选一**：`storyboard.py` 新增 `template_masters` 与 `segments[].template_id` 校验，整门课程可统一输出分集视频 + 《讲义精要》+ 测验题库 + A4 手写作业。
+- **16 套高对比明亮浅色色板与实质自查清单**：默认随机选色池升级为 16 套 WCAG ≥ 4.5 无绿浅色画布；制作端在出片前完成实质自查修精，过程文件默认保留。
 
 <details>
-<summary>展开查看更早版本概览（6.9.8 – 5.7.1）</summary>
+<summary>展开查看更早版本概览（5.7.1 – 6.9.8）</summary>
 
-- **6.9.0 – 6.9.8（DSH 0.9.0 – 0.9.9）**：教学动效参数（预备、弧线、节奏、停稳）、渐进式工作台、应用内更新检查/下载、编号逐条显现（`ordered_reveals`）与片头等待预算（`introPolicy`）。
-- **5.7.1 – 6.8.2**：制作合同与六项核心验证、原件要点覆盖与人工确认、全身可动顾客与对白朝向遮挡、随机选色禁绿与独立封面首帧规范、原库“叮/嘟咚”音效及随包 `didi / pipi` 本地声音参考。[完整历史与验证链接](docs/CHANGELOG.md)
+- **6.9.0 – 6.9.8（DSH 0.9.0 – 0.9.9）**：教学动效节奏参数（预备、弧线与落定）、渐进式任务面板、应用内更新提醒与片头等待预算。
+- **5.7.1 – 6.8.2**：原件要点覆盖与条件例外单列、全身可动顾客与对白朝向校验、独立第 0 帧封面规则、原库“叮/嘟咚”音效及本地 `didi / pipi` 参考音色。[查看完整历史与验证记录](docs/CHANGELOG.md)
 
 </details>

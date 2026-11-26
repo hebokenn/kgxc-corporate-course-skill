@@ -136,11 +136,11 @@ python3 skills/corporate-training-motion/scripts/course_tools.py reading-enable 
 "$HOME/.local/bin/kgxc-course" resume "$HOME/Documents/酷果课程试用"
 ```
 
-恢复命令会核对课程身份与工程记录，所有制作、确认与局部修订全部在 AI 对话中完成。**自 7.1.0 起已全面退役浏览器表单页（`design.html`）与网页时间轴编辑器（`index.html`）**，保留本地无界面 `/renderer.html` 合成服务与公共质检 CLI（原旧版网页界面截图归档于 [ARCHIVE.md](ARCHIVE.md)）。
+恢复命令会核对课程身份与工程记录，所有制作、确认、母版定调与局部修订全部直接在 AI 对话中完成，后台以本地合成引擎渲染导出并保持完整过程工程留档（历史版本展示见 [ARCHIVE.md](ARCHIVE.md)）。
 
-![7.1.0 无界面对话驱动架构与公共交付闭环](media/v71/headless-workflow-card.png)
+![AI 全链路制课工作流与交付闭环](media/v71/headless-workflow-card.png)
 
-## 5. 无界面对话改稿与公共校验 CLI
+## 5. 纯对话改稿与公共校验 CLI
 
 在对话中提出局部修改意见后，AI 按当前工程目录与确认记录做最小范围更新：
 

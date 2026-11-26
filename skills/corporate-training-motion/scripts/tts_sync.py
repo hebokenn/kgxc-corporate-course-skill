@@ -55,11 +55,22 @@ def check_tail_energy(wav: Path, sample_rate: int = None) -> dict:
     }
 
 
+def _strip_all_punctuation(text: str) -> str:
+    import unicodedata
+    out = []
+    for ch in text:
+        if unicodedata.category(ch).startswith('P'):
+            out.append(' ' if ch in '-—–/' else '')
+        else:
+            out.append(ch)
+    return re.sub(r'\s+', ' ', ''.join(out)).strip()
+
+
 def split_single_line_captions(text: str, start: float, duration: float, max_chars: int = 24) -> list:
     parts = [s.strip() for s in re.split(r'(?<=[，。！？；：——])', text.strip()) if s.strip()]
     chunks, cur = [], ''
     for part in parts:
-        clean_part = re.sub(r'[，。！？；：、,.!?;:"\'“”‘’（）()《》【】]', '', part)
+        clean_part = _strip_all_punctuation(part)
         if not clean_part:
             continue
         if len(cur) + len(clean_part) <= max_chars:
@@ -71,7 +82,7 @@ def split_single_line_captions(text: str, start: float, duration: float, max_cha
     if cur:
         chunks.append(cur)
     if not chunks:
-        cleaned = re.sub(r'[\s，。！？；：、,.!?;:"\'“”‘’（）()《》【】]+', '', text)
+        cleaned = _strip_all_punctuation(text).replace(' ', '')
         if cleaned:
             chunks = [cleaned[i:i + max_chars] for i in range(0, len(cleaned), max_chars)]
     total_len = sum(len(c) for c in chunks) or 1

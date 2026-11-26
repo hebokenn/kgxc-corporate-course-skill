@@ -900,7 +900,7 @@
     "scripts/test_workbench_performance.py": "7cd2b5451360521b88d463ade0726c26759ba361a6fdf02d09530219c03c5e0f",
     "scripts/test_workflow.py": "6f6af72137776e6214cb4ff20ff9532d29d3e4db6e20c58c19064d906bb075c8",
     "scripts/test_workspace.py": "200bceb380b62fe35f33e8abb46c2a98d9c1e3f056e905f1330872558d47af1c",
-    "scripts/tts_sync.py": "e1af3315df2cdc503ccaae12c51d26d084fd6f3dba361d03ad0c9e1e98a8c43d",
+    "scripts/tts_sync.py": "fa3bbf28fff90971d4547c5ff8694cd28617f5325380f9fd447c637d972cbcfb",
     "scripts/validate.py": "ebb5ad46f19fef4aae590129771cdc1a6b782f05af56ef80ab3c631badf4acc8",
     "scripts/verify_delivery.py": "f8ed758fe7e96d1fffbb0319151eff07ff7a0b33d818fc0e22efcfe968dc7c41",
     "scripts/verify_motion_library.py": "cb90a1f62619359b562b4951009e052d0f942d817d7060c47f4f461fd69c0435",
