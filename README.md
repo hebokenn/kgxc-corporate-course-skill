@@ -60,8 +60,8 @@
 
 | 核心能力 | 实际能力细节 |
 | --- | --- |
-| **100 种教学代码动效 + 17 类构图母版** | 遵循动画学原则（预备动作、弧线运动、缓入缓出、稳态收势）与 **F 型视觉扫读引导**（动作写前、条件紧随），每条关键规则演绎清晰的“起态 → 过程演变 → 结果确认”，**任何正文画面绝不静止超过 3.5 秒**。 |
-| **可选 Blender 代码化三维道具与特效** | 遇到复杂硬件拆解、门店空间动线或立体商品演示时，支持程序化描边、路径形变、漫画情绪仪表、分屏带练以及 **代码驱动的三维道具建模渲染**。 |
+| **100 种教学代码动效 + 17 类构图母版** | 遵循动画学原则（绝对时间快节奏缓动、虚拟相机推拉摇移、同元素匹配转场）与 **F 型视觉扫读热区引导**（结论前置、动作行首、例外标红），内置 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 动效与运镜基元，**任何正文画面绝不静止超过 3.5 秒**。 |
+| **代码化三维道具 + 联网检索合规素材** | 遇到复杂硬件拆解或立体商品演示时，支持真 3D 透视投影模型（如 `iPhone 18 Pro` 冰川蓝全宽三摄平台与机身比例）与 Blender 联动；当纯几何绘图不足以表达具体实景道具或图标时，可通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 联网检索 Openverse / Wikimedia Commons 开放许可无水印素材并本地缓存至 `project/assets/web/`（自动记录来源、许可与 SHA-256 溯源清单）。 |
 | **`CourseActorsCute` 3.3 头身可动矢量角色** | 全程代码骨骼驱动，自带**零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与停步稳态回正、口型手势同步**；严谨区分黑衣店长、蓝衣店员（统一佩戴原版胸标）与便装无标顾客（禁与背景顺色），对话开口始终面向受话人、前景柜台与桌面物件前后遮挡零穿模。 |
 | **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
 
@@ -96,7 +96,7 @@
 
 [![酷果星创 AI 企业培训制课引擎宣传片封面](docs/media/v71/kgxc-v71-promo-poster.jpg)](https://hebokenn.github.io/kgxc-corporate-course-skill/)
 
-**[在线观看 72 秒全面展示宣传片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看第 0 帧独立封面](docs/media/v71/kgxc-v71-promo-cover.png)
+**[在线观看 69 秒全面展示宣传片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看第 0 帧独立封面](docs/media/v71/kgxc-v71-promo-cover.png)
 
 > 如需查阅更早期 5.x / 6.x 历史版本的旧宣传片、17 支风格样片与过往工作台界面，请移步独立归档页（仅供查阅过往历史版本）：[历史版本与过往素材归档](docs/ARCHIVE.md) · [在线历史画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/archive.html)
 

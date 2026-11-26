@@ -81,6 +81,14 @@ python3 SKILL_DIR/scripts/course_tools.py stage-contact-pose COURSE --identity C
 
 document.data.rows 为 `[[项目, 内容], ...]`；rowFrames 可逐行对应口播，footerFrame 对应条件/结论出现时刻。文本与列位置都成为工作台普通字段。素材 zIndex 控制编译时前后顺序，例如背景 0、素材 10、解释和气泡 20；同层保持原顺序。生成后以编译节点及工作台保存字段为编辑真值，不要在恢复时重编译覆盖它们。
 
+## 联网搜索与引入可用素材
+
+当纯几何/代码绘图不足以直观表达具体道具、真实场景参考、行业图标或示意插图时，允许联网搜索无水印、开放许可或官方公开素材并本地化引入课程工程：
+
+1. **检索与筛选**：使用宿主联网搜索或运行 `python3 SKILL_DIR/scripts/web_asset_search.py search "<关键词>" --source all --limit 6`（默认聚合 Openverse / Wikimedia Commons 开放许可图库），优先选择分辨率清晰、构图干净、无平台水印、与本课浅色画布色调协调的 PNG/SVG/JPG。
+2. **本地缓存与溯源**：确认可用后通过 `python3 SKILL_DIR/scripts/web_asset_search.py fetch <url> --out COURSE/project/assets/web/<文件名> --license "<许可>" --source-url "<来源页>"` 下载到课程工程内；脚本会自动在同目录生成/更新 `manifest.json`（记录 `sha256`、来源页、许可与署名），渲染阶段一律读取本地缓存文件，不依赖离线时的外网热链。
+3. **边界约束**：人物角色仍统一使用 `CourseActorsCute` 可动矢量人物，不以网图静态人像替代；Apple 授权店课程不得引入竞品手机/品牌标志；官网产品图仅供真实产品核对或经明确授权的展示，不冒充自绘素材。
+
 ## 验证与交付
 
 `compile-assets --spec 新构图.json --out 新展开构图.json` 可先查看普通节点与 contentAssets 来源哈希。输出存在即停止；configure 只初始化新草稿。真实课程仍须补齐 motionPlan 与 narrationLinks；素材生成不替代导演编排。

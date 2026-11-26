@@ -19,8 +19,11 @@ def make_wav(path: Path, freq: int = 440, duration: float = 0.5, sample_rate: in
     frames = bytearray()
     for i in range(n):
         amp = 0.35
-        if fade_out and i > n * 0.8:
-            amp *= max(0.0, (n - i) / (n * 0.2))
+        if fade_out:
+            if i > n * 0.8:
+                amp = 0.0
+            elif i > n * 0.65:
+                amp *= max(0.0, (n * 0.8 - i) / (n * 0.15))
         sample = int(amp * 32767 * math.sin(2 * math.pi * freq * i / sample_rate))
         frames.extend(struct.pack('<h', sample))
     with wave.open(str(path), 'wb') as w:
@@ -62,6 +65,18 @@ class V7ToolsTests(unittest.TestCase):
                 self.assertTrue(second['lines'][0]['reused'])
                 self.assertFalse(second['lines'][1]['reused'])
 
+                # Long narration or dense screen_text must warn and fail under strict_beats=True.
+                long_lines = [{
+                    'id': 'long1',
+                    'voice': 'didi',
+                    'text': '这句话刻意写得很长很长用来触发单条视觉意象过长告警以防退化成PPT翻页展示',
+                    'screen_text': '这是一段同样被写得非常长非常密集的同屏卡片说明文字超过了三十五个字的限制阈值',
+                }]
+                warned = tts_sync.synthesize_beats(long_lines, p / 'audio_long')
+                self.assertGreaterEqual(len(warned['warnings']), 2)
+                with self.assertRaises(ValueError):
+                    tts_sync.synthesize_beats(long_lines, p / 'audio_long', strict_beats=True)
+
     def test_verify_delivery_detects_first_frame_cover_and_srt_issues(self):
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp)
@@ -102,6 +117,38 @@ class V7ToolsTests(unittest.TestCase):
             bad_cover = verify_delivery.verify_video(lingering, cover=cover)
             self.assertFalse(bad_cover['ok'])
             self.assertTrue(any('第 1 帧' in e for e in bad_cover['errors']))
+
+            # Stagnant 6s video across 2 beats must fail under strict_ppt_guard, while distinct beat visuals pass.
+            static_vid = p / 'static_ppt.mp4'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'color=c=#224488:s=1920x1080:r=24:d=6.0',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=6.0',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-ar', '48000', str(static_vid),
+            ], check=True)
+            tl_path = p / 'timeline.json'
+            tl_path.write_text(json.dumps({
+                'timeline': [
+                    {'id': 'b1', 'start': 0.2, 'end': 3.0},
+                    {'id': 'b2', 'start': 3.2, 'end': 5.8},
+                ]
+            }), encoding='utf-8')
+            ppt_fail = verify_delivery.verify_video(static_vid, check_first_frame_cover=False, timeline=tl_path, strict_ppt_guard=True)
+            self.assertFalse(ppt_fail['ok'])
+            self.assertTrue(any('PPT' in e for e in ppt_fail['errors']))
+
+            dynamic_vid = p / 'dynamic.mp4'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'color=c=#224488:s=1920x1080:r=24:d=3.0',
+                '-f', 'lavfi', '-i', 'color=c=#d9483b:s=1920x1080:r=24:d=3.0',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=6.0',
+                '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[v]',
+                '-map', '[v]', '-map', '2:a',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-ar', '48000', str(dynamic_vid),
+            ], check=True)
+            dyn_ok = verify_delivery.verify_video(dynamic_vid, check_first_frame_cover=False, timeline=tl_path, strict_ppt_guard=True)
+            self.assertTrue(dyn_ok['ok'], dyn_ok)
 
     def test_production_preferences_accepts_v7_and_legacy_ids(self):
         import sys

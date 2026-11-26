@@ -46,9 +46,116 @@ def frame_rgb(video: Path, frame_index: int, stream_index: int) -> bytes:
     ])
 
 
+def sample_frames_rgb(video: Path, frame_indices: list, stream_index: int) -> dict:
+    """Decode multiple frame indices in one ffmpeg pass (320x180 rgb24)."""
+    unique = sorted({max(0, int(i)) for i in frame_indices})
+    if not unique:
+        return {}
+    expr = '+'.join(f'eq(n\\,{i})' for i in unique)
+    raw = subprocess.check_output([
+        'ffmpeg', '-v', 'error', '-i', str(video), '-map', f'0:{stream_index}',
+        '-vf', f'select={expr},scale=320:180,format=rgb24',
+        '-fps_mode', 'passthrough', '-f', 'rawvideo', '-',
+    ])
+    stride = 320 * 180 * 3
+    return {
+        idx: raw[pos * stride:(pos + 1) * stride]
+        for pos, idx in enumerate(unique)
+        if (pos + 1) * stride <= len(raw)
+    }
+
+
+def _main_canvas_mae(buf_a: bytes, buf_b: bytes) -> float:
+    """Compare main visual canvas (top 80% rows, excluding bottom subtitle strip)."""
+    import numpy as np
+    rows = 144  # 144 / 180 = top 80%, excludes bottom caption zone
+    arr_a = np.frombuffer(buf_a, dtype=np.uint8).reshape(180, 320, 3)[:rows].astype(np.float32)
+    arr_b = np.frombuffer(buf_b, dtype=np.uint8).reshape(180, 320, 3)[:rows].astype(np.float32)
+    return float(np.mean(np.abs(arr_a - arr_b)))
+
+
+def _parse_fps(rate_str: str) -> float:
+    if not rate_str:
+        return 24.0
+    if '/' in str(rate_str):
+        num, den = str(rate_str).split('/', 1)
+        return float(num) / max(float(den), 1.0)
+    return float(rate_str)
+
+
+def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_dur: float,
+                             timeline_path: Path, max_static_span: float = 5.0,
+                             min_scene_change_mae: float = 2.2) -> dict:
+    """Detect PPT-like visual stagnation across consecutive spoken beats (ignoring bottom subtitles)."""
+    data = json.loads(timeline_path.read_text(encoding='utf-8'))
+    beats = data.get('timeline') or data.get('lines') or []
+    issues = []
+    if not beats:
+        return {'beats_checked': 0, 'stagnant_spans': [], 'issues': ['timeline.json 未包含任何配音 Beat']}
+
+    max_frame = max(1, int(total_dur * fps) - 1)
+    sample_plan = []
+    for b in beats:
+        start = float(b.get('start', 0.0))
+        end = float(b.get('end', start + 0.5))
+        mid_f = max(1, min(max_frame, round(((start + end) * 0.5) * fps)))
+        sample_plan.append((b, mid_f))
+        if end - start > max_static_span:
+            s_f = max(1, min(max_frame, round((start + 0.25) * fps)))
+            e_f = max(1, min(max_frame, round((end - 0.25) * fps)))
+            sample_plan.append((b, s_f))
+            sample_plan.append((b, e_f))
+
+    frames = sample_frames_rgb(video, [f for _, f in sample_plan], stream_index)
+    stagnant_spans = []
+    run_beats = [beats[0]]
+    run_start = float(beats[0].get('start', 0.0))
+    transitions = []
+
+    for idx in range(1, len(beats)):
+        prev_mid = max(1, min(max_frame, round(((float(beats[idx - 1]['start']) + float(beats[idx - 1]['end'])) * 0.5) * fps)))
+        cur_mid = max(1, min(max_frame, round(((float(beats[idx]['start']) + float(beats[idx]['end'])) * 0.5) * fps)))
+        if prev_mid in frames and cur_mid in frames:
+            mae = _main_canvas_mae(frames[prev_mid], frames[cur_mid])
+            transitions.append({'from': beats[idx - 1]['id'], 'to': beats[idx]['id'], 'main_mae': round(mae, 2)})
+            if mae < min_scene_change_mae:
+                run_beats.append(beats[idx])
+                continue
+        span = float(run_beats[-1].get('end', 0.0)) - run_start
+        if len(run_beats) >= 2 and span >= max_static_span:
+            ids = ','.join(str(x.get('id')) for x in run_beats)
+            stagnant_spans.append({'beats': [x.get('id') for x in run_beats], 'seconds': round(span, 2)})
+            issues.append(f'连续 Beat ({ids}) 持续 {span:.1f}s 主画面几乎未切换（PPT 式滞留），请为每句配置独立意象镜头')
+        run_beats = [beats[idx]]
+        run_start = float(beats[idx].get('start', 0.0))
+
+    span = float(run_beats[-1].get('end', 0.0)) - run_start
+    if len(run_beats) >= 2 and span >= max_static_span:
+        ids = ','.join(str(x.get('id')) for x in run_beats)
+        stagnant_spans.append({'beats': [x.get('id') for x in run_beats], 'seconds': round(span, 2)})
+        issues.append(f'连续 Beat ({ids}) 持续 {span:.1f}s 主画面几乎未切换（PPT 式滞留），请为每句配置独立意象镜头')
+
+    for b in beats:
+        dur_b = float(b.get('end', 0.0)) - float(b.get('start', 0.0))
+        if dur_b > max_static_span:
+            s_f = max(1, min(max_frame, round((float(b['start']) + 0.25) * fps)))
+            e_f = max(1, min(max_frame, round((float(b['end']) - 0.25) * fps)))
+            if s_f in frames and e_f in frames and _main_canvas_mae(frames[s_f], frames[e_f]) < min_scene_change_mae:
+                issues.append(f'Beat {b.get("id")} 时长 {dur_b:.1f}s 且首尾主画面变化过小，建议拆句或补强视觉演进')
+
+    return {
+        'beats_checked': len(beats),
+        'transitions': transitions,
+        'stagnant_spans': stagnant_spans,
+        'issues': issues,
+    }
+
+
 def verify_video(video: Path, srt: Path = None, cover: Path = None,
                  require_attached_pic: bool = False, check_first_frame_cover: bool = True,
-                 strict_no_punctuation: bool = True, max_srt_chars: int = 28) -> dict:
+                 strict_no_punctuation: bool = True, max_srt_chars: int = 28,
+                 timeline: Path = None, visual_audit: Path = None,
+                 strict_ppt_guard: bool = False) -> dict:
     errors = []
     warnings = []
     report = {'video': str(video), 'ok': False, 'errors': errors, 'warnings': warnings, 'checks': {}}
@@ -152,6 +259,31 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
                     break
             report['checks']['srt_cues'] = len(cues)
 
+    if timeline is not None:
+        if not timeline.is_file():
+            errors.append(f'时间轴文件不存在: {timeline}')
+        else:
+            fps = _parse_fps(v.get('avg_frame_rate') or v.get('r_frame_rate'))
+            pacing = check_beat_visual_pacing(video, v['index'], fps, dur, timeline)
+            report['checks']['beat_pacing'] = pacing
+            target = errors if strict_ppt_guard else warnings
+            target.extend(pacing['issues'])
+
+    if visual_audit is not None:
+        if not visual_audit.is_file():
+            errors.append(f'画面密度审计文件不存在: {visual_audit}')
+        else:
+            audit_data = json.loads(visual_audit.read_text(encoding='utf-8'))
+            overloaded = [
+                row for row in audit_data.get('beats', [])
+                if int(row.get('screen_chars', 0)) > 45
+            ]
+            report['checks']['visual_audit_beats'] = len(audit_data.get('beats', []))
+            report['checks']['overloaded_screen_beats'] = [r.get('id') for r in overloaded]
+            if overloaded:
+                msg = f'同屏文字过载（>45 字）的镜头: {", ".join(str(r.get("id")) for r in overloaded)}'
+                (errors if strict_ppt_guard else warnings).append(msg)
+
     report['checks'].update({
         'resolution': f'{v.get("width")}x{v.get("height")}',
         'fps': v.get('avg_frame_rate'),
@@ -159,7 +291,7 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
         'sample_rate': a.get('sample_rate'),
         'has_attached_pic': bool(attached),
         'tail_150ms_peak_db': None if math.isinf(tail_db) else round(tail_db, 2),
-        'scope': 'technical decode, single-frame cover, and SRT check; visual/audio quality requires human/frame inspection',
+        'scope': 'technical decode, single-frame cover, SRT, and optional beat-level visual pacing check',
     })
     report['ok'] = not errors
     return report
@@ -170,6 +302,9 @@ def main():
     p.add_argument('video', type=Path)
     p.add_argument('--srt', type=Path)
     p.add_argument('--cover', type=Path)
+    p.add_argument('--timeline', type=Path, help='Optional tts_sync timeline.json to detect stagnant PPT stretches')
+    p.add_argument('--visual-audit', type=Path, help='Optional per-beat screen_chars / visual_metaphor audit JSON')
+    p.add_argument('--strict-ppt-guard', action='store_true', help='Fail instead of warn when PPT stagnation or dense text is found')
     p.add_argument('--require-attached-pic', action='store_true')
     p.add_argument('--no-first-frame-cover', action='store_true')
     p.add_argument('--allow-punctuation', action='store_true')
@@ -179,6 +314,9 @@ def main():
         require_attached_pic=args.require_attached_pic,
         check_first_frame_cover=not args.no_first_frame_cover,
         strict_no_punctuation=not args.allow_punctuation,
+        timeline=args.timeline,
+        visual_audit=args.visual_audit,
+        strict_ppt_guard=args.strict_ppt_guard,
     )
     print(json.dumps(res, ensure_ascii=False, indent=2))
     raise SystemExit(0 if res['ok'] else 1)
