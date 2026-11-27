@@ -560,7 +560,7 @@
     ctx.restore();
   }
 
-  function draw3DPhoneProp(ctx, cx, cy, scale, yaw, pitch, t, pal) {
+  function draw3DPhoneProp(ctx, cx, cy, scale, yaw, pitch, t, pal, opts = {}) {
     // True 3D perspective-projected iPhone 18 Pro (Glacier Blue — 71.9 x 150.0 x 8.75 mm)
     // Uses true 3D projected rounded rectangles & 3D projected lens circles so foreshortening is 100% physically accurate at every angle!
     const W = 136 * scale;
@@ -627,22 +627,26 @@
     const showFront = frontNormalZ >= 0;
 
     ctx.save();
-    // Soft grounded shadow
-    ctx.fillStyle = 'rgba(20, 32, 58, 0.13)';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + hh + 38 * scale, W * 0.92, 20 * scale, 0, 0, Math.PI * 2);
-    ctx.fill();
+    // Soft grounded shadow (toggleable via opts.showShadow)
+    if (opts.showShadow !== false) {
+      ctx.fillStyle = 'rgba(20, 32, 58, 0.13)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + hh + 38 * scale, W * 0.92, 20 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // Technical CAD orbit ring (behind phone)
-    ctx.strokeStyle = pal.secondary;
-    ctx.globalAlpha = 0.25;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 8]);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy + 16 * scale, W * 1.48, 48 * scale, -0.10, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
+    // Technical CAD orbit ring (only for hero covers / abstract metaphor stages; pass showOrbit: false for grounded use)
+    if (opts.showOrbit !== false) {
+      ctx.strokeStyle = pal.secondary;
+      ctx.globalAlpha = 0.25;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 16 * scale, W * 1.48, 48 * scale, -0.10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
 
     // 1. Extruded rounded titanium side band (sorted back-to-front by quad Z)
     const perim = roundedRectPts(-hw, -hh, W, H, R, 4);
@@ -1183,6 +1187,326 @@
     };
   }
 
+  /**
+   * v8.2.0 Cumulative KPI Rail: renders 1-4 parallel diagnostic scores without overwriting earlier metrics.
+   * Each item: { id, label, value, tone?: 'error'|'warn'|'ok'|'accent', progress?: 0..1 }
+   * Older metrics remain visible at settled contrast while the newest active metric highlights.
+   */
+  function drawKpiRail(ctx, items = [], pal = {}, opts = {}) {
+    const visible = items.filter(it => it && (it.progress == null ? true : it.progress > 0.02));
+    if (!visible.length) return { rects: [], unionRect: null, activeIdx: -1 };
+    const dir = opts.dir || 'column'; // 'column' | 'row'
+    const cardW = opts.cardW ?? (dir === 'row' ? 216 : 244);
+    const cardH = opts.cardH ?? 92;
+    const gap = opts.gap ?? 12;
+    const anchorRight = opts.rightX ?? 1806;
+    const startY = opts.topY ?? 164;
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const tones = {
+      error:  { bg: '#FFFFFF', activeBg: '#FFF1F2', bd: pal.error || '#C4313D', val: pal.error || '#C4313D', lbl: pal.error || '#C4313D' },
+      warn:   { bg: '#FFFFFF', activeBg: '#FFF7E6', bd: pal.gold || '#D48A1D', val: pal.secondary || '#8C4E12', lbl: pal.secondary || '#8C4E12' },
+      ok:     { bg: '#FFFFFF', activeBg: '#EAF7F1', bd: pal.ok || '#18794E', val: pal.ok || '#18794E', lbl: pal.ok || '#18794E' },
+      accent: { bg: '#FFFFFF', activeBg: pal.accent || '#254C99', bd: pal.gold || '#D48A1D', val: '#FFFFFF', lbl: '#FFE4A8', settledVal: pal.accent || '#254C99', settledLbl: pal.muted || '#5F6678' },
+    };
+    const activeIdx = visible.length - 1;
+    const rects = [];
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    visible.forEach((it, idx) => {
+      const p = clamp(it.progress == null ? 1 : it.progress);
+      const isNewest = idx === activeIdx;
+      const st = tones[it.tone || 'error'] || tones.error;
+      const rx = dir === 'row'
+        ? anchorRight - (visible.length - idx) * cardW - (visible.length - 1 - idx) * gap
+        : anchorRight - cardW;
+      const ry = dir === 'row' ? startY : startY + idx * (cardH + gap);
+      const s = lerp(0.84, 1, easeOutBack(p, 1.4));
+      ctx.save();
+      ctx.translate(rx + cardW / 2, ry + cardH / 2);
+      ctx.scale(s, s);
+      ctx.globalAlpha = clamp(p * 2.5) * (isNewest ? 1 : 0.86);
+      const bg = isNewest ? st.activeBg : st.bg;
+      roundRect(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 20, bg, st.bd, isNewest ? 3.2 : 2.0, isNewest);
+      ctx.font = `900 17px ${fontFamily}`;
+      ctx.fillStyle = (!isNewest && st.settledLbl) ? st.settledLbl : st.lbl;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(it.label || ''), 0, -20);
+      ctx.font = `900 34px ${fontFamily}`;
+      ctx.fillStyle = (!isNewest && st.settledVal) ? st.settledVal : st.val;
+      ctx.fillText(String(it.value || ''), 0, 18);
+      ctx.restore();
+      const rect = { x: rx, y: ry, w: cardW, h: cardH };
+      rects.push({ id: it.id || `kpi_${idx}`, rect, label: String(it.label || ''), value: String(it.value || '') });
+      minX = Math.min(minX, rx); minY = Math.min(minY, ry);
+      maxX = Math.max(maxX, rx + cardW); maxY = Math.max(maxY, ry + cardH);
+    });
+    const unionRect = { x: minX - 8, y: minY - 8, w: maxX - minX + 16, h: maxY - minY + 16 };
+    return { rects, unionRect, activeIdx };
+  }
+
+  /**
+   * v8.2.0 Cumulative Event / Evidence Stack: appends sequential story beats or diagnostic points
+   * top-to-bottom instead of overwriting the same coordinate slot in place.
+   * Each item: { id, text, tone?: 'bad'|'good'|'warn'|'neutral', progress?: 0..1 }
+   */
+  function drawCumulativeStack(ctx, items = [], pal = {}, opts = {}) {
+    const visible = items.filter(it => it && (it.progress == null ? true : it.progress > 0.02));
+    if (!visible.length) return { rects: [], unionRect: null };
+    const maxVisible = opts.maxVisible ?? 4;
+    const shown = visible.slice(-maxVisible);
+    const x = opts.x ?? 124;
+    const startY = opts.y ?? 184;
+    const maxW = opts.maxW ?? 580;
+    const itemH = opts.itemH ?? 52;
+    const gap = opts.gap ?? 10;
+    const fontSize = opts.fontSize ?? 20;
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const styles = {
+      bad:     { bg: pal.errSoft || '#FFF0F2', bd: pal.error || '#C4313D', fg: pal.error || '#C4313D', badge: '✕' },
+      good:    { bg: pal.okSoft || '#EAF7F1',  bd: pal.ok || '#18794E',    fg: pal.ok || '#18794E',    badge: '✓' },
+      warn:    { bg: '#FFF7E6',                bd: pal.gold || '#D48A1D',  fg: pal.secondary || '#8C4E12', badge: '!' },
+      neutral: { bg: '#FFFFFF',                bd: pal.accent || '#254C99', fg: pal.ink || '#222630',  badge: '•' },
+    };
+    const rects = [];
+    let maxRight = x;
+    shown.forEach((it, idx) => {
+      const p = clamp(it.progress == null ? 1 : it.progress);
+      const isNewest = idx === shown.length - 1;
+      const st = styles[it.tone || 'neutral'] || styles.neutral;
+      const y = startY + idx * (itemH + gap);
+      ctx.save();
+      ctx.font = `900 ${fontSize}px ${fontFamily}`;
+      const label = `${st.badge} ${String(it.text || '')}`;
+      const w = Math.min(maxW, Math.max(220, ctx.measureText(label).width + 44));
+      const slideX = (1 - easeOut(p)) * -22;
+      ctx.globalAlpha = clamp(p * 2.5) * (isNewest ? 1.0 : 0.78);
+      roundRect(ctx, x + slideX, y, w, itemH, 16, isNewest ? st.bg : '#FFFFFF', st.bd, isNewest ? 2.8 : 1.8, isNewest);
+      ctx.fillStyle = st.fg;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, x + slideX + 20, y + itemH / 2 + 1);
+      ctx.restore();
+      rects.push({ id: it.id || `ev_${idx}`, rect: { x, y, w, h: itemH } });
+      maxRight = Math.max(maxRight, x + w);
+    });
+    const totalH = shown.length * itemH + Math.max(0, shown.length - 1) * gap;
+    return { rects, unionRect: { x: x - 6, y: startY - 6, w: maxRight - x + 12, h: totalH + 12 } };
+  }
+
+  /**
+   * v8.2.0 Physical Handover Prop: transfers a phone or QR card along a parabolic arc between
+   * two actors' live hand sockets (`fromHand` -> `toHand`), replacing unattached floating props.
+   */
+  function drawHandoverProp(ctx, fromHand, toHand, progress, opts = {}) {
+    if (!fromHand || !toHand) return null;
+    const p = clamp(progress);
+    if (p <= 0.01 || p >= 0.995) return null;
+    const u = easeInOut(p);
+    const arcLift = opts.arcLift ?? 54;
+    const cx = lerp(fromHand.x, toHand.x, u);
+    const cy = lerp(fromHand.y, toHand.y, u) - Math.sin(u * Math.PI) * arcLift;
+    const tilt = lerp(-0.22, 0.18, u);
+    const propType = opts.type || 'phone';
+    const sc = opts.scale ?? 1.5;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(tilt);
+    ctx.scale(sc, sc);
+    if (propType === 'phone') {
+      roundRect(ctx, -10, -19, 20, 38, 5, '#334155', '#1E293B', 1.8, true);
+      roundRect(ctx, -7.8, -16.8, 15.6, 33.6, 3.2, opts.screenColor || '#6AA6FF', null);
+      roundRect(ctx, -3, -15, 6, 2.2, 1.1, '#1E293B', null);
+    } else {
+      roundRect(ctx, -14, -10, 28, 20, 4, '#FFFFFF', '#18794E', 1.8, true);
+      ctx.fillStyle = '#18794E';
+      ctx.fillRect(-10, -6, 8, 8);
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillRect(1, -5, 9, 2.5);
+      ctx.fillRect(1, 0, 7, 2.2);
+    }
+    ctx.restore();
+    return { x: cx - 20 * sc, y: cy - 22 * sc, w: 40 * sc, h: 44 * sc, cx, cy };
+  }
+
+  /**
+   * v8.2.0 Anchored Screen Inset (PiP Callout): pops out from a handheld or tabletop phone
+   * with a crisp leader line to display actual feature UI (camera/cinema/search/QR) only when mentioned.
+   */
+  function drawScreenInset(ctx, anchorPt, boxRect, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02 || !boxRect) return null;
+    const u = easeOutBack(p, 1.35);
+    const cx = boxRect.x + boxRect.w / 2;
+    const cy = boxRect.y + boxRect.h / 2;
+    const border = opts.border || '#254C99';
+    const mode = opts.mode || 'camera_live';
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+
+    ctx.save();
+    ctx.globalAlpha = clamp(p * 2.5);
+    // Leader line from anchored phone/hand to screen inset edge
+    if (anchorPt && Number.isFinite(anchorPt.x) && Number.isFinite(anchorPt.y)) {
+      const targetX = clamp(anchorPt.x, boxRect.x + 24, boxRect.x + boxRect.w - 24);
+      const targetY = anchorPt.y > cy ? boxRect.y + boxRect.h : boxRect.y;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.setLineDash([7, 5]);
+      ctx.beginPath(); ctx.moveTo(anchorPt.x, anchorPt.y); ctx.lineTo(targetX, targetY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = border;
+      ctx.beginPath(); ctx.arc(anchorPt.x, anchorPt.y, 5.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.translate(cx, cy);
+    ctx.scale(u, u);
+    const hw = boxRect.w / 2, hh = boxRect.h / 2;
+    roundRect(ctx, -hw, -hh, boxRect.w, boxRect.h, 20, '#FFFFFF', border, 3.2, true);
+    // Top bar
+    roundRect(ctx, -hw + 12, -hh + 12, boxRect.w - 24, 34, 12, '#F4F7FC', null);
+    ctx.font = `900 18px ${fontFamily}`;
+    ctx.fillStyle = border; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(opts.title || '真机功能演示'), -hw + 24, -hh + 29);
+
+    // Feature UI inner canvas
+    const ix = -hw + 16, iy = -hh + 56, iw = boxRect.w - 32, ih = boxRect.h - (opts.subtitle ? 96 : 72);
+    if (mode === 'camera_live') {
+      roundRect(ctx, ix, iy, iw, ih, 12, '#EAF4FF', '#93C5FD', 1.5);
+      // 5-frame Live Photo filmstrip with golden best-frame star
+      const fw = Math.min(44, (iw - 36) / 5);
+      const startFx = -((fw + 6) * 5 - 6) / 2;
+      for (let k = 0; k < 5; k++) {
+        const isBest = k === (opts.bestFrame ?? 2);
+        roundRect(ctx, startFx + k * (fw + 6), iy + ih * 0.22, fw, ih * 0.56, 8, isBest ? '#FFF7E6' : '#FFFFFF', isBest ? '#D48A1D' : '#94A3B8', isBest ? 2.6 : 1.4);
+        ctx.font = `900 18px ${fontFamily}`; ctx.fillStyle = isBest ? '#D48A1D' : '#64748B'; ctx.textAlign = 'center';
+        ctx.fillText(isBest ? '★' : `${k + 1}`, startFx + k * (fw + 6) + fw / 2, iy + ih * 0.52);
+      }
+    } else if (mode === 'video_cinema') {
+      roundRect(ctx, ix, iy, iw, ih, 12, '#1E293B', '#334155', 1.5);
+      ctx.strokeStyle = '#F59E0B'; ctx.lineWidth = 2.2;
+      ctx.strokeRect(-42, iy + ih * 0.22, 84, ih * 0.52);
+      ctx.font = `900 16px ${fontFamily}`; ctx.fillStyle = '#FCD34D'; ctx.textAlign = 'center';
+      ctx.fillText('电影效果 · f/2.0', 0, iy + ih * 0.86);
+    } else if (mode === 'search_loading') {
+      roundRect(ctx, ix, iy, iw, ih, 12, '#FFF1F2', '#FCA5A5', 1.5);
+      roundRect(ctx, ix + 14, iy + 14, iw - 28, 28, 14, '#FFFFFF', '#E11D48', 1.5);
+      ctx.font = `700 15px ${fontFamily}`; ctx.fillStyle = '#BE123C'; ctx.textAlign = 'left';
+      ctx.fillText('🔍 现场搜索兼容参数…', ix + 26, iy + 29);
+    } else if (mode === 'qr_wechat') {
+      roundRect(ctx, ix, iy, iw, ih, 12, '#ECFDF5', '#34D399', 1.5);
+      const qx = ix + 18, qy = iy + Math.max(8, (ih - 56) / 2), cell = 8;
+      const pat = ['1110110', '1010011', '1110101', '0001010', '1011101', '0100110', '1110101'];
+      ctx.fillStyle = '#065F46';
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) if (pat[r][c] === '1') ctx.fillRect(qx + c * cell, qy + r * cell, cell - 1.5, cell - 1.5);
+      ctx.font = `900 18px ${fontFamily}`; ctx.fillStyle = '#047857'; ctx.textAlign = 'left';
+      ctx.fillText('企业微信扫码', qx + 70, iy + ih * 0.42);
+      ctx.font = `700 15px ${fontFamily}`; ctx.fillStyle = '#475569';
+      ctx.fillText('随时线上答疑', qx + 70, iy + ih * 0.68);
+    }
+    if (opts.subtitle) {
+      ctx.font = `700 17px ${fontFamily}`; ctx.fillStyle = '#475569'; ctx.textAlign = 'center';
+      ctx.fillText(String(opts.subtitle), 0, hh - 20);
+    }
+    ctx.restore();
+    return boxRect;
+  }
+
+  /**
+   * v8.2.0 Open-Canvas Analytical Primitives (replaces rapid-flipping PPT card walls):
+   * - drawOpenChapterDots: lightweight horizontal timeline nodes
+   * - drawSculptureBar: 3D vertical contrast pillar with built-in safe height cap (<= 210px)
+   * - drawFloatingTag: compact cumulative keyword badge (4-14 chars) that stays visible across a topic
+   */
+  function drawOpenChapterDots(ctx, tabs = [], activeIdx = 0, pal = {}, opts = {}) {
+    if (!tabs.length) return;
+    const y = opts.y ?? 198;
+    const x1 = opts.x1 ?? 310;
+    const x2 = opts.x2 ?? 1610;
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const step = tabs.length > 1 ? (x2 - x1) / (tabs.length - 1) : 0;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(34, 38, 48, 0.14)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+    if (activeIdx > 0) {
+      ctx.strokeStyle = pal.accent || '#254C99'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 + activeIdx * step, y); ctx.stroke();
+    }
+    tabs.forEach((tb, i) => {
+      const cx = x1 + i * step;
+      const isAct = i === activeIdx;
+      const isDone = i < activeIdx;
+      ctx.beginPath();
+      ctx.arc(cx, y, isAct ? 11 : (isDone ? 7 : 5.5), 0, Math.PI * 2);
+      ctx.fillStyle = isAct ? (tb.col || pal.accent || '#254C99') : (isDone ? (pal.ok || '#18794E') : '#CBD5E1');
+      ctx.fill();
+      if (isAct) {
+        ctx.strokeStyle = pal.gold || '#D48A1D'; ctx.lineWidth = 3; ctx.stroke();
+      }
+      ctx.font = `${isAct ? 900 : 700} ${isAct ? 21 : 18}px ${fontFamily}`;
+      ctx.fillStyle = isAct ? (tb.col || pal.accent || '#254C99') : (isDone ? (pal.ok || '#18794E') : (pal.muted || '#5F6678'));
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(tb.label || ''), cx, y + 30);
+    });
+    ctx.restore();
+  }
+
+  function drawSculptureBar(ctx, cx, baseY, maxH, ratio, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02) return null;
+    // Cap height at 210px so bar value labels stay well clear of floating tags above
+    const safeMaxH = Math.min(maxH || 210, opts.maxSafeH ?? 210);
+    const h = Math.max(40, safeMaxH * clamp(ratio) * easeOutExpo(p));
+    const w = opts.width ?? 136;
+    const fillTop = opts.fillTop || '#3EB588';
+    const fillBot = opts.fillBot || '#18794E';
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    ctx.save();
+    ctx.fillStyle = 'rgba(34,38,48,0.08)';
+    ctx.beginPath(); ctx.ellipse(cx, baseY + 6, w * 0.62, 11, 0, 0, Math.PI * 2); ctx.fill();
+    const g = ctx.createLinearGradient(0, baseY - h, 0, baseY);
+    g.addColorStop(0, fillTop); g.addColorStop(1, fillBot);
+    roundRect(ctx, cx - w / 2, baseY - h, w, h, 20, g, null, 0, true);
+    roundRect(ctx, cx - w / 2 + 12, baseY - h + 12, 18, Math.max(12, h - 24), 9, 'rgba(255,255,255,0.22)', null);
+    if (opts.valText) {
+      ctx.font = `900 30px ${fontFamily}`; ctx.fillStyle = fillBot; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(opts.valText), cx, baseY - h - 26);
+    }
+    if (opts.subText) {
+      ctx.font = `900 21px ${fontFamily}`; ctx.fillStyle = opts.ink || '#222630'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(opts.subText), cx, baseY + 32);
+    }
+    ctx.restore();
+    return { x: cx - w / 2, y: baseY - h - 46, w, h: h + 88 };
+  }
+
+  function drawFloatingTag(ctx, cx, cy, text, tone = 'good', progress = 1, opts = {}) {
+    const p = clamp(progress);
+    if (p <= 0.02) return null;
+    const pal = opts.pal || {};
+    const maxW = opts.maxW ?? 450;
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const s = lerp(0.84, 1, easeOutBack(p, 1.4));
+    const styles = {
+      bad:     { bg: pal.errSoft || '#FFF0F2', bd: pal.error || '#C4313D', fg: pal.error || '#C4313D', icon: '✕ ' },
+      darkRed: { bg: pal.error || '#C4313D',   bd: '#FFFFFF',              fg: '#FFFFFF',              icon: '⚠ ' },
+      good:    { bg: pal.okSoft || '#EAF7F1',  bd: pal.ok || '#18794E',    fg: pal.ok || '#18794E',    icon: '✓ ' },
+      gold:    { bg: '#FFF7E6',                bd: pal.gold || '#D48A1D',  fg: pal.secondary || '#8C4E12', icon: '★ ' },
+      navy:    { bg: pal.accent || '#254C99',  bd: pal.gold || '#D48A1D',  fg: '#FFFFFF',              icon: '' },
+    };
+    const st = styles[tone] || styles.good;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(s, s);
+    ctx.globalAlpha = clamp(p * 2.5);
+    ctx.font = `900 23px ${fontFamily}`;
+    const fullTxt = st.icon + String(text || '');
+    const w = Math.min(maxW, Math.max(200, ctx.measureText(fullTxt).width + 50));
+    const h = 56;
+    roundRect(ctx, -w / 2, -h / 2, w, h, 28, st.bg, st.bd, 2.8, true);
+    ctx.fillStyle = st.fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(fullTxt, 0, 1);
+    ctx.restore();
+    return { x: cx - w / 2, y: cy - h / 2, w, h };
+  }
+
   global.VisualMetaphors = {
     clamp, easeOut, easeInOut, easeOutExpo, easeOutQuint, easeInOutQuart, easeOutBack, spring, win, lerp,
     roundRect, drawDocumentSheet, drawStrikeThrough,
@@ -1190,5 +1514,7 @@
     withCamera, drawStudioBackdrop, drawAmbientBackdrop, drawFocusBrackets, drawSpeedLines, drawRipple, drawStampBadge,
     drawRetailStoreBackdrop, drawCinematicAppleStore, drawFScanOverlay,
     rectOverlapArea, placeAvoidingActors, drawSmartSpeakerBubble, drawSegmentedProgressBar,
+    drawKpiRail, drawCumulativeStack, drawHandoverProp, drawScreenInset,
+    drawOpenChapterDots, drawSculptureBar, drawFloatingTag,
   };
 })(window);

@@ -225,7 +225,7 @@ def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_d
 def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
                        max_consecutive_card_box: int = 2,
                        max_summary_board_ratio: float = 0.22) -> dict:
-    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v8.1 hard gate."""
+    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v8.2 hard gate."""
     data = json.loads(audit_path.read_text(encoding='utf-8'))
     errors = []
     floating = data.get('floating_walk_violations') or []
@@ -233,6 +233,9 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
     replays = data.get('scene_replay_violations') or []
     sways = data.get('camera_sway_violations') or []
     premature = data.get('premature_reveal_violations') or []
+    info_overwrites = data.get('info_overwrite_violations') or []
+    floating_props = data.get('floating_prop_violations') or []
+    rapid_flips = data.get('rapid_card_flip_violations') or []
     card_ratio = float(data.get('card_box_ratio', 0.0))
     summary_ratio = float(data.get('summary_board_ratio', 0.0))
     max_consec = int(data.get('max_consecutive_card_box', 0))
@@ -262,6 +265,21 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
         sample = premature[0]
         errors.append(
             f'检测到 {len(premature)} 处画面元素抢先旁白出现（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("item_id")} 提前 {sample.get("lead_sec")}s），请绑定 speech_start / phraseTime'
+        )
+    if info_overwrites:
+        sample = info_overwrites[0]
+        errors.append(
+            f'检测到 {len(info_overwrites)} 处并列指标/事件卡片原地覆盖前一条（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("prev_label")} -> {sample.get("next_label")}），请改用 VM.drawKpiRail / VM.drawCumulativeStack 累进保留'
+        )
+    if floating_props:
+        sample = floating_props[0]
+        errors.append(
+            f'检测到 {len(floating_props)} 处实景门店无互动悬空道具（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("prop_id")}），请改用桌面展机、heldProp / drawHandoverProp 或 drawScreenInset'
+        )
+    if rapid_flips:
+        sample = rapid_flips[0]
+        errors.append(
+            f'检测到 {len(rapid_flips)} 处大面积卡片高频翻页快闪 PPT（如 {sample.get("scene_id")} 连续 {sample.get("swaps")} 次翻页，均停 {sample.get("avg_sec")}s），请改用开放画布累进舞台（10-24s/主题）'
         )
     if card_ratio > max_card_box_ratio:
         errors.append(
@@ -312,6 +330,9 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
         'scene_replay_count': len(replays),
         'camera_sway_count': len(sways),
         'premature_reveal_count': len(premature),
+        'info_overwrite_count': len(info_overwrites),
+        'floating_prop_count': len(floating_props),
+        'rapid_card_flip_count': len(rapid_flips),
         'progress_bar': pb,
         'steady_scenes': steady_scenes,
         'dead_camera_scenes': [c.get('scene_id') for c in dead_cams],

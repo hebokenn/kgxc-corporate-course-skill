@@ -4,6 +4,19 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 累进指标防覆盖、实景手持/递交道具互动与反快闪 PPT 开放画布：核心 8.2.0 · 2026-11-27
+
+- **信息生命周期分级与累进留存原语（`visual_metaphors.js` / `director_stage.js` / `verify_delivery.py`）**：
+  - 根因：此前实景诊断场景将多个并列得分率或连续失误点反复写在同一坐标槽位，后出现项直接覆盖前一项，破坏学员对比与工作记忆。
+  - 升级：`VisualMetaphors` 新增 `drawKpiRail(ctx, items, pal, opts)`（支持纵向/横向紧凑多联指标轨，最新项高亮、前序项温和退阶并完整保留，返回 `unionRect` 供避让）与 `drawCumulativeStack(ctx, items, pal, opts)`（案例事件/证据链自上而下累进排开）；`DirectorStage.createFrameAuditor()` 新增 `recordMetricSlot(slotId, label, value, rect)` 与 `recordText(..., 'kpi' | 'evidence')` 同位覆写检测；`verify_delivery.py` 门禁 A 新增 `info_overwrite_violations` 硬拦截。
+- **实景门店道具物理接地、手持插槽与锚定屏幕特写（`actors_v3_cute.js` / `visual_metaphors.js` / `director_stage.js`）**：
+  - 根因：`draw3DPhoneProp` 原为封面与抽象舞台设计的全息悬浮道具，此前在实景门店中频繁无互动悬空摆放，且 `CourseActorsCute.paintExpressive` 未暴露实时手部坐标与手持道具插槽。
+  - 升级：`CourseActorsCute` 新增 `VALID_HELD_PROPS`（`phone` / `qr_card` / `card`）强校验参数，绘制时直接握于前手并同步返回世界坐标 `bounds.frontHand / backHand`；`VisualMetaphors` 新增 `drawHandoverProp(ctx, fromHand, toHand, progress, opts)`（抛物线弧线递交）与 `drawScreenInset(ctx, anchorPt, boxRect, opts)`（从手持或桌面真机拉出引导线弹出实况选帧/电影效果/搜索/企微扫码特写窗），`draw3DPhoneProp` 新增可选 `opts.showOrbit / showShadow` 开关；`DirectorStage` 与 `verify_delivery.py` 新增 `recordProp()` 与 `floating_prop_violations` 硬拦截 `cinematic_store` 实景中的无互动悬空道具。
+- **反快闪 PPT 开放画布拆解原语与高频翻页门禁（`visual_metaphors.js` / `director_stage.js` / `60-v8-cinematic-director-and-gates.md`）**：
+  - 根因：部分多要点深度拆解段虽标记为 `kinetic_metaphor`，却仍用占屏大白框每 2–4 秒整卡翻页，导致阅读来不及且回潮为 PPT 观感。
+  - 升级：`VisualMetaphors` 沉淀开放画布原语 `drawOpenChapterDots`、内置 `<= 210px` 安全限高的 `drawSculptureBar` 与短关键词累进浮标 `drawFloatingTag`；`DirectorStage` 与 `verify_delivery.py` 新增 `recordPanel()` 与 `rapid_card_flip_violations` 硬拦截 `kinetic_metaphor` / `data_sculpture` 内大面积卡片（≥ 28% 画布）连续 ≥ 3 次且单屏 `< 5s` 的快闪翻页；规范 `SKILL.md` 与 `60-v8-cinematic-director-and-gates.md` 同步补入三项 8.2.0 红线与 `drawStampBadge` 含前景色 `fg` 完整签名。
+- **验证范围**：新增 `scripts/test_v8_tools.py::test_v8_2_cumulative_kpi_hand_props_and_anti_ppt_flip_gates` 覆盖全部新增 JS 引擎契约、手部锚点与手持道具、三类新门禁拦截与放行用例，并通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v8_tools.py`、`scripts/test_v7_tools.py`、`tests/test_streamlined_v700.py`、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及线上下载哈希核验。
+
 ## 根治 Qwen3-TTS 克隆音色吞尾字、清畸形双标点与双窗口尾音防切检：核心 8.1.2 · 2026-11-27
 
 - **根治 `mlx_audio` Qwen3-TTS 解码器句尾硬截断（`scripts/qwen3_tts.py`）**：

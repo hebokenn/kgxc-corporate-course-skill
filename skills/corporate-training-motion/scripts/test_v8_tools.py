@@ -508,6 +508,148 @@ console.log('SEG_BAR_JS_OK');
         self.assertTrue(hasattr(qwen3_tts, '_patch_zero_token_decode'))
         self.assertFalse(qwen3_tts._patch_zero_token_decode(object()))
 
+    def test_v8_2_cumulative_kpi_hand_props_and_anti_ppt_flip_gates(self):
+        """v8.2.0: heldProp hand sockets, cumulative KPI/event stack, handover/screen-inset, open-canvas & Gate A guards."""
+        script = f"""
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+global.window = global;
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'actors_v3_cute.js'))}, 'utf8'));
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'visual_metaphors.js'))}, 'utf8'));
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'director_stage.js'))}, 'utf8'));
+const CA = window.CourseActorsCute;
+const VM = window.VisualMetaphors;
+const DS = window.DirectorStage;
+
+assert.equal(DS.VERSION, '8.2.0');
+assert.ok(CA.VALID_HELD_PROPS.includes('phone'));
+assert.ok(CA.VALID_HELD_PROPS.includes('qr_card'));
+
+// 1. CourseActorsCute heldProp validation + live hand socket coordinates
+assert.throws(() => CA.validatePaintState({{ x: 500, footY: 850, heldProp: 'invalid_prop' }}), /unsupported heldProp/);
+const noop = () => {{}};
+const mockCtx = new Proxy({{
+  measureText: t => ({{ width: String(t).length * 20 }}),
+  createLinearGradient: () => ({{ addColorStop: noop }}),
+  createRadialGradient: () => ({{ addColorStop: noop }}),
+}}, {{
+  get(target, prop) {{ return prop in target ? target[prop] : noop; }},
+  set() {{ return true; }},
+}});
+const bStaff = CA.paintExpressive(mockCtx, CA.getPreset('staff_bun'), {{
+  x: 600, footY: 850, scale: 1.6, facing: 1, t: 1.0,
+  mood: 'happy', gesture: 'present', heldProp: 'phone',
+}}, {{}});
+assert.ok(bStaff.frontHand && bStaff.frontHand.x > 600, JSON.stringify(bStaff.frontHand));
+assert.ok(bStaff.backHand && Number.isFinite(bStaff.backHand.y), JSON.stringify(bStaff.backHand));
+
+// 2. VisualMetaphors v8.2.0 primitives (KPI rail, cumulative stack, handover, screen inset, open-canvas)
+const pal = {{ accent: '#254C99', secondary: '#8C4E12', gold: '#D48A1D', ok: '#18794E', error: '#C4313D', ink: '#222630', muted: '#5F6678' }};
+const rail = VM.drawKpiRail(mockCtx, [
+  {{ id: 'k1', label: '状态待客得分率', value: '< 30%', tone: 'error', progress: 1 }},
+  {{ id: 'k2', label: '建立联系得分率', value: '< 10%', tone: 'error', progress: 1 }},
+], pal);
+assert.equal(rail.rects.length, 2);
+assert.ok(rail.rects[1].rect.y > rail.rects[0].rect.y);
+
+const stack = VM.drawCumulativeStack(mockCtx, [
+  {{ id: 'e1', text: '掏自己手机现查', tone: 'bad', progress: 1 }},
+  {{ id: 'e2', text: '干报官方授权店', tone: 'bad', progress: 1 }},
+], pal);
+assert.equal(stack.rects.length, 2);
+assert.ok(stack.rects[1].rect.y > stack.rects[0].rect.y);
+
+const ho = VM.drawHandoverProp(mockCtx, {{ x: 700, y: 650 }}, {{ x: 1100, y: 650 }}, 0.5, {{ type: 'phone' }});
+assert.ok(ho && ho.cx === 900 && ho.cy < 650);
+const inset = VM.drawScreenInset(mockCtx, bStaff.frontHand, {{ x: 800, y: 260, w: 360, h: 220 }}, {{ mode: 'camera_live', title: '实况选帧', progress: 1 }});
+assert.ok(inset && inset.w === 360);
+VM.drawOpenChapterDots(mockCtx, [{{ label: '01 差距' }}, {{ label: '02 动作' }}], 1, pal);
+const barRect = VM.drawSculptureBar(mockCtx, 1310, 816, 400, 1.0, {{ valText: '96.5', subText: '高分', progress: 1 }});
+// Safe max height cap <= 210 keeps bar top >= 816 - 210 - 46 = 560
+assert.ok(barRect.y >= 555, JSON.stringify(barRect));
+const tagRect = VM.drawFloatingTag(mockCtx, 960, 440, '开放画布关键词', 'gold', 1, {{ pal }});
+assert.ok(tagRect && tagRect.h === 56);
+VM.draw3DPhoneProp(mockCtx, 960, 560, 0.5, 0.2, 0.1, 1, pal, {{ showOrbit: false, showShadow: false }});
+
+// 3. DirectorStage auditor catches all 3 v8.2.0 violations
+const lines = [
+  {{ id: 'b1', scene_id: 'sc_store', layout_kind: 'cinematic_store', start: 0, end: 3.0 }},
+  {{ id: 'b2', scene_id: 'sc_store', layout_kind: 'cinematic_store', start: 3.0, end: 6.0 }},
+  {{ id: 'b3', scene_id: 'sc_ppt', layout_kind: 'kinetic_metaphor', start: 6.0, end: 8.5 }},
+  {{ id: 'b4', scene_id: 'sc_ppt', layout_kind: 'kinetic_metaphor', start: 8.5, end: 11.0 }},
+  {{ id: 'b5', scene_id: 'sc_ppt', layout_kind: 'kinetic_metaphor', start: 11.0, end: 13.5 }},
+];
+const badAud = DS.createFrameAuditor();
+for (let f = 0; f < 324; f++) {{
+  const t = f / 24;
+  const st = DS.resolveTimeline(lines, t);
+  badAud.beginFrame(f, t, st, st.layoutKind, {{ x: f * 0.15, y: 0, zoom: 1.02 }});
+  if (st.sceneId === 'sc_store') {{
+    badAud.recordMetricSlot('top_kpi', t < 3.0 ? '状态待客得分率' : '建立联系得分率', '< 10%', {{ x: 1550, y: 164, w: 244, h: 92 }});
+    badAud.recordProp('midair_phone', {{ x: 900, y: 500, w: 120, h: 200 }}, {{ attachment: 'floating', interactive: false }});
+  }} else {{
+    // Giant panel (>28% screen) flipping every 2.5s (3 swaps < 5s)
+    badAud.recordPanel('ppt_board', {{ x: 140, y: 240, w: 1640, h: 620 }}, {{ contentKey: st.beatId }});
+  }}
+}}
+const badRep = badAud.finalize();
+assert.ok(badRep.info_overwrite_violations.length >= 1, JSON.stringify(badRep.info_overwrite_violations));
+assert.ok(badRep.floating_prop_violations.length >= 1, JSON.stringify(badRep.floating_prop_violations));
+assert.ok(badRep.rapid_card_flip_violations.length >= 1, JSON.stringify(badRep.rapid_card_flip_violations));
+
+// Clean v8.2.0 usage passes with 0 violations
+const cleanAud = DS.createFrameAuditor();
+for (let f = 0; f < 324; f++) {{
+  const t = f / 24;
+  const st = DS.resolveTimeline(lines, t);
+  cleanAud.beginFrame(f, t, st, st.layoutKind, {{ x: f * 0.15, y: 0, zoom: 1.02 }});
+  if (st.sceneId === 'sc_store') {{
+    cleanAud.recordMetricSlot('kpi_1', '状态待客得分率', '< 30%', {{ x: 1550, y: 164, w: 244, h: 92 }});
+    if (t >= 3.0) cleanAud.recordMetricSlot('kpi_2', '建立联系得分率', '< 10%', {{ x: 1550, y: 268, w: 244, h: 92 }});
+    cleanAud.recordProp('demo_phone', {{ x: 700, y: 600, w: 40, h: 70 }}, {{ attachment: 'hand', interactive: true }});
+  }} else {{
+    // Same thematic open-canvas stage stays calmly across 7.5s
+    cleanAud.recordPanel('open_stage', {{ x: 140, y: 240, w: 1640, h: 620 }}, {{ contentKey: 'gap_01' }});
+  }}
+}}
+const cleanRep = cleanAud.finalize();
+assert.equal(cleanRep.info_overwrite_violations.length, 0);
+assert.equal(cleanRep.floating_prop_violations.length, 0);
+assert.equal(cleanRep.rapid_card_flip_violations.length, 0);
+console.log('JS_V8_2_OK');
+"""
+        proc = subprocess.run(['node', '-e', script], capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        self.assertIn('JS_V8_2_OK', proc.stdout)
+
+        # 4. verify_delivery.py Gate A blocks all 3 new violation types
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            vid = p / 'ok.mp4'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'color=c=white:s=1920x1080:r=24:d=2.0',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=2.0',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-ar', '48000', str(vid),
+            ], check=True)
+            bad_v82 = p / 'bad_v82.json'
+            bad_v82.write_text(json.dumps({
+                'schema': 'kgxc-director-audit/1',
+                'total_frames': 48, 'total_beats': 4,
+                'card_box_ratio': 0.0, 'summary_board_ratio': 0.0, 'max_consecutive_card_box': 0,
+                'floating_walk_violations': [], 'text_actor_overlap_violations': [], 'scene_replay_violations': [],
+                'camera_sway_violations': [], 'premature_reveal_violations': [],
+                'info_overwrite_violations': [{'scene_id': 'sc05', 'beat_id': 'b4', 'prev_label': '状态', 'next_label': '建联'}],
+                'floating_prop_violations': [{'scene_id': 'sc02', 'beat_id': 'b1', 'prop_id': 'hover_phone'}],
+                'rapid_card_flip_violations': [{'scene_id': 'sc04', 'panel_id': 'board', 'swaps': 4, 'avg_sec': 2.6}],
+                'camera_summary': [{'scene_id': 'sc02', 'layout_kind': 'cinematic_store', 'frames': 48, 'zoom_span': 0.06, 'pan_span_px': 40.0}],
+            }), encoding='utf-8')
+            bad_out = verify_delivery.verify_video(vid, check_first_frame_cover=False, render_audit=bad_v82)
+            self.assertFalse(bad_out['ok'])
+            self.assertTrue(any('原地覆盖' in e for e in bad_out['errors']), bad_out['errors'])
+            self.assertTrue(any('悬空道具' in e for e in bad_out['errors']), bad_out['errors'])
+            self.assertTrue(any('高频翻页快闪 PPT' in e for e in bad_out['errors']), bad_out['errors'])
+
 
 if __name__ == '__main__':
     unittest.main()

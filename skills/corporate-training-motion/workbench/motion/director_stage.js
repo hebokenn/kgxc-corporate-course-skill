@@ -295,7 +295,15 @@
     const overlapViolations = [];
     const replayViolations = [];
     const prematureRevealViolations = [];
+    const infoOverwriteViolations = [];
+    const floatingPropViolations = [];
+    const rapidCardFlipViolations = [];
     const seenPrematureKeys = new Set();
+    const seenOverwriteKeys = new Set();
+    const seenFloatingPropKeys = new Set();
+    const seenMetricSlotsByScene = new Map();
+    const seenPersistentTextsByScene = new Map();
+    const panelTimelineByScene = new Map();
     const beatLayouts = new Map();
     const beatOrder = [];
     const sceneCameras = new Map();
@@ -484,6 +492,120 @@
     function recordText(id, rect, kind = 'label') {
       if (!cur || !rect) return;
       cur.texts.push({ id: String(id), rect, kind });
+      // v8.2.0: detect distinct kpi/evidence items overwriting the exact same screen slot inside one scene
+      if (kind === 'kpi' || kind === 'evidence') {
+        const sMap = seenPersistentTextsByScene.get(cur.sceneId) || new Map();
+        const curArea = Math.max(1, (rect.w || 0) * (rect.h || 0));
+        for (const [prevId, prev] of sMap.entries()) {
+          if (prevId === String(id)) continue;
+          const ov = overlapArea(rect, prev.rect);
+          const minA = Math.max(1, Math.min(curArea, (prev.rect.w || 0) * (prev.rect.h || 0)));
+          if (ov / minA >= 0.72 && cur.frame > prev.lastFrame) {
+            const key = `${cur.sceneId}|overwrite_text|${prevId}->${id}`;
+            if (!seenOverwriteKeys.has(key)) {
+              seenOverwriteKeys.add(key);
+              infoOverwriteViolations.push({
+                frame: cur.frame,
+                t: Number(cur.t.toFixed(3)),
+                scene_id: cur.sceneId,
+                beat_id: cur.beatId,
+                slot_id: `${prevId}->${id}`,
+                prev_label: prevId,
+                next_label: String(id),
+                reason: '同类并列指标/事件卡片在同一坐标原地覆盖前一条，请改用 VM.drawKpiRail / VM.drawCumulativeStack 累进保留',
+              });
+            }
+          }
+        }
+        sMap.set(String(id), { rect, lastFrame: cur.frame });
+        seenPersistentTextsByScene.set(cur.sceneId, sMap);
+      }
+    }
+
+    /**
+     * v8.2.0: Record a named metric slot so in-place semantic label overwrites inside the same scene are blocked.
+     */
+    function recordMetricSlot(slotId, label, value = '', rect = null) {
+      if (!cur || !slotId) return;
+      const sid = cur.sceneId;
+      const sMap = seenMetricSlotsByScene.get(sid) || new Map();
+      const k = String(slotId);
+      const lbl = String(label || '').trim();
+      const prev = sMap.get(k);
+      if (prev && prev.label && lbl && prev.label !== lbl) {
+        const key = `${sid}|metric_slot|${k}|${prev.label}->${lbl}`;
+        if (!seenOverwriteKeys.has(key)) {
+          seenOverwriteKeys.add(key);
+          infoOverwriteViolations.push({
+            frame: cur.frame,
+            t: Number(cur.t.toFixed(3)),
+            scene_id: sid,
+            beat_id: cur.beatId,
+            slot_id: k,
+            prev_label: prev.label,
+            next_label: lbl,
+            reason: '同一指标槽位在同场内原地改写不同指标项，请改用 VM.drawKpiRail 累进并列展示',
+          });
+        }
+      }
+      sMap.set(k, { label: lbl, value: String(value || ''), rect });
+      seenMetricSlotsByScene.set(sid, sMap);
+      if (rect) recordText(`${k}:${lbl}`, rect, 'kpi');
+    }
+
+    /**
+     * v8.2.0: Record a scene prop so unattached/non-interactive floating props in cinematic_store are blocked.
+     * opts: { attachment: 'hand' | 'table' | 'handover' | 'inset' | 'floating', interactive?: boolean }
+     */
+    function recordProp(id, rect = null, opts = {}) {
+      if (!cur) return;
+      const att = String(opts.attachment || 'floating');
+      const interactive = Boolean(opts.interactive);
+      const grounded = att === 'hand' || att === 'table' || att === 'handover' || att === 'inset';
+      if (cur.layoutKind === 'cinematic_store' && (!grounded || (att === 'floating' && !interactive))) {
+        const key = `${cur.sceneId}|prop|${id}`;
+        if (!seenFloatingPropKeys.has(key)) {
+          seenFloatingPropKeys.add(key);
+          floatingPropViolations.push({
+            frame: cur.frame,
+            t: Number(cur.t.toFixed(3)),
+            scene_id: cur.sceneId,
+            beat_id: cur.beatId,
+            prop_id: String(id),
+            attachment: att,
+            interactive,
+            reason: 'cinematic_store 实景门店禁止摆放无接地、无手部绑定、无互动的悬空道具，请使用桌面展机、heldProp / drawHandoverProp 或 drawScreenInset',
+          });
+        }
+      }
+    }
+
+    /**
+     * v8.2.0: Record major container panels in kinetic_metaphor/data_sculpture scenes to block rapid PPT card flipping.
+     * opts: { contentKey: string }
+     */
+    function recordPanel(id, rect, opts = {}) {
+      if (!cur || !rect) return;
+      if (cur.layoutKind !== 'kinetic_metaphor' && cur.layoutKind !== 'data_sculpture') return;
+      const areaRatio = ((rect.w || 0) * (rect.h || 0)) / (1920 * 1080);
+      if (areaRatio < 0.28) return;
+      const pKey = `${cur.sceneId}|${id}`;
+      const contentKey = String(opts.contentKey ?? cur.beatId);
+      const list = panelTimelineByScene.get(pKey) || [];
+      const last = list[list.length - 1];
+      if (!last || last.contentKey !== contentKey) {
+        list.push({
+          scene_id: cur.sceneId,
+          panel_id: String(id),
+          contentKey,
+          startT: cur.t,
+          endT: cur.t,
+          areaRatio: Number(areaRatio.toFixed(3)),
+        });
+      } else {
+        last.endT = cur.t;
+      }
+      panelTimelineByScene.set(pKey, list);
     }
 
     /**
@@ -585,6 +707,39 @@
           frames: sc.frames,
         };
       });
+      // v8.2.0: finalize rapid PPT card-flip detection (>= 3 consecutive large panel swaps each < 5.0s)
+      for (const [, spans] of panelTimelineByScene.entries()) {
+        let fastRun = [];
+        for (const sp of spans) {
+          const dur = Math.max(0, sp.endT - sp.startT);
+          if (dur < 5.0) {
+            fastRun.push(sp);
+          } else {
+            if (fastRun.length >= 3) {
+              rapidCardFlipViolations.push({
+                scene_id: fastRun[0].scene_id,
+                panel_id: fastRun[0].panel_id,
+                swaps: fastRun.length,
+                avg_sec: Number((fastRun.reduce((s, x) => s + (x.endT - x.startT), 0) / fastRun.length).toFixed(2)),
+                area_ratio: fastRun[0].areaRatio,
+                reason: 'kinetic_metaphor/data_sculpture 中出现大面积卡片高频翻页（每屏 <5s 连续 >=3 次），属伪装 PPT 快闪，请改用开放画布累进舞台（10-24s/主题）',
+              });
+            }
+            fastRun = [];
+          }
+        }
+        if (fastRun.length >= 3) {
+          rapidCardFlipViolations.push({
+            scene_id: fastRun[0].scene_id,
+            panel_id: fastRun[0].panel_id,
+            swaps: fastRun.length,
+            avg_sec: Number((fastRun.reduce((s, x) => s + (x.endT - x.startT), 0) / fastRun.length).toFixed(2)),
+            area_ratio: fastRun[0].areaRatio,
+            reason: 'kinetic_metaphor/data_sculpture 中出现大面积卡片高频翻页（每屏 <5s 连续 >=3 次），属伪装 PPT 快闪，请改用开放画布累进舞台（10-24s/主题）',
+          });
+        }
+      }
+
       return {
         schema: 'kgxc-director-audit/1',
         total_frames: totalFrames,
@@ -598,6 +753,9 @@
         scene_replay_violations: replayViolations,
         camera_sway_violations: cameraSwayViolations,
         premature_reveal_violations: prematureRevealViolations,
+        info_overwrite_violations: infoOverwriteViolations,
+        floating_prop_violations: floatingPropViolations,
+        rapid_card_flip_violations: rapidCardFlipViolations,
         progress_bar_summary: progressBarInfo ? {
           ...progressBarInfo,
           visited_segments: visitedNavSegments.size,
@@ -606,11 +764,14 @@
       };
     }
 
-    return { beginFrame, recordActor, recordText, recordReveal, recordProgressBar, finalize };
+    return {
+      beginFrame, recordActor, recordText, recordReveal, recordProgressBar,
+      recordMetricSlot, recordProp, recordPanel, finalize,
+    };
   }
 
   global.DirectorStage = {
-    VERSION: '8.1.2',
+    VERSION: '8.2.0',
     buildSceneIndex,
     buildNavSegments,
     resolveTimeline,

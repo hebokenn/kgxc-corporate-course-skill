@@ -6,7 +6,7 @@
 
 - **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/kgxc-course-suite-v8.1.2.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/kgxc-course-suite-v8.2.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -22,12 +22,12 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.2.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/kgxc-course-suite-v8.1.2.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.2.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/kgxc-course-suite-v8.2.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
@@ -60,10 +60,11 @@
 
 | 核心能力 | 实际能力细节 |
 | --- | --- |
-| **共享电影级导演内核（`DirectorStage`）、停稳运镜与定机位总结板书** | 小样与全集正片共用同一套 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 渲染内核（杜绝“小样精致、正片退化成白框模板分发器”）。内置 **Scene vs Beat 双层时间轴**（`sceneT` 承接连续走位与生长，跨句绝不归零重播；`speechT` 扣除句首静音、`phraseTime` 定位句内词锚点，彻底杜绝画面抢先旁白剧透）、**到位停稳运镜（`evalCamera` + `holdUntil`）** 与 **定机位要点总结板书（`summary_board` + `steadyCamera()` 零晃动，靠讲到哪条揭示哪条推进，兼顾截图与阅读舒适度）**，叠加 **PPT 框体硬上限（`card_box ≤ 25%` 且连续 ≤ 2 句）** 与全屏 3 层视差 Apple 授权门店（`drawCinematicAppleStore`）及开放画布（`drawAmbientBackdrop`）。 |
+| **共享电影级导演内核（`DirectorStage`）、开放画布反快闪 PPT 与定机位总结板书** | 小样与全集正片共用同一套 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 渲染内核（杜绝“小样精致、正片退化成白框模板分发器”）。内置 **Scene vs Beat 双层时间轴**（`sceneT` 承接连续走位与生长，`speechT` 与 `phraseTime` 杜绝画面抢跑剧透）、**到位停稳运镜（`evalCamera` + `holdUntil`）** 与 **定机位要点总结板书（`summary_board` + `steadyCamera()` 零晃动）**。针对多要点案例拆解容易退化为“每 2–4 秒大白框整屏快闪翻页、学员来不及看”的痛点，内置开放画布原语（`drawOpenChapterDots` / 安全限高 `drawSculptureBar` / `drawFloatingTag`），让每个分析主题从容停留 10–24 秒、通过人物对照与立体隐喻累进呈现，并由门禁 A 硬检拦截伪装成动效的大面积卡片快闪翻页（`rapid_card_flip`）与 PPT 框体超限（`card_box ≤ 25%` 且连续 ≤ 2 句）。 |
+| **信息生命周期分级与累进指标轨（禁止并列覆盖）** | 针对案例拆解与诊断复盘中“讲完第二条得分率或第二个失误点时，把第一条原地覆盖导致看不全对比”的阅读断点：明确区分瞬时替换（对话气泡）与累进留存（并列得分率、连续事件链），提供 `VM.drawKpiRail`（右上角紧凑多联指标轨，新指标高亮滑入、旧指标温和退阶保留）与 `VM.drawCumulativeStack`（事件轨迹自上而下累进排开）；门禁 A 通过 `auditor.recordMetricSlot` / `info_overwrite` 拦截同一槽位原地改写不同指标。 |
 | **底部「融合进度胶囊」分段章节进度条（禁止单根总条）** | 针对 5–10 分钟多阶段培训课中“单根总进度条看不出当前讲到哪一环”的痛点，内置 `DS.buildNavSegments(lines, chapterSpecs)` 与 `VM.drawSegmentedProgressBar(..., { style: 'inline_pill' })`：按各章真实音频时长比例分配宽度（带最小宽度保底），高仅 `48px` 不挤占主体画布，单行字幕独立置于 `y = 988`；以**已学浅蓝 / 当前段描边＋内部渐进填充＋底部蓝金细边 / 未学浅灰**三态实时推进，封面、片头与片尾自动隐藏，并由门禁 A 硬检拦截退化为单根总进度条。 |
-| **代码化三维道具 + 联网检索合规素材** | 遇到复杂硬件拆解或立体商品演示时，支持真 3D 透视投影模型（如 `iPhone 18 Pro` 冰川蓝全宽三摄平台与机身比例）与 Blender 联动；当纯几何绘图不足以表达具体实景道具或图标时，可通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 联网检索 Openverse / Wikimedia Commons 开放许可无水印素材并本地缓存至 `project/assets/web/`（自动记录来源、许可与 SHA-256 溯源清单）。 |
-| **`CourseActorsCute` 强契约角色 + 智能避让气泡/弹幕** | 全程代码骨骼驱动，自带零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与情绪化步速物理（`computeMoodWalk`：`stroll / brisk / rush / cold_exit`）；运行期强制校验参数（禁传 `walkPhase/strideAmp` 与非法情绪/手势枚举，错参即抛错阻断飘移滑行）。对话气泡与弹幕/标签/花字统一经 `drawSmartSpeakerBubble` 与 `placeAvoidingActors` 避开所有人物头身、背景 Logo 与左边缘裁切区，彻底消灭压人脸与跨幕重叠。 |
+| **实景道具物理接地、手持递交互动与锚定屏幕特写** | 彻底告别“实景门店正中一直飘着一台无人触碰的孤立 3D 手机”的违和感：门店平时仅保留 `drawCinematicAppleStore` 桌面上接地的实体展机；当剧情涉及查资料、真机演示、递机试拍或递企微码时，`CourseActorsCute` 通过 `heldProp`（`phone` / `qr_card`）直接握在手心并实时暴露 `frontHand / backHand` 锚点，配合 `VM.drawHandoverProp` 沿抛物线弧线真实递交，以及 `VM.drawScreenInset` 从手持或桌面手机拉出引导线弹出具体功能界面特写（实况选帧/电影效果/搜索/企微扫码）并在讲完后收回。全息轨道悬浮 `draw3DPhoneProp` 仅限封面与抽象隐喻舞台，门禁 A 通过 `floating_prop` 硬拦截实景无互动悬空道具；亦支持 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 联网检索开放许可素材本地溯源缓存。 |
+| **`CourseActorsCute` 强契约角色 + 智能避让气泡/弹幕** | 全程代码骨骼驱动，自带零滑步世界坐标落地步行、防弹膝盖 IK、行进转向、手持道具插槽与情绪化步速物理（`computeMoodWalk`：`stroll / brisk / rush / cold_exit`）；运行期强制校验参数（禁传 `walkPhase/strideAmp` 与非法情绪/手势/道具枚举，错参即抛错阻断飘移滑行）。对话气泡与弹幕/标签/花字统一经 `drawSmartSpeakerBubble` 与 `placeAvoidingActors` 避开所有人物头身、背景 Logo 与左边缘裁切区，彻底消灭压人脸与跨幕重叠。 |
 | **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
 
 > 内置人物预设与品牌片头片尾默认服务酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并按需替换为自有品牌视觉。
@@ -82,7 +83,7 @@
   - **多集系列课套件**：统一批次按**内容母版三选一** + **跨章节 3 段代表性有声小样**定调，分集导出 `1080p / 24fps` 视频、字幕与封面，同步交付同风格的**《讲义精要》、章节测验题库、A4 可打印手写作业**。
   - **单支重点培训视频**：含完整品牌片头片尾（片尾音轨自动柔和淡出）、底部融合胶囊分段章节进度条、双声演练与重点花字。
   - **独立授课课件**：不录视频也能直接交付可面授或自录的 **PPTX / DOCX / PDF / 交互式 HTML 课件** 与完整逐字稿。
-  - **双验收硬门禁 + 无损音频热替换返修**：渲染器运行期通过 `DirectorStage.createFrameAuditor()` 输出 `render_audit.json`，配合 [`verify_delivery.py --strict-ppt-guard --render-audit`](skills/corporate-training-motion/scripts/verify_delivery.py) 硬拦截走路飘移、文字压人物、同场景重播、**画面元素/气泡抢先旁白 > 80ms**、**总结板书晃动或知识页反复摇摆**、**未接入分段章节进度条**、16×16 宏块微抖假动态、PPT 框体超 25% 与静态机位（门禁 A），再对最终编码 MP4 抽取迈步/气泡/数据/分段切换与揭示前后对照帧逐一目检（门禁 B）后归档至桌面 `ai 制课/<课程名称>/`。若后续仅微调几句发音且新录音落入原时间槽，可直接按原轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验交付；原始过程工程默认完整保留。
+  - **双验收硬门禁 + 无损音频热替换返修**：渲染器运行期通过 `DirectorStage.createFrameAuditor()` 输出 `render_audit.json`，配合 [`verify_delivery.py --strict-ppt-guard --render-audit`](skills/corporate-training-motion/scripts/verify_delivery.py) 硬拦截走路飘移、文字压人物、同场景重播、**画面元素/气泡抢先旁白 > 80ms**、**并列指标/事件原地覆盖**、**实景门店无互动悬空道具**、**巨幅卡片高频翻页快闪 PPT**、**总结板书晃动或知识页反复摇摆**、**未接入分段章节进度条**、16×16 宏块微抖假动态、PPT 框体超 25% 与静态机位（门禁 A），再对最终编码 MP4 抽取迈步/气泡/道具互动/数据/分段切换与揭示前后对照帧逐一目检（门禁 B）后归档至桌面 `ai 制课/<课程名称>/`。若后续仅微调几句发音且新录音落入原时间槽，可直接按原轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验交付；原始过程工程默认完整保留。
 
 | 内置授权音色 | 典型适用位置 | 实声试听 |
 | --- | --- | --- |
@@ -130,6 +131,12 @@
 ---
 
 ## 版本更新
+
+### 累进指标防覆盖、实景手持/递交道具互动与反快闪 PPT 开放画布：核心 8.2.0 · 2026-11-27
+
+- **信息生命周期分级与累进展示原语（根治并列信息原地覆盖）**：在 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 新增 `VM.drawKpiRail`（右上角并列指标轨，新项高亮滑入、旧项温和退阶保留）与 `VM.drawCumulativeStack`（同场连续事件/失误链自上而下累进排开），彻底替代单槽位原地改字覆盖；[`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 新增 `auditor.recordMetricSlot()` 与 `kpi/evidence` 同位覆写检测，门禁 A（[`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py)）硬拦截 `info_overwrite_violations`。
+- **实景道具物理接地、手持插槽与锚定屏幕特写（根治空中悬空无互动手机）**：[`actors_v3_cute.js`](skills/corporate-training-motion/workbench/motion/actors_v3_cute.js) 新增强校验 `heldProp`（`phone` / `qr_card` / `card`）直接绘制在人物手心，并实时导出世界坐标手部锚点 `bounds.frontHand / backHand`；[`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 新增 `VM.drawHandoverProp(fromHand, toHand, progress)` 弧线真实递交、`VM.drawScreenInset(anchorPt, boxRect, opts)` 锚定屏幕功能特写窗，并为 `draw3DPhoneProp` 增配 `opts.showOrbit` 开关；规范与门禁 A（`auditor.recordProp` / `floating_prop_violations`）硬拦截 `cinematic_store` 实景门店中的无互动悬空道具。
+- **反快闪 PPT 开放画布原语与高频翻页拦截**：新增 `VM.drawOpenChapterDots`、安全限高（`<= 210px` 防压上方浮标）`VM.drawSculptureBar` 与累进短浮标 `VM.drawFloatingTag`，并在 [`60-v8-cinematic-director-and-gates.md`](skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) 明确深度拆解段每主题停留 10–24 秒、禁止把每 2–4 秒整屏翻页的大卡片伪装成 `kinetic_metaphor`（同时注明 `drawStampBadge` 含前景色 `fg` 完整签名）；门禁 A 新增 `auditor.recordPanel` / `rapid_card_flip_violations` 硬拦截巨幅卡片快闪翻页。
 
 ### 根治 Qwen3-TTS 克隆音色吞尾字、清畸形双标点与双窗口尾音防切检：核心 8.1.2 · 2026-11-27
 

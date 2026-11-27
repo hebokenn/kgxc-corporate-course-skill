@@ -1,5 +1,5 @@
 {
-  "version": "8.1.2",
+  "version": "8.2.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "8.1.2",
+    "corporate-training-motion": "8.2.0",
     "elearning-course-design": "2.1.2"
   },
-  "release_status": "8.1.2 fixes Qwen3-TTS ICL clone sentence-final character truncation (patching mlx_audio codebook-0 zero-token length calculation that dropped 80ms per zero token), cleans dangling continuation punctuation before TTS synthesis, and upgrades tts_sync.py tail cutoff detection to dual 30ms/80ms RMS guards with bad-cache invalidation"
+  "release_status": "8.2.0 adds cumulative non-overwriting KPI rail & event stack (drawKpiRail / drawCumulativeStack), physical hand-socket prop attachment & handover/screen-inset interactions (CourseActorsCute heldProp + frontHand/backHand + drawHandoverProp / drawScreenInset), open-canvas analytical stage primitives (drawOpenChapterDots / drawSculptureBar / drawFloatingTag), and three new Gate A hard guards blocking in-place metric overwrites, non-interactive floating props in real store scenes, and rapid PPT card-flipping"
 }

@@ -447,6 +447,14 @@ window.CourseActorsCute = (() => {
     'idle', 'welcome', 'point', 'wave', 'push_away',
     'explain', 'present', 'worry', 'reject',
   ]);
+  const VALID_HELD_PROPS = Object.freeze(['phone', 'qr_card', 'card']);
+
+  function normalizeHeldProp(hp) {
+    if (!hp) return null;
+    if (typeof hp === 'string') return { type: hp };
+    if (typeof hp === 'object' && hp.type) return hp;
+    return { type: String(hp) };
+  }
 
   function validatePaintState(st = {}) {
     if (!st || typeof st !== 'object') {
@@ -469,24 +477,96 @@ window.CourseActorsCute = (() => {
     if (st.gesture !== undefined && !VALID_GESTURES.includes(st.gesture)) {
       throw new Error(`CourseActorsCute: unsupported gesture "${st.gesture}". Valid gestures: ${VALID_GESTURES.join(', ')}`);
     }
+    if (st.heldProp != null) {
+      const hp = normalizeHeldProp(st.heldProp);
+      if (!hp || !VALID_HELD_PROPS.includes(hp.type)) {
+        throw new Error(`CourseActorsCute: unsupported heldProp "${hp ? hp.type : st.heldProp}". Valid heldProps: ${VALID_HELD_PROPS.join(', ')}`);
+      }
+    }
+  }
+
+  function computeGestureHandLocal(gesture = 'idle', t = 0, turn = 0, swingAmt = 0) {
+    const shY = -146;
+    if (gesture === 'idle') {
+      const nearSx = lerp(-22, -2, turn);
+      return {
+        fx: nearSx - 2 - swingAmt,
+        fy: shY + 55 - Math.abs(swingAmt) * 0.25,
+        bx: lerp(22, 10, turn) + 2 + swingAmt,
+        by: shY + 55 - Math.abs(swingAmt) * 0.25,
+      };
+    }
+    let fx = 24, fy = shY + 55;
+    if (gesture === 'welcome') { fx = 66; fy = shY + 18 + Math.sin(t * 5) * 5; }
+    else if (gesture === 'point') { fx = 72; fy = shY + 12; }
+    else if (gesture === 'wave') { fx = 62; fy = shY - 8 + Math.sin(t * 7) * 7; }
+    else if (gesture === 'push_away' || gesture === 'reject') { fx = 58; fy = shY + 14; }
+    else if (gesture === 'explain') { fx = 58; fy = shY + 20 + Math.sin(t * 6) * 5; }
+    else if (gesture === 'present') { fx = 74; fy = shY + 16; }
+    else if (gesture === 'worry') { fx = 38; fy = shY - 2 + Math.sin(t * 4) * 2; }
+    return { fx, fy, bx: -26 - swingAmt * 0.5, by: shY + 56 };
+  }
+
+  function drawHandheldProp(ctx, fx, fy, prop, ink) {
+    const type = prop.type;
+    const tilt = prop.tilt ?? (type === 'phone' ? -0.18 : -0.08);
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.rotate(tilt);
+    if (type === 'phone') {
+      const pw = 18, ph = 35;
+      // Titanium bezel + screen (glacier blue default, customizable via screenColor)
+      ctx.fillStyle = '#334155';
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 1.9;
+      ctx.beginPath(); ctx.roundRect(-pw * 0.45, -ph + 8, pw, ph, 4.5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = prop.screenColor || '#6AA6FF';
+      ctx.beginPath(); ctx.roundRect(-pw * 0.45 + 2.2, -ph + 10.2, pw - 4.4, ph - 4.4, 3); ctx.fill();
+      // Dynamic Island pill
+      ctx.fillStyle = '#1E293B';
+      ctx.beginPath(); ctx.roundRect(-3.2, -ph + 12, 6.4, 2.2, 1.1); ctx.fill();
+      // Subtle screen sheen
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.beginPath(); ctx.roundRect(-pw * 0.45 + 3.5, -ph + 15, 4, ph - 14, 2); ctx.fill();
+    } else {
+      // Contact / WeChat QR card
+      const cw = 26, ch = 18;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = type === 'qr_card' ? '#18794E' : '#254C99';
+      ctx.lineWidth = 1.9;
+      ctx.beginPath(); ctx.roundRect(-4, -ch + 4, cw, ch, 3.5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = type === 'qr_card' ? '#18794E' : '#254C99';
+      ctx.fillRect(-0.5, -ch + 7.5, 6.5, 6.5);
+      ctx.fillStyle = '#CBD5E1';
+      ctx.fillRect(8.5, -ch + 8.5, 10, 2.2);
+      ctx.fillRect(8.5, -ch + 12.8, 7.5, 2.0);
+    }
+    ctx.restore();
   }
 
   function getActorBounds(st = {}) {
     const scale = st.scale ?? 1.35;
+    const facing = st.facing ?? 1;
     const rootX = st.walkState ? st.walkState.x : (st.x || 0);
     const footY = st.footY ?? 820;
+    const wWeight = st.walkState ? st.walkState.walkWeight : 0;
+    const turn = 0.92 * wWeight;
+    const hLoc = computeGestureHandLocal(st.gesture || 'idle', st.t || 0, turn, 0);
+    const frontHand = { x: Number((rootX + hLoc.fx * facing * scale).toFixed(1)), y: Number((footY + hLoc.fy * scale).toFixed(1)) };
+    const backHand = { x: Number((rootX + hLoc.bx * facing * scale).toFixed(1)), y: Number((footY + hLoc.by * scale).toFixed(1)) };
     const headTopY = footY - 242 * scale;
     const headRect = { x: rootX - 54 * scale, y: headTopY, w: 108 * scale, h: 102 * scale };
     const bodyRect = { x: rootX - 52 * scale, y: footY - 148 * scale, w: 104 * scale, h: 152 * scale };
     const exclusionRect = { x: rootX - 62 * scale, y: footY - 252 * scale, w: 124 * scale, h: 256 * scale };
     return {
-      rootX, footY, scale,
+      rootX, footY, scale, facing,
       headX: rootX,
       headY: headTopY,
       mouthY: footY - 170 * scale,
       topY: headTopY,
       leftX: exclusionRect.x,
       rightX: exclusionRect.x + exclusionRect.w,
+      frontHand, backHand,
       headRect, bodyRect, exclusionRect,
     };
   }
@@ -711,34 +791,37 @@ window.CourseActorsCute = (() => {
     drawCuteHead(ctx, cfg, { t, speaking, mood, blink, hairBounce: wWeight * (bob * 0.25), turn });
     ctx.restore();
 
-    // Near / Front Arm
+    // Near / Front Arm (+ optional physically gripped heldProp)
+    const heldProp = normalizeHeldProp(st.heldProp);
+    const hLoc = computeGestureHandLocal(gesture, t, turn, swingAmt);
     if (gesture === 'idle') {
       const nearSx = lerp(-22, -2, turn);
-      const nearHx = nearSx - 2 - swingAmt;
-      const nearHy = shY + 55 - Math.abs(swingAmt) * 0.25;
-      drawWalkArm(nearSx, shY + 8, nearHx, nearHy, armFill, wWeight);
+      if (heldProp) drawHandheldProp(ctx, hLoc.fx, hLoc.fy, heldProp, ink);
+      drawWalkArm(nearSx, shY + 8, hLoc.fx, hLoc.fy, armFill, wWeight);
     } else {
-      let fx = 24, fy = shY + 55;
-      if (gesture === 'welcome') { fx = 66; fy = shY + 18 + Math.sin(t * 5) * 5; }
-      else if (gesture === 'point') { fx = 72; fy = shY + 12; }
-      else if (gesture === 'wave') { fx = 62; fy = shY - 8 + Math.sin(t * 7) * 7; }
-      else if (gesture === 'push_away' || gesture === 'reject') { fx = 58; fy = shY + 14; }
-      else if (gesture === 'explain') { fx = 58; fy = shY + 20 + Math.sin(t * 6) * 5; }
-      else if (gesture === 'present') { fx = 74; fy = shY + 16; }
-      else if (gesture === 'worry') { fx = 38; fy = shY - 2 + Math.sin(t * 4) * 2; }
-
+      const fx = hLoc.fx, fy = hLoc.fy;
       const gSx = lerp(22, 6, turn);
       pillLimb(ctx, gSx, shY + 10, fx, fy, 8.0, armFill, ink);
       if (isShortSleeve) {
         pillLimb(ctx, gSx, shY + 10, lerp(gSx, fx, 0.45), lerp(shY + 10, fy, 0.45), 9.4, sleeveFill, ink);
       }
+      if (heldProp) drawHandheldProp(ctx, fx, fy, heldProp, ink);
       ctx.fillStyle = skin; ctx.strokeStyle = ink; ctx.lineWidth = 2.0;
       ctx.beginPath(); ctx.arc(fx, fy, 8.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
 
     ctx.restore();
     ctx.restore();
-    return getActorBounds(st);
+    const bounds = getActorBounds(st);
+    bounds.frontHand = {
+      x: Number((rootX + hLoc.fx * facing * scale * sqX).toFixed(1)),
+      y: Number((footY + (hLoc.fy + bob) * scale * sqY).toFixed(1)),
+    };
+    bounds.backHand = {
+      x: Number((rootX + hLoc.bx * facing * scale * sqX).toFixed(1)),
+      y: Number((footY + (hLoc.by + bob) * scale * sqY).toFixed(1)),
+    };
+    return bounds;
   }
 
   // Ready-to-call cast library (7 staff/manager + 7 casual customers, zero background-color clash)
@@ -880,7 +963,7 @@ window.CourseActorsCute = (() => {
   return {
     paint, paintExpressive, drawCuteHead, computeGroundedWalk,
     GAIT_PRESETS, computeMoodWalk, PRESETS, getPreset, listPresets, paintPreset,
-    VALID_MOODS, VALID_GESTURES, validatePaintState, getActorBounds,
+    VALID_MOODS, VALID_GESTURES, VALID_HELD_PROPS, validatePaintState, getActorBounds,
   };
 })();
 

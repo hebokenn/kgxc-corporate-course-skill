@@ -1,13 +1,13 @@
 ---
 name: corporate-training-motion
-description: 酷果星创课程设计与制作统一入口（8.0.0 电影级导演引擎与交付硬门禁）。先确认教学方案与逐字稿，再交付独立课件或按内容母版定调、全课分镜、三段有声小样、共用 DirectorStage 导演内核的完整系列视频与配套讲义/题库/作业。
+description: 酷果星创课程设计与制作统一入口（8.2.0 电影级导演引擎与交付硬门禁）。先确认教学方案与逐字稿，再交付独立课件或按内容母版定调、全课分镜、三段有声小样、共用 DirectorStage 导演内核的完整系列视频与配套讲义/题库/作业。
 ---
 
-# 酷果星创课程共创与制作（8.0.0）
+# 酷果星创课程共创与制作（8.2.0）
 
-以**你我对话 + 独立生成的富排版 HTML / MP4 审阅成品**为核心协作方式；视频制作统一采用 **8.0.0 电影级导演引擎（`DirectorStage` + `CourseActorsCute` + `VisualMetaphors`）** 与 **强制交付硬门禁**。
+以**你我对话 + 独立生成的富排版 HTML / MP4 审阅成品**为核心协作方式；视频制作统一采用 **8.2.0 电影级导演引擎（`DirectorStage` + `CourseActorsCute` + `VisualMetaphors`）** 与 **强制交付硬门禁**。
 
-> **唯一权威规则**：先读 [8.0.0 电影级导演引擎、强契约与交付硬门禁](references/60-v8-cinematic-director-and-gates.md) 与同目录的 `../elearning-course-design/SKILL.md`。当历史 6.x / 7.0.0 参考文档（含旧版 `workbench.json` 流程）与 8.0.0 冲突时，**一律以 8.0.0 为准**。
+> **唯一权威规则**：先读 [8.2.0 电影级导演引擎、强契约与交付硬门禁](references/60-v8-cinematic-director-and-gates.md) 与同目录的 `../elearning-course-design/SKILL.md`。当历史 6.x / 7.0.0 参考文档（含旧版 `workbench.json` 流程）与 8.2.0 冲突时，**一律以 8.2.0 为准**。
 
 ## 1. 主流程总览（统一批次，小样即正片引擎原型）
 
@@ -32,9 +32,9 @@ description: 酷果星创课程设计与制作统一入口（8.0.0 电影级导�
 
 1. **三库齐载，错参即抛错**：
    - 渲染器必须同时加载 `workbench/motion/actors_v3_cute.js`（`CourseActorsCute`）、`workbench/motion/visual_metaphors.js`（`VisualMetaphors`）与 `workbench/motion/director_stage.js`（`DirectorStage`）。
-   - **唯一人物引擎 `CourseActorsCute`**：禁止整张静态 PNG 人物。行走**必须传入 `walkState`（来自 `computeGroundedWalk` / `computeMoodWalk`）**，严禁传 `walkPhase`/`strideAmp`（8.0.0 会直接抛错阻断飘移滑行）。`mood` 与 `gesture` 仅接受规范枚举（详见 [60 号规范](references/60-v8-cinematic-director-and-gates.md)）。
-   - **空间避让防重叠**：对话气泡必须调用 `VisualMetaphors.drawSmartSpeakerBubble(ctx, actorBounds, text, opts)`；弹幕、标签、花字必须经过 `VisualMetaphors.placeAvoidingActors(rect, exclusionRects)` 避开所有人物 `headRect/bodyRect` 与背景 Logo；严禁拍脑袋写死坐标压人脸。
-   - **有目的电影运镜 + 定机位总结板书 + 去 PPT 红线**：实景与开放画布用 `DirectorStage.evalCamera(keyframes, sceneT, t)` 编排推拉摇移，知识板书到达落点必须用 `hold`/`holdUntil` 停稳，严禁无停稳地左右往返晃动或全局 ±12px 假抖动；**一屏要点总结卡、讲义收尾页统一使用 `layout_kind: "summary_board"` 与 `DS.steadyCamera()` 定机位零晃动**（靠逐栏/逐条渐进揭示推进，占比 ≤ 22%）；`card_box`（白框卡片）占全集 Beat 数**严格 ≤ 25%** 且不得连续超过 2 个 Beat；门店情景调用 `drawCinematicAppleStore` + `draw3DPhoneProp`，产品范围限定 Apple。
+   - **唯一人物引擎 `CourseActorsCute`（含手持道具与手部锚点）**：禁止整张静态 PNG 人物。行走**必须传入 `walkState`（来自 `computeGroundedWalk` / `computeMoodWalk`）**，严禁传 `walkPhase`/`strideAmp`（运行期直接抛错阻断飘移滑行）。`mood`、`gesture` 与 `heldProp`（`phone`/`qr_card`/`card`）仅接受规范枚举；`bounds.frontHand / backHand` 实时返回手部世界坐标供递交与特写连线。
+   - **空间避让防重叠 + 并列信息累进留存**：对话气泡必须调用 `VisualMetaphors.drawSmartSpeakerBubble(ctx, actorBounds, text, opts)`；弹幕、标签、花字必须经过 `VisualMetaphors.placeAvoidingActors(rect, exclusionRects)` 避开所有人物 `headRect/bodyRect` 与背景 Logo。同场内**并列诊断得分率与连续案例失误链**必须调用 `VM.drawKpiRail` / `VM.drawCumulativeStack` 累进保留（旧条目温和退阶可读），**严禁在同一坐标原地改字覆盖前一条**。
+   - **有目的电影运镜 + 反快闪 PPT 红线 + 实景道具物理接地**：实景与开放画布用 `DirectorStage.evalCamera(keyframes, sceneT, t)` 编排推拉摇移，知识板书到达落点必须用 `hold`/`holdUntil` 停稳；**一屏要点总结卡、讲义收尾页统一使用 `layout_kind: "summary_board"` 与 `DS.steadyCamera()` 定机位零晃动**（占比 ≤ 22%）；`card_box` 占比 **≤ 25%** 且连续 ≤ 2 句，**严禁把每 2–4 秒整卡翻页的大白框快闪 PPT 伪装成 `kinetic_metaphor`**（深度拆解段须用开放画布累进舞台，每主题停留 10–24 秒，配合 `VM.drawOpenChapterDots` / `drawSculptureBar` / `drawFloatingTag`）；`cinematic_store` 实景门店调用 `drawCinematicAppleStore`，**禁止空中悬空摆放无互动的 `draw3DPhoneProp`**（平时只用桌面接地展机，互动必须用 `heldProp` + `VM.drawHandoverProp` 或 `VM.drawScreenInset` 锚定屏幕特写，悬浮 3D 手机仅限封面及抽象隐喻舞台），产品范围限定 Apple。
    - **支持联网检索合规素材**：可用宿主联网检索或 `scripts/web_asset_search.py` 缓存无水印开放许可素材至 `COURSE/project/assets/web/` 后接入。
    - 黑衣 KG 店长与蓝衣 KG 店员绑定 `assets/profiles/kgxc/kg-original.png` 胸标；Coach 保留 MyCoach；顾客穿便装且 `showKG: false`，严禁与背景顺色；同场人物有清晰外貌区分。
 2. **精选明亮通透浅色色板**：从 `workbench/course-palettes.json` 中 `random_eligible: true` 的 16 套浅色色板（无绿色）随机抽取；深色仅用户明确指定时启用。
@@ -63,7 +63,7 @@ description: 酷果星创课程设计与制作统一入口（8.0.0 电影级导�
      ```bash
      python3 SKILL_DIR/scripts/verify_delivery.py <video.mp4> --srt <sub.srt> --cover <cover.png> --timeline <timeline.json> --render-audit <render_audit.json> --strict-ppt-guard --require-attached-pic
      ```
-   - 强拦截：走路飘移、文字压人物/压字幕区、同场景动画归零重播、**画面抢先旁白剧透（>80ms）**、**总结板书/知识页无意义镜头晃动漂移**、微抖动假动态 PPT、PPT 框体 > 25%、动态场景无真实运镜、SRT 与时间轴脱节、音画/封面/字幕/尾音缺陷。
+   - 强拦截：走路飘移、文字压人物/压字幕区、同场景动画归零重播、**画面抢先旁白剧透（>80ms）**、**并列指标/事件原地覆盖（`info_overwrite`）**、**实景门店无互动悬空道具（`floating_prop`）**、**巨幅卡片高频翻页快闪 PPT（`rapid_card_flip`）**、**总结板书/知识页无意义镜头晃动漂移**、微抖动假动态 PPT、PPT 框体 > 25%、动态场景无真实运镜、SRT 与时间轴脱节、音画/封面/字幕/尾音缺陷。
 2. **门禁 B（实际抽帧目视核验 + 关键揭示点前后帧核对）**：
    - 从最终编码 MP4 抽取并实际查看：人物迈步中段帧、对话气泡/弹幕高峰帧、非门店隐喻/数据帧、**关键结论与总结卡“触发前 0.2s vs 触发后 0.4s”对照帧（确认零抢跑、定机位不晃）**、首帧封面与第 1 帧片头；亲眼确认脚底落地、零压字、音画字幕气泡精准同步、构图稳健后方可交付。
 3. **局部回改与过程保留**：用户微调某段时只重配/重渲受影响范围（若发音微调后的新 WAV 落入原 Beat 时间槽，可按原时间轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验）；过程文件默认保留在课程工程内，正式成品交付至 `~/Desktop/ai 制课/<课程名称>/`。
