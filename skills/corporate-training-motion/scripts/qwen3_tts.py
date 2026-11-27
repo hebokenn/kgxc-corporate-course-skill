@@ -20,6 +20,24 @@ CATALOG = json.loads((VOICE_ASSETS/'profiles.json').read_text())
 DEFAULT_CONFIG = config_dir()/'voice.json'
 
 
+def _patch_zero_token_decode(model):
+    """Fix mlx_audio Qwen3-TTS decode() misclassifying valid codebook-0 token 0 as padding (-80ms/zero)."""
+    st = getattr(model, 'speech_tokenizer', None)
+    if st is None or not hasattr(st, 'decode') or not hasattr(st, 'decoder'):
+        return False
+    import types
+    import mlx.core as mx
+
+    def _decode_nonneg(self, audio_codes):
+        codes = mx.transpose(audio_codes, (0, 2, 1))
+        wav = self.decoder.chunked_decode(codes).squeeze(1)
+        audio_lengths = (audio_codes[..., 0] >= 0).sum(axis=1) * self.decode_upsample_rate
+        return wav, audio_lengths
+
+    st.decode = types.MethodType(_decode_nonneg, st)
+    return True
+
+
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -176,6 +194,7 @@ def main():
     local = Path(cfg['model']).expanduser()
     model_path = str(local) if local.is_dir() else snapshot_download(cfg['model_repository'], revision=cfg['model_revision'], local_files_only=True)
     model = load_model(model_path)
+    decode_zero_token_patched = _patch_zero_token_decode(model)
     expected = {'voice_design':'voice_design','custom_voice':'custom_voice','clone':'base'}[cfg['mode']]
     if model.config.tts_model_type != expected:
         raise ValueError('Wrong model variant for '+cfg['mode']+'; choose the matching installed model')
@@ -200,7 +219,7 @@ def main():
     if rate != 1:
         subprocess.run(['ffmpeg','-v','error','-n','-i',str(raw_out),'-af',f'atempo={rate}','-c:a','pcm_s24le',str(out)],check=True)
     metadata = dict(provider=cfg['provider'],profile=cfg['profile'],mode=cfg['mode'],model_repository=cfg['model_repository'],model_revision=cfg['model_revision'],
-        voice_id=cfg['voice_id'],model_config_sha256=sha(Path(model_path)/'config.json'),
+        voice_id=cfg['voice_id'],model_config_sha256=sha(Path(model_path)/'config.json'),decode_zero_token_patch=decode_zero_token_patched,
         model_resolution='pinned cache snapshot' if Path(model_path).name==cfg['model_revision'] else 'local model folder; revision is configured provenance',parameters=params,seed=cfg['seed'],speed=1.0,delivery_rate=rate,raw_audio=raw_out.name,
         raw_sha256=sha(raw_out),reference=reference,duration_seconds=sf.info(out).duration,sample_rate=sr,generation_seconds=time.time()-started,
         text_sha256=hashlib.sha256(text.encode()).hexdigest(),audio_sha256=sha(out),review_status='candidate_requires_content_and_listening_check')

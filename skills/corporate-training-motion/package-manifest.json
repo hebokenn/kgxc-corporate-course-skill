@@ -1,6 +1,6 @@
 {
   "name": "corporate-training-motion",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "usage": "KGXC course production suite",
   "files": {
     "INSTALL.md": "0e17f6dd8f7ec133ad47ec904535e6346a5010619a246a7bea6fbe4bed4f4076",
@@ -854,7 +854,7 @@
     "scripts/measure_visible_bounds.py": "ae4b666c774d769ebb127be171581f1fb10f83dcc6952cfde97a7d386efadbad",
     "scripts/media_check.py": "37128a1a2e5c4b9f916b9a82367af14f89a77bdadc5026a1aa749dd26f24795c",
     "scripts/motion_gallery.py": "b6ff168373cf70f335629ebd59db137afdaa9b0d007e046df7428fad125586f3",
-    "scripts/qwen3_tts.py": "812d2bf0e01aba344e5bc2357c949ad95b40cf426a2ffe95c0b7f6eb9ffaf8f2",
+    "scripts/qwen3_tts.py": "dbbe2ea7dd27239b224afd46065338bfbec5e856e6fdfc18acc758cd9bc7f330",
     "scripts/release_checks.py": "b22988e633a2b9041955c57f612d9da889b2ea06b92755512b4383806339d4e5",
     "scripts/render_blender_asset.py": "4b8ef03df884e032fd7f2b48fe70a64919ed26fdf7c9cda8ebbc2beef373fef6",
     "scripts/retail_blender_scene.py": "1140ec804265b6914b3ad582cca0874daeaf98e87aa6f9e30a23749e5dae8b1d",
@@ -888,7 +888,7 @@
     "scripts/test_storyboard_workflow.py": "bd6ff067bf52af2dc9de64aa4107ad8aefd9dc050ea8d41f47cf11100ed17a35",
     "scripts/test_unified_workflow.py": "32534f994ec45240692f8ba82d822ff10397cde79d5d0463df89d89795406815",
     "scripts/test_v7_tools.py": "0575451b438d85cb982a46139fa003b105fe2cf0e7ea2210a4b8a0698ddc6632",
-    "scripts/test_v8_tools.py": "d56b9d62c09fc6667c56c5017b38ef054167e4930dfce3755a5f4d658d8d6922",
+    "scripts/test_v8_tools.py": "57ea95be7cc3358dc298925972c1c5cf7db1985c7d35d74bc16c199240df8d11",
     "scripts/test_validate.py": "69daa92b1c27a499ee436a9231ecb773916a79944152d45d917458fae7536911",
     "scripts/test_visual_hygiene.py": "c4a8b6e0c4dce9b0c18d617b28bbb71950566ab477c69358b115f92dff7c6b48",
     "scripts/test_visual_identity.py": "9023d56388d5d78b14d340c6f7a30460f79c621bd825236f2eac77a5630ec121",
@@ -901,7 +901,7 @@
     "scripts/test_workbench_performance.py": "7cd2b5451360521b88d463ade0726c26759ba361a6fdf02d09530219c03c5e0f",
     "scripts/test_workflow.py": "6f6af72137776e6214cb4ff20ff9532d29d3e4db6e20c58c19064d906bb075c8",
     "scripts/test_workspace.py": "200bceb380b62fe35f33e8abb46c2a98d9c1e3f056e905f1330872558d47af1c",
-    "scripts/tts_sync.py": "392a9d34744961a91a8832f4b196648c7cf02d63f4d8ddceec14f5429cf33319",
+    "scripts/tts_sync.py": "a0547fe6b2dd0bed1891da60ecc429e283e25c9197820b97ef13ea970ea3a8a2",
     "scripts/validate.py": "ebb5ad46f19fef4aae590129771cdc1a6b782f05af56ef80ab3c631badf4acc8",
     "scripts/verify_delivery.py": "3b93529275957dc295c3829b6de145c258df97e39164b8691b2daa78e7791df0",
     "scripts/verify_motion_library.py": "cb90a1f62619359b562b4951009e052d0f942d817d7060c47f4f461fd69c0435",
@@ -958,7 +958,7 @@
     "workbench/material_library.py": "9eedea69f043008250fcdb2c8f58fdc140bbda19e54c704263c404db0144e4f5",
     "workbench/media_frames.py": "5bee51577c21f8af574d9d1f3f77fcf08f797684271d546761accd4015e29e09",
     "workbench/motion/actors_v3_cute.js": "68b02dd2c6f5da26a2dedadfffcb6ab81a532027eb55e93a6579c4eabb915070",
-    "workbench/motion/director_stage.js": "209136f315eb496fc6e282257dcd0bbaa3fd8b0e5d23cee81ef3c1ee4186c250",
+    "workbench/motion/director_stage.js": "61545f5a296474bcf57d77f2bbd2e65638010f406c1d7a5b8c888af113fef643",
     "workbench/motion/effects.js": "9982ec69aaf242c5f301723ed9842877fc7089e3385d61604c7f34c59e450534",
     "workbench/motion/index.html": "4b0cbd7739610347414c5b1d053f94c3cd90bba664e7603b1727817c9b53e198",
     "workbench/motion/retail-effects.js": "46616e93dd4e39562cb3e7556dec7976a5b929eac7292eef50020c4bfc5ec353",
@@ -1021,6 +1021,6 @@
     "workbench/visual_hygiene.py": "f0bbe628cd9fd8d9371dd248714a240a39c1f2d2b160569b147d40e633f1205a",
     "workbench/visual_identity.py": "3dcdd642161d0d81504e35cbc4dad51408c6e1ebf134d297f424900498e12fed",
     "workbench/visual_styles.py": "d8de9eab5d34e0f7448e64cf6fe4825d4953fb1fe5b867be733f3564fa0010ca",
-    "workbench/workflow.py": "e0afa3327e0fa065928a497cbfb0503f8095705635f30364afd2f546d97b56cf"
+    "workbench/workflow.py": "f4ecee99ecdfc35b2bb9dc4af4c59d61d9cafae2d549eb762ea6a15c1977d6ad"
   }
 }

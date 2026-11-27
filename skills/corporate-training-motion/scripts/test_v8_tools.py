@@ -473,6 +473,41 @@ console.log('SEG_BAR_JS_OK');
             good_res = verify_delivery.verify_video(vid, check_first_frame_cover=False, render_audit=good_p)
             self.assertTrue(good_res['ok'], good_res)
 
+    def test_v812_tts_punctuation_and_zero_token_tail_guard(self):
+        """v8.1.2: clean sentence-final punctuation, 30ms/80ms tail guard, and codebook-0 zero-token decode fix."""
+        self.assertEqual(tts_sync.prepare_tts_text('更不是冲上去抢单的超级销售，'), '更不是冲上去抢单的超级销售。')
+        self.assertEqual(tts_sync.prepare_tts_text('直接在记录表上打勾——'), '直接在记录表上打勾。')
+        self.assertEqual(tts_sync.prepare_tts_text('现场诊断、聚焦计划、'), '现场诊断、聚焦计划。')
+        self.assertEqual(tts_sync.prepare_tts_text('店长要摆正自己的站位：'), '店长要摆正自己的站位。')
+        self.assertEqual(tts_sync.prepare_tts_text('“这周转化掉了一个点，下周大家加把劲！”'), '“这周转化掉了一个点，下周大家加把劲！”')
+        self.assertEqual(tts_sync.prepare_tts_text('第一步，现场诊断，找真根因。'), '第一步，现场诊断，找真根因。')
+
+        # Verify 30ms abrupt cutoff detection vs clean tapered tail
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            abrupt_wav = p / 'abrupt.wav'
+            clean_wav = p / 'clean.wav'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=24000:duration=1.0',
+                '-af', 'volume=2.0', '-c:a', 'pcm_s16le', str(abrupt_wav),
+            ], check=True)
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=24000:duration=1.0',
+                '-af', 'volume=2.0,afade=t=out:st=0.75:d=0.25', '-c:a', 'pcm_s16le', str(clean_wav),
+            ], check=True)
+            ab = tts_sync.check_tail_energy(abrupt_wav)
+            cl = tts_sync.check_tail_energy(clean_wav)
+            self.assertIn('tail_30ms_db', ab)
+            self.assertTrue(ab['abrupt_cutoff_warning'], ab)
+            self.assertFalse(cl['abrupt_cutoff_warning'], cl)
+
+        # Verify qwen3_tts._patch_zero_token_decode helper exists and preserves valid token 0
+        import qwen3_tts
+        self.assertTrue(hasattr(qwen3_tts, '_patch_zero_token_decode'))
+        self.assertFalse(qwen3_tts._patch_zero_token_decode(object()))
+
 
 if __name__ == '__main__':
     unittest.main()

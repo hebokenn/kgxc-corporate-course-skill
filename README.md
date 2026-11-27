@@ -6,7 +6,7 @@
 
 - **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/kgxc-course-suite-v8.1.1.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.2](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/kgxc-course-suite-v8.1.2.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -22,12 +22,12 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/kgxc-course-suite-v8.1.1.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.2.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/kgxc-course-suite-v8.1.2.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.2/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
@@ -76,8 +76,8 @@
 
 ### 三、离线安全配音、音画精确咬合与多态交付闭环
 
-- **本地 `Qwen3-TTS` 离线配音与音色克隆（企业机密不外传）**：全流程本地生成拟真多角色语音，内置获授权的 **didi 男声**、**pipi 女声**，并可配置克隆自有讲师声线；不向任何第三方语音云发送制度文件与音频。
-- **`1-Beat-1-Audio` 声画零抢跑咬合 + 口语发音与字幕分离**：告别长语音猜秒数导致的“画面提前剧透”或声画错位！[`tts_sync.py --strict-beats`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句合成，自动实测每条 WAV 的真实起声点 `speech_onset_sec / speech_start` 与 `cue_words` 词锚点，拦截超长句、雷同克隆分镜、旁白误挂气泡与气泡错位；内置**口播与字幕发音分离**（默认把 `WOW` 读作“哇哦”、把 `第 01–09 节` 读作“第一–九节”不读前导 0，同时保留字幕原规范，也支持逐句 `tts_text` 覆写多音字/英文缩写），自动监测句尾能量防截断、混入 48 kHz **“叮 / 嘟咚”原库提示音**与重点花字，并从 `speech_start` 对齐产出**单行无标点 `.srt` 字幕**。
+- **本地 `Qwen3-TTS` 离线配音与音色克隆（零吞字防截断、企业机密不外传）**：全流程本地生成拟真多角色语音，内置获授权的 **didi 男声**、**pipi 女声**，并可配置克隆自有讲师声线；不向任何第三方语音云发送制度文件与音频。[`qwen3_tts.py`](skills/corporate-training-motion/scripts/qwen3_tts.py) 在加载模型后自动修补 `mlx_audio` 解码器把 codebook-0 合法语音 token `0` 误判为 padding 导致句尾被硬切 80–240ms 的底层缺陷，确保克隆音色每句最后一个字完整自然收尾。
+- **`1-Beat-1-Audio` 声画零抢跑咬合 + 口语发音与字幕分离**：告别长语音猜秒数导致的“画面提前剧透”或声画错位！[`tts_sync.py --strict-beats`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句合成，自动清理分句末尾的悬空续接标点（避免向模型喂入 `，。`/`——。` 畸形双标点），实测每条 WAV 的真实起声点 `speech_onset_sec / speech_start` 与 `cue_words` 词锚点，拦截超长句、雷同克隆分镜、旁白误挂气泡与气泡错位；内置**口播与字幕发音分离**（默认把 `WOW` 读作“哇哦”、把 `第 01–09 节` 读作“第一–九节”不读前导 0，同时保留字幕原规范，也支持逐句 `tts_text` 覆写多音字/英文缩写），通过 **30ms + 80ms 双窗口尾音能量防切检**（自动拒绝复用有尾音截断隐患的旧缓存并多轮换种择优）、混入 48 kHz **“叮 / 嘟咚”原库提示音**与重点花字，并从 `speech_start` 对齐产出**单行无标点 `.srt` 字幕**。
 - **一套资料，四种形态按需全套带走**：
   - **多集系列课套件**：统一批次按**内容母版三选一** + **跨章节 3 段代表性有声小样**定调，分集导出 `1080p / 24fps` 视频、字幕与封面，同步交付同风格的**《讲义精要》、章节测验题库、A4 可打印手写作业**。
   - **单支重点培训视频**：含完整品牌片头片尾（片尾音轨自动柔和淡出）、底部融合胶囊分段章节进度条、双声演练与重点花字。
@@ -130,6 +130,11 @@
 ---
 
 ## 版本更新
+
+### 根治 Qwen3-TTS 克隆音色吞尾字、清畸形双标点与双窗口尾音防切检：核心 8.1.2 · 2026-11-27
+
+- **根治 Qwen3-TTS 克隆模式句尾吞字（[`qwen3_tts.py`](skills/corporate-training-motion/scripts/qwen3_tts.py)）**：定位并修补上游 `mlx_audio` 解码器 `speech_tokenizer.decode()` 中 `(audio_codes[..., 0] > 0).sum()` 将第 0 层合法语音 token `0` 误判为 padding 导致每遇 1 个 `0` 就硬砍句尾 80ms 的缺陷（`didi` 参考音固定含 1 个 `0`，叠加句内 `0` 造成每句被裁 80–240ms、末字没念完）；在模型加载后自动注入 `>= 0` 兼容补丁并写入侧车溯源字段 `decode_zero_token_patch`，不依赖改动 venv 第三方包，彻底恢复自然完整收尾。
+- **清理句尾畸形双标点 + 30ms/80ms 双窗口尾音防切检（[`tts_sync.py`](skills/corporate-training-motion/scripts/tts_sync.py)）**：新增 `prepare_tts_text()` 将分句末尾的 `，、：；——` 规范替换为单句号，杜绝喂入 `，。`/`——。` 干扰韵律；`check_tail_energy()` 升级为 30ms（`> -24 dB`）与 80ms（`> -20 dB`）双窗口截断监测，复用缓存前自动复检并拒绝复用意已截断旧录音，异常时扩展 4 组候选种子择优重配。
 
 ### 逐字稿说人话、去标题连读衔接与零基础新人友好：核心 8.1.1 / 教学设计 2.1.2 · 2026-11-27
 

@@ -38,7 +38,7 @@ def probe_wav(wav: Path) -> dict:
 
 
 def check_tail_energy(wav: Path, sample_rate: int = None) -> dict:
-    """Measure final 80ms RMS vs body RMS to catch abrupt mid-syllable EOS cutoffs, plus speech onset/end bounds."""
+    """Measure final 30ms & 80ms RMS to catch abrupt mid-syllable EOS/decode cutoffs, plus speech onset/end bounds."""
     import numpy as np
     sr = sample_rate or probe_wav(wav)['sample_rate']
     raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', str(wav), '-ac', '1', '-f', 'f32le', '-'])
@@ -48,7 +48,10 @@ def check_tail_energy(wav: Path, sample_rate: int = None) -> dict:
     tail_n = min(len(samples), int(sr * 0.08))
     tail_rms = float(np.sqrt(np.mean(samples[-tail_n:] ** 2))) if tail_n else 0.0
     tail_db = 20.0 * math.log10(max(tail_rms, 1e-7))
-    abrupt = tail_db > -20.0
+    tail30_n = min(len(samples), int(sr * 0.03))
+    tail30_rms = float(np.sqrt(np.mean(samples[-tail30_n:] ** 2))) if tail30_n else 0.0
+    tail30_db = 20.0 * math.log10(max(tail30_rms, 1e-7))
+    abrupt = (tail_db > -20.0) or (tail30_db > -24.0)
 
     # Measure actual vocal onset and speech end using 10ms RMS windows so visuals never pop ahead of leading silence
     win_n = max(1, int(sr * 0.01))
@@ -67,6 +70,7 @@ def check_tail_energy(wav: Path, sample_rate: int = None) -> dict:
     return {
         'peak_linear': round(peak, 4),
         'tail_80ms_db': round(tail_db, 2),
+        'tail_30ms_db': round(tail30_db, 2),
         'abrupt_cutoff_warning': abrupt,
         'speech_onset_sec': round(onset_sec, 3),
         'speech_end_sec': round(max(speech_end_sec, onset_sec + 0.05), 3),
@@ -126,6 +130,23 @@ def _strip_all_punctuation(text: str) -> str:
 
 
 _ZH_CHAPTER_DIGITS = {'1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六', '7': '七', '8': '八', '9': '九'}
+
+
+def prepare_tts_text(spoken: str) -> str:
+    """Ensure clean single sentence-final punctuation for Qwen3-TTS without malformed '，。' / '——。' pairs."""
+    s = str(spoken or '').strip()
+    if not s:
+        return s
+    # Replace dangling continuation punctuation (comma/pause/colon/semicolon/dash) with a clean full stop
+    cleaned = re.sub(r'[，,、：:；;—–\-]+$', '', s).rstrip()
+    if not cleaned:
+        return s
+    # Already ends cleanly with terminal punctuation (or closing quote right after terminal punctuation)
+    if cleaned[-1] in '。！？.!?…':
+        return cleaned
+    if len(cleaned) >= 2 and cleaned[-1] in '”」』》）】"\'' and cleaned[-2] in '。！？.!?…':
+        return cleaned
+    return cleaned + '。'
 
 
 def normalize_spoken_text(text: str) -> str:
@@ -258,11 +279,17 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
         wav_file = out_dir / f'{lid}.wav'
         prev = previous.get(lid, {})
         reuse = (prev.get('text_voice_sha256') == digest and wav_file.is_file() and wav_file.stat().st_size > 2000)
+        if reuse:
+            try:
+                if check_tail_energy(wav_file)['abrupt_cutoff_warning']:
+                    reuse = False
+            except Exception:
+                reuse = False
         if not reuse:
             for old_artifact in [wav_file, wav_file.with_suffix('.wav.json'), wav_file.with_name(f'{lid}.raw.wav')]:
                 if old_artifact.exists():
                     old_artifact.unlink()
-            tts_text = spoken if spoken[-1] in '。！？.!?…' else spoken + '。'
+            tts_text = prepare_tts_text(spoken)
             txt_file.write_text(tts_text, encoding='utf-8')
             cmd = [sys.executable, str(TTS_SCRIPT), '--voice', voice, '--text-file', str(txt_file), '--out', str(wav_file)]
             if item.get('delivery_rate') is not None:
@@ -270,7 +297,7 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
             subprocess.run(cmd, check=True)
             best_tail = check_tail_energy(wav_file)
             if best_tail['abrupt_cutoff_warning']:
-                for alt_seed in (20261021, 20261022):
+                for alt_seed in (20261021, 20261022, 20261023, 20261024):
                     cand = out_dir / f'{lid}.retry_{alt_seed}.wav'
                     for old_c in [cand, cand.with_suffix('.wav.json'), cand.with_name(f'{lid}.retry_{alt_seed}.raw.wav')]:
                         if old_c.exists():
@@ -280,7 +307,7 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
                         retry_cmd += ['--delivery-rate', str(item['delivery_rate'])]
                     subprocess.run(retry_cmd, check=True)
                     cand_tail = check_tail_energy(cand)
-                    if cand_tail['tail_80ms_db'] < best_tail['tail_80ms_db']:
+                    if max(cand_tail['tail_80ms_db'], cand_tail['tail_30ms_db']) < max(best_tail['tail_80ms_db'], best_tail['tail_30ms_db']):
                         cand.replace(wav_file)
                         best_tail = cand_tail
                     for old_c in [cand, cand.with_suffix('.wav.json'), cand.with_name(f'{lid}.retry_{alt_seed}.raw.wav')]:
@@ -291,7 +318,9 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
         info = probe_wav(wav_file)
         tail = check_tail_energy(wav_file, sample_rate=info['sample_rate'])
         if tail['abrupt_cutoff_warning']:
-            warnings.append(f'{lid}: 尾部80ms能量偏高 ({tail["tail_80ms_db"]} dB)，建议人工听检确认末字未截断')
+            warnings.append(
+                f'{lid}: 尾部能量偏高 (80ms={tail["tail_80ms_db"]} dB, 30ms={tail["tail_30ms_db"]} dB)，建议人工听检确认末字未截断'
+            )
         if info['duration'] > max_beat_seconds:
             msg = f'{lid}: 音频时长 {info["duration"]:.2f}s 超过 {max_beat_seconds:.1f}s，单镜易滞留成 PPT'
             warnings.append(msg)

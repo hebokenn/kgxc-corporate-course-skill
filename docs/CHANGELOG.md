@@ -4,6 +4,16 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 根治 Qwen3-TTS 克隆音色吞尾字、清畸形双标点与双窗口尾音防切检：核心 8.1.2 · 2026-11-27
+
+- **根治 `mlx_audio` Qwen3-TTS 解码器句尾硬截断（`scripts/qwen3_tts.py`）**：
+  - 根因定位：上游 `mlx_audio` 在 `speech_tokenizer.decode()` 中使用 `(audio_codes[..., 0] > 0).sum() * decode_upsample_rate` 计算有效音频长度，将 codebook-0 合法语音 token `0`（取值范围 `0..2047`）误判为 padding，导致每出现 1 个 `0` 就从句尾硬裁 `1920` 采样点（`80ms`）。由于 `didi` 参考音频编码固定含 1 个 `0`（`pipi` 为 0 个），叠加部分生成句内的 `0`，导致 `didi` 克隆旁白普遍出现句尾 80–240ms 被剪断、最后一个字没念完。
+  - 修复方案：在 `qwen3_tts.py` 新增 `_patch_zero_token_decode(model)`，于 `load_model()` 后直接将 `speech_tokenizer.decode` 的有效长度统计修补为 `(audio_codes[..., 0] >= 0).sum()`，并在生成元数据 JSON 写入 `decode_zero_token_patch: true`；无需手改虚拟环境第三方包，重装或跨机均永久生效。
+- **句尾标点规整、双窗口尾音防切检与坏缓存隔离（`scripts/tts_sync.py`）**：
+  - 新增 `prepare_tts_text()`：先清理分句末尾的 `，,、：:；;—–-` 再补单终结句号（保留已有终结标点及引号内终结标点），消除向模型喂入 `，。`/`——。` 等畸形双标点。
+  - 升级 `check_tail_energy()`：新增 `tail_30ms_db` 测量，将 `tail_80ms_db > -20.0 dB` 或 `tail_30ms_db > -24.0 dB` 均标为 `abrupt_cutoff_warning`；增量复用旧 WAV 前强制复检，拦截已截断缓存并扩展 4 组候选种子择优重配。
+- **验证范围**：新增 `test_v8_tools.py::test_v812_tts_punctuation_and_zero_token_tail_guard` 单测并通过全量回归（`check_readme.py`、`test_release_readme.py`、`test_v8_tools.py`、`test_v7_tools.py`、`test_streamlined_v700.py`、`build_release.py`）；实测 4 条原吞字样本（`ep03_b036/b093/b058/b024`）同种子修复后末 30ms 能量由 `-14.6 ~ -34.9 dB` 降至 `-49.8 ~ -99.2 dB`，实听所有尾字清晰完整收尾。
+
 ## 逐字稿说人话、去标题连读衔接与零基础新人友好：核心 8.1.1 / 教学设计 2.1.2 · 2026-11-27
 
 - **三项通用逐字稿写作与自查硬规范（`elearning-course-design 2.1.2` / `corporate-training-motion 8.1.1`）**：
