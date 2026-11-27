@@ -4,6 +4,18 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 声画零抢跑、定机位总结板书与融合胶囊分段进度条：核心 8.1.0 · 2026-11-27
+
+- **底部「融合进度胶囊」分段章节进度条（`visual_metaphors.js` / `director_stage.js` / `verify_delivery.py`）**：
+  - 新增 `VisualMetaphors.drawSegmentedProgressBar(ctx, segments, t, pal, opts)`，默认采用 **方案 A「融合进度胶囊」（`style: 'inline_pill'`，高 `48px`、`y = 1032..1080`）**，按各章节真实音频时长比例分配段宽（含最小宽度保底），以已学柔蓝底、当前段主色描边加内部柔和渐变填充与底部蓝金推进边（绝不切字）、未学浅灰空胶囊三态呈现；单行无标点字幕独立上移至 `y = 988` 留足呼吸空间；封面第 0 帧、品牌片头与片尾自动隐藏进度条。
+  - 新增 `DirectorStage.buildNavSegments(lines, chapterSpecs, totalDuration)` 直接由真实音频时间轴推导无缺口分段边界，新增 `auditor.recordProgressBar(navInfo)` 写入 `progress_bar_summary` 遥测；`verify_delivery.py` 门禁 A 硬拦截完整正片（`total_beats >= 12`）未接入分段进度条或未随时间轴正常切换分段的情况，杜绝退回单根总进度条。
+- **声画零抢跑（实际起声点与句内词锚点）**：
+  - `scripts/tts_sync.py` 通过 10ms RMS 窗口实测每条 WAV 的真实起声点 `speech_onset_sec / speech_start` 与发声结束点 `speech_end`，支持 `cue_words` 生成句内词锚点，并从 `speech_start` 对齐生成单行无标点 SRT 字幕。
+  - `DirectorStage.resolveTimeline` 同步返回 `speechT / speechStart / speechEnd`，新增 `DS.phraseTime(beat, phrase, sceneStart)` 与 `auditor.recordReveal(id, targetAbsTime, visible)`；门禁 A 自动拦截对话气泡提前于 `speech_start` 或画面结论/条目提前于旁白词锚点超过 80ms（`premature_reveal_violations`）。
+- **定机位总结板书与知识页停稳运镜**：
+  - `DirectorStage` 新增 `DS.steadyCamera()` 与 `evalCamera` 的 `hold / holdUntil` 停稳区间，新增 `summary_board` 版式边界（占比 ≤ 22%，专用于一屏要点总结卡与讲义收尾页，定机位零晃动并靠逐项揭示推进）；`verify_delivery.py` 新增 `camera_sway_violations` 拦截总结卡晃动与知识页全程无停顿折返摇摆，并优化 16×16 宏块结构差使其精确放行定机位局部揭示、继续拦截微抖动假动态 PPT。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v8_tools.py`（新增 `test_v8_1_speech_onset_anchors_hold_camera_and_sway_reveal_gates` 与 `test_v8_1_segmented_progress_bar_and_gate_a`）、`scripts/test_v7_tools.py`、仓库回归单测、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及隔离安装测试；并在真实课程《门店服务体验提升》第 01 节（6 段胶囊 / 116 句 / 9,173 帧 / 392.5s）与第 02 节（9 段胶囊对应购机七步全流程 / 118 句 / 10,094 帧 / 430.9s）完成全量 8.1.0 实渲、门禁 A（0 错误 0 警告，`progress_bar` 6/6 与 9/9 全段激活）及门禁 B 抽帧目视与 macOS 外部缩略图核验。
+
 ## 电影级导演引擎、强契约避让、自然口语发音分离与双验收硬门禁：核心 8.0.0 · 2026-11-26
 
 - **新增共享电影级导演引擎（`workbench/motion/director_stage.js`）**：小样与完整系列正片统一共用 `DirectorStage` + `CourseActorsCute` + `VisualMetaphors` 三库架构，彻底消除“小样电影级、正片退化成白框模板分发器”的问题。提供 `resolveTimeline(lines, t)`（`sceneT` 跨 Beat 连续推进、`beatT` 驱动本句新变化，杜绝动画归零重播）、`evalCamera(keyframes, sceneT, t)`（多关键帧推拉摇移与微震运镜）及 `createFrameAuditor()`（逐帧采集人物接地步态、文字与人物/字幕区碰撞、PPT 框体占比和场景机位轨迹并输出 `render_audit.json`）；新增唯一权威规范 [`60-v8-cinematic-director-and-gates.md`](../skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) 并同步更新 `SKILL.md`、`agents/openai.yaml`、`48-situational-acting.md` 与 `59-streamlined-series-and-selfcheck.md`。

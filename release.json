@@ -1,5 +1,5 @@
 {
-  "version": "8.0.0",
+  "version": "8.1.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "8.0.0",
+    "corporate-training-motion": "8.1.0",
     "elearning-course-design": "2.1.1"
   },
-  "release_status": "8.0.0 introduces the shared DirectorStage cinematic engine (sceneT/beatT dual-layer timeline, multi-keyframe camera, runtime frame auditor), strict CourseActorsCute contracts, collision-avoiding smart bubbles/danmaku, spoken-vs-caption pronunciation separation (WOW->哇哦, leading-zero chapter normalization & tts_text override), and mandatory Gate A + Gate B delivery verification"
+  "release_status": "8.1.0 adds zero-premature-reveal audio-onset/phrase anchors (speech_onset_sec, phraseTime), rock-steady summary boards & holdUntil settled camera tracks (steadyCamera, camera_sway_violations), and mandatory Scheme A inline-pill segmented chapter progress bars (drawSegmentedProgressBar, buildNavSegments, recordProgressBar) enforced by Gate A"
 }

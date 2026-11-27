@@ -6,7 +6,7 @@
 
 - **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.0.0/kgxc-course-suite-v8.0.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/kgxc-course-suite-v8.1.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -22,12 +22,12 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.0.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.0.0/kgxc-course-suite-v8.0.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/kgxc-course-suite-v8.1.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.0.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
@@ -59,7 +59,8 @@
 
 | 核心能力 | 实际能力细节 |
 | --- | --- |
-| **共享电影级导演内核（`DirectorStage`）与去 PPT 红线** | 小样与全集正片共用同一套 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 渲染内核（杜绝“小样精致、正片退化成白框模板分发器”）。内置 **Scene vs Beat 双层时间轴**（`sceneT` 承接连续走位与生长，跨句绝不归零重播；`beatT` 只推进本句新增变化）、**多关键帧真实运镜（`evalCamera`）** 与 **PPT 框体硬上限（`card_box ≤ 25%` 且连续 ≤ 2 句）**；配合 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 的全屏 3 层视差 Apple 授权门店（`drawCinematicAppleStore`）与开放画布（`drawAmbientBackdrop`），让全片始终保持电影级层次与构图。 |
+| **共享电影级导演内核（`DirectorStage`）、停稳运镜与定机位总结板书** | 小样与全集正片共用同一套 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 渲染内核（杜绝“小样精致、正片退化成白框模板分发器”）。内置 **Scene vs Beat 双层时间轴**（`sceneT` 承接连续走位与生长，跨句绝不归零重播；`speechT` 扣除句首静音、`phraseTime` 定位句内词锚点，彻底杜绝画面抢先旁白剧透）、**到位停稳运镜（`evalCamera` + `holdUntil`）** 与 **定机位要点总结板书（`summary_board` + `steadyCamera()` 零晃动，靠讲到哪条揭示哪条推进，兼顾截图与阅读舒适度）**，叠加 **PPT 框体硬上限（`card_box ≤ 25%` 且连续 ≤ 2 句）** 与全屏 3 层视差 Apple 授权门店（`drawCinematicAppleStore`）及开放画布（`drawAmbientBackdrop`）。 |
+| **底部「融合进度胶囊」分段章节进度条（禁止单根总条）** | 针对 5–10 分钟多阶段培训课中“单根总进度条看不出当前讲到哪一环”的痛点，内置 `DS.buildNavSegments(lines, chapterSpecs)` 与 `VM.drawSegmentedProgressBar(..., { style: 'inline_pill' })`：按各章真实音频时长比例分配宽度（带最小宽度保底），高仅 `48px` 不挤占主体画布，单行字幕独立置于 `y = 988`；以**已学浅蓝 / 当前段描边＋内部渐进填充＋底部蓝金细边 / 未学浅灰**三态实时推进，封面、片头与片尾自动隐藏，并由门禁 A 硬检拦截退化为单根总进度条。 |
 | **代码化三维道具 + 联网检索合规素材** | 遇到复杂硬件拆解或立体商品演示时，支持真 3D 透视投影模型（如 `iPhone 18 Pro` 冰川蓝全宽三摄平台与机身比例）与 Blender 联动；当纯几何绘图不足以表达具体实景道具或图标时，可通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 联网检索 Openverse / Wikimedia Commons 开放许可无水印素材并本地缓存至 `project/assets/web/`（自动记录来源、许可与 SHA-256 溯源清单）。 |
 | **`CourseActorsCute` 强契约角色 + 智能避让气泡/弹幕** | 全程代码骨骼驱动，自带零滑步世界坐标落地步行、防弹膝盖 IK、行进转向与情绪化步速物理（`computeMoodWalk`：`stroll / brisk / rush / cold_exit`）；运行期强制校验参数（禁传 `walkPhase/strideAmp` 与非法情绪/手势枚举，错参即抛错阻断飘移滑行）。对话气泡与弹幕/标签/花字统一经 `drawSmartSpeakerBubble` 与 `placeAvoidingActors` 避开所有人物头身、背景 Logo 与左边缘裁切区，彻底消灭压人脸与跨幕重叠。 |
 | **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
@@ -75,12 +76,12 @@
 ### 三、离线安全配音、音画精确咬合与多态交付闭环
 
 - **本地 `Qwen3-TTS` 离线配音与音色克隆（企业机密不外传）**：全流程本地生成拟真多角色语音，内置获授权的 **didi 男声**、**pipi 女声**，并可配置克隆自有讲师声线；不向任何第三方语音云发送制度文件与音频。
-- **`1-Beat-1-Audio` 强校验咬合 + 口语发音与字幕分离**：告别长语音猜秒数导致的“字幕提前剧透”或声画错位！[`tts_sync.py --strict-beats`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句合成并自动拦截超长句、雷同克隆分镜、旁白误挂气泡与气泡错位；内置**口播与字幕发音分离**（默认把 `WOW` 读作“哇哦”、把 `第 01–09 节` 读作“第一–九节”不读前导 0，同时保留字幕原规范，也支持逐句 `tts_text` 覆写多音字/英文缩写），自动监测句尾能量防截断、混入 48 kHz **“叮 / 嘟咚”原库提示音**与重点花字，并产出**单行无标点 `.srt` 字幕**。
+- **`1-Beat-1-Audio` 声画零抢跑咬合 + 口语发音与字幕分离**：告别长语音猜秒数导致的“画面提前剧透”或声画错位！[`tts_sync.py --strict-beats`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句合成，自动实测每条 WAV 的真实起声点 `speech_onset_sec / speech_start` 与 `cue_words` 词锚点，拦截超长句、雷同克隆分镜、旁白误挂气泡与气泡错位；内置**口播与字幕发音分离**（默认把 `WOW` 读作“哇哦”、把 `第 01–09 节` 读作“第一–九节”不读前导 0，同时保留字幕原规范，也支持逐句 `tts_text` 覆写多音字/英文缩写），自动监测句尾能量防截断、混入 48 kHz **“叮 / 嘟咚”原库提示音**与重点花字，并从 `speech_start` 对齐产出**单行无标点 `.srt` 字幕**。
 - **一套资料，四种形态按需全套带走**：
   - **多集系列课套件**：统一批次按**内容母版三选一** + **跨章节 3 段代表性有声小样**定调，分集导出 `1080p / 24fps` 视频、字幕与封面，同步交付同风格的**《讲义精要》、章节测验题库、A4 可打印手写作业**。
-  - **单支重点培训视频**：含完整品牌片头片尾（片尾音轨自动柔和淡出）、目录进度条、双声演练与重点花字。
+  - **单支重点培训视频**：含完整品牌片头片尾（片尾音轨自动柔和淡出）、底部融合胶囊分段章节进度条、双声演练与重点花字。
   - **独立授课课件**：不录视频也能直接交付可面授或自录的 **PPTX / DOCX / PDF / 交互式 HTML 课件** 与完整逐字稿。
-  - **双验收硬门禁 + 无损音频热替换返修**：渲染器运行期通过 `DirectorStage.createFrameAuditor()` 输出 `render_audit.json`，配合 [`verify_delivery.py --strict-ppt-guard --render-audit`](skills/corporate-training-motion/scripts/verify_delivery.py) 硬拦截走路飘移、文字压人物、同场景重播、16×16 宏块微抖假动态、PPT 框体超 25% 与静态机位（门禁 A），再对最终编码 MP4 抽取迈步/气泡/数据/首尾帧逐一目检（门禁 B）后归档至桌面 `ai 制课/<课程名称>/`。若后续仅微调几句发音且新录音落入原时间槽，可直接按原轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验交付；原始过程工程默认完整保留。
+  - **双验收硬门禁 + 无损音频热替换返修**：渲染器运行期通过 `DirectorStage.createFrameAuditor()` 输出 `render_audit.json`，配合 [`verify_delivery.py --strict-ppt-guard --render-audit`](skills/corporate-training-motion/scripts/verify_delivery.py) 硬拦截走路飘移、文字压人物、同场景重播、**画面元素/气泡抢先旁白 > 80ms**、**总结板书晃动或知识页反复摇摆**、**未接入分段章节进度条**、16×16 宏块微抖假动态、PPT 框体超 25% 与静态机位（门禁 A），再对最终编码 MP4 抽取迈步/气泡/数据/分段切换与揭示前后对照帧逐一目检（门禁 B）后归档至桌面 `ai 制课/<课程名称>/`。若后续仅微调几句发音且新录音落入原时间槽，可直接按原轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验交付；原始过程工程默认完整保留。
 
 | 内置授权音色 | 典型适用位置 | 实声试听 |
 | --- | --- | --- |
@@ -128,6 +129,13 @@
 ---
 
 ## 版本更新
+
+### 声画零抢跑、定机位总结板书与融合胶囊分段进度条：核心 8.1.0 · 2026-11-27
+
+- **底部「融合进度胶囊」分段章节进度条（默认必选，禁退化为单根总条）**：[`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 新增 `VM.drawSegmentedProgressBar(ctx, segments, t, pal, opts)`（方案 A `inline_pill` 高 `48px`，按真实音频时长比例分配段宽并设最小宽度保底，已学浅蓝 / 当前段描边加内部渐进填充与底部蓝金细边 / 未学浅灰三态一目了然，单行字幕独立置于 `y = 988` 避让）；[`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 新增 `DS.buildNavSegments(lines, chapterSpecs)` 与 `auditor.recordProgressBar(navInfo)`，[`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py) 门禁 A 硬拦截未接入分段进度条或未随时间轴切换分段的视频。
+- **声画零抢跑（起声点实测 + 句内词锚点）**：`tts_sync.py` 自动实测每条 WAV 的真实发声起点 `speech_onset_sec / speech_start` 与 `cue_words` 锚点并从 `speech_start` 对齐字幕；`DirectorStage` 提供 `st.speechT`、`DS.phraseTime(beat, phrase, sceneStart)` 与 `auditor.recordReveal(id, targetAbsTime, visible)`，门禁 A 硬拦截对话气泡或画面元素抢先旁白 > 80ms（`premature_reveal_violations`）。
+- **定机位要点总结板书与停稳运镜红线**：`DirectorStage` 新增 `DS.steadyCamera()` 与 `evalCamera` 的 `hold / holdUntil` 停稳区间，支持专用于一屏总结卡与讲义收尾页的 `layout_kind: "summary_board"`（占比 ≤ 22%、定机位零晃动、靠逐条揭示推进），门禁 A 拦截总结板书晃动及知识页全程漂移往返摇摆（`camera_sway_violations`），同时精准区分定机位局部揭示与微抖假动态 PPT。
+- **实课双集全量实渲验收**：在真实课程《门店服务体验提升》第 01 节（6 段分段胶囊 / 116 句 / 9,173 帧）与第 02 节（9 段对应购机七步全流程 / 118 句 / 10,094 帧）完成全量 8.1.0 实渲、门禁 A 零错误零警告及门禁 B 多段切换与揭示前后对照帧目检。
 
 ### 电影级导演引擎、强契约避让、自然口语发音分离与双验收硬门禁：核心 8.0.0 · 2026-11-26
 

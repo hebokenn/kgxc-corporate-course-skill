@@ -1042,12 +1042,153 @@
     return placed;
   }
 
+  /**
+   * Segmented chapter progress bar (v8.2 standard — default style: 'inline_pill' / 方案 A 融合进度胶囊, 48px high).
+   * Distinguishes completed / active (live fill by audio time `t`) / upcoming chapters cleanly without clashing with text.
+   * Returns telemetry object for DirectorStage auditor.recordProgressBar().
+   */
+  function drawSegmentedProgressBar(ctx, segments = [], t = 0, pal = {}, opts = {}) {
+    if (!Array.isArray(segments) || segments.length === 0) return null;
+    const style = opts.style || 'inline_pill';
+    const fontFamily = opts.font || '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+    const accent = pal.accent || '#254C99';
+    const accentLight = pal.accentLight || '#4A7FE0';
+    const gold = pal.gold || '#D98A2B';
+    const canvasBg = pal.canvas || '#FBF9F5';
+    const barH = style === 'inline_pill' ? (opts.height || 48) : (style === 'rail' ? 58 : 62);
+    const barY = 1080 - barH;
+    const marginX = opts.marginX ?? 48;
+    const totalW = 1920 - marginX * 2;
+    const gap = opts.gap ?? (segments.length >= 8 ? 10 : 12);
+
+    // Compute proportional widths with a readable minimum width floor so short chapters never wrap/clip
+    const durations = segments.map(s => Math.max(0.5, Number(s.end || 0) - Number(s.start || 0)));
+    const totalDur = durations.reduce((a, b) => a + b, 0) || 1;
+    const availW = totalW - gap * (segments.length - 1);
+    const minW = Math.min(opts.minSegWidth ?? 136, availW / segments.length);
+    let widths = durations.map(d => Math.max(minW, availW * (d / totalDur)));
+    const wSum = widths.reduce((a, b) => a + b, 0) || 1;
+    widths = widths.map(w => w * (availW / wSum));
+
+    // Resolve active segment index & fractional progress from actual audio clock `t`
+    let activeIdx = 0;
+    for (let i = 0; i < segments.length; i++) {
+      const s = segments[i];
+      if (i === segments.length - 1) {
+        if (t >= s.start) activeIdx = i;
+      } else if (t >= s.start && t < s.end) {
+        activeIdx = i;
+        break;
+      } else if (t >= s.start) {
+        activeIdx = i;
+      }
+    }
+    const actSeg = segments[activeIdx];
+    const actSpan = Math.max(0.1, Number(actSeg.end || 0) - Number(actSeg.start || 0));
+    const activeFrac = clamp((t - Number(actSeg.start || 0)) / actSpan);
+
+    // Helper: hex -> rgba for harmonious tinting across any course palette
+    const hexRgba = (hex, a) => {
+      const h = String(hex || '#254C99').replace('#', '');
+      if (h.length !== 6) return `rgba(37, 76, 153, ${a})`;
+      const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    };
+
+    ctx.save();
+    ctx.fillStyle = canvasBg === '#FBF9F5' ? 'rgba(251, 249, 245, 0.96)' : canvasBg;
+    ctx.fillRect(0, barY, 1920, barH);
+    ctx.strokeStyle = 'rgba(200, 192, 178, 0.70)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, barY); ctx.lineTo(1920, barY); ctx.stroke();
+
+    let cx = marginX;
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      const sw = widths[i];
+      const label = String(seg.label || `第${i + 1}段`);
+      const fontSize = sw < 145 ? 16 : 17;
+
+      if (style === 'inline_pill') {
+        const py = barY + 8, ph = barH - 16, r = ph / 2;
+        if (i < activeIdx) {
+          roundRect(ctx, cx, py, sw, ph, r, hexRgba(accent, 0.13), hexRgba(accent, 0.24), 1.2);
+          ctx.font = `700 ${fontSize}px ${fontFamily}`;
+          ctx.fillStyle = '#2E4674';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, py + ph / 2 + 1);
+        } else if (i === activeIdx) {
+          roundRect(ctx, cx, py, sw, ph, r, '#FFFFFF', accent, 2.2);
+          ctx.save();
+          ctx.beginPath(); ctx.roundRect(cx + 1.5, py + 1.5, sw - 3, ph - 3, r - 1); ctx.clip();
+          const fg = ctx.createLinearGradient(cx, 0, cx + sw, 0);
+          fg.addColorStop(0, hexRgba(accent, 0.17));
+          fg.addColorStop(1, hexRgba(accentLight, 0.30));
+          ctx.fillStyle = fg;
+          ctx.fillRect(cx, py, sw * activeFrac, ph);
+          // Crisp bottom gradient accent edge inside capsule (never cuts through text!)
+          const bg = ctx.createLinearGradient(cx, 0, cx + sw, 0);
+          bg.addColorStop(0, accent); bg.addColorStop(1, gold);
+          ctx.fillStyle = bg;
+          ctx.fillRect(cx, py + ph - 4.5, Math.max(6, sw * activeFrac), 4.5);
+          ctx.restore();
+          ctx.font = `900 ${fontSize + 1}px ${fontFamily}`;
+          ctx.fillStyle = accent;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, py + ph / 2);
+        } else {
+          roundRect(ctx, cx, py, sw, ph, r, 'rgba(34, 38, 48, 0.045)', 'rgba(34, 38, 48, 0.12)', 1.2);
+          ctx.font = `600 ${fontSize}px ${fontFamily}`;
+          ctx.fillStyle = '#7C8394';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, py + ph / 2 + 1);
+        }
+      } else {
+        // Fallback 'rail' style (top track + bottom label)
+        const ty = barY + 10, th = 7;
+        if (i < activeIdx) {
+          roundRect(ctx, cx, ty, sw, th, 3.5, hexRgba(accent, 0.48), null);
+          ctx.font = `700 ${fontSize}px ${fontFamily}`; ctx.fillStyle = '#41506B';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, barY + 39);
+        } else if (i === activeIdx) {
+          roundRect(ctx, cx, ty, sw, th, 3.5, hexRgba(accent, 0.12), null);
+          const fw = Math.max(10, sw * activeFrac);
+          const bg = ctx.createLinearGradient(cx, 0, cx + sw, 0);
+          bg.addColorStop(0, accent); bg.addColorStop(1, gold);
+          roundRect(ctx, cx, ty, fw, th, 3.5, bg, null);
+          ctx.font = `900 ${fontSize + 1}px ${fontFamily}`; ctx.fillStyle = accent;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, barY + 39);
+        } else {
+          roundRect(ctx, cx, ty, sw, th, 3.5, 'rgba(34, 38, 48, 0.12)', null);
+          ctx.font = `600 ${fontSize}px ${fontFamily}`; ctx.fillStyle = '#8A90A0';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(label, cx + sw / 2, barY + 39);
+        }
+      }
+      cx += sw + gap;
+    }
+    ctx.restore();
+
+    return {
+      mode: 'segmented',
+      style,
+      segment_count: segments.length,
+      labels: segments.map(s => String(s.label || '')),
+      activeIdx,
+      activeLabel: String(actSeg.label || ''),
+      activeFrac: Number(activeFrac.toFixed(4)),
+      barTopY: barY,
+    };
+  }
+
   global.VisualMetaphors = {
     clamp, easeOut, easeInOut, easeOutExpo, easeOutQuint, easeInOutQuart, easeOutBack, spring, win, lerp,
     roundRect, drawDocumentSheet, drawStrikeThrough,
     draw3DWireCube, draw3DPhoneProp, drawAudioEnvelopeBars, drawCleanCaption,
     withCamera, drawStudioBackdrop, drawAmbientBackdrop, drawFocusBrackets, drawSpeedLines, drawRipple, drawStampBadge,
     drawRetailStoreBackdrop, drawCinematicAppleStore, drawFScanOverlay,
-    rectOverlapArea, placeAvoidingActors, drawSmartSpeakerBubble,
+    rectOverlapArea, placeAvoidingActors, drawSmartSpeakerBubble, drawSegmentedProgressBar,
   };
 })(window);

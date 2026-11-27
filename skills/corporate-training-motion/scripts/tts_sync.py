@@ -38,21 +38,80 @@ def probe_wav(wav: Path) -> dict:
 
 
 def check_tail_energy(wav: Path, sample_rate: int = None) -> dict:
-    """Measure final 80ms RMS vs body RMS to catch abrupt mid-syllable EOS cutoffs."""
+    """Measure final 80ms RMS vs body RMS to catch abrupt mid-syllable EOS cutoffs, plus speech onset/end bounds."""
     import numpy as np
     sr = sample_rate or probe_wav(wav)['sample_rate']
     raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', str(wav), '-ac', '1', '-f', 'f32le', '-'])
     samples = np.frombuffer(raw, dtype='<f4')
+    total_dur = len(samples) / float(sr) if sr else 0.0
     peak = float(np.max(np.abs(samples))) if len(samples) else 0.0
     tail_n = min(len(samples), int(sr * 0.08))
     tail_rms = float(np.sqrt(np.mean(samples[-tail_n:] ** 2))) if tail_n else 0.0
     tail_db = 20.0 * math.log10(max(tail_rms, 1e-7))
     abrupt = tail_db > -20.0
+
+    # Measure actual vocal onset and speech end using 10ms RMS windows so visuals never pop ahead of leading silence
+    win_n = max(1, int(sr * 0.01))
+    n_wins = len(samples) // win_n
+    onset_sec = 0.0
+    speech_end_sec = total_dur
+    if n_wins > 0:
+        frames = samples[:n_wins * win_n].reshape(n_wins, win_n)
+        rms = np.sqrt(np.mean(frames ** 2, axis=1))
+        thresh = max(0.012, peak * 0.035)
+        active = np.where(rms >= thresh)[0]
+        if len(active):
+            onset_sec = min(float(active[0]) * 0.01, total_dur * 0.45)
+            speech_end_sec = min(total_dur, float(active[-1] + 1) * 0.01)
+
     return {
         'peak_linear': round(peak, 4),
         'tail_80ms_db': round(tail_db, 2),
         'abrupt_cutoff_warning': abrupt,
+        'speech_onset_sec': round(onset_sec, 3),
+        'speech_end_sec': round(max(speech_end_sec, onset_sec + 0.05), 3),
     }
+
+
+def compute_phrase_anchors(text: str, speech_start: float, speech_end: float, cue_words: list = None) -> dict:
+    """Estimate intra-beat timestamps for explicit cue_words (and clauses) inside [speech_start, speech_end]."""
+    raw = str(text or '').strip()
+    span = max(0.08, float(speech_end) - float(speech_start))
+    # Build character-level weighted cumulative time map (punctuation gets small pause weight)
+    import unicodedata
+    weights = []
+    clean_chars = []
+    clean_to_raw = []
+    for idx, ch in enumerate(raw):
+        if ch.isspace():
+            weights.append(0.15)
+        elif unicodedata.category(ch).startswith('P'):
+            weights.append(0.75 if ch in '，。！？；：——' else 0.25)
+        else:
+            weights.append(1.0)
+            clean_chars.append(ch.lower())
+            clean_to_raw.append(idx)
+    total_w = sum(weights) or 1.0
+    cum = []
+    acc = 0.0
+    for w in weights:
+        cum.append(acc / total_w)
+        acc += w
+    clean_str = ''.join(clean_chars)
+
+    anchors = {}
+    for phrase in (cue_words or []):
+        ph = str(phrase or '').strip()
+        if not ph:
+            continue
+        clean_ph = _strip_all_punctuation(ph).replace(' ', '').lower()
+        if not clean_ph:
+            continue
+        pos = clean_str.find(clean_ph)
+        if pos >= 0:
+            raw_idx = clean_to_raw[pos]
+            anchors[ph] = round(speech_start + span * cum[raw_idx], 3)
+    return anchors
 
 
 def _strip_all_punctuation(text: str) -> str:
@@ -239,8 +298,13 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
             beat_errors.append(msg)
         start = round(cursor, 3)
         end = round(cursor + info['duration'], 3)
-        cues = split_single_line_captions(text, start, info['duration']) if no_punctuation else [
-            {'start': start, 'end': end, 'text': text}
+        onset_sec = float(tail.get('speech_onset_sec', 0.0))
+        speech_start = round(start + onset_sec, 3)
+        speech_end = round(min(end, max(speech_start + 0.08, start + float(tail.get('speech_end_sec', info['duration'])))), 3)
+        cue_words = item.get('cue_words') or []
+        anchors = compute_phrase_anchors(text, speech_start, speech_end, cue_words) if cue_words else {}
+        cues = split_single_line_captions(text, speech_start, max(0.08, speech_end - speech_start)) if no_punctuation else [
+            {'start': speech_start, 'end': speech_end, 'text': text}
         ]
         all_cues.extend(cues)
         entry = {
@@ -255,14 +319,19 @@ def synthesize_beats(lines: list, out_dir: Path, gap_seconds: float = 0.22,
             'reused': reuse,
             'start': start,
             'end': end,
+            'speech_onset_sec': round(onset_sec, 3),
+            'speech_start': speech_start,
+            'speech_end': speech_end,
             'duration': round(info['duration'], 3),
             'tail_check': tail,
         }
+        if anchors:
+            entry['anchors'] = anchors
         if spoken != text:
             entry['tts_text'] = spoken
         for optional_key in (
             'scene_id', 'scene', 'layout_kind', 'visual_cue', 'visual_metaphor',
-            'screen_text', 'scene_tag', 'speaker_bubble', 'params', 'sfx', 'flower_text',
+            'screen_text', 'scene_tag', 'speaker_bubble', 'params', 'sfx', 'flower_text', 'cue_words',
         ):
             if item.get(optional_key) is not None:
                 entry[optional_key] = item[optional_key]

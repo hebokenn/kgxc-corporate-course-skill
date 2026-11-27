@@ -77,15 +77,26 @@ def _main_canvas_mae(buf_a: bytes, buf_b: bytes) -> float:
     return float(np.mean(np.abs(arr_a - arr_b)))
 
 
-def _coarse_structure_mae(buf_a: bytes, buf_b: bytes) -> float:
-    """Downsample top-80% canvas to 16x16 macro-blocks so small camera-wiggle jitter cannot cheat PPT detection."""
+def _coarse_structure_stats(buf_a: bytes, buf_b: bytes) -> tuple:
+    """Return (coarse_mae, top3_block_mae) on 9x20 macro-blocks (16x16 each) of top-80% canvas.
+
+    Distinguishes genuine localized steady-camera reveals (high top3_block_mae and high coarse/raw ratio)
+    from fake ±12px camera-wiggle jitter (low coarse_mae and low coarse/raw ratio).
+    """
     import numpy as np
     arr_a = np.frombuffer(buf_a, dtype=np.uint8).reshape(180, 320, 3)[:144].astype(np.float32)
     arr_b = np.frombuffer(buf_b, dtype=np.uint8).reshape(180, 320, 3)[:144].astype(np.float32)
     # 144 = 9 * 16, 320 = 20 * 16 -> 9x20 coarse grid
     coarse_a = arr_a.reshape(9, 16, 20, 16, 3).mean(axis=(1, 3))
     coarse_b = arr_b.reshape(9, 16, 20, 16, 3).mean(axis=(1, 3))
-    return float(np.mean(np.abs(coarse_a - coarse_b)))
+    block_diff = np.mean(np.abs(coarse_a - coarse_b), axis=2)
+    coarse_mae = float(np.mean(block_diff))
+    top3_blk = float(np.mean(np.sort(block_diff.ravel())[-3:]))
+    return coarse_mae, top3_blk
+
+
+def _coarse_structure_mae(buf_a: bytes, buf_b: bytes) -> float:
+    return _coarse_structure_stats(buf_a, buf_b)[0]
 
 
 def _parse_fps(rate_str: str) -> float:
@@ -99,13 +110,18 @@ def _parse_fps(rate_str: str) -> float:
 
 def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_dur: float,
                              timeline_path: Path, max_static_span: float = 5.0,
-                             min_scene_change_mae: float = 2.2) -> dict:
+                             min_scene_change_mae: float = 2.2,
+                             steady_scenes: set = None) -> dict:
     """Detect PPT stagnation, micro-wiggle cheating, and beat-boundary animation replays."""
     data = json.loads(timeline_path.read_text(encoding='utf-8'))
     beats = data.get('timeline') or data.get('lines') or []
+    steady_scenes = steady_scenes or set()
     issues = []
     if not beats:
         return {'beats_checked': 0, 'stagnant_spans': [], 'replay_pairs': [], 'issues': ['timeline.json 未包含任何配音 Beat']}
+
+    def _is_steady_board(beat: dict) -> bool:
+        return (beat.get('layout_kind') == 'summary_board') or (beat.get('scene_id') in steady_scenes)
 
     max_frame = max(1, int(total_dur * fps) - 1)
     beat_frames = []
@@ -128,18 +144,35 @@ def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_d
     run_start = float(beats[0].get('start', 0.0))
     transitions = []
 
+    def _has_real_visual_change(buf_a: bytes, buf_b: bytes, is_steady_pair: bool) -> tuple:
+        mae = _main_canvas_mae(buf_a, buf_b)
+        coarse, top3_blk = _coarse_structure_stats(buf_a, buf_b)
+        solid_local_reveal = (top3_blk >= 11.5) and (coarse >= 0.38 * max(mae, 0.01))
+        if is_steady_pair:
+            changed = (mae >= 0.85) or solid_local_reveal
+        else:
+            global_change = (mae >= min_scene_change_mae) and (coarse >= 1.35 or mae >= 5.5)
+            changed = global_change or solid_local_reveal
+        return changed, mae, coarse, top3_blk
+
     for idx in range(1, len(beats)):
         prev_b, prev_s, prev_mid, prev_e = beat_frames[idx - 1]
         cur_b, cur_s, cur_mid, cur_e = beat_frames[idx]
         if prev_mid in frames and cur_mid in frames:
-            mae = _main_canvas_mae(frames[prev_mid], frames[cur_mid])
-            coarse = _coarse_structure_mae(frames[prev_mid], frames[cur_mid])
+            steady_pair = _is_steady_board(prev_b) and _is_steady_board(cur_b)
+            changed_mid, mae_m, coarse_m, top3_m = _has_real_visual_change(frames[prev_mid], frames[cur_mid], steady_pair)
+            changed_end, mae_e, coarse_e, top3_e = (False, 0.0, 0.0, 0.0)
+            if prev_e in frames and cur_e in frames:
+                changed_end, mae_e, coarse_e, top3_e = _has_real_visual_change(frames[prev_e], frames[cur_e], steady_pair)
+            use_end = (top3_e > top3_m and mae_e >= mae_m) or (changed_end and not changed_mid)
+            mae = mae_e if use_end else mae_m
+            coarse = coarse_e if use_end else coarse_m
+            top3_blk = top3_e if use_end else top3_m
             transitions.append({
                 'from': prev_b['id'], 'to': cur_b['id'],
-                'main_mae': round(mae, 2), 'coarse_mae': round(coarse, 2),
+                'main_mae': round(mae, 2), 'coarse_mae': round(coarse, 2), 'top3_block_mae': round(top3_blk, 2),
             })
-            # Defeat fake ±12px camera-wiggle on static slides (raw mae slightly elevated, coarse structure static)
-            is_stagnant = (mae < min_scene_change_mae) or (coarse < 1.35 and mae < 5.5)
+            is_stagnant = not (changed_mid or changed_end)
             if is_stagnant:
                 run_beats.append(cur_b)
             else:
@@ -176,9 +209,8 @@ def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_d
     for b, s_f, _, e_f in beat_frames:
         dur_b = float(b.get('end', 0.0)) - float(b.get('start', 0.0))
         if dur_b > max_static_span and s_f in frames and e_f in frames:
-            mae = _main_canvas_mae(frames[s_f], frames[e_f])
-            coarse = _coarse_structure_mae(frames[s_f], frames[e_f])
-            if mae < min_scene_change_mae or (coarse < 1.35 and mae < 5.5):
+            changed_single, _, _, _ = _has_real_visual_change(frames[s_f], frames[e_f], _is_steady_board(b))
+            if not changed_single:
                 issues.append(f'Beat {b.get("id")} 时长 {dur_b:.1f}s 且首尾主画面变化过小，建议拆句或补强视觉演进')
 
     return {
@@ -191,14 +223,18 @@ def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_d
 
 
 def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
-                       max_consecutive_card_box: int = 2) -> dict:
-    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v8.0 hard gate."""
+                       max_consecutive_card_box: int = 2,
+                       max_summary_board_ratio: float = 0.22) -> dict:
+    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v8.1 hard gate."""
     data = json.loads(audit_path.read_text(encoding='utf-8'))
     errors = []
     floating = data.get('floating_walk_violations') or []
     overlaps = data.get('text_actor_overlap_violations') or []
     replays = data.get('scene_replay_violations') or []
+    sways = data.get('camera_sway_violations') or []
+    premature = data.get('premature_reveal_violations') or []
     card_ratio = float(data.get('card_box_ratio', 0.0))
+    summary_ratio = float(data.get('summary_board_ratio', 0.0))
     max_consec = int(data.get('max_consecutive_card_box', 0))
     cams = data.get('camera_summary') or []
 
@@ -217,9 +253,23 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
         errors.append(
             f'检测到 {len(replays)} 处同场景内 sceneT 回退归零重播（如 {sample.get("scene_id")} / {sample.get("beat_id")}）'
         )
+    if sways:
+        sample = sways[0]
+        errors.append(
+            f'检测到 {len(sways)} 个场景存在无意义镜头晃动/漂移（如 {sample.get("scene_id")} {sample.get("layout_kind")}: {sample.get("reason")}）'
+        )
+    if premature:
+        sample = premature[0]
+        errors.append(
+            f'检测到 {len(premature)} 处画面元素抢先旁白出现（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("item_id")} 提前 {sample.get("lead_sec")}s），请绑定 speech_start / phraseTime'
+        )
     if card_ratio > max_card_box_ratio:
         errors.append(
             f'PPT 框体版式占比超标（{card_ratio:.1%} > {max_card_box_ratio:.0%} 上限），请将白框卡片改写为实景演出或开放画布动效'
+        )
+    if summary_ratio > max_summary_board_ratio:
+        errors.append(
+            f'定机位总结板书占比超标（{summary_ratio:.1%} > {max_summary_board_ratio:.0%} 上限），summary_board 仅用于总结卡与收尾清单'
         )
     if max_consec > max_consecutive_card_box:
         errors.append(
@@ -238,14 +288,32 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
             f'{len(dead_cams)} 个动态场景缺少真实电影级运镜（zoom_span<0.035 且 pan<26px）: {ids}'
         )
 
+    pb = data.get('progress_bar_summary')
+    total_beats = int(data.get('total_beats', 0))
+    if total_beats >= 12:
+        if not isinstance(pb, dict) or pb.get('mode') != 'segmented' or int(pb.get('segment_count', 0)) < 2:
+            errors.append(
+                '未检测到分段章节进度条（禁止退化为单根总进度条），请调用 VisualMetaphors.drawSegmentedProgressBar + DirectorStage.buildNavSegments 并记录 auditor.recordProgressBar()'
+            )
+        elif int(pb.get('visited_segments', 0)) < min(2, int(pb.get('segment_count', 0))):
+            errors.append(
+                f'分段进度条未随时间轴正常切换（仅激活 {pb.get("visited_segments", 0)}/{pb.get("segment_count", 0)} 段），请检查 buildNavSegments 场景绑定'
+            )
+
+    steady_scenes = [c.get('scene_id') for c in cams if c.get('layout_kind') == 'summary_board' and c.get('scene_id')]
     return {
         'total_frames': data.get('total_frames', 0),
-        'total_beats': data.get('total_beats', 0),
+        'total_beats': total_beats,
         'card_box_ratio': card_ratio,
+        'summary_board_ratio': summary_ratio,
         'max_consecutive_card_box': max_consec,
         'floating_walk_count': len(floating),
         'text_actor_overlap_count': len(overlaps),
         'scene_replay_count': len(replays),
+        'camera_sway_count': len(sways),
+        'premature_reveal_count': len(premature),
+        'progress_bar': pb,
+        'steady_scenes': steady_scenes,
         'dead_camera_scenes': [c.get('scene_id') for c in dead_cams],
         'errors': errors,
     }
@@ -359,15 +427,36 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
                     break
             report['checks']['srt_cues'] = len(cues)
 
+    steady_scenes = set()
+    if render_audit is not None:
+        if not render_audit.is_file():
+            errors.append(f'渲染遥测审计文件不存在: {render_audit}')
+        else:
+            ra = check_render_audit(render_audit)
+            report['checks']['render_audit'] = ra
+            steady_scenes = set(ra.get('steady_scenes') or [])
+            errors.extend(ra['errors'])
+
     if timeline is not None:
         if not timeline.is_file():
             errors.append(f'时间轴文件不存在: {timeline}')
         else:
             fps = _parse_fps(v.get('avg_frame_rate') or v.get('r_frame_rate'))
-            pacing = check_beat_visual_pacing(video, v['index'], fps, dur, timeline)
+            pacing = check_beat_visual_pacing(video, v['index'], fps, dur, timeline, steady_scenes=steady_scenes)
             report['checks']['beat_pacing'] = pacing
             target = errors if strict_ppt_guard else warnings
             target.extend(pacing['issues'])
+            if srt is not None and srt.is_file():
+                tl_data = json.loads(timeline.read_text(encoding='utf-8'))
+                tl_beats = tl_data.get('timeline') or tl_data.get('lines') or []
+                srt_cues = read_srt(srt)
+                if tl_beats and srt_cues:
+                    tail_drift = abs(float(srt_cues[-1]['end']) - float(tl_beats[-1].get('end', 0.0)))
+                    report['checks']['srt_timeline_tail_drift_sec'] = round(tail_drift, 3)
+                    if tail_drift > 0.8:
+                        errors.append(
+                            f'字幕文件与渲染时间轴尾部漂移 {tail_drift:.2f}s（请核对局部配音热替换后 .srt 与 timeline.json 是否同步）'
+                        )
 
     if visual_audit is not None:
         if not visual_audit.is_file():
@@ -383,14 +472,6 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
             if overloaded:
                 msg = f'同屏文字过载（>45 字）的镜头: {", ".join(str(r.get("id")) for r in overloaded)}'
                 (errors if strict_ppt_guard else warnings).append(msg)
-
-    if render_audit is not None:
-        if not render_audit.is_file():
-            errors.append(f'渲染遥测审计文件不存在: {render_audit}')
-        else:
-            ra = check_render_audit(render_audit)
-            report['checks']['render_audit'] = ra
-            errors.extend(ra['errors'])
 
     report['checks'].update({
         'resolution': f'{v.get("width")}x{v.get("height")}',
