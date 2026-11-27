@@ -6,7 +6,7 @@
 
 - **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/kgxc-course-suite-v8.1.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.1.1](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/kgxc-course-suite-v8.1.1.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -22,12 +22,12 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/kgxc-course-suite-v8.1.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.1.1.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/kgxc-course-suite-v8.1.1.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.1.1/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
@@ -54,6 +54,7 @@
 | **来源台账与条件/例外单列** | 逐页构建可追溯台账，明确标注**事实规则、触发前提、适用条件、例外情况与待核实缺口**，严格禁止 AI 臆造审批流程、业绩数字或内部制度。 |
 | **“学员没有原件”上下文自检** | 培训成品只面向看不见原附件的学员。自动排查并改写“如图/原表/资料中”等悬空指代，首次提到表单与界面时先交代名称、用途与看哪里。 |
 | **场景化实战转化 & 智能提问** | 拒绝“重视/赋能/形成闭环”式空话，严格按 **“工作触发情境 → 第一反应与动作判断 → 规则依据 → 示范 → 练习与反馈”** 重构口播；并在影响课程范围的节点主动弹出 **1–3 个带推荐与取舍的简洁选择**。 |
+| **口语短标题、去标题连读衔接与零基础新人友好** | 针对全员课/新员工培训中常见的“AI 拼词冒号长标题”“切换小节突然跳题”“一上来堆缩写和规程导致新人听不懂”三大痛点：要求集标题与小节标题短促说人话（建议 ≤ 14 字，适配过场页与底部胶囊进度条）；视频默认不照念编号标题，交稿前执行**隐藏全部小标题从头连读自检**确保跨节口播自然过渡；面向全员或新人时，开篇 30–60 秒先用大白话讲清业务本质、术语首次出现先白话再带简称、讲红线风控前先一句讲透背后业务道理再给标准动作。 |
 
 ### 二、视觉、动效与角色引擎（`corporate-training-motion`）：纯粹代码生成，绝不静态拼图
 
@@ -107,7 +108,7 @@
 | 阶段 | AI 为你自动完成 | 你只需要确认 |
 | --- | --- | --- |
 | **1. 资料拆解与设计** | 读取 PDF/Word/PPT/扫描件/录音，建立来源台账、学习目标与单课/系列课结构 | 教给谁、学什么、重点范围 |
-| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代并完成自查；通过 `workflow.py source-coverage` 绑定原件、逐字稿与覆盖报告哈希 | 在对话或结构化提问中核对取舍说明与讲法后明确确认 |
+| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代，并完成口语短标题、去小标题连读无缝衔接及零基础新人友好自查；通过 `workflow.py source-coverage` 绑定原件、逐字稿与覆盖报告哈希 | 在对话或结构化提问中核对取舍说明与讲法后明确确认 |
 | **3A. 课件与配套文档** | 交付可讲/可录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
 | **3B. 视觉母版定调与小样** | 按内容母版输出 3 套实质不同方案（`template_masters`），定调后导出 3 段跨章节有声 MP4 小样 | 选定画布配色、角色造型与声音节奏 |
 | **4. 共享引擎出片与双门禁交付** | 直接沿用并扩展小样验证通过的 `DirectorStage` 场景模块分集导出，经门禁 A（`verify_delivery.py --strict-ppt-guard --render-audit`）+ 门禁 B（最终 MP4 抽帧目检）后归集至桌面目录；后续局部改发音可秒级无损热替换音轨 | 验收成片，或随时对话局部微调 |
@@ -129,6 +130,12 @@
 ---
 
 ## 版本更新
+
+### 逐字稿说人话、去标题连读衔接与零基础新人友好：核心 8.1.1 / 教学设计 2.1.2 · 2026-11-27
+
+- **标题口语化硬规范（建议 ≤ 14 字）**：在 [`elearning-course-design/SKILL.md`](skills/elearning-course-design/SKILL.md)、[`script-authoring-quality.md`](skills/elearning-course-design/references/script-authoring-quality.md)、[`corporate-training-motion/SKILL.md`](skills/corporate-training-motion/SKILL.md) 与 [`59-streamlined-series-and-selfcheck.md`](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md) 统一明确课程、分集与小节标题须短促自然像真人和同事说话，杜绝“XX与XX：先XX再XX”式书面拼词冒号长标题，直接适配视频章节过场页与底部融合胶囊进度条排版。
+- **去小标题连读无缝衔接自查**：明确视频中小节标题默认作画面过场页与底部进度条标签、不生硬照念；要求每两节交界处的口播正文自带自然承接过渡句，并在送审自查清单中强制执行“隐藏全部小标题从头连读检验”，杜绝只听口播时跨节突然跳题断层。
+- **零基础新人友好写作规则**：面向全员或包含新员工的课程，要求开篇 30–60 秒先用生活化大白话讲清业务或工具本质；首次出现业务缩写、系统名或内部行话坚持“先白话解释、再顺带简称”；讲红线、风控或繁琐规程前先用一句话讲透背后的业务道理（防什么风险、为何这样定），再给标准动作与禁区。
 
 ### 声画零抢跑、定机位总结板书与融合胶囊分段进度条：核心 8.1.0 · 2026-11-27
 

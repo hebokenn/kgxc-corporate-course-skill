@@ -4,6 +4,15 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 逐字稿说人话、去标题连读衔接与零基础新人友好：核心 8.1.1 / 教学设计 2.1.2 · 2026-11-27
+
+- **三项通用逐字稿写作与自查硬规范（`elearning-course-design 2.1.2` / `corporate-training-motion 8.1.1`）**：
+  - **标题说人话（建议 ≤ 14 字）**：在 `skills/elearning-course-design/SKILL.md`、`references/script-authoring-quality.md`、`skills/corporate-training-motion/SKILL.md` 与 `references/59-streamlined-series-and-selfcheck.md` 统一规范课程、分集与小节标题必须简短自然、像真人在跟同事说话，杜绝“XX与XX：先XX再XX”这类书面拼词冒号长标题，便于画面章节过场页与底部融合胶囊进度条排版。
+  - **去小标题连读无缝衔接**：明确视频中小节标题默认仅作画面过场页与底部进度条标签、不生硬照念，因此每两节交界处的口播正文必须自带自然口语承接过渡句；送审与交付前自查强制执行“隐藏全部小标题从头连读检验”，确保纯听口播完全连贯不跳题。
+  - **零基础新人友好**：面向全员或包含新员工的课程，要求开篇 30–60 秒先用大白话讲清业务或工具本质及与日常工作的关系；首次出现业务缩写、系统名或内部行话坚持“先白话解释、再顺带简称”；讲红线、风控或繁琐规程前先用一句话讲透背后的业务道理（防什么风险、为何这样定），再给标准动作与禁区。
+- **版本声明与主页同步**：同步更新 `VERSION`、`release.json`、`install.sh`、`workbench/workflow.py`、`workbench/motion/director_stage.js`、`README.md` 能力矩阵与版本更新及 `docs/index.html` 至 `8.1.1`（`elearning-course-design 2.1.2`）。
+- **验证范围**：通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v8_tools.py`、`scripts/test_v7_tools.py`、仓库安装与发布校验测试、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及本机工作区/全局安装副本同步验证；该套逐字稿规范已在真实课程《企业购 SMB 门店实战课》上下两篇逐字稿修订与人工确认中落地验证。
+
 ## 声画零抢跑、定机位总结板书与融合胶囊分段进度条：核心 8.1.0 · 2026-11-27
 
 - **底部「融合进度胶囊」分段章节进度条（`visual_metaphors.js` / `director_stage.js` / `verify_delivery.py`）**：

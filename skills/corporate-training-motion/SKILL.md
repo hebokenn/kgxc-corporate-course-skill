@@ -19,7 +19,7 @@ description: 酷果星创课程设计与制作统一入口（8.0.0 电影级导�
    - 先读透原件（含图表/密集页），结合 [原件覆盖与现场讲解](../elearning-course-design/references/source-coverage-and-scope.md) 明确核心工作任务、学习目标、内容取舍与推荐讲法；有重要影响的选择用宿主结构化提问（最多 3 题）集中展示，再生成可审阅的大纲 HTML。
    - **授课立场**：代表酷果**总部团队发展中心**直接面向门店团队讲解，不在口播、字幕或封面自报部门；保留酷果星创开场问候语与完整收尾。
 3. **统一逐字稿与自查**：
-   - 按章节编号编写完整口播逐字稿（不含制作备注与避免词元说明），先按 [逐字稿输入与作者自检](../elearning-course-design/references/script-authoring-quality.md) 与 [学员上下文检查](../elearning-course-design/references/learner-context.md) 自查修精，生成原件覆盖对照报告 `workflow.py source-coverage COURSE --save report.json` 并连同逐字稿 HTML 呈交用户；确认后写入 `source-coverage --confirm` 与 `review --gate script`。
+   - 按章节编号编写完整口播逐字稿（不含制作备注与避免词元说明），先按 [逐字稿输入与作者自检](../elearning-course-design/references/script-authoring-quality.md) 与 [学员上下文检查](../elearning-course-design/references/learner-context.md) 自查修精，确认标题短促说人话（建议 ≤ 14 字）、**隐藏全部小节标题连读正文仍无缝衔接**（视频中小节标题默认作画面过场页与底部进度条标签、不生硬照念）、**面向全员/新人时先讲白话概念与底层道理再给术语规则**，生成原件覆盖对照报告 `workflow.py source-coverage COURSE --save report.json` 并连同逐字稿 HTML 呈交用户；确认后写入 `source-coverage --confirm` 与 `review --gate script`。
 4. **独立分支：课件 或 视频（系列课统一批次）**：
    - **课件分支**：按用户要求交付 PPTX / DOCX / PDF / HTML 课件与逐字稿即可完成；独立课件页面不作为视频制作输入。
    - **视频分支（小样与正片必须共用同一套导演引擎）**：

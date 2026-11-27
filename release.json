@@ -1,5 +1,5 @@
 {
-  "version": "8.1.0",
+  "version": "8.1.1",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "8.1.0",
-    "elearning-course-design": "2.1.1"
+    "corporate-training-motion": "8.1.1",
+    "elearning-course-design": "2.1.2"
   },
-  "release_status": "8.1.0 adds zero-premature-reveal audio-onset/phrase anchors (speech_onset_sec, phraseTime), rock-steady summary boards & holdUntil settled camera tracks (steadyCamera, camera_sway_violations), and mandatory Scheme A inline-pill segmented chapter progress bars (drawSegmentedProgressBar, buildNavSegments, recordProgressBar) enforced by Gate A"
+  "release_status": "8.1.1 / elearning-course-design 2.1.2 adds three universal script authoring & self-check rules: conversational concise titles (<=14 chars), seamless cross-section narration continuity verified by title-hidden read-through, and zero-jargon beginner-friendly onboarding (plain-language intro, plain-explanation-before-abbreviation, and business-rationale-before-red-lines)"
 }
