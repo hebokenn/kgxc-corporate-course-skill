@@ -92,6 +92,33 @@
 | **分段章节导航与高对比浅色画布** | 画面底部按各章真实音频时长自动生成胶囊式分段进度条（已学 / 当前推进 / 未学三态），单行无标点字幕独立避让；内置 16 套 WCAG ≥ 4.5:1 明亮浅色画布，确保视频、课件、讲义与题库视觉统一。 |
 | **分场景增量重渲与多路并行出片** | 自动按场景切片、计算内容指纹并多路并行渲染；局部修改 1–2 个场景时，未改场景直接无损复用并在数秒内无缝拼回 1080p 成片，同时合并全量等价的质检遥测。 |
 
+#### 9.0 引擎实渲画面画廊（公开脱敏示例）
+
+以下 4 张 1080p 画面均由本套件 `DirectorStage` + `CourseActorsCute` + `VisualMetaphors` 9.0 引擎直接代码实渲，展示实景角色演绎与多样化信息图的交替节奏：
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/media/v90/editorial-spotlight-infographic.png" alt="杂志级信息层级与聚光灯人像点阵" /><br>
+      <sub><b>信息层级 × 聚光灯 × 人像点阵</b>：唯一 L1 标题、分组水平条聚光灯退阶，右侧用 3×3 人像点阵翻译体感（零数据复述）</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/media/v90/skeleton-action-checklist.png" alt="12 栏无框行动清单与防剧透骨架槽" /><br>
+      <sub><b>12 栏无框清单 × 虚线骨架防剧透</b>：未讲到的步骤以柔和虚线编号槽占位，兼顾零剧透与整屏构图稳重</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/media/v90/cinematic-store-handover.png" alt="3 层视差门店实景演绎与锚定屏幕特写" /><br>
+      <sub><b>实景门店演绎 × 物理接地道具互动</b>：<code>CourseActorsCute</code> 接地步态、手持真机、手部锚点引导线屏幕特写与防压字气泡</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/media/v90/journey-funnel-showcase.png" alt="横向服务旅程断点图与步骤拆解" /><br>
+      <sub><b>横向旅程断点图 × 视觉多样性</b>：按业务动线定制流程断点图与引导线拆解，拒绝单集重复套用同一图表模子</sub>
+    </td>
+  </tr>
+</table>
+
 #### 设计背后的经典教学设计、认知与信息设计原理
 
 本套件的规则与门禁均源自成熟的教学设计与信息视觉方法论，并将其工程化为可校验的渲染原语与硬门禁（仅列本仓库已实际落地的部分，遵循公开资料口径，不宣称第三方机构官方认证）：
@@ -109,11 +136,22 @@
 
 > 内置人物预设与品牌片头片尾默认面向酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并替换为自有品牌视觉。
 
-![AI 全链路企业培训制课工作流与交付闭环](docs/media/v71/headless-workflow-card.png)
-
-![16 套精选明亮高对比浅色画布色板](docs/media/v71/bright-palettes-16.png)
-
-![CourseActorsCute 3.3 头身可动矢量角色阵营](docs/media/v71/cute-actors-cast.png)
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <img src="docs/media/v71/headless-workflow-card.png" alt="AI 全链路企业培训制课工作流与交付闭环" /><br>
+      <sub><b>双核全链路工作流</b>：从原件拆解到多态交付闭环</sub>
+    </td>
+    <td width="33%" align="center">
+      <img src="docs/media/v71/bright-palettes-16.png" alt="16 套精选明亮高对比浅色画布色板" /><br>
+      <sub><b>16 套明亮浅色画布</b>：WCAG ≥ 4.5:1 对比度校验</sub>
+    </td>
+    <td width="33%" align="center">
+      <img src="docs/media/v71/cute-actors-cast.png" alt="CourseActorsCute 3.3 头身可动矢量角色阵营" /><br>
+      <sub><b>CourseActorsCute 角色阵营</b>：可动骨骼、步态与便装扩展</sub>
+    </td>
+  </tr>
+</table>
 
 ### 三、离线安全配音、双门禁验收与多态交付
 
@@ -128,6 +166,19 @@
 | --- | --- | --- |
 | **didi · 男声** | 步骤拆解、系统示范与要点提示，清晰利落 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/didi-audition.mp3) · [下载 WAV](docs/media/voices/didi-audition.wav) |
 | **pipi · 女声** | 课程导入、情景对话与概念阐述，自然亲切 | [在线试听 MP3](https://raw.githubusercontent.com/hebokenn/kgxc-corporate-course-skill/main/docs/media/voices/pipi-audition.mp3) · [下载 WAV](docs/media/voices/pipi-audition.wav) |
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/media/courseware-overview.png" alt="独立交互课件核心知识点页示例" /><br>
+      <sub><b>独立交互课件分支 · 知识结构页</b>：不录视频也可直接交付可授课 HTML / PPTX / PDF 课件</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/media/courseware-exercise.png" alt="独立交互课件练习与反馈页示例" /><br>
+      <sub><b>独立交互课件分支 · 情景练习与反馈页</b>：自动配套与学习目标对齐的演练任务与核对判据</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
