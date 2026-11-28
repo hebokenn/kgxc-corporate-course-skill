@@ -12,7 +12,7 @@
 [![Platform](https://img.shields.io/badge/Verified-macOS_Apple_Silicon-595E6A?style=flat-square)](docs/DEPENDENCIES.md)
 [![Agents](https://img.shields.io/badge/Agent_Skill-Antigravity_%7C_Claude_Code_%7C_Codex_%7C_Cursor-1A7454?style=flat-square)](#安装与使用)
 
-[一句话安装](#安装与使用) · [适用场景](#适用场景) · [核心能力](#核心能力) · [流程图](#制作流程) · [实渲演示](#实渲演示) · [下载 v9.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip)
+[一句话安装](#安装与使用) · [适用场景](#适用场景) · [核心能力](#核心能力) · [流程图](#制作流程) · [实渲演示](#实渲演示) · [下载 v9.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip) · [联系作者](#相关文档)
 
 </div>
 
@@ -430,6 +430,7 @@ flowchart TD
 
 - **运行环境**：完整本地渲染与离线 `Qwen3-TTS` 配音已在 **macOS Apple Silicon（arm64）** 实测验证；标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae，模型推理沿用宿主原生配置。
 - **开源协议与共创**：自研引擎代码、工具链与通用规范采用 **[Apache License 2.0](LICENSE)**；酷果星创品牌视觉、专有工服角色、R5/R8 片头片尾及第三方字体音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。由 [@hebokenn](https://github.com/hebokenn) 主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
+- **反馈与联系**：使用问题或改进建议欢迎提交 [GitHub Issues](https://github.com/hebokenn/kgxc-corporate-course-skill/issues)；合作与其他事宜可邮件联系作者 [2803546261@qq.com](mailto:2803546261@qq.com)。
 
 | 专题文档 | 链接 |
 | --- | --- |
