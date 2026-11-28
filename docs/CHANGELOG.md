@@ -4,6 +4,21 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 杂志级信息层级、定制信息图与反套路视觉多样性：核心 9.0.0 · 2026-11-28
+
+- **理论落地与 Plan C 融合视觉规范（`references/70-v9-editorial-info-design-and-diversity.md` / `60-v8-cinematic-director-and-gates.md` / `SKILL.md`）**：
+  - 根因：此前 Skill 将少量具体画图函数（`drawSculptureBar`、`drawKpiRail`、`drawCumulativeStack`、`drawFloatingTag`）与强契约门禁直接绑定，诱发 AI 走“最小路径应试”——同一组数据在左柱图与右 KPI 卡片重复出现、顶部叠加双标题、分步页面在未揭示时出现半屏留白加孤立漂浮蓝胶囊、且整集反复复用同款亮面竖柱。
+  - 升级：系统借鉴 **Richard Mayer 多媒体学习理论**（冗余原则 Redundancy / 信号原则 Signaling / 空间临近原则 Spatial Contiguity / 一致性原则 Coherence）、**Rule of One + L1/L2/L3 杂志字阶与眯眼测试（Squint Test）**、**Vox / Kurzgesagt / Apple Keynote 动态信息叙事**（聚光灯降噪、人像点阵体感翻译、12 栏网格与骨架先行防剧透）以及对抗 **Satisficing / Goodhart's Law** 的视觉多样性预算机制，正式确立「杂志去框排版 + 定制信息图」融合规范并解绑旧组件强制调用；同步在主页 `README.md` 集中整理了双核引擎共 8 套已落地的教学设计、认知负荷、可读性与信息视觉经典原理（含此前已落地的 ATD ADDIE/5P、CMU 教学目标对齐、Vanderbilt 教育视频认知负荷与稳定阅读节奏、W3C WAI / WCAG 4.5:1 对比度）。
+- **12 栏杂志排版底座与高复用低套路可选原语（`workbench/motion/visual_metaphors.js`）**：
+  - 基础底座：新增 `GRID_12` / `gridCols(startCol, spanCols)`、`drawQuietTopBar()`、`drawEditorialHeadline()`（唯一无框 L1 观点标题 + 关键词柔光底衬）、`drawLeaderLine()` 与 `drawGroupingBracket()`。
+  - 可选低套路信息图：新增 `drawSpotlightHorizontalBars()`（分组水平排序条 + 24% 聚光灯退阶）、`drawPictogramGrid()`（人像/设备/圆点点阵）、`drawJourneyFunnel()`（横向服务旅程断点图）与 `drawEditorialChecklist()`（无框行动清单 + `revealed: false` 虚线编号防剧透骨架槽）。
+- **全集视觉多样性蓝图校验与 9.0.0 导演遥测门禁（`scripts/check_visual_blueprint.py` / `workbench/motion/director_stage.js` / `scripts/verify_delivery.py`）**：
+  - 新增 `scripts/check_visual_blueprint.py`：在写渲染代码前校验 `visual-blueprint.json` 并输出 Markdown 排期表，拦截同屏数据复述、双主标题、漂浮胶囊墙、单集内置单一图表重复 > 1 次、相邻非实景构图克隆，并要求单集 ≥ 4 个信息场景时至少包含 1 个 `custom:*` 业务现场定制图形。
+  - `DirectorStage`（`VERSION = '9.0.0'`）新增 `recordDataCarrier()`、`recordHeadline()`、`recordVisualPattern()` 与 `mergeFrameAudits()` 全局等价合并；`verify_delivery.py` 门禁 A 新增 `redundant_data_violations`、`double_headline_violations`、`visual_pattern_violations` 硬拦截及 `--visual-blueprint` 联动校验；门禁 B 新增「眯眼测试」三项目视否决核查。
+- **验证范围**：
+  - 在真实课程《门店服务体验提升》第 06 节两幕典型痛点（SC05 暗访五组数据页聚光灯/人像点阵与括号归因收敛帧、SC18 07:16 虚线骨架防剧透帧与 4 步展开收官帧）完成 1920×1080 真实 Canvas 管线高保真渲染与人工 Before vs After 确认。
+  - 新增 `scripts/test_v8_tools.py::test_v9_0_editorial_primitives_diversity_blueprint_and_redundancy_gates`（覆盖 12 栏网格与 9.0 全部 JS 原语、9.0 遥测合并一致性、`check_visual_blueprint.py` 正反例与 `verify_delivery.py` 9.0 门禁阻断），并通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v8_tools.py`、`tests/test_streamlined_v700.py`、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及本机工作区/全局安装副本同步。
+
 ## 分场景增量重渲、多路并行渲染与无损审计合并：核心 8.3.0 · 2026-11-28
 
 - **分场景增量重渲引擎与自动缓存失效（`scripts/render_director_incremental.mjs`）**：

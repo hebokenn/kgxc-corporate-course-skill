@@ -1,6 +1,6 @@
-# 8.3.0 电影级导演引擎、强契约与交付硬门禁（唯一权威规范）
+# 9.0.0 电影级导演引擎、强契约与交付硬门禁（唯一权威规范）
 
-> **优先级声明**：本规范（`8.3.0`）是视频制作、人物演出、道具互动、信息留存、运镜、避让、分场景增量并行渲染与验收的**最高权威规范**。当 `references/` 目录下的历史 6.x / 7.0.0 文档（包括旧版 `workbench.json` 流程、旧版工作台脚本或 `59-streamlined-series-and-selfcheck.md`）与本规范冲突时，**一律以本规范为准**。
+> **优先级声明**：本规范与 [9.0.0 杂志级信息层级、定制信息图与反套路视觉多样性规范](70-v9-editorial-info-design-and-diversity.md) 共同构成 `9.0.0` 视频制作、人物演出、信息层级、道具互动、运镜、避让、分场景增量并行渲染与验收的**最高权威规范**。当 `references/` 目录下的历史 6.x / 7.0.0 / 8.x 文档与 9.0.0 冲突时，**一律以 9.0.0 为准**。
 
 ---
 
@@ -54,17 +54,19 @@
 - **弹幕/标签/花字自动避让人物**：
   `const safeRect = VM.placeAvoidingActors(candidateRect, [staffBounds.exclusionRect, custBounds.exclusionRect])`
   弹幕与浮标必须经过 `placeAvoidingActors` 计算后绘制，严禁压住人物头部、眼睛或背景 Logo。
-- **累进指标轨与事件轨迹栈（8.2.0 新增，根治并列信息原地覆盖）**：
-  - `const rail = VM.drawKpiRail(ctx, [{ id, label, value, tone, progress }, ...], PAL, { dir: 'column' | 'row' })`：并列展示 1–4 条诊断指标/得分率，新指标滑入高亮、旧指标温和退阶但完整保留，返回 `unionRect` 供避让。
-  - `const stack = VM.drawCumulativeStack(ctx, [{ id, text, tone, progress }, ...], PAL, { maxVisible: 4 })`：同一场戏内并列失误链/事件点自上而下累进排开，禁止在同一坐标原地覆盖前一条。
+- **9.0.0 杂志级排版底座与低套路可选信息图原语（详见 [70 号规范](70-v9-editorial-info-design-and-diversity.md)）**：
+  - 网格与唯一 L1 标题：`VM.GRID_12` / `VM.gridCols(startCol, spanCols)`、`VM.drawQuietTopBar(...)`、`VM.drawEditorialHeadline(...)`；
+  - 指向与归因 Callout：`VM.drawLeaderLine(...)`、`VM.drawGroupingBracket(...)`；
+  - 低套路可选信息图：`VM.drawSpotlightHorizontalBars(...)`（分组水平条 + 聚光灯退阶）、`VM.drawPictogramGrid(...)`（人像/设备点阵）、`VM.drawJourneyFunnel(...)`（横向旅程断点）、`VM.drawEditorialChecklist(...)`（无框行动清单 + 虚线防剧透骨架槽）。
+  - **组件解绑原则**：上述原语与旧版 `drawSculptureBar` / `drawKpiRail` / `drawCumulativeStack` / `drawFloatingTag` 均为**可选工具**，严禁为过门禁而将同一组数据同时塞进主图表与右侧 `drawKpiRail` 重复展示，严禁反复用 `drawSculptureBar` 做整集排列组合，也禁止用 `drawFloatingTag` 冒充主标题或行动清单。
+- **累进留存原语（按需选用，防原地覆盖）**：
+  - 同一场景内并列多条指标或连续事件点须在清晰网格中累进排开（优先选用 `VM.drawSpotlightHorizontalBars` / `VM.drawEditorialChecklist` / 业务定制图形，亦可按需选用 `VM.drawKpiRail` / `VM.drawCumulativeStack`），**严禁在同一坐标原地改字覆盖前一条**，更**严禁在已有主图表时再用右侧 `drawKpiRail` 复述同一组数字**。
 - **物理递交道具与锚定屏幕特写（8.2.0 新增，根治实景空中悬浮无互动手机）**：
   - `VM.drawHandoverProp(ctx, staffBounds.frontHand, custBounds.frontHand, progress, { type: 'phone' | 'qr_card' })`：沿抛物线弧度在两人手部锚点间传递真机或企微卡。
   - `VM.drawScreenInset(ctx, anchorPt, boxRect, { mode: 'camera_live' | 'video_cinema' | 'search_loading' | 'qr_wechat', title, subtitle, progress })`：从手持手机或桌面展机拉出引导线弹出真机功能特写窗，讲完即收回。
   - `VM.draw3DPhoneProp(..., opts)` 新增可选 `{ showOrbit: false, showShadow: false }`；全息轨道悬浮 3D 手机**仅限封面与抽象隐喻舞台，严禁在 `cinematic_store` 实景里无互动悬空摆放**。
-- **开放画布深度拆解原语（8.2.0 新增，根治每拍整卡快闪 PPT）**：
-  - `VM.drawOpenChapterDots(ctx, tabs, activeIdx, PAL)`：轻量化节点时间线（替代厚重框式顶部导航）。
-  - `VM.drawSculptureBar(ctx, cx, baseY, maxH, ratio, { fillTop, fillBot, valText, subText, progress })`：内置安全高度上限（默认 `<= 210px`），确保柱顶文字绝不撞压上方浮标。
-  - `VM.drawFloatingTag(ctx, cx, cy, text, tone, progress, { pal, maxW })`：4–14 字短浮标，在 10–24 秒的主题拆解舞台上累进保留供学员从容阅读。
+- **旧版开放画布原语（仅按需可选，单集内同类图表 ≤ 1 次）**：
+  - `VM.drawOpenChapterDots` / `VM.drawSculptureBar` / `VM.drawFloatingTag` 保留向后兼容；新课优先使用 9.0.0 的 `drawEditorialHeadline`、`drawSpotlightHorizontalBars`、`drawPictogramGrid`、`drawJourneyFunnel`、`drawEditorialChecklist` 及按本课业务现场定制的原生 Canvas/SVG 图形。
 - **底部「分段章节进度条」（默认「融合进度胶囊」方案 A，高 `48px`，严禁退化为单根总进度条）**：
   ```js
   const navSegments = DS.buildNavSegments(data.lines, CHAPTER_NAV_SPECS, data.totalDuration);
@@ -102,13 +104,16 @@
   auditor.recordMetricSlot('kpi_1', '发掘线索得分率', '< 10%', kpiRect); // 同槽位改写不同指标将被门禁 A 拦截
   auditor.recordProp('demo_phone', phoneRect, { attachment: 'hand', interactive: true }); // 实景无互动悬空将被拦截
   auditor.recordPanel('board_main', panelRect, { contentKey: beat.id }); // 巨幅卡片高频快闪翻页将被拦截
+  auditor.recordHeadline('sc05_l1', headlineRes.rect); // 9.0.0: 同屏双 L1 标题将被拦截
+  auditor.recordDataCarrier('left_bars', ['>60%', '>50%', '近2/3', '>1/5', '21%'], bars.rect, 'horizontal_bars'); // 9.0.0: 同屏双载体复述同一组数据将被拦截
+  auditor.recordVisualPattern('horizontal_spotlight_bars', { skeleton: 'grid_7_5' }); // 9.0.0: 同集内置图表重复超限与相邻构图克隆将被拦截
   const bubbleRect = VM.drawSmartSpeakerBubble(ctx, staffBounds, st.beat.speaker_bubble, { ... });
   if (bubbleRect) auditor.recordText('bubble', bubbleRect, 'bubble');
   // 渲染完毕调用 auditor.finalize() 写出 render_audit.json
   ```
-- **分场景整帧切片、自动缓存失效与并行渲染（8.3.0 新增）**：
+- **分场景整帧切片、自动缓存失效与并行渲染（8.3.0 / 9.0.0 持续沿用）**：
   - `DirectorStage.partitionSceneFrames(lines, totalDuration, fps = 24)`：按连续 `scene_id` 切出无缝无重叠的精确整帧区间 `[startFrame, endFrame)`，保证每帧归属与 `resolveTimeline(lines, f / fps)` 完全一致。
-  - `DirectorStage.mergeFrameAudits(segmentAudits)`：按场景顺序无损合并各场景的 `auditor.finalize()` 遥测（含跨场景连续 `card_box` 计数、分段进度条已访问集合并集、全部 8 类违规数组与镜头汇总），产出与全量单次渲染 100% 等价的 `render_audit.json`。
+  - `DirectorStage.mergeFrameAudits(segmentAudits)`：按场景顺序无损合并各场景的 `auditor.finalize()` 遥测（含跨场景连续 `card_box` 计数、分段进度条已访问集合并集、全部 11 类违规数组含 9.0.0 反冗余/反模板重复统计与镜头汇总），产出与全量单次渲染 100% 等价的 `render_audit.json`。
   - 共享增量并行渲染引擎：`node SKILL_DIR/scripts/render_director_incremental.mjs --html <director.html> --audio-dir <audio> --out-dir <out> --tmp-dir <tmp> --meta-json <meta.json> [--intro <intro.mp4> --outro <outro.mp4>] [--workers 3]`。
     - 要求导演 HTML 将各场景绘制函数命名为 `function renderScXX(...)`（或使用 `// @scene:start <id>` … `// @scene:end <id>` 标记）并在 `SCENE_RENDERERS` 中映射，即可实现**改 1 个场景只重渲该场景、改共享库/公共函数/总时长则自动全量失效重渲**；多标签页并行渲染脏场景后以 `-f concat -c:v copy` 无损拼接并产出 `render_cache_report.json`。
 
@@ -168,6 +173,8 @@ python3 SKILL_DIR/scripts/verify_delivery.py <final.mp4> \
 - **任意 1 处 `cinematic_store` 实景门店出现无接地、无手部绑定、无互动的悬空道具（`floating_prop_violations > 0`）**
 - **任意 1 处 `kinetic_metaphor` / `data_sculpture` 场景内用巨幅卡片每 2–4 秒连续整屏翻页冒充动效（`rapid_card_flip_violations > 0`）**
 - **任意 1 个总结板书/卡片页存在缩放平移晃动，或知识场景镜头全程漂移反复摇摆（`camera_sway_violations > 0`）**
+- **任意 1 处同屏双载体复述同一组数据（`redundant_data_violations > 0`）、同屏叠双 L1 标题（`double_headline_violations > 0`）或同集内置图表/相邻模板重复超限（`visual_pattern_violations > 0`）**
+- 可选 `--visual-blueprint <visual-blueprint.json>` 蓝图未通过视觉多样性与反冗余硬检
 - 靠微抖镜头欺骗静态帧检测（16×16 宏块结构差拦截，同时对定机位逐项揭示的 `summary_board` 精确放行局部变化）
 - PPT 框体占比 > 25% 或连续 > 2 个 Beat，或 `summary_board` 占比 > 22%
 - 动态场景缺少真实运镜
@@ -181,6 +188,7 @@ python3 SKILL_DIR/scripts/verify_delivery.py <final.mp4> \
 2. **对话气泡 / 弹幕 / 花字高峰帧**（确认文字完全避开人脸、身体与背景 Logo，且气泡文案与当前底部字幕同步）；
 3. **关键结论、并列指标与总结卡的“触发前 0.2s vs 触发后 0.4s”对照帧**（确认未讲到的条目/结论/结尾问候绝不提前剧透，并列得分率与案例失误链累进留存不原地覆盖，深度拆解开放画布无快闪 PPT 框感，一屏总结卡构图完全稳固不晃动）；
 4. **实景门店道具接地与互动帧**（确认平时对话无悬空漂浮的孤立 3D 手机，演示/递机/查资料时手机真正在手或经引导线弹出特写屏）；
-5. **首帧封面、第 1 帧片头、结尾总结卡与末句收尾**。
+5. **首帧封面、第 1 帧片头、结尾总结卡与末句收尾**；
+6. **9.0.0「眯眼测试（Squint Test）」三项否决核查**：每帧仅 1 套 L1 观点标题与 1 个视觉主角、零左右重复复述同一组数据、零漂浮胶囊贴纸墙、全集非实景页具有贴合业务的多样化图形语言（而非柱状图/卡片排列组合）。
 
 发现任何上述缺陷，必须在渲染端修完并重跑门禁 A + 门禁 B 后方可交付用户。

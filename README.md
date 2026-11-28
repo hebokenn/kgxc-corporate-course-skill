@@ -1,18 +1,41 @@
-# 酷果星创 · AI 企业培训课程全链路引擎
+<div align="center">
 
-**只需把制度文档、SOP 手册、产品资料或访谈录音发给 AI，通过自然对话，就能一键打造真正懂教学、有动效、有角色演绎、离线配音不出本机的全套企业精品课**——既能生成**多集 1080p 有声动画系列视频**，也能同步交付**独立交互课件（PPTX / HTML / PDF）、《讲义精要》、章节测验题库与 A4 可打印手写作业**。
+# 酷果星创 · 企业培训课程全链路引擎
 
-> **它和普通 AI 生成 PPT/视频工具的本质区别**：市面工具只会“摘要念稿 + 贴静态网图”，遇到业务条款漏掉前提与例外、画面静止超过十秒、改一句话就要全片重做；本套件由 **ATD 教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核驱动，从“核对原件覆盖率与条件例外”开始，到“1-Beat-1-Audio 毫秒级音画咬合”“3.3 头身可动角色演练”“自动化技术全检 + 按句秒级重渲”全程闭环。
+**Instructional Design × Code-Driven Motion × Deterministic QA**
 
-- **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
+面向企业培训团队、内训师与内容工程团队的开源 Agent Skill 套件。<br>
+以经典教学设计与多媒体学习原理为底座，将企业原始业务资料直接编排为可溯源、可增量修改、可离线配音的系列 1080p 动画课程与配套学习资产。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.3.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/kgxc-course-suite-v8.3.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[![Skill Version](https://img.shields.io/badge/Skill-v9.0.0-1E2430?style=flat-square)](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v9.0.0)
+[![License](https://img.shields.io/badge/License-Apache_2.0-234B9A?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Verified-macOS_Apple_Silicon-595E6A?style=flat-square)](docs/DEPENDENCIES.md)
+[![Agents](https://img.shields.io/badge/Agent_Skill-Antigravity_%7C_Claude_Code_%7C_Codex_%7C_Cursor-1A7454?style=flat-square)](#快速开始)
+
+[快速开始](#快速开始) · [核心能力](#核心能力) · [设计原理](#设计背后的经典教学设计认知与信息设计原理) · [实渲演示](#实渲演示) · [下载 v9.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip)
+
+</div>
 
 ---
 
-## 一句话让 AI 帮你安装
+### 架构定位：把企业制课变成确定性工程流水线
 
-不需要自己配置路径或学终端命令。**直接复制下面这句话和链接，发给你正在用的 AI 助手**（Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy 等），AI 会自动帮你拉取仓库、完成本地安装与依赖检查：
+传统 AI 课件与视频生成往往停留在“文档摘要 + 静态模板拼贴”：业务条款的适用条件与例外容易丢失，同一组数据在图表、卡片与旁白间重复堆砌，局部修改常意味着全片返工。
+
+本套件采用 **教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核解耦架构，完整覆盖从知识拆解到工程验收的每一环：
+
+| 维度 | 说明 |
+| --- | --- |
+| **原始输入** | 制度 PDF / Word / PPT、扫描件与图表、产品手册、业务 SOP、现场访谈音视频 |
+| **多态交付** | 多集 `1080p / 24fps` 有声动画系列视频（含精准无标点字幕与独立封面），或独立交互课件（PPTX / HTML / PDF），同步输出《讲义精要》、章节测验题库与 A4 可打印实战作业 |
+| **工程保障** | 原件要点覆盖台账 → 全集视觉多样性蓝图 → 逐句毫秒级音画咬合 → 分场景增量并行重渲 → 自动化遥测与实帧双验收门禁 |
+| **运行边界** | 纯正标准 `SKILL.md` 与对话 / CLI 工作流，原生兼容 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae**；全程本地离线 `Qwen3-TTS` 配音与渲染，原始业务资料不外传 |
+
+---
+
+## 快速开始
+
+无需手动配置目录或记忆终端命令。**将下面这段话直接发给你正在使用的 AI 助手**，AI 会自动拉取仓库、完成本地安装与环境体检：
 
 ```text
 请帮我安装这个企业培训制课 Skill：https://github.com/hebokenn/kgxc-corporate-course-skill
@@ -20,17 +43,16 @@
 ```
 
 <details>
-<summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
+<summary>手动安装 / 环境体检（doctor）/ 校验清单 / 开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.3.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/kgxc-course-suite-v8.3.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
-2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
+1. **下载 ZIP 双击安装**：[下载 `kgxc-course-suite-v9.0.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+2. **命令行体检（核验 FFmpeg / Chromium / 本地 Qwen3-TTS）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
-4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
+3. **校验与依赖**：[SHA256SUMS 校验清单](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md) · [已停用的 v7.2.0 历史插件归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
-**装好后，直接把资料发给 AI 并输入：**
+**安装完成后，附带业务资料发给 AI 即可开课：**
 
 ```text
 请用 corporate-training-motion，把我提供的资料做成《收货核对流程》培训课。
@@ -44,31 +66,48 @@
 
 ---
 
-## 全景能力矩阵：从原始资料到整套培训交付
+## 核心能力
 
-### 一、前端教学设计引擎（`elearning-course-design`）：先读透原件，再讲人话
+### 一、前端教学设计引擎（`elearning-course-design`）
 
-| 核心能力 | 实际解决问题 |
+先把企业资料读透，再转写成一线同事听得懂、用得上的实战课程：
+
+| 能力模块 | 解决的问题与核心做法 |
 | --- | --- |
-| **多源资料精准解析** | 支持制度 PDF、Word、PPT、扫描件 OCR 及访谈音视频（按时间码定位），同时识读文档内的表格、截图与流程图表。 |
-| **来源台账与条件/例外单列** | 逐页构建可追溯台账，明确标注**事实规则、触发前提、适用条件、例外情况与待核实缺口**，严格禁止 AI 臆造审批流程、业绩数字或内部制度。 |
-| **“学员没有原件”上下文自检** | 培训成品只面向看不见原附件的学员。自动排查并改写“如图/原表/资料中”等悬空指代，首次提到表单与界面时先交代名称、用途与看哪里。 |
-| **场景化实战转化 & 智能提问** | 拒绝“重视/赋能/形成闭环”式空话，严格按 **“工作触发情境 → 第一反应与动作判断 → 规则依据 → 示范 → 练习与反馈”** 重构口播；并在影响课程范围的节点主动弹出 **1–3 个带推荐与取舍的简洁选择**。 |
-| **口语短标题、去标题连读衔接与零基础新人友好** | 针对全员课/新员工培训中常见的“AI 拼词冒号长标题”“切换小节突然跳题”“一上来堆缩写和规程导致新人听不懂”三大痛点：要求集标题与小节标题短促说人话（建议 ≤ 14 字，适配过场页与底部胶囊进度条）；视频默认不照念编号标题，交稿前执行**隐藏全部小标题从头连读自检**确保跨节口播自然过渡；面向全员或新人时，开篇 30–60 秒先用大白话讲清业务本质、术语首次出现先白话再带简称、讲红线风控前先一句讲透背后业务道理再给标准动作。 |
+| **多源资料解析与来源台账** | 解析 PDF、Word、PPT、扫描件图表及访谈录音；逐页建立来源台账，单列**业务规则、触发前提、适用条件与例外**，杜绝 AI 臆造审批流程或制度数字。 |
+| **无原件视角上下文自检** | 假定听课学员手头没有原始附件，自动改写“如图/见原表”等悬空指代，首次提及表单与界面时先交代名称、用途与查看位置。 |
+| **实战情境重构与关键决策提问** | 拒绝空洞口号，按“工作触发情境 → 动作判断 → 规则依据 → 示范 → 练习反馈”写稿；在影响课程边界的节点以 1–3 个简洁选项交由人工确认。 |
+| **口语短标题、去标题连读与新人友好** | 标题短促说人话（建议 ≤ 14 字）；隐藏全部小节标题连读正文依然无缝过渡；面向新人先讲白话原理再引术语和红线规则。 |
 
-### 二、视觉、动效与角色引擎（`corporate-training-motion`）：纯粹代码生成，绝不静态拼图
+### 二、视觉、动效与角色引擎（`corporate-training-motion`）
 
-| 核心能力 | 实际能力细节 |
+全程代码驱动的 1080p 渲染体系，在保持流程高度可复用的同时，杜绝静态 PPT 拼图与固定组件排列组合：
+
+| 能力模块 | 解决的问题与核心做法 |
 | --- | --- |
-| **电影级导演引擎与开放画布（拒绝快闪 PPT）** | 小样与全集正片共用同一套 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 渲染内核，确保成片水准与试看小样完全一致。画面严格跟随旁白开口时刻逐项浮现（绝不提前剧透）；镜头推拉到位即停稳，结尾要点总结卡全程定机位零晃动，方便阅读与截图。遇到多要点案例拆解时，不靠每 2–4 秒切换整屏大白框应付，而是让每个核心主题在开放画布上从容停留 10–24 秒，通过人物对照与立体图示（柱图、天平、温度计、曲线等）逐步展开，技术门禁会自动拦截“高频卡片翻页”和超限白框。 |
-| **多指标与关键事实累进保留（方便对照阅读）** | 做业务诊断、数据对比或连续步骤拆解时，系统严格区分「瞬时台词」与「需要对照记忆的关键信息」：人物对话气泡说完自然退场；而同一场景里的多项并列数据指标、连续发生的案例要点，会在侧边栏或画面分区按序累进排开（最新项高亮、前序项柔和保留），后讲的内容绝不原地覆盖前一条，让学员一眼看全完整因果与对比。 |
-| **底部「分段章节进度条」与独立字幕区** | 针对 5–10 分钟多章节培训视频“只看一根总进度条，不知道当前讲到哪一环”的痛点，画面底部按各章真实音频时长自动生成胶囊式分段导航，实时呈现「已学 / 当前推进 / 未学」三态；单行无标点字幕独立排版避开画面主体与进度条，封面、片头和片尾自动隐藏。 |
-| **场景道具真实互动与界面特写（杜绝悬空贴图）** | 情景演绎中的手机、名片、二维码等业务道具均遵循真实物理关系——平时稳稳摆放在展示桌或台面上，不凭空悬浮在画面中央充数；当剧情需要查资料、做演示、递给顾客试手或展示二维码时，角色会将道具真正握在手中、沿自然弧线完成递交，或从设备拉出引导线弹出清晰的屏幕功能特写（讲完平滑收回）。全息悬浮 3D 机型仅用于封面与概念展示；需要实景照片或图标时，亦支持通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 自动检索开放许可无水印素材并记录来源。 |
-| **`CourseActorsCute` 可动矢量角色与智能防压字** | 全程代码骨骼驱动，自带闲逛、迎宾、快步走入、转身离开等多种情绪化步态与自然口型眨眼，脚底实时接地不滑步；对话气泡、重点花字与提示标签自动计算空间避让，绕开所有人物头身、背景 Logo 与画面边缘，彻底消灭压人脸和边缘裁切。 |
-| **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
-| **分场景增量重渲与多路并行出片（改哪里只重渲哪里）** | 针对 5–10 分钟多场景课程“微调一个画面或一句台词就要重等 10 分钟全片重渲”的痛点，渲染引擎自动按场景切片并多路并行渲染，同时为每个场景计算内容指纹缓存；后续修改任意 1–2 个场景时，未改动场景直接无损复用、只重渲改动段落并在数秒内无缝拼接回完整 1080p 成片，且自动合并完整质检遥测，确保增量出片与全量出片质量标准完全一致。 |
+| **杂志级信息层级与定制信息图** | 融合极简去框排版与定制信息图：统一对齐 12 栏网格，每屏仅保留 **1 套无框观点大标题**（杜绝双标题叠罗汉与漂浮胶囊贴纸）；采用“左证据 + 右洞察”分工（严禁左图右卡复述同一组数字），内置分组水平聚光灯条、人像点阵、横向旅程断点与虚线防剧透骨架清单，并鼓励按每课业务现场定制专属图形。 |
+| **全集视觉多样性蓝图（防 AI 偷懒套模子）** | 写渲染代码前强制通过 [`check_visual_blueprint.py`](skills/corporate-training-motion/scripts/check_visual_blueprint.py) 蓝图校验：拦截同屏数据复述、限制同一内置图表每集最多出现 **1 次**、禁止相邻信息页复用相同构图骨架，并要求信息密集剧集包含业务现场定制图形。 |
+| **共享电影级导演引擎与开放画布** | 试看小样与全集正片共用 [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 内核，确保成片水准不降级。画面严跟旁白开口时刻逐项浮现（零提前剧透）；镜头推拉到位即停稳、总结页定机位零晃动；深度拆解停留在开放画布从容展开，硬门禁拦截快闪翻页 PPT。 |
+| **可动矢量角色与物理接地道具互动** | `CourseActorsCute` 代码骨骼驱动，具备闲逛、迎宾、快步、离场等情绪化步态与自然口型眨眼，脚底实时接地；对话气泡与花字自动避让人物与 Logo；手机、名片、二维码等道具遵循物理接地（桌面展机 / 手持握紧 / 弧线递交 / 引导线屏幕特写），并支持通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 检索开放许可实景素材。 |
+| **分段章节导航与高对比浅色画布** | 画面底部按各章真实音频时长自动生成胶囊式分段进度条（已学 / 当前推进 / 未学三态），单行无标点字幕独立避让；内置 16 套 WCAG ≥ 4.5:1 明亮浅色画布，确保视频、课件、讲义与题库视觉统一。 |
+| **分场景增量重渲与多路并行出片** | 自动按场景切片、计算内容指纹并多路并行渲染；局部修改 1–2 个场景时，未改场景直接无损复用并在数秒内无缝拼回 1080p 成片，同时合并全量等价的质检遥测。 |
 
-> 内置人物预设与品牌片头片尾默认服务酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并按需替换为自有品牌视觉。
+#### 设计背后的经典教学设计、认知与信息设计原理
+
+本套件的规则与门禁均源自成熟的教学设计与信息视觉方法论，并将其工程化为可校验的渲染原语与硬门禁（仅列本仓库已实际落地的部分，遵循公开资料口径，不宣称第三方机构官方认证）：
+
+| 所属阶段 | 借鉴原理 / 方法论 | 解决的真实制课痛点 | 在本套件中的工程化落地 |
+| --- | --- | --- | --- |
+| **教学设计**<br>（前端） | **ATD 电子学习设计与 ADDIE / 5P 模型**<br>（Commit · Process · Practice · Prove · Perform） | 把制度原文直接缩写念稿，缺少业务情境、试做反馈与岗位落地支撑。 | [`elearning-course-design`](skills/elearning-course-design/references/research-and-methods.md) 将教学设计与制片解耦，按“情境触发 → 动作判断 → 规则依据 → 示范 → 练习反馈 → 岗位作业”组织课程，先审大纲与来源台账再进制作。 |
+| **教学设计**<br>（前端） | **CMU Eberly Center 教学目标对齐原则**<br>（Learning Objectives Alignment） | 讲的内容、练的题目与考核目标脱节，用“看完率/满意度”替代能力证据。 | 按可观察的岗位行为目标反推内容取舍与测验题，改动目标、讲稿或练习任一项时联动复核其余项。 |
+| **认知节奏**<br>（中段） | **Vanderbilt《Effective Educational Videos》与稳定阅读节奏模型** | 把“动画播完/旁白念完”当成“学员读懂”，或机械插入大片静音凑时长导致拖沓。 | [`45-reading-and-information-pacing.md`](skills/corporate-training-motion/references/45-reading-and-information-pacing.md) 将**动作、信息曝光与讲解**三轨分离：淡入和位移不计入有效阅读，稳定阅读窗口与同任务旁白自然重叠。 |
+| **可读无障碍**<br>（底座） | **W3C WAI 音视频无障碍规划 & WCAG 对比度下限（≥ 4.5:1）** | 配色发灰看不清、字幕与开口错位，或课后缺乏可检索的文本替代材料。 | [`47-course-palette.md`](skills/corporate-training-motion/references/47-course-palette.md) 的 16 套明亮浅色画布均做 ≥ 4.5:1 对比校验；同步交付开口对齐的无标点 `.srt` 字幕与《讲义精要》。 |
+| **信息视觉**<br>（9.0 升级） | **Richard Mayer 多媒体学习认知理论**<br>（冗余 Redundancy / 信号 Signaling / 空间临近 Spatial Contiguity / 一致性 Coherence） | 旁白、左侧图表与右侧卡片同时重复同一组数字导致认知过载；标注远离目标对象。 | **三通道分工**：旁白讲因果、主图展结构、文字仅作极简锚点；门禁 A 硬拦截同屏双载体数据复述；细引导线与分组大括号就近锚定数据对象。 |
+| **信息视觉**<br>（9.0 升级） | **唯一视觉重心与三级字阶**<br>（Rule of One + Visual Hierarchy + 眯眼测试 Squint Test） | 页眉、副标题与彩色大胶囊同时抢戏，观众难以判断第一眼焦点。 | 每屏强制仅 **1 套无框 L1 观点标题**与 **1 个视觉主角**；门禁 A 拦截双主标题叠加，门禁 B 加入「眯眼测试」否决项。 |
+| **信息视觉**<br>（9.0 升级） | **Vox / Kurzgesagt / Apple Keynote 信息叙事**<br>（聚光灯降噪 / 人像点阵 / 12 栏网格骨架先行） | 多项数据全亮抢眼；抽象分数缺乏体感；“防剧透”造成半屏空洞与孤立飘字。 | 讲哪项只高亮哪项、其余退阶至 24% 透明度；用人像点阵把抽象比例翻译为顾客体感；分步清单先呈现虚线编号骨架槽，兼顾零剧透与构图平衡。 |
+| **AI 工程**<br>（9.0 升级） | **对抗 AI 最小路径执行**<br>（Anti-Satisficing / Goodhart's Law） | 当规则写死少量组件名和数值门禁时，AI 会走省力的应试路径，用同一套柱图和卡片反复排列组合。 | [`70-v9-editorial-info-design-and-diversity.md`](skills/corporate-training-motion/references/70-v9-editorial-info-design-and-diversity.md) 解绑旧组件的强制调用，以**全集视觉多样性蓝图**与运行期形态重复遥测倒逼每课按业务现场定制视觉。 |
+
+> 内置人物预设与品牌片头片尾默认面向酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并替换为自有品牌视觉。
 
 ![AI 全链路企业培训制课工作流与交付闭环](docs/media/v71/headless-workflow-card.png)
 
@@ -76,15 +115,14 @@
 
 ![CourseActorsCute 3.3 头身可动矢量角色阵营](docs/media/v71/cute-actors-cast.png)
 
-### 三、离线安全配音、音画精确咬合与多态交付闭环
+### 三、离线安全配音、双门禁验收与多态交付
 
-- **本地 `Qwen3-TTS` 离线配音与音色克隆（零吞字防截断、企业机密不外传）**：全流程本地生成拟真多角色语音，内置获授权的 **didi 男声**、**pipi 女声**，并可配置克隆自有讲师声线；不向任何第三方语音云发送制度文件与音频。[`qwen3_tts.py`](skills/corporate-training-motion/scripts/qwen3_tts.py) 在加载模型后自动修补 `mlx_audio` 解码器把 codebook-0 合法语音 token `0` 误判为 padding 导致句尾被硬切 80–240ms 的底层缺陷，确保克隆音色每句最后一个字完整自然收尾。
-- **`1-Beat-1-Audio` 声画零抢跑咬合 + 口语发音与字幕分离**：告别长语音猜秒数导致的“画面提前剧透”或声画错位！[`tts_sync.py --strict-beats`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群逐句合成，自动清理分句末尾的悬空续接标点（避免向模型喂入 `，。`/`——。` 畸形双标点），实测每条 WAV 的真实起声点 `speech_onset_sec / speech_start` 与 `cue_words` 词锚点，拦截超长句、雷同克隆分镜、旁白误挂气泡与气泡错位；内置**口播与字幕发音分离**（默认把 `WOW` 读作“哇哦”、把 `第 01–09 节` 读作“第一–九节”不读前导 0，同时保留字幕原规范，也支持逐句 `tts_text` 覆写多音字/英文缩写），通过 **30ms + 80ms 双窗口尾音能量防切检**（自动拒绝复用有尾音截断隐患的旧缓存并多轮换种择优）、混入 48 kHz **“叮 / 嘟咚”原库提示音**与重点花字，并从 `speech_start` 对齐产出**单行无标点 `.srt` 字幕**。
-- **一套资料，四种形态按需全套带走**：
-  - **多集系列课套件**：统一批次按**内容母版三选一** + **跨章节 3 段代表性有声小样**定调，分集导出 `1080p / 24fps` 视频、字幕与封面，同步交付同风格的**《讲义精要》、章节测验题库、A4 可打印手写作业**。
-  - **单支重点培训视频**：含完整品牌片头片尾（片尾音轨自动柔和淡出）、底部融合胶囊分段章节进度条、双声演练与重点花字。
-  - **独立授课课件**：不录视频也能直接交付可面授或自录的 **PPTX / DOCX / PDF / 交互式 HTML 课件** 与完整逐字稿。
-  - **双验收硬门禁 + 无损音频热替换返修**：渲染器运行期通过 `DirectorStage.createFrameAuditor()` 输出 `render_audit.json`，配合 [`verify_delivery.py --strict-ppt-guard --render-audit`](skills/corporate-training-motion/scripts/verify_delivery.py) 硬拦截走路飘移、文字压人物、同场景重播、**画面元素/气泡抢先旁白 > 80ms**、**并列指标/事件原地覆盖**、**实景门店无互动悬空道具**、**巨幅卡片高频翻页快闪 PPT**、**总结板书晃动或知识页反复摇摆**、**未接入分段章节进度条**、16×16 宏块微抖假动态、PPT 框体超 25% 与静态机位（门禁 A），再对最终编码 MP4 抽取迈步/气泡/道具互动/数据/分段切换与揭示前后对照帧逐一目检（门禁 B）后归档至桌面 `ai 制课/<课程名称>/`。若后续仅微调几句发音且新录音落入原时间槽，可直接按原轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验交付；原始过程工程默认完整保留。
+| 环节 | 核心能力 |
+| --- | --- |
+| **本地离线配音与音色克隆** | 全程本地运行 `Qwen3-TTS`（内置获授权的 **didi 男声**、**pipi 女声**，支持克隆自有讲师声线），原始制度与音频不出本机；内置解码防截断补丁与尾音能量检测，确保每句末字自然收尾。 |
+| **逐句音画咬合与发音分离** | [`tts_sync.py`](skills/corporate-training-motion/scripts/tts_sync.py) 按最小视觉意群合成，实测每句真实开口时刻与词锚点并生成单行无标点 `.srt` 字幕；支持口播与字幕发音分离（如 `WOW` 读“哇哦”、章节号不读前导 0，且可逐句覆写多音字/缩写），自动混入 48 kHz 原库提示音。 |
+| **一套资料，四种交付形态** | 按需交付：**多集 1080p 系列视频套件**（视频 + 字幕 + 封面 + 讲义 + 题库 + A4 手写作业）、**单支重点视频**、**独立交互课件（PPTX / DOCX / PDF / HTML）**；所有过程工程默认保留。 |
+| **双验收门禁与无损音频热替换** | **门禁 A**（[`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py)）自动拦截步态飘移、压字、画面抢跑、原地覆盖、同屏数据复述、双主标题、图表模板重复、悬空道具、快闪 PPT 与晃动总结页；**门禁 B** 对最终 MP4 抽帧执行实画与眯眼测试目检。仅微调少量发音且落入原槽位时，支持无损热替换音轨，数秒复验交付。 |
 
 | 内置授权音色 | 典型适用位置 | 实声试听 |
 | --- | --- | --- |
@@ -93,45 +131,51 @@
 
 ---
 
-## 宣传片即实证：本片直接由本 Skill 经 Antigravity 实渲产出
+## 实渲演示
 
-下面这支 **全能力介绍宣传片** 本身就是本仓库产出的真实成品——由 **Antigravity 调用本 Skill** 完成文案分段、**`didi / pipi` 本地离线双声配音 + 原库提示音效、`CourseActorsCute` 动画演绎、16 套浅色画布渲染**，并通过 `verify_delivery.py` 全项技术校验（1920×1080、24fps、48 kHz 立体声、第 0 帧封面隔离与 `attached_pic`、单行无标点字幕）。
+以下 69 秒全能力演示片直接由 **Antigravity 调用本套件**实渲产出（含本地双声配音、原库提示音效、`CourseActorsCute` 动画演绎、16 套浅色画布与 `verify_delivery.py` 全项技术校验）：
 
-[![酷果星创 AI 企业培训制课引擎宣传片封面](docs/media/v71/kgxc-v71-promo-poster.jpg)](https://hebokenn.github.io/kgxc-corporate-course-skill/)
+[![酷果星创企业培训制课引擎演示片封面](docs/media/v71/kgxc-v71-promo-poster.jpg)](https://hebokenn.github.io/kgxc-corporate-course-skill/)
 
-**[在线观看 69 秒全面展示宣传片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看第 0 帧独立封面](docs/media/v71/kgxc-v71-promo-cover.png)
+**[在线观看 69 秒演示片（GitHub Pages）](https://hebokenn.github.io/kgxc-corporate-course-skill/)** · [下载 1080p MP4](docs/media/v71/kgxc-v71-promo.mp4) · [下载无标点 SRT 字幕](docs/media/v71/kgxc-v71-promo.srt) · [查看第 0 帧独立封面](docs/media/v71/kgxc-v71-promo-cover.png)
 
-> 如需查阅更早期 5.x / 6.x 历史版本的旧宣传片、17 支风格样片与过往工作台界面，请移步独立归档页（仅供查阅过往历史版本）：[历史版本与过往素材归档](docs/ARCHIVE.md) · [在线历史画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/archive.html)
+> 更早 5.x / 6.x 历史版本的旧演示片、风格样片与过往工作台界面已归档至：[历史版本归档](docs/ARCHIVE.md) · [在线历史画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/archive.html)
 
 ---
 
-## 一门课是如何在对话里完整落地的
+## 端到端协作流程
 
-| 阶段 | AI 为你自动完成 | 你只需要确认 |
+| 阶段 | AI 自动完成 | 你只需确认 |
 | --- | --- | --- |
-| **1. 资料拆解与设计** | 读取 PDF/Word/PPT/扫描件/录音，建立来源台账、学习目标与单课/系列课结构 | 教给谁、学什么、重点范围 |
-| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代，并完成口语短标题、去小标题连读无缝衔接及零基础新人友好自查；通过 `workflow.py source-coverage` 绑定原件、逐字稿与覆盖报告哈希 | 在对话或结构化提问中核对取舍说明与讲法后明确确认 |
-| **3A. 课件与配套文档** | 交付可讲/可录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
-| **3B. 视觉母版定调与小样** | 按内容母版输出 3 套实质不同方案（`template_masters`），定调后导出 3 段跨章节有声 MP4 小样 | 选定画布配色、角色造型与声音节奏 |
-| **4. 共享引擎并行出片、增量微调与双门禁交付** | 直接沿用并扩展小样验证通过的导演场景模块分集并行导出，经门禁 A（自动化技术全检）+ 门禁 B（最终 MP4 抽帧目检）后归集至桌面目录；后续局部修改画面只重渲改动场景、微调发音可秒级无损热替换音轨 | 验收成片，或随时对话局部微调 |
+| **1. 资料拆解与设计** | 解析多源原件，建立来源台账、学习目标与单课/系列课结构 | 教给谁、学什么、重点范围 |
+| **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、完成去标题连读与新人友好自查，并锁定原件/讲稿哈希 | 核对取舍说明与讲法后确认 |
+| **3A. 独立课件与配套文档** | 交付可面授或录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
+| **3B. 视觉定调、蓝图与小样** | 输出 3 套视觉母版定调，先通过 [`check_visual_blueprint.py`](skills/corporate-training-motion/scripts/check_visual_blueprint.py) 全集多样性蓝图校验，再导出 3 段跨章节有声小样 | 选定画布风格、视觉蓝图与声音节奏 |
+| **4. 并行出片与双门禁交付** | 沿用小样导演引擎分集并行出片，经门禁 A（自动化遥测）+ 门禁 B（成片抽帧与眯眼测试）后交付至桌面；后续局部修改支持分场景增量重渲与秒级音频热替换 | 验收成片或对话指定局部微调 |
 
 ---
 
-## 适用环境、开源边界与详细文档
+## 适用环境、开源边界与文档索引
 
-- **运行环境**：完整本地渲染与离线 `Qwen3-TTS` 配音环境已在 **macOS Apple Silicon（arm64）** 实测验证；标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae 运行，模型推理与额度沿用宿主原生配置。
-- **开源协议与共创**：自研引擎代码、工具链与通用规范以 **[Apache License 2.0](LICENSE)** 开源；酷果星创 Logo、专有工服角色、R5/R8 片头片尾及第三方字体音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。由 [@hebokenn](https://github.com/hebokenn) 主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
+- **运行环境**：完整本地渲染与离线 `Qwen3-TTS` 配音已在 **macOS Apple Silicon（arm64）** 实测验证；标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae，模型推理沿用宿主原生配置。
+- **开源协议与共创**：自研引擎代码、工具链与通用规范采用 **[Apache License 2.0](LICENSE)**；酷果星创品牌视觉、专有工服角色、R5/R8 片头片尾及第三方字体音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。由 [@hebokenn](https://github.com/hebokenn) 主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
 
 | 专题文档 | 链接 |
 | --- | --- |
-| 日常制作流程与操作手册 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) |
-| 8.0 电影级导演引擎与交付硬门禁（唯一权威） | [60-v8-cinematic-director-and-gates.md](skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) · [59-streamlined-series-and-selfcheck.md](skills/corporate-training-motion/references/59-streamlined-series-and-selfcheck.md) |
-| 角色、配音、花字音效与动效 | [角色指南](docs/CHARACTERS.md) · [配音指南](docs/VOICE.md) · [音效库](docs/SOUND.md) · [动效指南](docs/MOTION.md) |
-| 历史版本展示与完整变更记录 | [历史版本归档 ARCHIVE.md](docs/ARCHIVE.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [RELEASING.md](docs/RELEASING.md) |
+| 使用指南与依赖说明 | [使用指南](docs/USAGE.md) · [依赖说明](docs/DEPENDENCIES.md) |
+| 9.0 权威规范（信息层级、多样性与导演硬门禁） | [70-v9-editorial-info-design-and-diversity.md](skills/corporate-training-motion/references/70-v9-editorial-info-design-and-diversity.md) · [60-v8-cinematic-director-and-gates.md](skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) |
+| 角色、配音、音效与动效参考 | [角色指南](docs/CHARACTERS.md) · [配音指南](docs/VOICE.md) · [音效库](docs/SOUND.md) · [动效指南](docs/MOTION.md) |
+| 归档、完整变更记录与发布规范 | [历史归档 ARCHIVE.md](docs/ARCHIVE.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [RELEASING.md](docs/RELEASING.md) |
 
 ---
 
 ## 版本更新
+
+### 杂志级信息层级、定制信息图与反套路视觉多样性：核心 9.0.0 · 2026-11-28
+
+- **借鉴经典信息设计与多媒体学习原理，确立融合视觉标准（[`70-v9-editorial-info-design-and-diversity.md`](skills/corporate-training-motion/references/70-v9-editorial-info-design-and-diversity.md)）**：系统吸收 Richard Mayer 多媒体学习理论（冗余/信号/空间临近/一致性原则）、唯一视觉重心（Rule of One + L1/L2/L3 字阶 + 眯眼测试）以及 Vox / Kurzgesagt / Apple Keynote 信息叙事方法，确立「杂志去框排版 + 定制信息图」融合视觉体系；明确“左证据 + 右高一维洞察”分工与“虚线编号骨架槽防剧透”规范，根治双标题叠罗汉、左右同屏复述同一组数据与漂浮圆角胶囊贴纸墙。
+- **12 栏网格排版底座与低套路可选原语（[`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js)）**：新增 `GRID_12` / `gridCols`、`drawQuietTopBar`、`drawEditorialHeadline`、`drawLeaderLine`、`drawGroupingBracket` 基础能力，以及 `drawSpotlightHorizontalBars`（分组水平排序 + 聚光灯退阶）、`drawPictogramGrid`（人像/设备点阵体感翻译）、`drawJourneyFunnel`（横向旅程断点）、`drawEditorialChecklist`（无框行动清单 + 虚线防剧透骨架槽）；同步将 `drawSculptureBar` / `drawKpiRail` / `drawCumulativeStack` / `drawFloatingTag` 从强制契约降级为可选工具，鼓励按业务现场定制原生 Canvas/SVG 图形。
+- **对抗 AI 最小路径偷懒：全集视觉多样性蓝图与 9.0 门禁遥测（[`check_visual_blueprint.py`](skills/corporate-training-motion/scripts/check_visual_blueprint.py) / [`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) / [`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py)）**：新增写渲染代码前的全集视觉多样性蓝图硬检与 Markdown 排期表生成；`DirectorStage` 新增 `recordDataCarrier`、`recordHeadline`、`recordVisualPattern` 及分场景合并等价统计，门禁 A 硬拦截同屏双载体数据复述（`redundant_data_violations`）、双 L1 主标题（`double_headline_violations`）、单集内置图表复用超 1 次与相邻构图模板克隆（`visual_pattern_violations`），门禁 B 增加「眯眼测试」三项目视否决核查。
 
 ### 分场景增量重渲、多路并行渲染与无损审计合并：核心 8.3.0 · 2026-11-28
 

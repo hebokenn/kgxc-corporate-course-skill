@@ -521,7 +521,7 @@ const CA = window.CourseActorsCute;
 const VM = window.VisualMetaphors;
 const DS = window.DirectorStage;
 
-assert.equal(DS.VERSION, '8.3.0');
+assert.equal(DS.VERSION, '9.0.0');
 assert.ok(CA.VALID_HELD_PROPS.includes('phone'));
 assert.ok(CA.VALID_HELD_PROPS.includes('qr_card'));
 
@@ -883,6 +883,191 @@ window.renderFrame = (f, t, data) => {
             rep3 = run_inc(9483)
             self.assertEqual(rep3['cache_hits'], 0, rep3)
             self.assertEqual(rep3['cache_misses'], 3, rep3)
+
+    def test_v9_0_editorial_primitives_diversity_blueprint_and_redundancy_gates(self):
+        """v9.0.0: 12-col editorial primitives, anti-redundancy & double-headline telemetry, blueprint validator & Gate A."""
+        import check_visual_blueprint
+
+        # 1. JS unit checks for v9.0.0 VisualMetaphors primitives + DirectorStage telemetry + mergeFrameAudits parity
+        js_check = f"""
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+global.window = global;
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'visual_metaphors.js'))}, 'utf8'));
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'director_stage.js'))}, 'utf8'));
+const VM = window.VisualMetaphors;
+const DS = window.DirectorStage;
+
+assert.equal(DS.VERSION, '9.0.0');
+assert.equal(VM.GRID_12.cols, 12);
+const left7 = VM.gridCols(1, 7);
+const right5 = VM.gridCols(8, 5);
+assert.equal(left7.x, 120);
+assert.equal(right5.right, 1800);
+assert.ok(right5.x > left7.right);
+
+const noop = () => {{}};
+const mockCtx = new Proxy({{
+  measureText: t => ({{ width: String(t).length * 20 }}),
+  createLinearGradient: () => ({{ addColorStop: noop }}),
+  createRadialGradient: () => ({{ addColorStop: noop }}),
+}}, {{
+  get(target, prop) {{ return prop in target ? target[prop] : noop; }},
+  set() {{ return true; }},
+}});
+const pal = {{ ink: '#1E2430', muted: '#667085', accent: '#234B9A', error: '#C02B3A', ok: '#1A7454', stroke: '#D0C9BC' }};
+
+const topBar = VM.drawQuietTopBar(mockCtx, null, '第 06 节', '诊断+', pal, {{ rightMeta: '开场' }});
+assert.equal(topBar.x, 120);
+const h1 = VM.drawEditorialHeadline(mockCtx, 120, 122, '专项暗访实证', '真正流失信任的，往往不是技术', pal, {{ highlightPhrase: '往往不是技术' }});
+assert.ok(h1 && h1.rect.w > 100 && h1.bottomY > 180);
+
+const bars = VM.drawSpotlightHorizontalBars(mockCtx, left7.x, 316, left7.w, [
+  {{ label: '未讲清维修', ratio: 0.66, value: '近 2/3' }},
+  {{ label: '等待零沟通', ratio: 0.62, value: '> 60%' }},
+  {{ label: '检测失败率', ratio: 0.21, value: '21%', muted: true }},
+], pal, {{ focusIdx: 0, groupSplitAfter: 1, topGroupLabel: '沟通黑盒', bottomGroupLabel: '技术层面' }});
+assert.equal(bars.rowAnchors.length, 3);
+assert.ok(bars.rowAnchors[2].y > bars.rowAnchors[1].y);
+
+const picto = VM.drawPictogramGrid(mockCtx, right5.x, 340, right5.w, 260, pal, {{ total: 9, active: 6, cols: 3, shape: 'person' }});
+assert.equal(picto.active, 6);
+const leader = VM.drawLeaderLine(mockCtx, bars.rowAnchors[0].rightX, bars.rowAnchors[0].y, right5.x, 380);
+assert.ok(leader && leader.x2 === right5.x);
+const bracket = VM.drawGroupingBracket(mockCtx, 1080, 320, 560, 1184);
+assert.equal(bracket.tipX, 1184);
+
+const journey = VM.drawJourneyFunnel(mockCtx, 120, 320, 1680, [
+  {{ label: '迎宾', metric: '100%', tone: 'ok' }},
+  {{ label: '等待', metric: '>60% 零沟通', tone: 'error' }},
+  {{ label: '讲解', metric: '近2/3 未讲清', tone: 'error' }},
+], pal, {{ activeIdx: 1 }});
+assert.equal(journey.anchors.length, 3);
+
+const checklist = VM.drawEditorialChecklist(mockCtx, 864, 260, 560, [
+  {{ id: 's1', title: '真实盘点', sub: '近两周接待', revealed: true, active: true }},
+  {{ id: 's2', title: '手写弱项', revealed: false }},
+], pal, {{ eyebrow: 'STEP 02', title: '门店闭环动作' }});
+assert.equal(checklist.itemRects.length, 2);
+assert.equal(checklist.itemRects[0].revealed, true);
+assert.equal(checklist.itemRects[1].revealed, false);
+
+// 2. DirectorStage v9.0.0 catches redundant data, double headline, and cross-scene chart repetition (incl. mergeFrameAudits)
+const lines = [
+  {{ id: 'b1', scene_id: 'sc05', layout_kind: 'data_sculpture', start: 0, end: 2.0 }},
+  {{ id: 'b2', scene_id: 'sc11', layout_kind: 'data_sculpture', start: 2.0, end: 4.0 }},
+];
+const aud1 = DS.createFrameAuditor();
+for (let f = 0; f < 48; f++) {{
+  const t = f / 24;
+  const st = DS.resolveTimeline(lines, t);
+  aud1.beginFrame(f, t, st, st.layoutKind, {{ x: f * 0.6, y: 0, zoom: 1.0 + f * 0.001 }});
+  aud1.recordHeadline('h_top', {{ x: 120, y: 112, w: 600, h: 48 }});
+  aud1.recordHeadline('h_mid', {{ x: 600, y: 200, w: 600, h: 48 }});
+  aud1.recordDataCarrier('left_bars', ['>60%', '>50%', '21%'], {{ x: 120, y: 400, w: 800, h: 300 }}, 'sculpture_bar');
+  aud1.recordDataCarrier('right_kpi', ['21%', '>50%', '>60%'], {{ x: 1400, y: 200, w: 320, h: 500 }}, 'kpi_rail');
+  aud1.recordVisualPattern('sculpture_bar', {{ skeleton: 'grid_7_5' }});
+}}
+const aud2 = DS.createFrameAuditor();
+for (let f = 48; f < 96; f++) {{
+  const t = f / 24;
+  const st = DS.resolveTimeline(lines, t);
+  aud2.beginFrame(f, t, st, st.layoutKind, {{ x: (f - 48) * 0.6, y: 0, zoom: 1.0 + (f - 48) * 0.001 }});
+  aud2.recordHeadline('h_sc11', {{ x: 120, y: 112, w: 600, h: 48 }});
+  aud2.recordVisualPattern('sculpture_bar', {{ skeleton: 'grid_7_5' }});
+}}
+const merged = DS.mergeFrameAudits([aud1.finalize(), aud2.finalize()]);
+assert.ok(merged.redundant_data_violations.length >= 1, JSON.stringify(merged.redundant_data_violations));
+assert.ok(merged.double_headline_violations.length >= 1, JSON.stringify(merged.double_headline_violations));
+assert.ok(merged.visual_pattern_violations.some(v => v.kind === 'chart_repeat_limit'), JSON.stringify(merged.visual_pattern_violations));
+assert.ok(merged.visual_pattern_violations.some(v => v.kind === 'adjacent_template_clone'), JSON.stringify(merged.visual_pattern_violations));
+console.log('JS_V9_0_OK');
+"""
+        proc = subprocess.run(['node', '-e', js_check], capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        self.assertIn('JS_V9_0_OK', proc.stdout)
+
+        # 2. Blueprint validator catches redundant secondary zone, repeated built-in chart, adjacent clone & missing custom visual
+        bad_bp = {
+            'episode': 'ep06_bad',
+            'scenes': [
+                {'scene_id': 'sc05', 'layout_kind': 'data_sculpture', 'layout_skeleton': 'grid_7_5',
+                 'l1_headline': '五大黑盒痛点', 'primary_visual': 'sculpture_bar',
+                 'secondary_role': 'duplicate_kpi_rail', 'callout_style': 'floating_pill_wall'},
+                {'scene_id': 'sc06', 'layout_kind': 'data_sculpture', 'layout_skeleton': 'grid_7_5',
+                 'l1_headline': '维修流程四要素', 'primary_visual': 'sculpture_bar',
+                 'secondary_role': 'none', 'callout_style': 'leader_line'},
+                {'scene_id': 'sc07', 'layout_kind': 'kinetic_metaphor', 'layout_skeleton': 'center_focus',
+                 'l1_headline': '例外场景', 'primary_visual': 'journey_funnel', 'secondary_role': 'none'},
+                {'scene_id': 'sc08', 'layout_kind': 'summary_board', 'layout_skeleton': 'grid_5_7',
+                 'l1_headline': '课后行动', 'primary_visual': 'editorial_checklist', 'secondary_role': 'none'},
+            ],
+        }
+        bad_res = check_visual_blueprint.validate_blueprint(bad_bp)
+        self.assertFalse(bad_res['ok'])
+        joined = '\n'.join(bad_res['errors'])
+        self.assertIn('重复展示同一组数据', joined)
+        self.assertIn('漂浮圆角胶囊过多', joined)
+        self.assertIn('复用了相同的版式骨架', joined)
+        self.assertIn('上限 1 次', joined)
+        self.assertIn('custom:*', joined)
+
+        good_bp = {
+            'episode': 'ep06_good',
+            'scenes': [
+                {'scene_id': 'sc05', 'layout_kind': 'data_sculpture', 'layout_skeleton': 'grid_7_5',
+                 'l1_headline': '真正流失信任的，往往不是技术', 'primary_visual': 'horizontal_spotlight_bars',
+                 'secondary_role': 'insight_pictogram', 'callout_style': 'leader_line'},
+                {'scene_id': 'sc06', 'layout_kind': 'kinetic_metaphor', 'layout_skeleton': 'full_journey',
+                 'l1_headline': '五步透明诊断服务动线', 'primary_visual': 'journey_funnel',
+                 'secondary_role': 'none', 'callout_style': 'spotlight'},
+                {'scene_id': 'sc11', 'layout_kind': 'kinetic_metaphor', 'layout_skeleton': 'grid_4_8',
+                 'l1_headline': '维修沟通必须一次讲清四要素', 'primary_visual': 'custom:repair_quote_sheet',
+                 'secondary_role': 'none', 'callout_style': 'leader_line'},
+                {'scene_id': 'sc18', 'layout_kind': 'summary_board', 'layout_skeleton': 'grid_5_7',
+                 'l1_headline': '真正带来门店改变的，是最后一步闭环动作', 'primary_visual': 'editorial_checklist',
+                 'secondary_role': 'custom:workbook_artifact', 'callout_style': 'none'},
+            ],
+        }
+        good_res = check_visual_blueprint.validate_blueprint(good_bp)
+        self.assertTrue(good_res['ok'], good_res)
+        md = check_visual_blueprint.render_markdown_table(good_bp)
+        self.assertIn('custom:repair_quote_sheet', md)
+
+        # 3. verify_delivery.py Gate A blocks v9.0.0 telemetry violations + invalid blueprint
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            vid = p / 'ok.mp4'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'color=c=white:s=1920x1080:r=24:d=2.0',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=2.0',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-ar', '48000', str(vid),
+            ], check=True)
+            bad_v9 = p / 'bad_v9.json'
+            bad_v9.write_text(json.dumps({
+                'schema': 'kgxc-director-audit/1',
+                'total_frames': 48, 'total_beats': 4,
+                'card_box_ratio': 0.0, 'summary_board_ratio': 0.0, 'max_consecutive_card_box': 0,
+                'floating_walk_violations': [], 'text_actor_overlap_violations': [], 'scene_replay_violations': [],
+                'camera_sway_violations': [], 'premature_reveal_violations': [],
+                'info_overwrite_violations': [], 'floating_prop_violations': [], 'rapid_card_flip_violations': [],
+                'redundant_data_violations': [{'scene_id': 'sc05', 'beat_id': 'b2', 'carriers': ['left_bars', 'right_kpi']}],
+                'double_headline_violations': [{'scene_id': 'sc05', 'beat_id': 'b1', 'headline_ids': ['h_top', 'h_mid']}],
+                'visual_pattern_violations': [{'kind': 'chart_repeat_limit', 'pattern': 'sculpture_bar', 'reason': '内置图表 sculpture_bar 重复 2 次'}],
+                'camera_summary': [{'scene_id': 'sc05', 'layout_kind': 'data_sculpture', 'frames': 48, 'zoom_span': 0.05, 'pan_span_px': 32.0}],
+            }), encoding='utf-8')
+            bp_file = p / 'bad_bp.json'
+            bp_file.write_text(json.dumps(bad_bp, ensure_ascii=False), encoding='utf-8')
+
+            out = verify_delivery.verify_video(
+                vid, check_first_frame_cover=False, render_audit=bad_v9, visual_blueprint=bp_file
+            )
+            self.assertFalse(out['ok'])
+            self.assertTrue(any('双载体重复' in e for e in out['errors']), out['errors'])
+            self.assertTrue(any('多套 L1 主标题' in e for e in out['errors']), out['errors'])
+            self.assertTrue(any('模板重复超限' in e for e in out['errors']), out['errors'])
+            self.assertTrue(any('visual_blueprint' in out['checks'] for _ in [1]))
 
 
 if __name__ == '__main__':

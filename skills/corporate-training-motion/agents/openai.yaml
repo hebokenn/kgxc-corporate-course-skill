@@ -1,4 +1,4 @@
 interface:
-  display_name: "酷果星创课程设计与制作（8.0.0）"
-  short_description: "8.0.0 电影级导演引擎：教学方案与逐字稿确认后，以统一 DirectorStage 制作三段有声小样与完整系列视频，强制通过遥测与抽帧双门禁"
-  default_prompt: "使用 $corporate-training-motion（8.0.0）设计或继续制作当前课程，恢复有效确认；视频严格遵循 60-v8-cinematic-director-and-gates.md，小样与正片共用 DirectorStage + CourseActorsCute + VisualMetaphors，确保落地步态、文字避让、连续状态机与电影级运镜，并通过 verify_delivery --render-audit 与实帧目视核验后交付。"
+  display_name: "酷果星创课程设计与制作（9.0.0）"
+  short_description: "9.0.0 杂志级信息层级与定制信息图导演引擎：教学方案与逐字稿确认后，先过全集视觉多样性蓝图，再以统一 DirectorStage 制作有声小样与完整系列视频并强制通过双门禁"
+  default_prompt: "使用 $corporate-training-motion（9.0.0）设计或继续制作当前课程，恢复有效确认；视频严格遵循 70-v9-editorial-info-design-and-diversity.md 与 60-v8-cinematic-director-and-gates.md，先通过 check_visual_blueprint.py 生成全集视觉多样性蓝图，再以共享 DirectorStage + CourseActorsCute + VisualMetaphors 制作并确保零同屏数据复述、唯一 L1 标题、业务定制图形、落地步态与电影级运镜，通过 verify_delivery --render-audit --visual-blueprint 与实帧眯眼测试核验后交付。"

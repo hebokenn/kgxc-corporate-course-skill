@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DirectorStage v8.3.0 Incremental & Parallel Scene Render Engine.
+ * DirectorStage v9.0.0 Incremental & Parallel Scene Render Engine.
  *
  * Key capabilities:
  * 1. Integer-frame scene partitioning (`DirectorStage.partitionSceneFrames`) so every

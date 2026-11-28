@@ -1,5 +1,5 @@
 {
-  "version": "8.3.0",
+  "version": "9.0.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "8.3.0",
+    "corporate-training-motion": "9.0.0",
     "elearning-course-design": "2.1.2"
   },
-  "release_status": "8.3.0 adds per-scene incremental re-rendering and parallel multi-tab headless Chrome CDP rendering (scripts/render_director_incremental.mjs), integer-frame scene partitioning (DirectorStage.partitionSceneFrames), automatic SHA-256 scene-level cache invalidation with IIFE/global SCENE_RENDERERS support, lossless H.264 segment concat, and exact single-pass-equivalent Gate A audit merging (DirectorStage.mergeFrameAudits)"
+  "release_status": "9.0.0 introduces the Plan C editorial minimalism + custom infographic visual system grounded in Mayer's Multimedia Learning Principles, Vox/Kurzgesagt/Keynote visual hierarchy, 12-column grid & zero-spoiler skeleton slots (VisualMetaphors), pre-render Episode Visual Diversity Blueprint validation (scripts/check_visual_blueprint.py), and Gate A runtime anti-redundancy / double-headline / chart-repetition telemetry (DirectorStage + verify_delivery.py)"
 }

@@ -1507,6 +1507,630 @@
     return { x: cx - w / 2, y: cy - h / 2, w, h };
   }
 
+  // =========================================================================
+  // v9.0.0 Editorial Grid, Visual Hierarchy & Low-Template Infographic Primitives
+  // Optional high-craft building blocks (Plan C: Editorial Minimalism + Custom Infographics).
+  // Designed to work alongside business-specific custom Canvas/SVG visuals, NOT as rigid templates.
+  // =========================================================================
+
+  const GRID_12 = Object.freeze({
+    width: 1920,
+    height: 1080,
+    marginX: 120,
+    gutter: 24,
+    cols: 12,
+    contentW: 1680,
+    colW: (1680 - 24 * 11) / 12, // 118px per column
+    topBarBottomY: 88,
+    safeBottomY: 924,
+  });
+
+  /** Compute pixel `{ x, w, right }` aligned to the 12-column editorial grid (1-indexed startCol: 1..12). */
+  function gridCols(startCol = 1, spanCols = 12, opts = {}) {
+    const marginX = opts.marginX ?? GRID_12.marginX;
+    const gutter = opts.gutter ?? GRID_12.gutter;
+    const cols = opts.cols ?? GRID_12.cols;
+    const contentW = (opts.width ?? GRID_12.width) - marginX * 2;
+    const colW = (contentW - gutter * (cols - 1)) / cols;
+    const c0 = clamp(Math.round(startCol), 1, cols) - 1;
+    const span = clamp(Math.round(spanCols), 1, cols - c0);
+    const x = Math.round(marginX + c0 * (colW + gutter));
+    const w = Math.round(span * colW + (span - 1) * gutter);
+    return { x, w, right: x + w };
+  }
+
+  /** Quiet single-line editorial brand bar aligned to 12-col grid (never competes with L1 headline). */
+  function drawQuietTopBar(ctx, logoImg, epLabel = '', epTitle = '', pal = {}, opts = {}) {
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const marginX = opts.marginX ?? GRID_12.marginX;
+    const rightX = (opts.width ?? GRID_12.width) - marginX;
+    const lineColor = pal.line || pal.stroke || '#E4E0D8';
+    const strongLine = pal.lineStrong || pal.stroke || '#D0C9BC';
+    const muted = pal.muted || '#667085';
+    const faint = pal.faint || '#98A2B3';
+    const rightMeta = opts.rightMeta || '';
+
+    ctx.save();
+    let textX = marginX;
+    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+      const h = opts.logoH ?? 32;
+      const w = h * (logoImg.naturalWidth / logoImg.naturalHeight);
+      ctx.drawImage(logoImg, marginX, 38, w, h);
+      ctx.strokeStyle = strongLine;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(marginX + w + 18, 42);
+      ctx.lineTo(marginX + w + 18, 66);
+      ctx.stroke();
+      textX = marginX + w + 34;
+    }
+    const labelStr = [epLabel, epTitle].filter(Boolean).join('  ·  ');
+    if (labelStr) {
+      ctx.font = `600 18px ${fontFamily}`;
+      ctx.fillStyle = muted;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelStr, textX, 54);
+    }
+    if (rightMeta) {
+      ctx.font = `600 17px ${fontFamily}`;
+      ctx.fillStyle = faint;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(rightMeta), rightX, 54);
+    }
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(marginX, 88);
+    ctx.lineTo(rightX, 88);
+    ctx.stroke();
+    ctx.restore();
+    return { x: marginX, y: 28, w: rightX - marginX, h: 60 };
+  }
+
+  /**
+   * L1 Editorial Headline (single authoritative title per screen — zero double titles, zero heavy pills).
+   * Supports keyword highlighter wash and smooth vertical settle animation via `opts.progress`.
+   */
+  function drawEditorialHeadline(ctx, x, y, kicker, headline, pal = {}, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02) return null;
+    const u = easeOut(p);
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const accent = opts.accent || pal.accent || '#234B9A';
+    const ink = pal.ink || '#1E2430';
+    const muted = pal.muted || '#667085';
+    const fontSize = opts.fontSize ?? 48;
+    const highlightPhrase = opts.highlightPhrase || '';
+    const highlightColor = opts.highlightColor || accent;
+    const highlightWash = opts.highlightWash || 'rgba(192, 43, 58, 0.14)';
+    const subline = opts.subline || '';
+    const dy = (1 - u) * 14;
+
+    ctx.save();
+    ctx.globalAlpha = clamp(p * 2.2);
+    const ty = y + dy;
+    let totalW = 0;
+
+    if (kicker) {
+      roundRect(ctx, x, ty + 3, 5, 22, 2.5, accent, null);
+      ctx.font = `700 20px ${fontFamily}`;
+      ctx.fillStyle = accent;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(String(kicker), x + 16, ty + 2);
+      totalW = Math.max(totalW, 16 + ctx.measureText(String(kicker)).width);
+    }
+
+    const hy = kicker ? ty + 38 : ty;
+    const text = String(headline || '');
+    ctx.font = `900 ${fontSize}px ${fontFamily}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    const fullW = ctx.measureText(text).width;
+    totalW = Math.max(totalW, fullW);
+
+    if (highlightPhrase && text.includes(highlightPhrase)) {
+      const idx = text.indexOf(highlightPhrase);
+      const pre = text.slice(0, idx);
+      const mid = highlightPhrase;
+      const post = text.slice(idx + mid.length);
+      let curX = x;
+      if (pre) {
+        ctx.fillStyle = ink;
+        ctx.fillText(pre, curX, hy);
+        curX += ctx.measureText(pre).width;
+      }
+      const midW = ctx.measureText(mid).width;
+      roundRect(ctx, curX - 6, hy + Math.round(fontSize * 0.7), midW + 12, Math.round(fontSize * 0.36), 4, highlightWash, null);
+      ctx.fillStyle = highlightColor;
+      ctx.fillText(mid, curX, hy);
+      curX += midW;
+      if (post) {
+        ctx.fillStyle = ink;
+        ctx.fillText(post, curX, hy);
+      }
+    } else {
+      ctx.fillStyle = ink;
+      ctx.fillText(text, x, hy);
+    }
+
+    let bottomY = hy + Math.round(fontSize * 1.18);
+    if (subline) {
+      ctx.font = `500 22px ${fontFamily}`;
+      ctx.fillStyle = muted;
+      ctx.fillText(String(subline), x, bottomY + 6);
+      totalW = Math.max(totalW, ctx.measureText(String(subline)).width);
+      bottomY += 36;
+    }
+    ctx.restore();
+    return { rect: { x, y, w: Math.ceil(totalW), h: Math.ceil(bottomY - y) }, bottomY };
+  }
+
+  /** Crisp editorial callout leader line with animated draw-on progress. */
+  function drawLeaderLine(ctx, x1, y1, x2, y2, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02) return null;
+    const color = opts.color || '#C02B3A';
+    const lw = opts.lineWidth ?? 2.2;
+    const elbow = opts.elbow !== false;
+    const midX = opts.midX ?? (x1 + x2) / 2;
+
+    ctx.save();
+    ctx.globalAlpha = clamp(p * 2.2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (opts.dashed) ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    if (elbow) {
+      const u = easeOut(p);
+      const pts = [[x1, y1], [midX, y1], [midX, y2], [x2, y2]];
+      const lens = [Math.abs(midX - x1), Math.abs(y2 - y1), Math.abs(x2 - midX)];
+      const total = Math.max(1, lens[0] + lens[1] + lens[2]);
+      let rem = total * u;
+      for (let i = 0; i < 3 && rem > 0; i++) {
+        const segLen = lens[i];
+        if (segLen <= 0.01) continue;
+        const frac = clamp(rem / segLen);
+        ctx.lineTo(lerp(pts[i][0], pts[i + 1][0], frac), lerp(pts[i][1], pts[i + 1][1], frac));
+        rem -= segLen;
+      }
+    } else {
+      const u = easeOut(p);
+      ctx.lineTo(lerp(x1, x2, u), lerp(y1, y2, u));
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(x1, y1, 4.5, 0, Math.PI * 2); ctx.fill();
+    if (p >= 0.92) {
+      ctx.beginPath(); ctx.arc(x2, y2, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    return { x1, y1, x2, y2 };
+  }
+
+  /** Editorial grouping bracket connecting multiple rows to a single synthesized insight target. */
+  function drawGroupingBracket(ctx, x, yTop, yBot, targetX, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02) return null;
+    const color = opts.color || '#C02B3A';
+    const armW = opts.armW ?? 18;
+    const midY = (yTop + yBot) / 2;
+    const u = easeOut(p);
+
+    ctx.save();
+    ctx.globalAlpha = clamp(p * 2.2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = opts.lineWidth ?? 2.4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x, yTop);
+    ctx.lineTo(x + armW, yTop);
+    ctx.lineTo(x + armW, lerp(yTop, yBot, u));
+    if (u > 0.95) ctx.lineTo(x, yBot);
+    ctx.stroke();
+
+    const stemEnd = lerp(x + armW, targetX, clamp((p - 0.25) / 0.75));
+    if (p > 0.25) {
+      ctx.beginPath();
+      ctx.moveTo(x + armW, midY);
+      ctx.lineTo(stemEnd, midY);
+      ctx.stroke();
+      if (p > 0.92) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(targetX, midY, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    return { tipX: targetX, tipY: midY };
+  }
+
+  /**
+   * Low-Template Infographic Primitive A: Grouped Horizontal Ranked Bars with Vox Spotlight Dimming.
+   * Ideal for Chinese labels + clear visual contrast (non-focused rows automatically recede to 24% alpha).
+   */
+  function drawSpotlightHorizontalBars(ctx, x, y, w, items = [], pal = {}, opts = {}) {
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const numFont = opts.numFont || `"SF Pro Display", "Helvetica Neue", ${fontFamily}`;
+    const rowH = opts.rowH ?? 90;
+    const labelW = opts.labelW ?? 350;
+    const valW = opts.valW ?? 125;
+    const trackW = Math.max(120, w - labelW - valW - 24);
+    const focusIdx = opts.focusIdx ?? -1;
+    const groupSplitAfter = opts.groupSplitAfter ?? -1;
+    const ink = pal.ink || '#1E2430';
+    const muted = pal.muted || '#667085';
+    const faint = pal.faint || '#98A2B3';
+    const lineStrong = pal.lineStrong || pal.stroke || '#D0C9BC';
+
+    const rowAnchors = [];
+    let curY = y;
+
+    items.forEach((it, idx) => {
+      const rp = clamp(it.progress == null ? 1 : it.progress);
+      if (idx === 0 && opts.topGroupLabel) {
+        ctx.save();
+        ctx.font = `700 17px ${fontFamily}`;
+        ctx.fillStyle = opts.topGroupColor || pal.error || '#C02B3A';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(opts.topGroupLabel), x, curY - 30);
+        ctx.restore();
+      }
+      if (groupSplitAfter >= 0 && idx === groupSplitAfter + 1) {
+        curY += 26;
+        ctx.save();
+        ctx.strokeStyle = lineStrong;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(x, curY - 22);
+        ctx.lineTo(x + w, curY - 22);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (opts.bottomGroupLabel) {
+          ctx.font = `700 17px ${fontFamily}`;
+          ctx.fillStyle = muted;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(opts.bottomGroupLabel), x, curY + 2);
+        }
+        ctx.restore();
+        curY += 32;
+      }
+
+      if (rp <= 0.02) {
+        rowAnchors.push({ idx, y: curY + 24, rightX: x + w, visible: false });
+        curY += rowH;
+        return;
+      }
+
+      const isFocused = focusIdx === -1 || focusIdx === idx;
+      const isSpotlighted = focusIdx === idx;
+      const alpha = clamp(rp * 2.4) * (focusIdx === -1 ? (it.muted ? 0.65 : 1) : (isFocused ? 1 : 0.24));
+      const barY = curY + 24;
+      const barH = isSpotlighted ? 30 : 24;
+      const barTop = barY - barH / 2;
+      const barColor = it.color || pal.error || '#C02B3A';
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (isSpotlighted) {
+        roundRect(ctx, x - 20, curY - 12, w + 40, 72, 14, '#FFFFFF', barColor, 2, true);
+      }
+
+      ctx.font = `700 16px ${numFont}`;
+      ctx.fillStyle = isSpotlighted ? barColor : faint;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(idx + 1).padStart(2, '0'), x, barY);
+
+      ctx.font = `${isSpotlighted ? 800 : 700} 23px ${fontFamily}`;
+      ctx.fillStyle = ink;
+      ctx.fillText(String(it.label || ''), x + 36, barY);
+
+      const trackX = x + labelW;
+      roundRect(ctx, trackX, barTop, trackW, barH, barH / 2, '#ECE8E0', null);
+      const fillW = Math.max(barH, trackW * clamp(it.ratio ?? 0) * easeOutExpo(rp));
+      roundRect(ctx, trackX, barTop, fillW, barH, barH / 2, barColor, null);
+
+      ctx.font = `900 ${isSpotlighted ? 31 : 26}px ${numFont}`;
+      ctx.fillStyle = barColor;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(it.value || ''), trackX + trackW + 20, barY + 1);
+      ctx.restore();
+
+      rowAnchors.push({
+        idx,
+        y: barY,
+        rightX: x + w + (isSpotlighted ? 20 : 0),
+        visible: true,
+      });
+      curY += rowH;
+    });
+
+    return { rowAnchors, rect: { x, y, w, h: Math.max(0, curY - y) }, bottomY: curY };
+  }
+
+  function _drawPictogramUnit(ctx, cx, cy, scale, color, shape = 'person') {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = color;
+    if (shape === 'dot') {
+      ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+    } else if (shape === 'device') {
+      roundRect(ctx, -14, -24, 28, 48, 6, color, null);
+      roundRect(ctx, -10, -18, 20, 34, 3, 'rgba(255,255,255,0.28)', null);
+    } else {
+      ctx.beginPath(); ctx.arc(0, -24, 11.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-17, 16);
+      ctx.quadraticCurveTo(-17, -7, 0, -7);
+      ctx.quadraticCurveTo(17, -7, 17, 16);
+      ctx.lineTo(17, 24);
+      ctx.quadraticCurveTo(17, 29, 12, 29);
+      ctx.lineTo(-12, 29);
+      ctx.quadraticCurveTo(-17, 29, -17, 24);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /**
+   * Low-Template Infographic Primitive B: Kurzgesagt-style Pictogram Grid (humanizes abstract ratios).
+   */
+  function drawPictogramGrid(ctx, x, y, w, h, pal = {}, opts = {}) {
+    const p = clamp(opts.progress ?? 1);
+    if (p <= 0.02) return null;
+    const total = Math.max(1, Math.round(opts.total ?? 9));
+    const active = clamp(Math.round(opts.active ?? 6), 0, total);
+    const cols = Math.max(1, Math.round(opts.cols ?? (total === 10 ? 5 : 3)));
+    const rows = Math.ceil(total / cols);
+    const shape = opts.shape || 'person';
+    const activeColor = opts.activeColor || pal.error || '#C02B3A';
+    const inactiveColor = opts.inactiveColor || '#DDD8CE';
+    const unitScale = opts.scale ?? 1.1;
+
+    const cellW = w / cols;
+    const cellH = h / rows;
+    const activeLit = Math.round(active * easeOut(p));
+
+    ctx.save();
+    ctx.globalAlpha = clamp(p * 2.4);
+    for (let i = 0; i < total; i++) {
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      const cx = x + c * cellW + cellW / 2;
+      const cy = y + r * cellH + cellH / 2;
+      const isLit = i < activeLit;
+      _drawPictogramUnit(ctx, cx, cy, unitScale, isLit ? activeColor : inactiveColor, shape);
+    }
+    ctx.restore();
+    return { x, y, w, h, total, active: activeLit };
+  }
+
+  /**
+   * Low-Template Infographic Primitive C: Horizontal Service Journey / Drop-off Funnel.
+   * Connects ordered customer touchpoints horizontally and highlights pain/conversion nodes.
+   */
+  function drawJourneyFunnel(ctx, x, y, w, steps = [], pal = {}, opts = {}) {
+    if (!steps.length) return null;
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const numFont = opts.numFont || `"SF Pro Display", "Helvetica Neue", ${fontFamily}`;
+    const accent = pal.accent || '#234B9A';
+    const error = pal.error || '#C02B3A';
+    const ok = pal.ok || '#1A7454';
+    const ink = pal.ink || '#1E2430';
+    const muted = pal.muted || '#667085';
+    const lineColor = pal.lineStrong || pal.stroke || '#D0C9BC';
+    const activeIdx = opts.activeIdx ?? -1;
+    const nodeY = y + 72;
+    const count = steps.length;
+    const segStep = count > 1 ? (w - 140) / (count - 1) : 0;
+    const startX = x + 70;
+    const anchors = [];
+
+    ctx.save();
+    // Base horizontal journey rail
+    if (count > 1) {
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(startX, nodeY);
+      ctx.lineTo(startX + segStep * (count - 1), nodeY);
+      ctx.stroke();
+
+      const progressEnd = activeIdx >= 0 ? Math.min(count - 1, activeIdx) : count - 1;
+      if (progressEnd > 0) {
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 4.5;
+        ctx.beginPath();
+        ctx.moveTo(startX, nodeY);
+        ctx.lineTo(startX + segStep * progressEnd, nodeY);
+        ctx.stroke();
+      }
+    }
+
+    steps.forEach((st, i) => {
+      const p = clamp(st.progress == null ? 1 : st.progress);
+      const cx = startX + i * segStep;
+      const isFocus = activeIdx === -1 || activeIdx === i;
+      const isActive = activeIdx === i;
+      const toneColor = st.tone === 'error' ? error : (st.tone === 'ok' ? ok : accent);
+      const alpha = p <= 0.02 ? 0.18 : clamp(p * 2.4) * (isFocus ? 1 : 0.34);
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Node circle
+      const rad = isActive ? 26 : 21;
+      ctx.beginPath();
+      ctx.arc(cx, nodeY, rad, 0, Math.PI * 2);
+      ctx.fillStyle = p <= 0.02 ? '#F4F1EA' : (isActive ? toneColor : '#FFFFFF');
+      ctx.fill();
+      ctx.strokeStyle = p <= 0.02 ? lineColor : toneColor;
+      ctx.lineWidth = isActive ? 3.5 : 2.6;
+      ctx.stroke();
+
+      ctx.font = `800 17px ${numFont}`;
+      ctx.fillStyle = isActive ? '#FFFFFF' : (p <= 0.02 ? muted : toneColor);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(i + 1).padStart(2, '0'), cx, nodeY + 1);
+
+      // Metric callout above node (if present)
+      if (p > 0.02 && st.metric) {
+        ctx.font = `900 24px ${numFont}`;
+        ctx.fillStyle = toneColor;
+        ctx.fillText(String(st.metric), cx, nodeY - 46);
+      }
+
+      // Label & subline below node
+      if (p > 0.02) {
+        ctx.font = `800 22px ${fontFamily}`;
+        ctx.fillStyle = ink;
+        ctx.fillText(String(st.label || ''), cx, nodeY + 52);
+        if (st.sub) {
+          ctx.font = `500 17px ${fontFamily}`;
+          ctx.fillStyle = muted;
+          ctx.fillText(String(st.sub), cx, nodeY + 84);
+        }
+      }
+      ctx.restore();
+      anchors.push({ idx: i, cx, cy: nodeY, visible: p > 0.02 });
+    });
+
+    ctx.restore();
+    return { anchors, rect: { x, y, w, h: 176 } };
+  }
+
+  /**
+   * Low-Template Infographic Primitive D: Borderless Editorial Action Checklist with Zero-Spoiler Skeleton Slots.
+   * When an item has `revealed: false`, renders a calm dashed index + subtle skeleton bars to keep composition
+   * balanced without leaking upcoming copy before its audio beat arrives.
+   */
+  function drawEditorialChecklist(ctx, x, y, w, items = [], pal = {}, opts = {}) {
+    const fontFamily = opts.fontFamily || 'CourseHeavy, CourseHan, sans-serif';
+    const numFont = opts.numFont || `"SF Pro Display", "Helvetica Neue", ${fontFamily}`;
+    const accent = opts.accent || pal.accent || '#234B9A';
+    const accentSoft = opts.accentSoft || pal.soft || '#EDF2FB';
+    const ok = pal.ok || '#1A7454';
+    const okSoft = pal.okSoft || '#EAF7F1';
+    const ink = pal.ink || '#1E2430';
+    const muted = pal.muted || '#667085';
+    const faint = pal.faint || '#98A2B3';
+    const line = pal.line || pal.stroke || '#E4E0D8';
+    const lineStrong = pal.lineStrong || pal.stroke || '#D0C9BC';
+    const rowH = opts.rowH ?? 92;
+    const settled = opts.settled ?? false;
+
+    ctx.save();
+    ctx.globalAlpha = settled ? 0.78 : 1;
+
+    let curY = y;
+    if (opts.eyebrow) {
+      ctx.font = `800 17px ${numFont}`;
+      ctx.fillStyle = accent;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(String(opts.eyebrow), x, curY);
+      curY += 30;
+    }
+    if (opts.title) {
+      ctx.font = `900 32px ${fontFamily}`;
+      ctx.fillStyle = ink;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(String(opts.title), x, curY);
+      roundRect(ctx, x, curY + 48, 48, 4, 2, accent, null);
+      curY += 82;
+    }
+
+    const itemRects = [];
+    items.forEach((it, idx) => {
+      const revealed = it.revealed !== false && (it.progress == null ? true : it.progress > 0.02);
+      const rp = clamp(it.progress == null ? 1 : it.progress);
+      const isActive = it.active === true && revealed;
+
+      ctx.save();
+      if (isActive) {
+        roundRect(ctx, x - 18, curY - 12, w + 36, rowH - 8, 14, '#FFFFFF', accent, 2, true);
+      }
+
+      const mx = x + 18;
+      const my = curY + 26;
+      if (revealed) {
+        ctx.globalAlpha *= clamp(rp * 2.4);
+        ctx.beginPath();
+        ctx.arc(mx, my, 17, 0, Math.PI * 2);
+        ctx.fillStyle = it.done ? okSoft : (isActive ? accent : accentSoft);
+        ctx.fill();
+
+        ctx.font = `800 16px ${numFont}`;
+        ctx.fillStyle = it.done ? ok : (isActive ? '#FFFFFF' : accent);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(it.done ? '✓' : String(idx + 1).padStart(2, '0'), mx, my + 1);
+
+        ctx.font = `800 24px ${fontFamily}`;
+        ctx.fillStyle = ink;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(String(it.title || ''), x + 52, curY + 6);
+
+        if (it.sub) {
+          ctx.font = `500 18px ${fontFamily}`;
+          ctx.fillStyle = muted;
+          ctx.fillText(String(it.sub), x + 52, curY + 39);
+        }
+      } else {
+        ctx.strokeStyle = lineStrong;
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(mx, my, 16, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.font = `700 15px ${numFont}`;
+        ctx.fillStyle = faint;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(idx + 1).padStart(2, '0'), mx, my + 1);
+
+        roundRect(ctx, x + 52, curY + 14, Math.round(w * (0.58 - (idx % 2) * 0.1)), 10, 5, '#EAE5DC', null);
+        roundRect(ctx, x + 52, curY + 36, Math.round(w * 0.34), 8, 4, '#F0ECE4', null);
+      }
+
+      if (idx < items.length - 1 && !isActive) {
+        ctx.strokeStyle = line;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + 52, curY + rowH - 12);
+        ctx.lineTo(x + w, curY + rowH - 12);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      itemRects.push({ id: it.id || `item_${idx}`, rect: { x, y: curY, w, h: rowH }, revealed });
+      curY += rowH;
+    });
+
+    ctx.restore();
+    return { itemRects, rect: { x, y, w, h: Math.max(0, curY - y) }, bottomY: curY };
+  }
+
   global.VisualMetaphors = {
     clamp, easeOut, easeInOut, easeOutExpo, easeOutQuint, easeInOutQuart, easeOutBack, spring, win, lerp,
     roundRect, drawDocumentSheet, drawStrikeThrough,
@@ -1516,5 +2140,9 @@
     rectOverlapArea, placeAvoidingActors, drawSmartSpeakerBubble, drawSegmentedProgressBar,
     drawKpiRail, drawCumulativeStack, drawHandoverProp, drawScreenInset,
     drawOpenChapterDots, drawSculptureBar, drawFloatingTag,
+    // v9.0.0 Editorial Grid, Visual Hierarchy & Low-Template Infographic Primitives
+    GRID_12, gridCols, drawQuietTopBar, drawEditorialHeadline,
+    drawLeaderLine, drawGroupingBracket,
+    drawSpotlightHorizontalBars, drawPictogramGrid, drawJourneyFunnel, drawEditorialChecklist,
   };
 })(window);

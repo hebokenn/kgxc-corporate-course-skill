@@ -1,7 +1,7 @@
 /**
- * DirectorStage v8.3.0 — Shared Cinematic Director Engine for Pilots & Full Episodes.
+ * DirectorStage v9.0.0 — Shared Cinematic Director Engine for Pilots & Full Episodes.
  *
- * Solves 6 structural failure modes:
+ * Solves structural failure modes:
  * 1. Dual-Layer Timeline (Scene vs Beat): continuous `sceneT` never resets across sub-beats,
  *    eliminating animation replay/reset loops when a sentence spans multiple beats.
  * 2. Multi-Keyframe Cinematic Camera: real push/pull/pan/shake choreography across a scene
@@ -11,6 +11,9 @@
  *    PPT box overload (>25%), and dead cameras before delivery.
  * 4. Integer-Frame Scene Partitioning & Audit Merging (v8.3.0): enables per-scene incremental
  *    re-rendering and multi-tab parallel rendering with 100% Gate A telemetry parity.
+ * 5. Anti-Redundancy & Visual Diversity Telemetry (v9.0.0): blocks duplicate same-screen data
+ *    carriers (chart + repeating KPI rail), double L1 headlines, and repetitive built-in chart
+ *    recycling across an episode.
  */
 (function (global) {
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -300,12 +303,17 @@
     const infoOverwriteViolations = [];
     const floatingPropViolations = [];
     const rapidCardFlipViolations = [];
+    const redundantDataViolations = [];
+    const doubleHeadlineViolations = [];
     const seenPrematureKeys = new Set();
     const seenOverwriteKeys = new Set();
     const seenFloatingPropKeys = new Set();
+    const seenRedundantDataKeys = new Set();
+    const seenDoubleHeadlineKeys = new Set();
     const seenMetricSlotsByScene = new Map();
     const seenPersistentTextsByScene = new Map();
     const panelTimelineByScene = new Map();
+    const visualPatternsByScene = new Map();
     const beatLayouts = new Map();
     const beatOrder = [];
     const sceneCameras = new Map();
@@ -383,6 +391,45 @@
             text_kind: txt.kind,
             actor: 'caption_safe_zone',
             overlap_px2: Math.round((txt.rect.y + txt.rect.h - captionTopY) * txt.rect.w),
+          });
+        }
+      }
+      // 3. v9.0.0: Check same-frame duplicate data carriers (chart + repeating KPI cards) & double L1 headlines
+      const byFingerprint = new Map();
+      for (const dc of cur.dataCarriers) {
+        if (!dc.fp) continue;
+        const prev = byFingerprint.get(dc.fp);
+        if (prev && prev.carrierId !== dc.carrierId) {
+          const key = `${cur.sceneId}|redundant|${dc.fp}|${[prev.carrierId, dc.carrierId].sort().join('+')}`;
+          if (!seenRedundantDataKeys.has(key)) {
+            seenRedundantDataKeys.add(key);
+            redundantDataViolations.push({
+              frame: cur.frame,
+              t: Number(cur.t.toFixed(3)),
+              scene_id: cur.sceneId,
+              beat_id: cur.beatId,
+              carriers: [prev.carrierId, dc.carrierId],
+              kinds: [prev.kind, dc.kind],
+              fingerprint: dc.fp,
+              reason: '同屏出现两套载体复述同一组数据（如左图表 + 右卡片重复），请删除重复载体并改用“左证据 + 右高一维洞察”分工',
+            });
+          }
+        } else if (!prev) {
+          byFingerprint.set(dc.fp, dc);
+        }
+      }
+      if (cur.headlines.size >= 2) {
+        const ids = Array.from(cur.headlines).sort();
+        const key = `${cur.sceneId}|double_headline|${ids.join('+')}`;
+        if (!seenDoubleHeadlineKeys.has(key)) {
+          seenDoubleHeadlineKeys.add(key);
+          doubleHeadlineViolations.push({
+            frame: cur.frame,
+            t: Number(cur.t.toFixed(3)),
+            scene_id: cur.sceneId,
+            beat_id: cur.beatId,
+            headline_ids: ids,
+            reason: '同屏叠加出现多套 L1 主标题，请保留唯一观点大标题 + 极简眉标',
           });
         }
       }
@@ -476,6 +523,8 @@
         layoutKind: lk,
         actors: [],
         texts: [],
+        dataCarriers: [],
+        headlines: new Set(),
       };
     }
 
@@ -651,6 +700,95 @@
       }
     }
 
+    /**
+     * v9.0.0: Record a data carrier with a semantic fingerprint (e.g. sorted metric keys/values)
+     * so same-frame duplicate carriers (chart + repeating KPI rail) are blocked automatically.
+     */
+    function recordDataCarrier(carrierId, dataFingerprint, rect = null, kind = 'chart') {
+      if (!cur || !carrierId) return;
+      const fp = Array.isArray(dataFingerprint)
+        ? dataFingerprint.map(x => String(x || '').trim().toLowerCase()).filter(Boolean).sort().join('|')
+        : String(dataFingerprint || '').trim().toLowerCase();
+      cur.dataCarriers.push({ carrierId: String(carrierId), fp, rect, kind: String(kind || 'chart') });
+    }
+
+    /**
+     * v9.0.0: Record an L1 headline block so stacked double titles in the same frame are blocked.
+     */
+    function recordHeadline(headlineId, rect = null) {
+      if (!cur || !headlineId) return;
+      cur.headlines.add(String(headlineId));
+      if (rect) recordText(`headline:${headlineId}`, rect, 'headline');
+    }
+
+    /**
+     * v9.0.0: Record the primary visual pattern & layout skeleton for the current scene so Gate A
+     * enforces single-episode chart variety and prevents adjacent template cloning.
+     */
+    function recordVisualPattern(patternKind, opts = {}) {
+      if (!cur || !patternKind) return;
+      const sid = cur.sceneId;
+      if (!visualPatternsByScene.has(sid)) {
+        visualPatternsByScene.set(sid, {
+          scene_id: sid,
+          layout_kind: cur.layoutKind,
+          pattern: String(patternKind).trim().toLowerCase(),
+          skeleton: String(opts.skeleton || '').trim().toLowerCase(),
+        });
+      }
+    }
+
+    function computeVisualPatternViolations(patternEntries = []) {
+      const BUILTIN_SINGLE_USE_CHARTS = new Set([
+        'sculpture_bar', 'vertical_bar', 'horizontal_bars', 'horizontal_spotlight_bars',
+        'pictogram_grid', 'journey_funnel', 'kpi_rail', 'pie_chart', 'donut_chart',
+      ]);
+      const violations = [];
+      const counts = new Map();
+      let prevNonStore = null;
+      for (const entry of patternEntries) {
+        if (!entry || !entry.pattern) continue;
+        const p = String(entry.pattern).toLowerCase();
+        const isCustom = p.startsWith('custom:') || p.startsWith('custom_');
+        if (!isCustom && BUILTIN_SINGLE_USE_CHARTS.has(p)) {
+          const seen = counts.get(p) || [];
+          seen.push(entry.scene_id);
+          counts.set(p, seen);
+        }
+        if (entry.layout_kind !== 'cinematic_store') {
+          if (
+            prevNonStore
+            && prevNonStore.scene_id !== entry.scene_id
+            && prevNonStore.pattern === p
+            && entry.skeleton
+            && prevNonStore.skeleton === entry.skeleton
+          ) {
+            violations.push({
+              kind: 'adjacent_template_clone',
+              scene_id: entry.scene_id,
+              prev_scene_id: prevNonStore.scene_id,
+              pattern: p,
+              skeleton: entry.skeleton,
+              reason: `相邻非实景场景 ${prevNonStore.scene_id} 与 ${entry.scene_id} 复用了完全相同的构图骨架(${entry.skeleton})与主视觉形态(${p})`,
+            });
+          }
+          prevNonStore = entry;
+        }
+      }
+      for (const [pattern, sceneIds] of counts.entries()) {
+        if (sceneIds.length > 1) {
+          violations.push({
+            kind: 'chart_repeat_limit',
+            pattern,
+            scene_ids: sceneIds,
+            count: sceneIds.length,
+            reason: `同一集内内置图表原语 "${pattern}" 重复出现 ${sceneIds.length} 次（上限 1 次）：${sceneIds.join(', ')}，请改用其他数据图形或按业务定制原生图形`,
+          });
+        }
+      }
+      return violations;
+    }
+
     function finalize() {
       flushFrame();
       const layoutCounts = {};
@@ -742,6 +880,9 @@
         }
       }
 
+      const visualPatternSummary = Array.from(visualPatternsByScene.values());
+      const visualPatternViolations = computeVisualPatternViolations(visualPatternSummary);
+
       return {
         schema: 'kgxc-director-audit/1',
         total_frames: totalFrames,
@@ -759,6 +900,10 @@
         info_overwrite_violations: infoOverwriteViolations,
         floating_prop_violations: floatingPropViolations,
         rapid_card_flip_violations: rapidCardFlipViolations,
+        redundant_data_violations: redundantDataViolations,
+        double_headline_violations: doubleHeadlineViolations,
+        visual_pattern_violations: visualPatternViolations,
+        visual_pattern_summary: visualPatternSummary,
         progress_bar_summary: progressBarInfo ? {
           ...progressBarInfo,
           visited_segments: visitedNavSegments.size,
@@ -770,7 +915,9 @@
 
     return {
       beginFrame, recordActor, recordText, recordReveal, recordProgressBar,
-      recordMetricSlot, recordProp, recordPanel, finalize,
+      recordMetricSlot, recordProp, recordPanel,
+      recordDataCarrier, recordHeadline, recordVisualPattern,
+      finalize,
     };
   }
 
@@ -842,6 +989,10 @@
     const infoOverwriteViolations = [];
     const floatingPropViolations = [];
     const rapidCardFlipViolations = [];
+    const redundantDataViolations = [];
+    const doubleHeadlineViolations = [];
+    const seenPatternScenes = new Set();
+    const mergedPatternSummary = [];
     const cameraSummary = [];
     let progressBarMeta = null;
     const visitedIndices = new Set();
@@ -869,6 +1020,16 @@
       if (Array.isArray(a.info_overwrite_violations)) infoOverwriteViolations.push(...a.info_overwrite_violations);
       if (Array.isArray(a.floating_prop_violations)) floatingPropViolations.push(...a.floating_prop_violations);
       if (Array.isArray(a.rapid_card_flip_violations)) rapidCardFlipViolations.push(...a.rapid_card_flip_violations);
+      if (Array.isArray(a.redundant_data_violations)) redundantDataViolations.push(...a.redundant_data_violations);
+      if (Array.isArray(a.double_headline_violations)) doubleHeadlineViolations.push(...a.double_headline_violations);
+      if (Array.isArray(a.visual_pattern_summary)) {
+        for (const vp of a.visual_pattern_summary) {
+          if (vp && vp.scene_id && !seenPatternScenes.has(vp.scene_id)) {
+            seenPatternScenes.add(vp.scene_id);
+            mergedPatternSummary.push(vp);
+          }
+        }
+      }
       if (Array.isArray(a.camera_summary)) cameraSummary.push(...a.camera_summary);
       if (a.progress_bar_summary) {
         const pb = a.progress_bar_summary;
@@ -905,6 +1066,55 @@
     const summaryBoardRatio = Number(((layoutCounts.summary_board || 0) / totalBeats).toFixed(3));
     const visitedSorted = Array.from(visitedIndices).sort((a, b) => a - b);
 
+    // Recompute episode-wide visual pattern limits across all merged scenes (100% single-pass parity)
+    const BUILTIN_SINGLE_USE_CHARTS = new Set([
+      'sculpture_bar', 'vertical_bar', 'horizontal_bars', 'horizontal_spotlight_bars',
+      'pictogram_grid', 'journey_funnel', 'kpi_rail', 'pie_chart', 'donut_chart',
+    ]);
+    const visualPatternViolations = [];
+    const patternCounts = new Map();
+    let prevNonStore = null;
+    for (const entry of mergedPatternSummary) {
+      if (!entry || !entry.pattern) continue;
+      const p = String(entry.pattern).toLowerCase();
+      const isCustom = p.startsWith('custom:') || p.startsWith('custom_');
+      if (!isCustom && BUILTIN_SINGLE_USE_CHARTS.has(p)) {
+        const seen = patternCounts.get(p) || [];
+        seen.push(entry.scene_id);
+        patternCounts.set(p, seen);
+      }
+      if (entry.layout_kind !== 'cinematic_store') {
+        if (
+          prevNonStore
+          && prevNonStore.scene_id !== entry.scene_id
+          && prevNonStore.pattern === p
+          && entry.skeleton
+          && prevNonStore.skeleton === entry.skeleton
+        ) {
+          visualPatternViolations.push({
+            kind: 'adjacent_template_clone',
+            scene_id: entry.scene_id,
+            prev_scene_id: prevNonStore.scene_id,
+            pattern: p,
+            skeleton: entry.skeleton,
+            reason: `相邻非实景场景 ${prevNonStore.scene_id} 与 ${entry.scene_id} 复用了完全相同的构图骨架(${entry.skeleton})与主视觉形态(${p})`,
+          });
+        }
+        prevNonStore = entry;
+      }
+    }
+    for (const [pattern, sceneIds] of patternCounts.entries()) {
+      if (sceneIds.length > 1) {
+        visualPatternViolations.push({
+          kind: 'chart_repeat_limit',
+          pattern,
+          scene_ids: sceneIds,
+          count: sceneIds.length,
+          reason: `同一集内内置图表原语 "${pattern}" 重复出现 ${sceneIds.length} 次（上限 1 次）：${sceneIds.join(', ')}，请改用其他数据图形或按业务定制原生图形`,
+        });
+      }
+    }
+
     return {
       schema: 'kgxc-director-audit/1',
       total_frames: totalFrames,
@@ -922,6 +1132,10 @@
       info_overwrite_violations: infoOverwriteViolations,
       floating_prop_violations: floatingPropViolations,
       rapid_card_flip_violations: rapidCardFlipViolations,
+      redundant_data_violations: redundantDataViolations,
+      double_headline_violations: doubleHeadlineViolations,
+      visual_pattern_violations: visualPatternViolations,
+      visual_pattern_summary: mergedPatternSummary,
       progress_bar_summary: progressBarMeta ? {
         ...progressBarMeta,
         visited_segments: visitedSorted.length || fallbackVisitedMax,
@@ -932,7 +1146,7 @@
   }
 
   global.DirectorStage = {
-    VERSION: '8.3.0',
+    VERSION: '9.0.0',
     buildSceneIndex,
     buildNavSegments,
     resolveTimeline,

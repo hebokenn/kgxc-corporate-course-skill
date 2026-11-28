@@ -225,7 +225,7 @@ def check_beat_visual_pacing(video: Path, stream_index: int, fps: float, total_d
 def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
                        max_consecutive_card_box: int = 2,
                        max_summary_board_ratio: float = 0.22) -> dict:
-    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v8.2 hard gate."""
+    """Validate DirectorStage render_audit.json telemetry as a non-negotiable v9.0 hard gate."""
     data = json.loads(audit_path.read_text(encoding='utf-8'))
     errors = []
     floating = data.get('floating_walk_violations') or []
@@ -236,6 +236,9 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
     info_overwrites = data.get('info_overwrite_violations') or []
     floating_props = data.get('floating_prop_violations') or []
     rapid_flips = data.get('rapid_card_flip_violations') or []
+    redundant_data = data.get('redundant_data_violations') or []
+    double_headlines = data.get('double_headline_violations') or []
+    visual_patterns = data.get('visual_pattern_violations') or []
     card_ratio = float(data.get('card_box_ratio', 0.0))
     summary_ratio = float(data.get('summary_board_ratio', 0.0))
     max_consec = int(data.get('max_consecutive_card_box', 0))
@@ -280,6 +283,21 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
         sample = rapid_flips[0]
         errors.append(
             f'检测到 {len(rapid_flips)} 处大面积卡片高频翻页快闪 PPT（如 {sample.get("scene_id")} 连续 {sample.get("swaps")} 次翻页，均停 {sample.get("avg_sec")}s），请改用开放画布累进舞台（10-24s/主题）'
+        )
+    if redundant_data:
+        sample = redundant_data[0]
+        errors.append(
+            f'检测到 {len(redundant_data)} 处同屏双载体重复展示同一组数据（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("carriers")}），请删除复述卡片并改用“左证据 + 右高一维洞察”分工'
+        )
+    if double_headlines:
+        sample = double_headlines[0]
+        errors.append(
+            f'检测到 {len(double_headlines)} 处同屏叠加多套 L1 主标题（如 {sample.get("scene_id")}/{sample.get("beat_id")} {sample.get("headline_ids")}），每屏请仅保留唯一观点大标题'
+        )
+    if visual_patterns:
+        sample = visual_patterns[0]
+        errors.append(
+            f'检测到 {len(visual_patterns)} 处同集图表/版式模板重复超限（{sample.get("reason") or sample.get("pattern")}），请切换视觉形态或按业务定制原生图形'
         )
     if card_ratio > max_card_box_ratio:
         errors.append(
@@ -333,6 +351,9 @@ def check_render_audit(audit_path: Path, max_card_box_ratio: float = 0.25,
         'info_overwrite_count': len(info_overwrites),
         'floating_prop_count': len(floating_props),
         'rapid_card_flip_count': len(rapid_flips),
+        'redundant_data_count': len(redundant_data),
+        'double_headline_count': len(double_headlines),
+        'visual_pattern_violation_count': len(visual_patterns),
         'progress_bar': pb,
         'steady_scenes': steady_scenes,
         'dead_camera_scenes': [c.get('scene_id') for c in dead_cams],
@@ -344,7 +365,8 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
                  require_attached_pic: bool = False, check_first_frame_cover: bool = True,
                  strict_no_punctuation: bool = True, max_srt_chars: int = 28,
                  timeline: Path = None, visual_audit: Path = None,
-                 render_audit: Path = None, strict_ppt_guard: bool = False) -> dict:
+                 render_audit: Path = None, strict_ppt_guard: bool = False,
+                 visual_blueprint: Path = None) -> dict:
     errors = []
     warnings = []
     report = {'video': str(video), 'ok': False, 'errors': errors, 'warnings': warnings, 'checks': {}}
@@ -494,6 +516,15 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
                 msg = f'同屏文字过载（>45 字）的镜头: {", ".join(str(r.get("id")) for r in overloaded)}'
                 (errors if strict_ppt_guard else warnings).append(msg)
 
+    if visual_blueprint is not None:
+        if not visual_blueprint.is_file():
+            errors.append(f'全集视觉多样性蓝图文件不存在: {visual_blueprint}')
+        else:
+            from check_visual_blueprint import check_blueprint_file
+            bp = check_blueprint_file(visual_blueprint)
+            report['checks']['visual_blueprint'] = bp
+            errors.extend(bp.get('errors') or [])
+
     report['checks'].update({
         'resolution': f'{v.get("width")}x{v.get("height")}',
         'fps': v.get('avg_frame_rate'),
@@ -501,7 +532,7 @@ def verify_video(video: Path, srt: Path = None, cover: Path = None,
         'sample_rate': a.get('sample_rate'),
         'has_attached_pic': bool(attached),
         'tail_150ms_peak_db': None if math.isinf(tail_db) else round(tail_db, 2),
-        'scope': 'technical decode, single-frame cover, SRT, beat-pacing/replay anti-cheat, and v8 DirectorStage render_audit hard gate',
+        'scope': 'technical decode, single-frame cover, SRT, beat-pacing/replay anti-cheat, v9.0 DirectorStage render_audit & visual diversity blueprint hard gate',
     })
     report['ok'] = not errors
     return report
@@ -514,7 +545,8 @@ def main():
     p.add_argument('--cover', type=Path)
     p.add_argument('--timeline', type=Path, help='Optional tts_sync timeline.json to detect stagnant PPT stretches and animation replays')
     p.add_argument('--visual-audit', type=Path, help='Optional per-beat screen_chars / visual_metaphor audit JSON')
-    p.add_argument('--render-audit', type=Path, help='v8.0 DirectorStage render_audit.json hard gate (blocks floating walk, text overlap, PPT >25%%, dead camera)')
+    p.add_argument('--render-audit', type=Path, help='v9.0 DirectorStage render_audit.json hard gate (blocks floating walk, overlap, redundancy, double headline, pattern repeat, PPT >25%%, dead camera)')
+    p.add_argument('--visual-blueprint', type=Path, help='v9.0 visual-blueprint.json diversity & anti-redundancy check')
     p.add_argument('--strict-ppt-guard', action='store_true', help='Fail instead of warn when PPT stagnation, animation replay, or dense text is found')
     p.add_argument('--require-attached-pic', action='store_true')
     p.add_argument('--no-first-frame-cover', action='store_true')
@@ -529,6 +561,7 @@ def main():
         visual_audit=args.visual_audit,
         render_audit=args.render_audit,
         strict_ppt_guard=args.strict_ppt_guard,
+        visual_blueprint=args.visual_blueprint,
     )
     print(json.dumps(res, ensure_ascii=False, indent=2))
     raise SystemExit(0 if res['ok'] else 1)
