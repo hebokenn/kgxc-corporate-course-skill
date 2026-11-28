@@ -1,13 +1,13 @@
 ---
 name: corporate-training-motion
-description: 酷果星创课程设计与制作统一入口（8.2.0 电影级导演引擎与交付硬门禁）。先确认教学方案与逐字稿，再交付独立课件或按内容母版定调、全课分镜、三段有声小样、共用 DirectorStage 导演内核的完整系列视频与配套讲义/题库/作业。
+description: 酷果星创课程设计与制作统一入口（8.3.0 电影级导演引擎、分场景增量并行渲染与交付硬门禁）。先确认教学方案与逐字稿，再交付独立课件或按内容母版定调、全课分镜、三段有声小样、共用 DirectorStage 导演内核的完整系列视频与配套讲义/题库/作业。
 ---
 
-# 酷果星创课程共创与制作（8.2.0）
+# 酷果星创课程共创与制作（8.3.0）
 
-以**你我对话 + 独立生成的富排版 HTML / MP4 审阅成品**为核心协作方式；视频制作统一采用 **8.2.0 电影级导演引擎（`DirectorStage` + `CourseActorsCute` + `VisualMetaphors`）** 与 **强制交付硬门禁**。
+以**你我对话 + 独立生成的富排版 HTML / MP4 审阅成品**为核心协作方式；视频制作统一采用 **8.3.0 电影级导演引擎（`DirectorStage` + `CourseActorsCute` + `VisualMetaphors` + 分场景增量并行渲染器）** 与 **强制交付硬门禁**。
 
-> **唯一权威规则**：先读 [8.2.0 电影级导演引擎、强契约与交付硬门禁](references/60-v8-cinematic-director-and-gates.md) 与同目录的 `../elearning-course-design/SKILL.md`。当历史 6.x / 7.0.0 参考文档（含旧版 `workbench.json` 流程）与 8.2.0 冲突时，**一律以 8.2.0 为准**。
+> **唯一权威规则**：先读 [8.3.0 电影级导演引擎、强契约与交付硬门禁](references/60-v8-cinematic-director-and-gates.md) 与同目录的 `../elearning-course-design/SKILL.md`。当历史 6.x / 7.0.0 参考文档（含旧版 `workbench.json` 流程）与 8.3.0 冲突时，**一律以 8.3.0 为准**。
 
 ## 1. 主流程总览（统一批次，小样即正片引擎原型）
 
@@ -66,5 +66,7 @@ description: 酷果星创课程设计与制作统一入口（8.2.0 电影级导�
    - 强拦截：走路飘移、文字压人物/压字幕区、同场景动画归零重播、**画面抢先旁白剧透（>80ms）**、**并列指标/事件原地覆盖（`info_overwrite`）**、**实景门店无互动悬空道具（`floating_prop`）**、**巨幅卡片高频翻页快闪 PPT（`rapid_card_flip`）**、**总结板书/知识页无意义镜头晃动漂移**、微抖动假动态 PPT、PPT 框体 > 25%、动态场景无真实运镜、SRT 与时间轴脱节、音画/封面/字幕/尾音缺陷。
 2. **门禁 B（实际抽帧目视核验 + 关键揭示点前后帧核对）**：
    - 从最终编码 MP4 抽取并实际查看：人物迈步中段帧、对话气泡/弹幕高峰帧、非门店隐喻/数据帧、**关键结论与总结卡“触发前 0.2s vs 触发后 0.4s”对照帧（确认零抢跑、定机位不晃）**、首帧封面与第 1 帧片头；亲眼确认脚底落地、零压字、音画字幕气泡精准同步、构图稳健后方可交付。
-3. **局部回改与过程保留**：用户微调某段时只重配/重渲受影响范围（若发音微调后的新 WAV 落入原 Beat 时间槽，可按原时间轴重混音并 `-c:v copy` 无损热替换视频流，数秒完成复验）；过程文件默认保留在课程工程内，正式成品交付至 `~/Desktop/ai 制课/<课程名称>/`。
+3. **分场景增量并行渲染、局部回改与过程保留（8.3.0 升级）**：
+   - 正片与返修优先通过共享脚本 `node SKILL_DIR/scripts/render_director_incremental.mjs --html <director.html> --audio-dir <audio> --out-dir <out> --tmp-dir <tmp> --meta-json <meta.json> [--intro <intro.mp4> --outro <outro.mp4>] [--workers 3]` 执行：**自动按 `scene_id` 切分无漂移整帧区间、多标签页并行渲染、按场景源码/脚本/共享库哈希自动缓存复用、无损 `-c:v copy` 拼接各场景并经 `DirectorStage.mergeFrameAudits()` 合并出与全量渲染完全等价的 `render_audit.json`**；改 1 个场景动画或排版只需重渲该场景并数秒拼接复验。
+   - 若仅微调几句发音且新 WAV 落入原 Beat 时间槽，仍可按原时间轴重混音并 `-c:v copy` 无损热替换视频流；过程文件默认保留在课程工程内，正式成品交付至 `~/Desktop/ai 制课/<课程名称>/`。
 4. **按需参考**：[花字与原库音效](references/46-flower-text-and-native-sfx.md)、[封面与收尾检查](references/37-cover-and-delivery-finish.md)、[情境表演与步态](references/48-situational-acting.md)、[阅读与信息节奏](references/45-reading-and-information-pacing.md)、[本地 Qwen3-TTS 配音](references/23-local-qwen3-voice.md)。

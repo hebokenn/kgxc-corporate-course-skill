@@ -521,7 +521,7 @@ const CA = window.CourseActorsCute;
 const VM = window.VisualMetaphors;
 const DS = window.DirectorStage;
 
-assert.equal(DS.VERSION, '8.2.0');
+assert.equal(DS.VERSION, '8.3.0');
 assert.ok(CA.VALID_HELD_PROPS.includes('phone'));
 assert.ok(CA.VALID_HELD_PROPS.includes('qr_card'));
 
@@ -649,6 +649,240 @@ console.log('JS_V8_2_OK');
             self.assertTrue(any('原地覆盖' in e for e in bad_out['errors']), bad_out['errors'])
             self.assertTrue(any('悬空道具' in e for e in bad_out['errors']), bad_out['errors'])
             self.assertTrue(any('高频翻页快闪 PPT' in e for e in bad_out['errors']), bad_out['errors'])
+
+    def test_v8_3_incremental_scene_partition_audit_merge_and_cache_invalidation(self):
+        """v8.3.0: integer-frame scene partitioning, mergeFrameAudits parity, source isolation & incremental Chrome render."""
+        render_script = SKILL_ROOT / 'scripts/render_director_incremental.mjs'
+        self.assertTrue(render_script.exists(), f'Missing {render_script}')
+
+        # 1. JS unit checks: partitionSceneFrames + mergeFrameAudits 100% parity with single-pass auditor
+        js_check = f"""
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+global.window = global;
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'visual_metaphors.js'))}, 'utf8'));
+eval(fs.readFileSync({json.dumps(str(MOTION_DIR / 'director_stage.js'))}, 'utf8'));
+const DS = window.DirectorStage;
+
+const lines = [
+  {{ id: 'b1', scene_id: 'sc01', layout_kind: 'cinematic_store', start: 0.0, end: 2.0, speech_start: 0.1, speech_end: 1.9, text: '第一句' }},
+  {{ id: 'b2', scene_id: 'sc01', layout_kind: 'cinematic_store', start: 2.0, end: 4.0, speech_start: 2.1, speech_end: 3.9, text: '第二句' }},
+  {{ id: 'b3', scene_id: 'sc02', layout_kind: 'card_box', start: 4.0, end: 6.0, speech_start: 4.1, speech_end: 5.9, text: '第三句' }},
+  {{ id: 'b4', scene_id: 'sc03', layout_kind: 'card_box', start: 6.0, end: 8.0, speech_start: 6.1, speech_end: 7.9, text: '第四句' }},
+  {{ id: 'b5', scene_id: 'sc04', layout_kind: 'card_box', start: 8.0, end: 10.0, speech_start: 8.1, speech_end: 9.9, text: '第五句' }},
+];
+const part = DS.partitionSceneFrames(lines, 10.0, 24);
+assert.equal(part.totalFrames, 240);
+assert.equal(part.segments.length, 4);
+assert.equal(part.segments[0].startFrame, 0);
+assert.equal(part.segments[3].endFrame, 240);
+let covered = 0;
+for (let i = 0; i < part.segments.length; i++) {{
+  const s = part.segments[i];
+  if (i > 0) assert.equal(s.startFrame, part.segments[i - 1].endFrame);
+  for (let f = s.startFrame; f < s.endFrame; f++) {{
+    const st = DS.resolveTimeline(lines, f / 24);
+    assert.equal(st.sceneId, s.scene_id, `frame ${{f}} expected ${{s.scene_id}} got ${{st.sceneId}}`);
+    covered++;
+  }}
+}}
+assert.equal(covered, 240);
+
+// Compare single-pass audit vs per-scene merged audit (including cross-scene max_consecutive_card_box = 3)
+const single = DS.createFrameAuditor();
+for (let f = 0; f < 240; f++) {{
+  const t = f / 24;
+  const st = DS.resolveTimeline(lines, t);
+  const cam = st.layoutKind === 'card_box' ? DS.steadyCamera() : {{ x: st.sceneT * 10, y: 0, zoom: 1 + st.sceneT * 0.02 }};
+  single.beginFrame(f, t, st, st.layoutKind, cam);
+  single.recordProgressBar({{ mode: 'segmented', style: 'inline_pill', segment_count: 4, labels: ['A','B','C','D'], barTopY: 1032, activeIdx: Math.min(3, Math.floor(t / 2.5)) }});
+}}
+const singleRep = single.finalize();
+
+const segAudits = part.segments.map(seg => {{
+  const aud = DS.createFrameAuditor();
+  for (let f = seg.startFrame; f < seg.endFrame; f++) {{
+    const t = f / 24;
+    const st = DS.resolveTimeline(lines, t);
+    const cam = st.layoutKind === 'card_box' ? DS.steadyCamera() : {{ x: st.sceneT * 10, y: 0, zoom: 1 + st.sceneT * 0.02 }};
+    aud.beginFrame(f, t, st, st.layoutKind, cam);
+    aud.recordProgressBar({{ mode: 'segmented', style: 'inline_pill', segment_count: 4, labels: ['A','B','C','D'], barTopY: 1032, activeIdx: Math.min(3, Math.floor(t / 2.5)) }});
+  }}
+  return aud.finalize();
+}});
+const mergedRep = DS.mergeFrameAudits(segAudits);
+assert.equal(mergedRep.total_frames, singleRep.total_frames);
+assert.equal(mergedRep.total_beats, singleRep.total_beats);
+assert.equal(mergedRep.max_consecutive_card_box, 3);
+assert.equal(mergedRep.max_consecutive_card_box, singleRep.max_consecutive_card_box);
+assert.equal(mergedRep.card_box_ratio, singleRep.card_box_ratio);
+assert.deepEqual(mergedRep.layout_kind_counts, singleRep.layout_kind_counts);
+assert.equal(mergedRep.progress_bar_summary.visited_segments, singleRep.progress_bar_summary.visited_segments);
+assert.deepEqual(mergedRep.camera_summary, singleRep.camera_summary);
+console.log('JS_V8_3_PARITY_OK');
+"""
+        proc = subprocess.run(['node', '-e', js_check], capture_output=True, text=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        self.assertIn('JS_V8_3_PARITY_OK', proc.stdout)
+
+        # 2. Source block isolation check (ESM import)
+        iso_check = f"""
+import assert from 'node:assert/strict';
+import {{ extractSceneSourceBlocks }} from {json.dumps(render_script.as_uri())};
+const htmlA = `
+<script>
+const SHARED = 1;
+function renderSc01(ctx, st) {{ ctx.fillStyle = '#111'; }}
+function renderSc02(ctx, st) {{ ctx.fillStyle = '#222'; }}
+const SCENE_RENDERERS = {{ sc01: renderSc01, sc02: renderSc02 }};
+</script>`;
+const htmlB = htmlA.replace('#222', '#333');
+const htmlC = htmlA.replace('SHARED = 1', 'SHARED = 2');
+const a = extractSceneSourceBlocks(htmlA);
+const b = extractSceneSourceBlocks(htmlB);
+const c = extractSceneSourceBlocks(htmlC);
+assert.equal(a.sharedBase, b.sharedBase);
+assert.equal(a.sceneBlocks.renderSc01, b.sceneBlocks.renderSc01);
+assert.notEqual(a.sceneBlocks.renderSc02, b.sceneBlocks.renderSc02);
+assert.notEqual(a.sharedBase, c.sharedBase);
+console.log('JS_V8_3_ISOLATION_OK');
+"""
+        proc2 = subprocess.run(['node', '--input-type=module', '-e', iso_check], capture_output=True, text=True)
+        self.assertEqual(proc2.returncode, 0, proc2.stderr + proc2.stdout)
+        self.assertIn('JS_V8_3_ISOLATION_OK', proc2.stdout)
+
+        # 3. End-to-end incremental headless Chrome render (3 scenes, 2 workers): cold -> 1-scene edit -> shared edit
+        chrome_candidates = [
+            Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
+            Path('/Applications/Chromium.app/Contents/MacOS/Chromium'),
+            Path('/usr/bin/google-chrome'),
+            Path('/usr/bin/chromium'),
+        ]
+        if not any(p.exists() for p in chrome_candidates):
+            return
+
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            audio_dir = p / 'audio'
+            out_dir = p / 'out'
+            tmp_dir = p / 'tmp'
+            audio_dir.mkdir()
+
+            mix_wav = audio_dir / 'mix.wav'
+            subprocess.run([
+                'ffmpeg', '-v', 'error', '-y',
+                '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=6.0',
+                '-af', 'afade=t=out:st=5.6:d=0.4',
+                '-c:a', 'pcm_s16le', str(mix_wav),
+            ], check=True)
+            manifest = {
+                'total_duration': 6.0,
+                'mix_wav': str(mix_wav),
+                'lines': [
+                    {'id': 'b1', 'scene_id': 'sc01_open', 'layout_kind': 'kinetic_metaphor', 'start': 0.0, 'end': 2.0, 'speech_start': 0.05, 'speech_end': 1.9, 'text': '第一场开场介绍'},
+                    {'id': 'b2', 'scene_id': 'sc02_mid', 'layout_kind': 'data_sculpture', 'start': 2.0, 'end': 4.0, 'speech_start': 2.05, 'speech_end': 3.9, 'text': '第二场数据拆解'},
+                    {'id': 'b3', 'scene_id': 'sc03_end', 'layout_kind': 'cinematic_store', 'start': 4.0, 'end': 6.0, 'speech_start': 4.05, 'speech_end': 5.9, 'text': '第三场门店收尾'},
+                ],
+            }
+            (audio_dir / 'audio_manifest.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf-8')
+            (audio_dir / 'body.srt').write_text(
+                '1\n00:00:00,050 --> 00:00:01,900\n第一场开场介绍\n\n'
+                '2\n00:00:02,050 --> 00:00:03,900\n第二场数据拆解\n\n'
+                '3\n00:00:04,050 --> 00:00:05,900\n第三场要点总结\n',
+                encoding='utf-8',
+            )
+            meta_json = p / 'meta.json'
+            meta_json.write_text(json.dumps({'ep_id': 'inc_test', 'stem': 'inc_test'}), encoding='utf-8')
+
+            director_html = p / 'director.html'
+            base_html = """<!doctype html><html><body style="margin:0;overflow:hidden;background:#F7F8FC">
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>__ACTORS_CUTE_JS__</script>
+<script>__VISUAL_METAPHORS_JS__</script>
+<script>__DIRECTOR_STAGE_JS__</script>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const DS = window.DirectorStage;
+let SHARED_BG = '#F7F8FC';
+let AUDITOR = null;
+window.initAudit = () => { AUDITOR = DS.createFrameAuditor(); };
+window.finalizeAudit = () => AUDITOR ? AUDITOR.finalize() : null;
+window.renderCover = () => { ctx.fillStyle = '#254C99'; ctx.fillRect(0, 0, 1920, 1080); };
+function renderSc01(ctx, st) {
+  const cam = DS.evalCamera([{at:0,x:-30,y:0,zoom:0.98},{at:1.2,x:20,y:0,zoom:1.05,holdUntil:2.0}], st.sceneT, st.t);
+  ctx.fillStyle = '#254C99';
+  ctx.fillRect(200 + st.sceneT * 180, 260, 420, 240);
+  return cam;
+}
+function renderSc02(ctx, st) {
+  const cam = DS.evalCamera([{at:0,x:30,y:0,zoom:0.98},{at:1.2,x:-20,y:0,zoom:1.05,holdUntil:2.0}], st.sceneT, st.t);
+  ctx.fillStyle = '#C4313D';
+  ctx.fillRect(300 + st.sceneT * 200, 320, 480, 220);
+  return cam;
+}
+function renderSc03(ctx, st) {
+  const cam = DS.evalCamera([{at:0,x:-20,y:0,zoom:0.99},{at:1.4,x:24,y:0,zoom:1.06,holdUntil:2.0}], st.sceneT, st.t);
+  ctx.fillStyle = '#18794E';
+  ctx.fillRect(360, 260, 180 + Math.round(st.sceneT * 260), 260);
+  return cam;
+}
+const SCENE_RENDERERS = { sc01_open: renderSc01, sc02_mid: renderSc02, sc03_end: renderSc03 };
+window.renderFrame = (f, t, data) => {
+  ctx.fillStyle = SHARED_BG;
+  ctx.fillRect(0, 0, 1920, 1080);
+  const st = DS.resolveTimeline(data.lines, t);
+  const cam = SCENE_RENDERERS[st.sceneId](ctx, st);
+  if (AUDITOR) AUDITOR.beginFrame(f, t, st, st.layoutKind, cam);
+};
+</script></body></html>"""
+            director_html.write_text(base_html, encoding='utf-8')
+
+            def run_inc(port):
+                r = subprocess.run([
+                    'node', str(render_script),
+                    '--html', str(director_html),
+                    '--audio-dir', str(audio_dir),
+                    '--out-dir', str(out_dir),
+                    '--tmp-dir', str(tmp_dir),
+                    '--meta-json', str(meta_json),
+                    '--workers', '2',
+                    '--port', str(port),
+                    '--skip-cover',
+                ], capture_output=True, text=True)
+                self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+                return json.loads((tmp_dir / 'inc_test_render_cache_report.json').read_text(encoding='utf-8'))
+
+            # Pass 1: cold cache renders all 3 scenes
+            rep1 = run_inc(9481)
+            self.assertEqual(rep1['cache_hits'], 0)
+            self.assertEqual(rep1['cache_misses'], 3)
+            self.assertEqual(rep1['total_frames'], 144)
+
+            # Pass 2: edit ONLY renderSc02 -> 2 hits (sc01, sc03), 1 miss (sc02)
+            director_html.write_text(base_html.replace('#C4313D', '#D98A2B'), encoding='utf-8')
+            rep2 = run_inc(9482)
+            self.assertEqual(rep2['cache_hits'], 2, rep2)
+            self.assertEqual(rep2['cache_misses'], 1, rep2)
+            statuses = {s['scene_id']: s['status'] for s in rep2['scenes']}
+            self.assertEqual(statuses, {'sc01_open': 'hit', 'sc02_mid': 'miss', 'sc03_end': 'hit'})
+
+            # Verify merged output passes Gate A (verify_delivery.py)
+            vres = verify_delivery.verify_video(
+                out_dir / 'inc_test.mp4',
+                srt=out_dir / 'inc_test.srt',
+                timeline=tmp_dir / 'inc_test_timeline.json',
+                render_audit=tmp_dir / 'inc_test_render_audit.json',
+                check_first_frame_cover=False,
+                strict_ppt_guard=True,
+            )
+            self.assertTrue(vres['ok'], vres)
+
+            # Pass 3: edit shared helper -> all 3 scenes automatically invalidate
+            director_html.write_text(base_html.replace('#F7F8FC', '#F2F5FA'), encoding='utf-8')
+            rep3 = run_inc(9483)
+            self.assertEqual(rep3['cache_hits'], 0, rep3)
+            self.assertEqual(rep3['cache_misses'], 3, rep3)
 
 
 if __name__ == '__main__':

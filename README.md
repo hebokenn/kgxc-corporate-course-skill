@@ -6,7 +6,7 @@
 
 - **跨主流 AI 平台通用（纯正 Agent Skill）**：基于标准 `SKILL.md` 与纯对话 / CLI 工作流，支持 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae** 等主流 AI 工具直接安装使用，无桌面插件或浏览器工作台耦合。
 
-[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.2.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/kgxc-course-suite-v8.2.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+[一句话发给 AI 自动安装](#一句话让-ai-帮你安装) · [在线观看 Antigravity 实渲宣传片与能力画廊](https://hebokenn.github.io/kgxc-corporate-course-skill/) · [下载 Skill v8.3.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/kgxc-course-suite-v8.3.0.zip) · [历史插件备份归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
 
 ---
 
@@ -22,12 +22,12 @@
 <details>
 <summary>其他安装方式：双击安装包 / 命令行检查（doctor）/ 校验与开课示例</summary>
 
-1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.2.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/kgxc-course-suite-v8.2.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+1. **下载 ZIP 双击安装（通用 Skill）**：[下载 `kgxc-course-suite-v8.3.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/kgxc-course-suite-v8.3.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
 2. **命令行体检（确认 FFmpeg / Chromium / 本地 Qwen3-TTS 状态）**：
    ```sh
    "$HOME/.local/bin/kgxc-course" doctor
    ```
-3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.2.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
+3. **校验清单**：[Skill 包 SHA256SUMS](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v8.3.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md)
 4. **历史备份**：曾使用 DSH 桌面插件的用户，可在 [ARCHIVE.md](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档) 查看已停用维护的 v7.2.0 历史安装包备份入口。
 
 **装好后，直接把资料发给 AI 并输入：**
@@ -66,6 +66,7 @@
 | **场景道具真实互动与界面特写（杜绝悬空贴图）** | 情景演绎中的手机、名片、二维码等业务道具均遵循真实物理关系——平时稳稳摆放在展示桌或台面上，不凭空悬浮在画面中央充数；当剧情需要查资料、做演示、递给顾客试手或展示二维码时，角色会将道具真正握在手中、沿自然弧线完成递交，或从设备拉出引导线弹出清晰的屏幕功能特写（讲完平滑收回）。全息悬浮 3D 机型仅用于封面与概念展示；需要实景照片或图标时，亦支持通过 [`web_asset_search.py`](skills/corporate-training-motion/scripts/web_asset_search.py) 自动检索开放许可无水印素材并记录来源。 |
 | **`CourseActorsCute` 可动矢量角色与智能防压字** | 全程代码骨骼驱动，自带闲逛、迎宾、快步走入、转身离开等多种情绪化步态与自然口型眨眼，脚底实时接地不滑步；对话气泡、重点花字与提示标签自动计算空间避让，绕开所有人物头身、背景 Logo 与画面边缘，彻底消灭压人脸和边缘裁切。 |
 | **16 套高对比明亮浅色画布（WCAG ≥ 4.5）** | 从精选明亮浅色板（[选色规范](skills/corporate-training-motion/references/47-course-palette.md)）随机配对，让系列视频、独立课件与《讲义精要》、题库、A4 作业保持出版级统一美观。 |
+| **分场景增量重渲与多路并行出片（改哪里只重渲哪里）** | 针对 5–10 分钟多场景课程“微调一个画面或一句台词就要重等 10 分钟全片重渲”的痛点，渲染引擎自动按场景切片并多路并行渲染，同时为每个场景计算内容指纹缓存；后续修改任意 1–2 个场景时，未改动场景直接无损复用、只重渲改动段落并在数秒内无缝拼接回完整 1080p 成片，且自动合并完整质检遥测，确保增量出片与全量出片质量标准完全一致。 |
 
 > 内置人物预设与品牌片头片尾默认服务酷果星创及 Apple 门店零售场景；其他企业与讲师团队可完整复用整套教学设计、动效渲染与配音质检体系，并按需替换为自有品牌视觉。
 
@@ -112,7 +113,7 @@
 | **2. 原件对照与逐字稿** | 核对要点覆盖、单列条件与例外、消除无原件悬空指代，并完成口语短标题、去小标题连读无缝衔接及零基础新人友好自查；通过 `workflow.py source-coverage` 绑定原件、逐字稿与覆盖报告哈希 | 在对话或结构化提问中核对取舍说明与讲法后明确确认 |
 | **3A. 课件与配套文档** | 交付可讲/可录屏的 PPTX / HTML / PDF 课件、《讲义精要》、测验题库与 A4 手写作业 | 核对授课节奏与练习难度 |
 | **3B. 视觉母版定调与小样** | 按内容母版输出 3 套实质不同方案（`template_masters`），定调后导出 3 段跨章节有声 MP4 小样 | 选定画布配色、角色造型与声音节奏 |
-| **4. 共享引擎出片与双门禁交付** | 直接沿用并扩展小样验证通过的 `DirectorStage` 场景模块分集导出，经门禁 A（`verify_delivery.py --strict-ppt-guard --render-audit`）+ 门禁 B（最终 MP4 抽帧目检）后归集至桌面目录；后续局部改发音可秒级无损热替换音轨 | 验收成片，或随时对话局部微调 |
+| **4. 共享引擎并行出片、增量微调与双门禁交付** | 直接沿用并扩展小样验证通过的导演场景模块分集并行导出，经门禁 A（自动化技术全检）+ 门禁 B（最终 MP4 抽帧目检）后归集至桌面目录；后续局部修改画面只重渲改动场景、微调发音可秒级无损热替换音轨 | 验收成片，或随时对话局部微调 |
 
 ---
 
@@ -131,6 +132,12 @@
 ---
 
 ## 版本更新
+
+### 分场景增量重渲、多路并行渲染与无损审计合并：核心 8.3.0 · 2026-11-28
+
+- **分场景增量重渲与自动缓存失效（[`render_director_incremental.mjs`](skills/corporate-training-motion/scripts/render_director_incremental.mjs)）**：新增独立可复用渲染引擎，自动解析导演 HTML 中的各场景函数（兼容 IIFE 闭包内 `SCENE_RENDERERS` 与 `// @scene:start` 标记），按“共享库/公共函数 + 当前场景源码 + 本场景台词/字幕/整帧区间”生成 SHA-256 指纹缓存；修改单个场景时自动复用其余全部未改动场景的 H.264 片段并通过 `-f concat -c:v copy` 无损拼接，修改公共样式/底库/总时长时自动全量失效确保零陈旧画面，同步输出 `render_cache_report.json` 缓存命中回执。
+- **单实例多标签页并行渲染（默认 3 路 `--workers 3`）**：单次启动无头 Chrome 后自动派生多路 CDP 工作标签页并行渲染脏场景，首次全量出片与大面积返修均可显著提速。
+- **整帧切片与全量等价门禁 A 遥测合并（[`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js)）**：新增 `DirectorStage.partitionSceneFrames()` 与 `DirectorStage.mergeFrameAudits()`，保证每帧归属零漂移、零重帧/漏帧，并将分场景审计精准合并（含跨场景连续 `card_box` 计数、分段进度条访问并集与 8 类违规汇总），与单次全量渲染保持 100% 门禁 A 等价。
 
 ### 累进指标防覆盖、实景手持/递交道具互动与反快闪 PPT 开放画布：核心 8.2.0 · 2026-11-27
 

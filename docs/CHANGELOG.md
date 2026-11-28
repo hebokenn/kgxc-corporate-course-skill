@@ -4,6 +4,21 @@
 
 按版本倒序保留功能变化、原主页说明与验证链接。历史段落记录发布时的默认值和验证范围；当前安装、声音与使用方式以主页和对应使用指南为准。
 
+## 分场景增量重渲、多路并行渲染与无损审计合并：核心 8.3.0 · 2026-11-28
+
+- **分场景增量重渲引擎与自动缓存失效（`scripts/render_director_incremental.mjs`）**：
+  - 根因：此前单集 8 分钟（约 11,000+ 帧）课程采用单标签页顺序全量渲染，每次约需 10 分钟；门禁 B 目检或局部修改 1–2 个场景时仍需从头重渲整集。
+  - 升级：新增可复用 ES 模块与 CLI 工具 `scripts/render_director_incremental.mjs`，内置 `extractSceneSourceBlocks()` 自动剥离各场景绘制函数（支持 `function renderScXX(...)`、`// @scene:start <id>` 标记及 IIFE 闭包内的 `SCENE_RENDERERS` 映射）并按 `sharedBaseHash + 场景源码 + 场景台词/字幕 + 整帧区间 + 全局时间轴边界` 计算 SHA-256 缓存键；仅改动单个场景时自动复用所有未改动场景的 H.264 片段（统一 `-video_track_timescale 24000`）并通过 `-f concat -c:v copy` 无损拼接与混音封装，改动共享底库/公共函数/总时长时自动全量失效确保零陈旧画面，并写出 `render_cache_report.json`。
+- **单实例多标签页并行 CDP 渲染**：
+  - 启动单实例无头 Chrome 后通过 `Target.createTarget` 派生最多 `--workers N`（默认 `3`）个并行工作标签页分发脏场景任务，同步提升冷启动全量渲染与多场景返修速度。
+- **整帧场景切片与全量等价门禁 A 遥测合并（`workbench/motion/director_stage.js`）**：
+  - 新增 `DirectorStage.partitionSceneFrames(lines, totalDuration, fps)` 切分无缝无重叠的 `[startFrame, endFrame)` 区间，确保每帧归属与 `resolveTimeline()` 严格一致；
+  - `createFrameAuditor().finalize()` 新增向后兼容字段 `beat_order` 与 `progress_bar_summary.visited_segment_indices`，新增 `DirectorStage.mergeFrameAudits(audits)` 将分场景遥测合并为单份规范 `kgxc-director-audit/1` 报告（精确还原跨场景 `max_consecutive_card_box`、分段进度条访问集合并集及全部 8 类违规数组），与单次全量渲染保持 100% 门禁 A 等价。
+- **验证范围**：
+  - 新增 `scripts/test_v8_tools.py::test_v8_3_incremental_scene_partition_audit_merge_and_cache_invalidation`（覆盖整帧切片、`mergeFrameAudits` 与单次审计 100% 一致性、源码块隔离以及真实无头 Chrome 3 场景“冷启动 → 仅改 1 场景命中 2/3 → 改共享变量全量失效”端到端回归 + `verify_delivery.py --strict-ppt-guard` 门禁 A 通过）。
+  - 真实课程基准实测（取自《门店服务体验提升》第 06 集前 3 个完整真实场景 `sc01_hero_open / sc02_series_bridge / sc03_anxiety`，共 43.24s / 1,038 帧）：冷启动 3 路并行耗时 `32.36s`（约 32.1 fps 有效吞吐）；仅修改 `renderSc02` 后二次渲染自动命中 2/3 场景（775 帧无损复用、仅重渲 263 帧），总耗时降至 `15.33s`（较冷启动 3 路并行再提速 `2.11×`）。
+  - 通过 `scripts/check_readme.py`、`tests/test_release_readme.py`、`scripts/test_v8_tools.py`、`scripts/test_v7_tools.py`、`tests/test_streamlined_v700.py`、`scripts/build_release.py` 构建与 `SHA256SUMS` 校验及线上下载哈希核验。
+
 ## 累进指标防覆盖、实景手持/递交道具互动与反快闪 PPT 开放画布：核心 8.2.0 · 2026-11-27
 
 - **信息生命周期分级与累进留存原语（`visual_metaphors.js` / `director_stage.js` / `verify_delivery.py`）**：

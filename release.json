@@ -1,5 +1,5 @@
 {
-  "version": "8.2.0",
+  "version": "8.3.0",
   "repository": "hebokenn/kgxc-corporate-course-skill",
   "skill": "corporate-training-motion",
   "skill_path": "skills/corporate-training-motion",
@@ -11,8 +11,8 @@
   ],
   "distribution": "GitHub Release installable Skill bundle and versioned source tag",
   "skill_versions": {
-    "corporate-training-motion": "8.2.0",
+    "corporate-training-motion": "8.3.0",
     "elearning-course-design": "2.1.2"
   },
-  "release_status": "8.2.0 adds cumulative non-overwriting KPI rail & event stack (drawKpiRail / drawCumulativeStack), physical hand-socket prop attachment & handover/screen-inset interactions (CourseActorsCute heldProp + frontHand/backHand + drawHandoverProp / drawScreenInset), open-canvas analytical stage primitives (drawOpenChapterDots / drawSculptureBar / drawFloatingTag), and three new Gate A hard guards blocking in-place metric overwrites, non-interactive floating props in real store scenes, and rapid PPT card-flipping"
+  "release_status": "8.3.0 adds per-scene incremental re-rendering and parallel multi-tab headless Chrome CDP rendering (scripts/render_director_incremental.mjs), integer-frame scene partitioning (DirectorStage.partitionSceneFrames), automatic SHA-256 scene-level cache invalidation with IIFE/global SCENE_RENDERERS support, lossless H.264 segment concat, and exact single-pass-equivalent Gate A audit merging (DirectorStage.mergeFrameAudits)"
 }

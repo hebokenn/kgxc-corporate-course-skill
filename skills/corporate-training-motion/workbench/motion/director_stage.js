@@ -1,7 +1,7 @@
 /**
- * DirectorStage v8.0.0 — Shared Cinematic Director Engine for Pilots & Full Episodes.
+ * DirectorStage v8.3.0 — Shared Cinematic Director Engine for Pilots & Full Episodes.
  *
- * Solves 5 structural failure modes:
+ * Solves 6 structural failure modes:
  * 1. Dual-Layer Timeline (Scene vs Beat): continuous `sceneT` never resets across sub-beats,
  *    eliminating animation replay/reset loops when a sentence spans multiple beats.
  * 2. Multi-Keyframe Cinematic Camera: real push/pull/pan/shake choreography across a scene
@@ -9,6 +9,8 @@
  * 3. Runtime Grounding & Collision Telemetry: records every actor & text/bubble/danmaku rect
  *    per frame so verify_delivery.py --render-audit blocks floating walk, text-over-actor overlap,
  *    PPT box overload (>25%), and dead cameras before delivery.
+ * 4. Integer-Frame Scene Partitioning & Audit Merging (v8.3.0): enables per-scene incremental
+ *    re-rendering and multi-tab parallel rendering with 100% Gate A telemetry parity.
  */
 (function (global) {
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -744,6 +746,7 @@
         schema: 'kgxc-director-audit/1',
         total_frames: totalFrames,
         total_beats: beatOrder.length,
+        beat_order: beatOrder.slice(),
         layout_kind_counts: layoutCounts,
         card_box_ratio: cardBoxRatio,
         summary_board_ratio: summaryBoardRatio,
@@ -759,6 +762,7 @@
         progress_bar_summary: progressBarInfo ? {
           ...progressBarInfo,
           visited_segments: visitedNavSegments.size,
+          visited_segment_indices: Array.from(visitedNavSegments).sort((a, b) => a - b),
         } : null,
         camera_summary: cameraSummary,
       };
@@ -770,8 +774,165 @@
     };
   }
 
+  /**
+   * v8.3.0: Partition `[0, totalFrames)` into contiguous, non-overlapping integer-frame
+   * scene segments aligned with `resolveTimeline()` boundaries for incremental & parallel rendering.
+   */
+  function partitionSceneFrames(lines = [], totalDuration = null, fps = 24) {
+    if (!Array.isArray(lines) || lines.length === 0) {
+      throw new Error('DirectorStage.partitionSceneFrames: lines array is empty.');
+    }
+    const safeFps = Math.max(1, Number(fps) || 24);
+    const { scenes } = buildSceneIndex(lines);
+    const lastLineEnd = Number(lines[lines.length - 1].end || 0);
+    const totalDur = Math.max(1 / safeFps, Number(totalDuration ?? lastLineEnd) || lastLineEnd || 1);
+    const totalFrames = Math.max(1, Math.ceil(totalDur * safeFps));
+    const segments = [];
+    let cursor = 0;
+    for (let i = 0; i < scenes.length; i++) {
+      const sc = scenes[i];
+      const startFrame = cursor;
+      let endFrame;
+      if (i === scenes.length - 1) {
+        endFrame = totalFrames;
+      } else {
+        const nextStart = Number(scenes[i + 1].start || 0);
+        endFrame = Math.min(totalFrames, Math.max(startFrame, Math.ceil(nextStart * safeFps - 1e-9)));
+      }
+      cursor = endFrame;
+      if (endFrame > startFrame) {
+        segments.push({
+          index: segments.length,
+          scene_id: sc.scene_id,
+          scene: sc.scene,
+          layout_kind: sc.layout_kind,
+          startFrame,
+          endFrame,
+          frameCount: endFrame - startFrame,
+          startTime: Number((startFrame / safeFps).toFixed(4)),
+          endTime: Number((endFrame / safeFps).toFixed(4)),
+          firstBeatIdx: sc.firstBeatIdx,
+          lastBeatIdx: sc.lastBeatIdx,
+          beatIndices: sc.beatIndices.slice(),
+        });
+      }
+    }
+    return {
+      fps: safeFps,
+      totalDuration: Number(totalDur.toFixed(4)),
+      totalFrames,
+      segments,
+    };
+  }
+
+  /**
+   * v8.3.0: Merge ordered per-scene `createFrameAuditor().finalize()` reports into a single
+   * canonical `kgxc-director-audit/1` report with 100% Gate A parity against single-pass rendering.
+   */
+  function mergeFrameAudits(audits = []) {
+    const list = (Array.isArray(audits) ? audits : []).filter(Boolean);
+    let totalFrames = 0;
+    const seenBeats = new Set();
+    const mergedBeatOrder = [];
+    const floatingViolations = [];
+    const overlapViolations = [];
+    const replayViolations = [];
+    const cameraSwayViolations = [];
+    const prematureRevealViolations = [];
+    const infoOverwriteViolations = [];
+    const floatingPropViolations = [];
+    const rapidCardFlipViolations = [];
+    const cameraSummary = [];
+    let progressBarMeta = null;
+    const visitedIndices = new Set();
+    let fallbackVisitedMax = 0;
+
+    for (const a of list) {
+      totalFrames += Number(a.total_frames || 0);
+      if (Array.isArray(a.beat_order) && a.beat_order.length) {
+        for (const b of a.beat_order) {
+          if (!seenBeats.has(b.beat_id)) {
+            seenBeats.add(b.beat_id);
+            mergedBeatOrder.push({
+              beat_id: b.beat_id,
+              scene_id: b.scene_id,
+              layout_kind: b.layout_kind,
+            });
+          }
+        }
+      }
+      if (Array.isArray(a.floating_walk_violations)) floatingViolations.push(...a.floating_walk_violations);
+      if (Array.isArray(a.text_actor_overlap_violations)) overlapViolations.push(...a.text_actor_overlap_violations);
+      if (Array.isArray(a.scene_replay_violations)) replayViolations.push(...a.scene_replay_violations);
+      if (Array.isArray(a.camera_sway_violations)) cameraSwayViolations.push(...a.camera_sway_violations);
+      if (Array.isArray(a.premature_reveal_violations)) prematureRevealViolations.push(...a.premature_reveal_violations);
+      if (Array.isArray(a.info_overwrite_violations)) infoOverwriteViolations.push(...a.info_overwrite_violations);
+      if (Array.isArray(a.floating_prop_violations)) floatingPropViolations.push(...a.floating_prop_violations);
+      if (Array.isArray(a.rapid_card_flip_violations)) rapidCardFlipViolations.push(...a.rapid_card_flip_violations);
+      if (Array.isArray(a.camera_summary)) cameraSummary.push(...a.camera_summary);
+      if (a.progress_bar_summary) {
+        const pb = a.progress_bar_summary;
+        if (!progressBarMeta) {
+          progressBarMeta = {
+            mode: pb.mode || 'segmented',
+            style: pb.style || 'inline_pill',
+            segment_count: Number(pb.segment_count || 0),
+            labels: Array.isArray(pb.labels) ? pb.labels.slice() : [],
+            bar_top_y: pb.bar_top_y ?? null,
+          };
+        }
+        if (Array.isArray(pb.visited_segment_indices)) {
+          for (const idx of pb.visited_segment_indices) visitedIndices.add(Number(idx));
+        } else if (pb.visited_segments != null) {
+          fallbackVisitedMax = Math.max(fallbackVisitedMax, Number(pb.visited_segments));
+        }
+      }
+    }
+
+    const layoutCounts = {};
+    let maxConsecCard = 0, curConsecCard = 0;
+    for (const b of mergedBeatOrder) {
+      layoutCounts[b.layout_kind] = (layoutCounts[b.layout_kind] || 0) + 1;
+      if (b.layout_kind === 'card_box') {
+        curConsecCard++;
+        if (curConsecCard > maxConsecCard) maxConsecCard = curConsecCard;
+      } else {
+        curConsecCard = 0;
+      }
+    }
+    const totalBeats = Math.max(1, mergedBeatOrder.length);
+    const cardBoxRatio = Number(((layoutCounts.card_box || 0) / totalBeats).toFixed(3));
+    const summaryBoardRatio = Number(((layoutCounts.summary_board || 0) / totalBeats).toFixed(3));
+    const visitedSorted = Array.from(visitedIndices).sort((a, b) => a - b);
+
+    return {
+      schema: 'kgxc-director-audit/1',
+      total_frames: totalFrames,
+      total_beats: mergedBeatOrder.length,
+      beat_order: mergedBeatOrder,
+      layout_kind_counts: layoutCounts,
+      card_box_ratio: cardBoxRatio,
+      summary_board_ratio: summaryBoardRatio,
+      max_consecutive_card_box: maxConsecCard,
+      floating_walk_violations: floatingViolations,
+      text_actor_overlap_violations: overlapViolations,
+      scene_replay_violations: replayViolations,
+      camera_sway_violations: cameraSwayViolations,
+      premature_reveal_violations: prematureRevealViolations,
+      info_overwrite_violations: infoOverwriteViolations,
+      floating_prop_violations: floatingPropViolations,
+      rapid_card_flip_violations: rapidCardFlipViolations,
+      progress_bar_summary: progressBarMeta ? {
+        ...progressBarMeta,
+        visited_segments: visitedSorted.length || fallbackVisitedMax,
+        visited_segment_indices: visitedSorted,
+      } : null,
+      camera_summary: cameraSummary,
+    };
+  }
+
   global.DirectorStage = {
-    VERSION: '8.2.0',
+    VERSION: '8.3.0',
     buildSceneIndex,
     buildNavSegments,
     resolveTimeline,
@@ -779,6 +940,8 @@
     steadyCamera,
     evalCamera,
     createFrameAuditor,
+    partitionSceneFrames,
+    mergeFrameAudits,
     overlapArea,
   };
 })(window);

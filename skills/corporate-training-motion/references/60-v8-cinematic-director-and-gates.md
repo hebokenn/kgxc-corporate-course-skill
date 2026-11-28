@@ -1,6 +1,6 @@
-# 8.2.0 电影级导演引擎、强契约与交付硬门禁（唯一权威规范）
+# 8.3.0 电影级导演引擎、强契约与交付硬门禁（唯一权威规范）
 
-> **优先级声明**：本规范（`8.2.0`）是视频制作、人物演出、道具互动、信息留存、运镜、避让与验收的**最高权威规范**。当 `references/` 目录下的历史 6.x / 7.0.0 文档（包括旧版 `workbench.json` 流程、旧版工作台脚本或 `59-streamlined-series-and-selfcheck.md`）与本规范冲突时，**一律以本规范为准**。
+> **优先级声明**：本规范（`8.3.0`）是视频制作、人物演出、道具互动、信息留存、运镜、避让、分场景增量并行渲染与验收的**最高权威规范**。当 `references/` 目录下的历史 6.x / 7.0.0 文档（包括旧版 `workbench.json` 流程、旧版工作台脚本或 `59-streamlined-series-and-selfcheck.md`）与本规范冲突时，**一律以本规范为准**。
 
 ---
 
@@ -106,6 +106,11 @@
   if (bubbleRect) auditor.recordText('bubble', bubbleRect, 'bubble');
   // 渲染完毕调用 auditor.finalize() 写出 render_audit.json
   ```
+- **分场景整帧切片、自动缓存失效与并行渲染（8.3.0 新增）**：
+  - `DirectorStage.partitionSceneFrames(lines, totalDuration, fps = 24)`：按连续 `scene_id` 切出无缝无重叠的精确整帧区间 `[startFrame, endFrame)`，保证每帧归属与 `resolveTimeline(lines, f / fps)` 完全一致。
+  - `DirectorStage.mergeFrameAudits(segmentAudits)`：按场景顺序无损合并各场景的 `auditor.finalize()` 遥测（含跨场景连续 `card_box` 计数、分段进度条已访问集合并集、全部 8 类违规数组与镜头汇总），产出与全量单次渲染 100% 等价的 `render_audit.json`。
+  - 共享增量并行渲染引擎：`node SKILL_DIR/scripts/render_director_incremental.mjs --html <director.html> --audio-dir <audio> --out-dir <out> --tmp-dir <tmp> --meta-json <meta.json> [--intro <intro.mp4> --outro <outro.mp4>] [--workers 3]`。
+    - 要求导演 HTML 将各场景绘制函数命名为 `function renderScXX(...)`（或使用 `// @scene:start <id>` … `// @scene:end <id>` 标记）并在 `SCENE_RENDERERS` 中映射，即可实现**改 1 个场景只重渲该场景、改共享库/公共函数/总时长则自动全量失效重渲**；多标签页并行渲染脏场景后以 `-f concat -c:v copy` 无损拼接并产出 `render_cache_report.json`。
 
 ---
 
