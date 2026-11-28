@@ -10,19 +10,19 @@
 [![Skill Version](https://img.shields.io/badge/Skill-v9.0.0-1E2430?style=flat-square)](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/tag/v9.0.0)
 [![License](https://img.shields.io/badge/License-Apache_2.0-234B9A?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Verified-macOS_Apple_Silicon-595E6A?style=flat-square)](docs/DEPENDENCIES.md)
-[![Agents](https://img.shields.io/badge/Agent_Skill-Antigravity_%7C_Claude_Code_%7C_Codex_%7C_Cursor-1A7454?style=flat-square)](#快速开始)
+[![Agents](https://img.shields.io/badge/Agent_Skill-Antigravity_%7C_Claude_Code_%7C_Codex_%7C_Cursor-1A7454?style=flat-square)](#安装与使用)
 
-[快速开始](#快速开始) · [核心能力](#核心能力) · [设计原理](#设计背后的经典教学设计认知与信息设计原理) · [实渲演示](#实渲演示) · [下载 v9.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip)
+[一句话安装](#安装与使用) · [适用场景](#适用场景) · [核心能力](#核心能力) · [流程图](#制作流程) · [实渲演示](#实渲演示) · [下载 v9.0.0](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip)
 
 </div>
 
 ---
 
-### 架构定位：把企业制课变成确定性工程流水线
+## 用途与交付
 
 传统 AI 课件与视频生成往往停留在“文档摘要 + 静态模板拼贴”：业务条款的适用条件与例外容易丢失，同一组数据在图表、卡片与旁白间重复堆砌，局部修改常意味着全片返工。
 
-本套件采用 **教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核解耦架构，完整覆盖从知识拆解到工程验收的每一环：
+本套件采用 **教学设计引擎（`elearning-course-design`）** 与 **代码动画制片引擎（`corporate-training-motion`）** 双核解耦架构，将企业原始资料直接转化为工程化、可溯源的系列培训课程：
 
 | 维度 | 说明 |
 | --- | --- |
@@ -31,38 +31,40 @@
 | **工程保障** | 原件要点覆盖台账 → 全集视觉多样性蓝图 → 逐句毫秒级音画咬合 → 分场景增量并行重渲 → 自动化遥测与实帧双验收门禁 |
 | **运行边界** | 纯正标准 `SKILL.md` 与对话 / CLI 工作流，原生兼容 **Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae**；全程本地离线 `Qwen3-TTS` 配音与渲染，原始业务资料不外传 |
 
+```mermaid
+flowchart LR
+    A(["原始业务资料\nPDF / Word / PPT / SOP / 访谈"]) --> B["教学设计引擎\nelearning-course-design\n来源台账 · 规则例外 · 去标题连读逐字稿"]
+    B --> C{"人工确认\n大纲与原件覆盖率"}
+    C -- "独立课件分支" --> D(["PPTX / HTML / PDF 课件\n+ 讲义精要 · 测验题库 · 实战作业"])
+    C -- "系列视频分支" --> E["代码动画制片引擎\ncorporate-training-motion\n视觉蓝图 · 导演内核 · 本地配音"]
+    E --> F{"双门禁验收\n门禁 A 遥测 + 门禁 B 抽帧"}
+    F -- "通过 · SHA-256 校验" --> G(["1080p MP4 + 无标点 SRT + 第 0 帧封面\n+ 讲义精要 · 测验题库 · 实战作业"])
+
+    classDef io fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:1.5px;
+    classDef ai fill:#EFF6FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1.5px;
+    classDef gate fill:#FFF3CD,stroke:#D97706,color:#78350F,stroke-width:2px;
+    classDef qa fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px;
+
+    class A,D,G io;
+    class B,E ai;
+    class C gate;
+    class F qa;
+```
+
 ---
 
-## 快速开始
+## 适用场景
 
-无需手动配置目录或记忆终端命令。**将下面这段话直接发给你正在使用的 AI 助手**，AI 会自动拉取仓库、完成本地安装与环境体检：
+| 适用人群 / 团队 | 已有材料 | 用本套件能得到什么 |
+| --- | --- | --- |
+| **企业培训团队 / 课程研发** | 制度 PDF、Word、PPT、业务 SOP、扫描件与图表 | 将条款、触发前提、适用条件与例外逐页建账，交付可溯源的系列 `1080p` 有声动画课、无标点字幕、第 0 帧封面与讲义/题库/作业 |
+| **内训师 / 讲师（暂不做视频）** | 零散讲稿、流程手册或现场访谈记录 | 直接走独立课件分支，输出可面授或录屏的交互 HTML / PPTX / PDF 课件、逐字稿与对齐学习目标的练习反馈 |
+| **门店零售与一线新人上岗培训** | 门店服务规范、操作流程或系统使用手册 | 自动采用“先白话讲清本质、再引出术语与红线道理”的新人友好写法，结合 `CourseActorsCute` 门店实景演绎与道具交互出片 |
+| **已交付课程的局部修改与维护** | 已建档的课程工程 + 对话指定修改范围 | 改句落入原槽位时做秒级无损音频热替换；修改 1–2 个场景时自动分场景增量重渲，未改场景直接无损复用拼接 |
+| **对业务资料保密有严格要求的团队** | 涉密制度文档、内部业务规程、自有讲师参考录音 | 全程在本地调用 `Qwen3-TTS` 离线配音（支持音色克隆）与本地渲染，原始制度文档与音频不上传外部配音服务 |
+| **非酷果星创 / 其他行业培训团队** | 任意行业企业培训原始材料 | 完整复用教学设计、视觉多样性蓝图、动效引擎与双门禁校验体系，按需替换为自有品牌片头片尾与角色外观 |
 
-```text
-请帮我安装这个企业培训制课 Skill：https://github.com/hebokenn/kgxc-corporate-course-skill
-（macOS Apple Silicon 请运行仓库安装脚本 ./install.sh --agent both；若只需加载 Skill 规范也可安装 skills/corporate-training-motion 与 skills/elearning-course-design，安装好后告诉我怎么开始做第一门课。）
-```
-
-<details>
-<summary>手动安装 / 环境体检（doctor）/ 校验清单 / 开课示例</summary>
-
-1. **下载 ZIP 双击安装**：[下载 `kgxc-course-suite-v9.0.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
-2. **命令行体检（核验 FFmpeg / Chromium / 本地 Qwen3-TTS）**：
-   ```sh
-   "$HOME/.local/bin/kgxc-course" doctor
-   ```
-3. **校验与依赖**：[SHA256SUMS 校验清单](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md) · [已停用的 v7.2.0 历史插件归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
-
-**安装完成后，附带业务资料发给 AI 即可开课：**
-
-```text
-请用 corporate-training-motion，把我提供的资料做成《收货核对流程》培训课。
-受众：新入职门店同事。
-目标：能找到并核对订单、商品 SN 和外包装信息，按原文要求完成交接。
-交付：完整系列视频（或改为“只交付独立 HTML/PPTX 课件 + 逐字稿 + 题库”）。
-先做资料诊断与原件要点梳理，等我确认大纲后再推进后续制作。
-```
-
-</details>
+> **适用范围说明**：完整本地渲染、分场景增量并行出片与离线 `Qwen3-TTS` 配音已在 **macOS Apple Silicon（arm64）** 实测验证；纯对话工作流与标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae。内置人物预设与片头片尾默认面向酷果星创与 Apple 门店零售场景，其他企业可按需替换自有品牌视觉。
 
 ---
 
@@ -194,7 +196,192 @@
 
 ---
 
-## 端到端协作流程
+## 制作流程
+
+本套件将企业制课拆分为**教学设计（`elearning-course-design`）**、**制作与渲染（`corporate-training-motion`）**与**双门禁验收**三大环节，并支持交付后局部返修回环。
+
+### 一、端到端全链路主流程
+
+从建档、教学拆解、分支选择（独立课件 / 系列动画视频）、视觉蓝图校验、3 段小样定调到双门禁交付与局部返修：
+
+```mermaid
+flowchart TD
+    subgraph S1 ["① 建档与恢复"]
+        IN(["原始业务资料\nPDF / Word / PPT / 扫描件 / 音视频"]) --> START["kgxc_course.py start / resume\n保留 inputs 原件 · 建规范目录 · 抽取浅色色板"]
+    end
+
+    subgraph S2 ["② 教学设计 elearning-course-design"]
+        PARSE["读透原件与来源台账\n单列业务规则 / 触发前提 / 适用条件 / 例外"] --> ASK["宿主结构化提问（最多 3 题）\n对齐受众、岗位目标与边界"]
+        ASK --> OUTLINE["生成可审阅教学大纲 HTML"]
+        OUTLINE --> GATE_OUT{"人工确认大纲?"}
+        GATE_OUT -- "调整目标或取舍" --> PARSE
+        GATE_OUT -- "确认大纲" --> SCRIPT["编写完整口播逐字稿\n情境 → 动作判断 → 规则依据 → 示范 → 练习反馈"]
+        SCRIPT --> SELF["作者自检\n无原件视角 / 去标题连读 / 新人友好 / 问候与收尾"]
+        SELF --> COV["原件覆盖对照报告\nworkflow.py source-coverage --save"]
+        COV --> GATE_SCR{"人工确认逐字稿与覆盖率?"}
+        GATE_SCR -- "退回修稿" --> SCRIPT
+    end
+
+    START --> PARSE
+    GATE_SCR -- "source-coverage --confirm\nreview --gate script" --> BRANCH{"交付形态?"}
+
+    subgraph S3A ["③A 独立课件分支"]
+        CW["生成 PPTX / HTML / PDF / DOCX 课件\n（独立课件不作为视频制作输入）"] --> CW_ASSETS["同步产出 讲义精要 · 测验题库 · A4 实战作业"]
+        CW_ASSETS --> CW_OUT(["交付独立课件与配套资产"])
+    end
+
+    BRANCH -- "只交付课件" --> CW
+
+    subgraph S3B ["③B 视频制片 corporate-training-motion"]
+        PREF["制作偏好确认\n顾客形象 / 花字 / 原库提示音 / 配音音色"] --> MASTER["内容母版定调（3 套风格）\n匹配浅色画布与 R5/R8 品牌片头片尾"]
+        MASTER --> SB["全课最优导演分镜\n声明 scene_id / layout_kind / visual_cue"]
+        SB --> BP["全集视觉多样性蓝图校验\nscripts/check_visual_blueprint.py"]
+        BP --> BP_OK{"蓝图通过?"}
+        BP_OK -- "同屏复述或复用超限\n退回重排" --> SB
+        BP_OK -- "通过" --> SAMPLE["抽取 3 段跨章节有声小样\nDirectorStage + 本地 Qwen3-TTS"]
+        SAMPLE --> GATE_SMP{"人工试听小样确认?"}
+        GATE_SMP -- "调整风格或节奏" --> MASTER
+        GATE_SMP -- "小样通过" --> PROD["沿用同一 DirectorStage 内核\n分集 · 分场景增量并行渲染正片"]
+    end
+
+    BRANCH -- "制作系列动画视频" --> PREF
+
+    subgraph S4 ["④ 双门禁验收与桌面交付"]
+        GA["门禁 A 自动化硬校验\nverify_delivery.py --render-audit --visual-blueprint"]
+        GA --> GATE_A{"0 错误 0 警告?"}
+        GATE_A -- "不通过 · 退回修复" --> PROD
+        GATE_A -- "通过" --> GATE_B["门禁 B 人工抽帧与实听核验\n首帧封面 / 迈步 / 揭示对照 / 眯眼测试 / 尾音"]
+        GATE_B -- "画面或听感异常" --> PROD
+        GATE_B -- "核验通过" --> HASH["SHA-256 校验与导出打包\n过程文件默认保留在工程内"]
+        HASH --> DELIVER(["交付至桌面「ai 制课/课程名/」\n1080p MP4 + 无标点 SRT + 第 0 帧封面 + 讲义/题库/作业"])
+    end
+
+    PROD --> GA
+
+    subgraph S5 ["⑤ 交付后局部返修回环"]
+        REV["对话指定修改某句读音或局部场景"] --> SLOT{"改句落入原时间槽位?"}
+        SLOT -- "是 · 时长不变" --> HOTSWAP["本地重配单句 + ffmpeg -c:v copy\n秒级无损音频热替换"]
+        SLOT -- "否 · 改动画面或时长" --> INCR["render_director_incremental.mjs\n仅重渲脏场景并无损拼接"]
+    end
+
+    DELIVER -. "后续按需微调" .-> REV
+    HOTSWAP --> GA
+    INCR --> GA
+
+    classDef io fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:2px;
+    classDef ai fill:#EFF6FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1.5px;
+    classDef human fill:#FFF3CD,stroke:#D97706,color:#78350F,stroke-width:2px;
+    classDef gate fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px;
+
+    class IN,CW_OUT,DELIVER io;
+    class START,PARSE,ASK,OUTLINE,SCRIPT,SELF,COV,CW,CW_ASSETS,PREF,MASTER,SB,SAMPLE,PROD,HASH,REV,HOTSWAP,INCR ai;
+    class GATE_OUT,GATE_SCR,BRANCH,GATE_SMP,SLOT human;
+    class BP,BP_OK,GA,GATE_A,GATE_B gate;
+```
+
+### 二、多方协作与本地数据边界时序图
+
+所有关键决策均由你拍板，原始资料与本地配音全程不出本机，且模型不可代人工提交原件覆盖确认：
+
+```mermaid
+sequenceDiagram
+    participant U as 你（培训负责人）
+    participant A as AI 助手
+    participant ID as 教学设计引擎
+    participant MT as 制片引擎
+    participant TTS as 本地 Qwen3-TTS
+    participant QA as 双验收门禁
+
+    U->>A: 提交原始业务资料、受众与目标
+    Note over A,TTS: 全程本地离线配音与渲染，原始业务资料不出本机
+    A->>ID: 建档并解析多源原件与来源台账
+    ID-->>U: 提出关键边界问题（最多 3 题）并生成大纲 HTML
+    U->>ID: 确认受众、目标与课程大纲
+    ID->>ID: 编写逐字稿、无原件自检、生成原件覆盖率报告
+    ID-->>U: 呈交逐字稿 HTML 与原件覆盖对照报告
+    Note over U,ID: 人工核对取舍与例外后提交确认（模型不可代人工确认）
+    U->>MT: 确认逐字稿，选定制作偏好（形象 / 花字 / 音效 / 音色）
+
+    alt 独立课件分支
+        MT-->>U: 交付 PPTX / HTML / PDF 课件 + 讲义 + 题库 + 作业
+    else 系列动画视频分支
+        MT->>MT: 内容母版定调 + 全课分镜 + 视觉多样性蓝图校验
+        MT->>TTS: 合成 3 段跨章节有声试听小样
+        TTS-->>MT: 返回带起声点与词锚点的 WAV 音频
+        MT->>QA: 执行小样双门禁预检
+        QA-->>U: 呈交 3 段通过门禁的 1080p 有声小样
+        U->>MT: 确认小样画风、视觉蓝图与声音节奏
+        MT->>TTS: 批量离线合成全集分句配音
+        TTS-->>MT: 返回全集 WAV 与单行无标点 SRT 时间轴
+        MT->>MT: 沿用小样同款 DirectorStage 分场景并行渲染
+        MT->>QA: 提交正片执行门禁 A 遥测 + 门禁 B 抽帧目检
+        QA-->>U: SHA-256 核验后交付至桌面「ai 制课」
+        opt 交付后局部返修
+            U->>MT: 对话指定修改某几句读音或 1-2 个场景
+            MT->>QA: 秒级音频热替换或脏场景增量重渲并复验
+            QA-->>U: 更新对应成片并保留过程工程
+        end
+    end
+```
+
+### 三、底层引擎工作管线（音画零抢跑 & 增量并行渲染）
+
+<details>
+<summary>展开查看底层引擎细节图：单句音画同步管线 & 分场景增量并行渲染与门禁 A</summary>
+
+以下两张图分别拆解 `tts_sync.py` + `qwen3_tts.py` 如何消除句尾吞字与画面抢跑，以及 `render_director_incremental.mjs` + `verify_delivery.py` 如何实现分场景增量渲染与全量等价门禁校验：
+
+```mermaid
+flowchart LR
+    L["逐字稿分句\n建议 2.5–5s / ≤ 26 字"] --> P["prepare_tts_text\n清理句末畸形双标点\n口播发音分离（如 WOW → 哇哦）"]
+    P --> Q["本地 Qwen3-TTS 合成\n自动注入 decode ≥ 0 防吞尾字补丁"]
+    Q --> T{"check_tail_energy\n30ms > -24dB 且 80ms > -20dB?"}
+    T -- "尾音截断\n拒绝复用旧缓存" --> S["扩展 4 组候选种子择优重配"] --> Q
+    T -- "收尾自然完整" --> O["实测真实起声点 speech_start\n提取句内词锚点 cue_words"]
+    O --> M["生成单行无标点 SRT\n混入 48kHz 原库提示音 + 0.35s 软淡出"]
+    M --> DS["DirectorStage Beat 对齐\n绑定 st.speechT 与 DS.phraseTime\n门禁 A 拦截抢跑超 80ms"]
+
+    classDef step fill:#EFF6FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1.5px;
+    classDef check fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px;
+    classDef out fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:1.5px;
+
+    class L,P,Q,S,O,M step;
+    class T check;
+    class DS out;
+```
+
+```mermaid
+flowchart TD
+    HTML["导演 HTML\nSCENE_RENDERERS / @scene:start"] --> PART["DirectorStage.partitionSceneFrames\n整帧切片 · 零重帧零漏帧"]
+    PART --> INV{"共享库 / 公共函数 / 总时长变化?"}
+    INV -- "是" --> ALL["全量缓存失效\n全部场景标记为脏场景"]
+    INV -- "否" --> FP["计算单场景 SHA-256 指纹\n（共享库 + 场景源码 + 台词与整帧区间）"]
+    FP --> HIT{"缓存命中?"}
+    HIT -- "是" --> REUSE["直接无损复用 H.264 片段\n写入 render_cache_report.json"]
+    HIT -- "否" --> CDP["单 Chrome 多标签页并行渲染\n默认 --workers 3"]
+    ALL --> CDP
+    REUSE --> CONCAT["ffmpeg -f concat -c:v copy\n数秒无损拼接为 1080p 成片"]
+    CDP --> CONCAT
+    CONCAT --> MERGE["DirectorStage.mergeFrameAudits\n全量等价合并分场景审计遥测"]
+    MERGE --> GA["门禁 A 硬校验 verify_delivery.py\n拦截：步态飘移 / 压字 / 抢跑超 80ms / 原地覆盖 /\n同屏复述 / 双 L1 标题 / 图表重复 / 悬空道具 /\n快闪 PPT / 总结页晃动"]
+    GA --> GA_OK{"0 错误 0 警告?"}
+    GA_OK -- "违规 > 0" --> FAIL(["阻断交付并定位脏场景返修"])
+    GA_OK -- "全部通过" --> PASS(["进入门禁 B 抽帧目视与眯眼测试"])
+
+    classDef step fill:#EFF6FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1.5px;
+    classDef decision fill:#FFF3CD,stroke:#D97706,color:#78350F,stroke-width:2px;
+    classDef gate fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px;
+    classDef ok fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:2px;
+
+    class HTML,PART,ALL,FP,REUSE,CDP,CONCAT,MERGE step;
+    class INV,HIT decision;
+    class GA,GA_OK,FAIL gate;
+    class PASS ok;
+```
+
+</details>
+
+### 四、阶段分工速览
 
 | 阶段 | AI 自动完成 | 你只需确认 |
 | --- | --- | --- |
@@ -206,7 +393,40 @@
 
 ---
 
-## 适用环境、开源边界与文档索引
+## 安装与使用
+
+无需手动配置目录或记忆终端命令。**将下面这段话直接发给你正在使用的 AI 助手**，AI 会自动拉取仓库、完成本地安装与环境体检：
+
+```text
+请帮我安装这个企业培训制课 Skill：https://github.com/hebokenn/kgxc-corporate-course-skill
+（macOS Apple Silicon 请运行仓库安装脚本 ./install.sh --agent both；若只需加载 Skill 规范也可安装 skills/corporate-training-motion 与 skills/elearning-course-design，安装好后告诉我怎么开始做第一门课。）
+```
+
+**安装完成后，附带业务资料发给 AI 即可开课：**
+
+```text
+请用 corporate-training-motion，把我提供的资料做成《收货核对流程》培训课。
+受众：新入职门店同事。
+目标：能找到并核对订单、商品 SN 和外包装信息，按原文要求完成交接。
+交付：完整系列视频（或改为“只交付独立 HTML/PPTX 课件 + 逐字稿 + 题库”）。
+先做资料诊断与原件要点梳理，等我确认大纲后再推进后续制作。
+```
+
+<details>
+<summary>手动安装 / 环境体检（doctor）/ 校验清单</summary>
+
+1. **下载 ZIP 双击安装**：[下载 `kgxc-course-suite-v9.0.0.zip`](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/kgxc-course-suite-v9.0.0.zip) → 解压 → 双击`安装或更新.command`（升级自动保留个人配音、设置与已有课程工程；仅同步 Skill 可运行 `./install.sh --skill-only --agent both`）。
+2. **命令行体检（核验 FFmpeg / Chromium / 本地 Qwen3-TTS）**：
+   ```sh
+   "$HOME/.local/bin/kgxc-course" doctor
+   ```
+3. **校验与依赖**：[SHA256SUMS 校验清单](https://github.com/hebokenn/kgxc-corporate-course-skill/releases/download/v9.0.0/SHA256SUMS) · [完整依赖说明](docs/DEPENDENCIES.md) · [已停用的 v7.2.0 历史插件归档](docs/ARCHIVE.md#历史-dsh-桌面插件安装备份已停用仅作历史存档)
+
+</details>
+
+---
+
+## 相关文档
 
 - **运行环境**：完整本地渲染与离线 `Qwen3-TTS` 配音已在 **macOS Apple Silicon（arm64）** 实测验证；标准 `SKILL.md` 兼容 Antigravity、Claude Code、Codex、Cursor、Windsurf、WorkBuddy、Trae，模型推理沿用宿主原生配置。
 - **开源协议与共创**：自研引擎代码、工具链与通用规范采用 **[Apache License 2.0](LICENSE)**；酷果星创品牌视觉、专有工服角色、R5/R8 片头片尾及第三方字体音效沿用 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。由 [@hebokenn](https://github.com/hebokenn) 主导设计与维护，携手 **Antigravity（[Gemini](https://github.com/gemini-code-assist)）** 与 **[Codex](https://github.com/codex)** 协同共创。
@@ -239,6 +459,9 @@
 - **信息生命周期分级与累进展示原语（根治并列信息原地覆盖）**：在 [`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 新增 `VM.drawKpiRail`（右上角并列指标轨，新项高亮滑入、旧项温和退阶保留）与 `VM.drawCumulativeStack`（同场连续事件/失误链自上而下累进排开），彻底替代单槽位原地改字覆盖；[`director_stage.js`](skills/corporate-training-motion/workbench/motion/director_stage.js) 新增 `auditor.recordMetricSlot()` 与 `kpi/evidence` 同位覆写检测，门禁 A（[`verify_delivery.py`](skills/corporate-training-motion/scripts/verify_delivery.py)）硬拦截 `info_overwrite_violations`。
 - **实景道具物理接地、手持插槽与锚定屏幕特写（根治空中悬空无互动手机）**：[`actors_v3_cute.js`](skills/corporate-training-motion/workbench/motion/actors_v3_cute.js) 新增强校验 `heldProp`（`phone` / `qr_card` / `card`）直接绘制在人物手心，并实时导出世界坐标手部锚点 `bounds.frontHand / backHand`；[`visual_metaphors.js`](skills/corporate-training-motion/workbench/motion/visual_metaphors.js) 新增 `VM.drawHandoverProp(fromHand, toHand, progress)` 弧线真实递交、`VM.drawScreenInset(anchorPt, boxRect, opts)` 锚定屏幕功能特写窗，并为 `draw3DPhoneProp` 增配 `opts.showOrbit` 开关；规范与门禁 A（`auditor.recordProp` / `floating_prop_violations`）硬拦截 `cinematic_store` 实景门店中的无互动悬空道具。
 - **反快闪 PPT 开放画布原语与高频翻页拦截**：新增 `VM.drawOpenChapterDots`、安全限高（`<= 210px` 防压上方浮标）`VM.drawSculptureBar` 与累进短浮标 `VM.drawFloatingTag`，并在 [`60-v8-cinematic-director-and-gates.md`](skills/corporate-training-motion/references/60-v8-cinematic-director-and-gates.md) 明确深度拆解段每主题停留 10–24 秒、禁止把每 2–4 秒整屏翻页的大卡片伪装成 `kinetic_metaphor`（同时注明 `drawStampBadge` 含前景色 `fg` 完整签名）；门禁 A 新增 `auditor.recordPanel` / `rapid_card_flip_violations` 硬拦截巨幅卡片快闪翻页。
+
+<details>
+<summary>展开查看 7.0.0 – 8.1.2 版本记录</summary>
 
 ### 根治 Qwen3-TTS 克隆音色吞尾字、清畸形双标点与双窗口尾音防切检：核心 8.1.2 · 2026-11-27
 
@@ -293,6 +516,8 @@
 
 - **多集系列课统一批次与内容母版三选一**：`storyboard.py` 新增 `template_masters` 与 `segments[].template_id` 校验，整门课程可统一输出分集视频 + 《讲义精要》+ 测验题库 + A4 手写作业。
 - **16 套高对比明亮浅色色板与实质自查清单**：默认随机选色池升级为 16 套 WCAG ≥ 4.5 无绿浅色画布；制作端在出片前完成实质自查修精，过程文件默认保留。
+
+</details>
 
 <details>
 <summary>展开查看更早版本概览（5.7.1 – 6.9.8）</summary>
